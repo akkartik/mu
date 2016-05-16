@@ -169,10 +169,14 @@ case MAYBE_CONVERT: {
 
 :(code)
 const reagent variant_type(const reagent& base, int tag) {
+  return variant_type(base.type, tag);
+}
+
+const reagent variant_type(const type_tree* type, int tag) {
   assert(tag >= 0);
-  assert(contains_key(Type, base.type->value));
-  assert(!get(Type, base.type->value).name.empty());
-  const type_info& info = get(Type, base.type->value);
+  assert(contains_key(Type, type->value));
+  assert(!get(Type, type->value).name.empty());
+  const type_info& info = get(Type, type->value);
   assert(info.kind == EXCLUSIVE_CONTAINER);
   reagent/*copy*/ element = info.elements.at(tag);
   // End variant_type Special-cases

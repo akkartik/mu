@@ -252,15 +252,8 @@ replace_type_ingredients(element, type, info);
 :(before "Compute Exclusive Container Size(element)")
 replace_type_ingredients(element, type, info);
 :(before "Compute Container Address Offset(element)")
-replace_type_ingredients(element, curr_type, curr_info);
-if (contains_type_ingredient(element)) {
-  // error raised elsewhere; just clean up and leave
-  while (!containers.empty()) {
-    delete containers.top().first;
-    containers.pop();
-  }
-  return;
-}
+replace_type_ingredients(element, type, info);
+if (contains_type_ingredient(element)) return true;  // error raised elsewhere
 
 :(code)
 void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {
@@ -613,7 +606,7 @@ def main [
 
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
-  if (!base.type->right)
-    raise << "illegal type '" << to_string(base.type) << "' seems to be missing a type ingredient or three\n" << end();
-  replace_type_ingredients(element.type, base.type->right, info);
+  if (!type->right)
+    raise << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+  replace_type_ingredients(element.type, type->right, info);
 }

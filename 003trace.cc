@@ -166,6 +166,9 @@ if (Passed && !Hide_errors && trace_count("error") > 0) {
   ++Num_failures;
 }
 
+// Just for debugging.
+#define dbg trace(0, "a")
+
 :(before "End Types")
 struct end {};
 :(before "End Tracing")

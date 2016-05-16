@@ -154,10 +154,12 @@ def main [
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
+# merging in an address increments refcount
 +run: {2: "foo"} <- merge {1: "literal", "p": ()}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
 +run: {4: ("address" "number")}, {5: "boolean"} <- maybe-convert {2: "foo"}, {1: "variant", "p": ()}
 # maybe-convert increments refcount on success
-+mem: incrementing refcount of 1000: 1 -> 2
++mem: incrementing refcount of 1000: 2 -> 3
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
 if (is_mu_address(product))
@@ -176,9 +178,9 @@ def main [
   *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
   3:foo <- copy *2:address:foo
 ]
-+transform: --- compute address offsets for foo
++transform: compute address offsets for container foo
 +transform: checking container foo, element 0
-+transform: container foo contains an address at offset 0
++transform: address at offset 0
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: {2: ("address" "foo"), "lookup": ()} <- put {2: ("address" "foo"), "lookup": ()}, {x: "offset"}, {1: ("address" "number")}
@@ -196,8 +198,12 @@ struct address_element_info {
     payload_size = p;
   }
 };
+:(before "struct container_metadata ")
+// valid fields for containers: size, offset, address, maybe_address (if container directly or indirectly contains exclusive containers with addresses)
+// valid fields for exclusive containers: size, maybe_address
 :(before "End container_metadata Fields")
 vector<address_element_info> address;  // list of offsets containing addresses, and the sizes of their corresponding payloads
+map<pair</*offset*/int, /*tag*/int>, vector<address_element_info> > maybe_address;
 
 //: populate metadata.address in a separate transform, because it requires
 //: already knowing the sizes of all types
@@ -207,8 +213,10 @@ Transform.push_back(compute_container_address_offsets);
 :(code)
 void compute_container_address_offsets(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
+  trace(9992, "transform") << "--- compute address offsets for " << caller.name << end();
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
+    trace(9993, "transform") << "- compute address offsets for " << to_string(inst) << end();
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
       compute_container_address_offsets(inst.ingredients.at(i));
     for (int i = 0; i < SIZE(inst.products); ++i)
@@ -230,67 +238,82 @@ void compute_container_address_offsets(type_tree* type) {
   if (info.kind == CONTAINER) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
-    trace(9992, "transform") << "--- compute address offsets for " << info.name << end();
-    append_addresses(0, type, metadata.address);
+    trace(9994, "transform") << "compute address offsets for container " << info.name << end();
+    if (!append_addresses(0, type, metadata.address, metadata))
+      return;  // error
+  }
+  if (info.kind == EXCLUSIVE_CONTAINER) {
+    container_metadata& metadata = get(Container_metadata, type);
+    if (!metadata.maybe_address.empty()) return;
+    trace(9994, "transform") << "compute address offsets for exclusive container " << info.name << end();
+    for (int tag = 0; tag < SIZE(info.elements); ++tag) {
+      if (!append_addresses(/*skip tag offset*/1, variant_type(type, tag).type, get_or_insert(metadata.maybe_address, pair<int, int>(/*tag offset*/0, tag)), metadata))
+        return;  // error
+    }
   }
 }
 
-void append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out) {
-  stack<pair<const type_tree*, /*next field to process*/int> > containers;
-  containers.push(pair<const type_tree*, int>(new type_tree(*type), 0));
-  int curr_offset = base_offset;
-  while (!containers.empty()) {
-    const type_tree* curr_type = containers.top().first;
-    int curr_index = containers.top().second;
-    type_ordinal t = curr_type->value;
-    assert(t);
-    type_info& curr_info = get(Type, t);
-    assert(curr_info.kind == CONTAINER);
-    assert(get(Type, curr_type->value).kind == CONTAINER);
-    if (curr_index >= SIZE(get(Type, curr_type->value).elements)) {
-      delete curr_type;
-      containers.pop();
-      continue;
-    }
-    trace(9993, "transform") << "checking container " << curr_type->name << ", element " << curr_index << end();
-    reagent/*copy*/ element = element_type(curr_type, curr_index);
+// returns false on error (raised elsewhere)
+//: error status is used in later layers
+bool append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out, container_metadata& out_metadata) {
+  const type_info& info = get(Type, type->value);
+  if (type->name == "address") {
+    out.push_back(address_element_info(base_offset, payload_size(type)));
+    return true;
+  }
+  if (info.kind == PRIMITIVE) return true;
+  for (int curr_index = 0, curr_offset = base_offset; curr_index < SIZE(info.elements); ++curr_index) {
+    trace(9993, "transform") << "checking container " << type->name << ", element " << curr_index << end();
+    reagent/*copy*/ element = element_type(type, curr_index);
     // Compute Container Address Offset(element)
-    // base case
     if (is_mu_address(element)) {
-      trace(9993, "transform") << "container " << type->name << " contains an address at offset " << curr_offset << end();
+      trace(9993, "transform") << "address at offset " << curr_offset << end();
       out.push_back(address_element_info(curr_offset, payload_size(element)));
-    }
-    // recursive case and update loop variables
-    if (is_mu_container(element)) {
-      ++containers.top().second;
-      containers.push(pair<const type_tree*, int>(new type_tree(*element.type), 0));
-    }
-    else if (is_mu_exclusive_container(element)) {
-      // TODO: stub
-      ++containers.top().second;
       ++curr_offset;
     }
+    else if (is_mu_container(element)) {
+      if (!append_addresses(curr_offset, element.type, out, out_metadata))
+        return false;  // error
+      curr_offset += size_of(element);
+    }
+    else if (is_mu_exclusive_container(element)) {
+      const type_info& element_info = get(Type, element.type->value);
+      for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
+        vector<address_element_info>& tmp = get_or_insert(out_metadata.maybe_address, pair<int, int>(curr_offset, tag));
+        if (tmp.empty()) {
+          if (!append_addresses(curr_offset+1, variant_type(element.type, tag).type, tmp, out_metadata))
+            return false;  // error
+        }
+      }
+      curr_offset += size_of(element);
+    }
     else {
-      ++containers.top().second;
+      // non-address primitive
       ++curr_offset;
     }
   }
+  return true;
+}
+
+int payload_size(const type_tree* type) {
+  assert(type->name == "address");
+  return size_of(type->right)+/*refcount*/1;
 }
 
 //: use metadata.address to update refcounts within containers, arrays and
 //: exclusive containers
 
 :(before "End write_memory(x) Special-cases")
-if (is_mu_container(x))
+if (is_mu_container(x) || is_mu_exclusive_container(x))
   update_container_refcounts(x, data);
 :(before "End Update Refcounts in PUT")
-if (is_mu_container(element))
+if (is_mu_container(element) || is_mu_exclusive_container(element))
   update_container_refcounts(element, ingredients.at(2));
 :(before "End Update Refcounts in PUT_INDEX")
-if (is_mu_container(element))
+if (is_mu_container(element) || is_mu_exclusive_container(element))
   update_container_refcounts(element, value);
 :(before "End Update Refcounts in Successful MAYBE_CONVERT")
-if (is_mu_container(product)) {
+if (is_mu_container(product) || is_mu_exclusive_container(product)) {
   vector<double> data;
   for (int i = 0; i < size_of(product); ++i)
     data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
@@ -299,11 +322,18 @@ if (is_mu_container(product)) {
 
 :(code)
 void update_container_refcounts(const reagent& x, const vector<double>& data) {
-  assert(is_mu_container(x));
+  assert(is_mu_container(x) || is_mu_exclusive_container(x));
   const container_metadata& metadata = get(Container_metadata, x.type);
   for (int i = 0; i < SIZE(metadata.address); ++i) {
     const address_element_info& info = metadata.address.at(i);
     update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
+  }
+  for (map<pair<int, int>, vector<address_element_info> >::const_iterator p = metadata.maybe_address.begin(); p != metadata.maybe_address.end(); ++p) {
+    if (data.at(p->first.first) != p->first.second) continue;
+    for (int i = 0; i < SIZE(p->second); ++i) {
+      const address_element_info& info = p->second.at(i);
+      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
+    }
   }
 }
 
@@ -365,9 +395,9 @@ def main [
 +run: {2: "bar"} <- merge {1: ("address" "number")}
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {3: "foo"} <- merge {1: "literal", "b": ()}, {2: "bar"}
-# todo: refcount should increment here as well, but we can't handle exclusive-containers (sometimes) containing addresses yet
-+run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {1: "variant", "b": ()}
 +mem: incrementing refcount of 1000: 2 -> 3
++run: {5: "bar"}, {6: "boolean"} <- maybe-convert {3: "foo"}, {1: "variant", "b": ()}
++mem: incrementing refcount of 1000: 3 -> 4
 
 :(scenario refcounts_copy_doubly_nested)
 container foo [
@@ -390,9 +420,9 @@ def main [
   *3:address:foo <- put *3:address:foo, 1:offset/b, *2:address:curr
   4:foo <- copy *3:address:foo
 ]
-+transform: --- compute address offsets for foo
++transform: compute address offsets for container foo
 +transform: checking container foo, element 1
-+transform: container foo contains an address at offset 3
++transform: address at offset 3
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 # storing an address in a container updates its refcount
@@ -403,6 +433,64 @@ def main [
 +mem: incrementing refcount of 1000: 2 -> 3
 # copying a container containing a container containing an address updates refcount
 +run: {4: "foo"} <- copy {3: ("address" "foo"), "lookup": ()}
++mem: incrementing refcount of 1000: 3 -> 4
+
+:(scenario refcounts_copy_exclusive_container_within_container)
+container foo [
+  a:number
+  b:bar
+]
+exclusive-container bar [
+  x:number
+  y:number
+  z:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:bar <- merge 0/x, 34
+  3:foo <- merge 12, 2:bar
+  5:bar <- merge 1/y, 35
+  6:foo <- merge 13, 5:bar
+  8:bar <- merge 2/z, 1:address:number
+  9:foo <- merge 14, 8:bar
+  11:foo <- copy 9:foo
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
+# no change while merging items of other types
++run: {8: "bar"} <- merge {2: "literal", "z": ()}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {9: "foo"} <- merge {14: "literal"}, {8: "bar"}
++mem: incrementing refcount of 1000: 2 -> 3
++run: {11: "foo"} <- copy {9: "foo"}
++mem: incrementing refcount of 1000: 3 -> 4
+
+:(scenario refcounts_copy_container_within_exclusive_container)
+exclusive-container foo [
+  a:number
+  b:bar
+]
+container bar [
+  x:number
+  y:number
+  z:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:foo <- merge 0/a, 34
+  6:foo <- merge 0/a, 35
+  10:bar <- merge 2/x, 15/y, 1:address:number
+  13:foo <- merge 1/b, 10:bar
+  17:foo <- copy 13:foo
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
+# no change while merging items of other types
++run: {10: "bar"} <- merge {2: "literal", "x": ()}, {15: "literal", "y": ()}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {13: "foo"} <- merge {1: "literal", "b": ()}, {10: "bar"}
++mem: incrementing refcount of 1000: 2 -> 3
++run: {17: "foo"} <- copy {13: "foo"}
 +mem: incrementing refcount of 1000: 3 -> 4
 
 :(code)
@@ -417,7 +505,3 @@ bool is_mu_exclusive_container(const reagent& r) {
   type_info& info = get(Type, r.type->value);
   return info.kind == EXCLUSIVE_CONTAINER;
 }
-
-// todo:
-//  exclusive container sometimes containing address
-//  container containing exclusive container sometimes containing address

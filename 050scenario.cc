@@ -630,15 +630,15 @@ put(Recipe_ordinal, "check-trace-count-for-label", CHECK_TRACE_COUNT_FOR_LABEL);
 :(before "End Primitive Recipe Checks")
 case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'check-trace-for-label' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'check-trace-count-for-label' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
     break;
   }
   break;
