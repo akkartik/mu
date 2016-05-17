@@ -98,6 +98,8 @@ struct string_tree {
   string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
 };
 
+// End type_tree Definition
+
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
 map<int, double> Memory;

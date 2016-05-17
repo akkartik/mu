@@ -13,10 +13,10 @@ def main [
 # both allocations should have returned the same address
 +mem: storing 1 in location 5
 
-:(before "End Decrement Reference Count(old_address, size)")
+:(before "End Decrement Reference Count(old_address, payload_type, payload_size)")
 if (old_refcount == 0) {
   trace(9999, "mem") << "automatically abandoning " << old_address << end();
-  abandon(old_address, size);
+  abandon(old_address, payload_size);
 }
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.

@@ -22,10 +22,16 @@ if (is_mu_address(x)) {
   assert(scalar(data));
   assert(x.value);
   assert(!x.metadata.size);
-  update_refcounts(get_or_insert(Memory, x.value), data.at(0), payload_size(x));
+  update_refcounts(x, data.at(0));
 }
+
 :(code)
-void update_refcounts(int old_address, int new_address, int size) {
+void update_refcounts(const reagent& old, int new_address) {
+  assert(is_mu_address(old));
+  update_refcounts(get_or_insert(Memory, old.value), new_address, old.type->right, payload_size(old));
+}
+
+void update_refcounts(int old_address, int new_address, const type_tree* payload_type, int /*just in case it's an array*/payload_size) {
   if (old_address == new_address) {
     trace(9999, "mem") << "copying address to itself; refcount unchanged" << end();
     return;
@@ -43,7 +49,7 @@ void update_refcounts(int old_address, int new_address, int size) {
       cerr << "Negative refcount: " << old_address << ' ' << old_refcount << '\n';
       exit(0);
     }
-    // End Decrement Reference Count(old_address, size)
+    // End Decrement Reference Count(old_address, payload_type, payload_size)
   }
   // increment refcount of new address
   if (new_address) {
@@ -114,7 +120,7 @@ reagent/*copy*/ element = element_type(base.type, offset);
 assert(!has_property(element, "lookup"));
 element.value = address;
 if (is_mu_address(element))
-  update_refcounts(get_or_insert(Memory, element.value), ingredients.at(2).at(0), payload_size(element));
+  update_refcounts(element, ingredients.at(2).at(0));
 // End Update Refcounts in PUT
 
 :(scenario refcounts_put_index)
@@ -136,7 +142,7 @@ def main [
 
 :(after "Write Memory in PUT_INDEX in Run")
 if (is_mu_address(element))
-  update_refcounts(get_or_insert(Memory, element.value), value.at(0), payload_size(element));
+  update_refcounts(element, value.at(0));
 // End Update Refcounts in PUT_INDEX
 
 :(scenario refcounts_maybe_convert)
@@ -160,7 +166,7 @@ def main [
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
 if (is_mu_address(product))
-  update_refcounts(get_or_insert(Memory, product.value), get_or_insert(Memory, base_address+/*skip tag*/1), payload_size(product));
+  update_refcounts(product, get_or_insert(Memory, base_address+/*skip tag*/1));
 // End Update Refcounts in Successful MAYBE_CONVERT
 
 //:: manage refcounts in instructions that copy multiple locations at a time
@@ -186,13 +192,29 @@ def main [
 +run: {3: "foo"} <- copy {2: ("address" "foo"), "lookup": ()}
 +mem: incrementing refcount of 1000: 2 -> 3
 
-:(after "Types")
+:(after "End type_tree Definition")
 struct address_element_info {
   int offset;  // where inside a container type (after flattening nested containers!) the address lies
-  int payload_size;  // size of type it points to
-  address_element_info(int o, int p) {
+  const type_tree* payload_type;  // all the information we need to compute sizes of items inside an address inside a container. Doesn't need to be a full-scale reagent, since an address inside a container can never be an array, and arrays are the only type that need to know their location to compute their size.
+  address_element_info(int o, const type_tree* p) {
     offset = o;
-    payload_size = p;
+    payload_type = p;
+  }
+  address_element_info(const address_element_info& other) {
+    offset = other.offset;
+    payload_type = other.payload_type ? new type_tree(*other.payload_type) : NULL;
+  }
+  ~address_element_info() {
+    if (payload_type) {
+      delete payload_type;
+      payload_type = NULL;
+    }
+  }
+  address_element_info& operator=(const address_element_info& other) {
+    offset = other.offset;
+    if (payload_type) delete payload_type;
+    payload_type = other.payload_type ? new type_tree(*other.payload_type) : NULL;
+    return *this;
   }
 };
 :(before "struct container_metadata ")
@@ -255,7 +277,8 @@ void compute_container_address_offsets(type_tree* type) {
 bool append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out, container_metadata& out_metadata) {
   const type_info& info = get(Type, type->value);
   if (type->name == "address") {
-    out.push_back(address_element_info(base_offset, payload_size(type)));
+    assert(type->right && type->right->name != "array");  // array types can't be handled without a full reagent and its value
+    out.push_back(address_element_info(base_offset, new type_tree(*type)));
     return true;
   }
   if (info.kind == PRIMITIVE) return true;
@@ -265,7 +288,7 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
     // Compute Container Address Offset(element)
     if (is_mu_address(element)) {
       trace(9993, "transform") << "address at offset " << curr_offset << end();
-      out.push_back(address_element_info(curr_offset, payload_size(element)));
+      out.push_back(address_element_info(curr_offset, new type_tree(*element.type)));
       ++curr_offset;
     }
     else if (is_mu_container(element)) {
@@ -323,13 +346,13 @@ void update_container_refcounts(const reagent& x, const vector<double>& data) {
   const container_metadata& metadata = get(Container_metadata, x.type);
   for (int i = 0; i < SIZE(metadata.address); ++i) {
     const address_element_info& info = metadata.address.at(i);
-    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
+    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type));
   }
   for (map<pair<int, int>, vector<address_element_info> >::const_iterator p = metadata.maybe_address.begin(); p != metadata.maybe_address.end(); ++p) {
     if (data.at(p->first.first) != p->first.second) continue;
     for (int i = 0; i < SIZE(p->second); ++i) {
       const address_element_info& info = p->second.at(i);
-      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_size);
+      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type));
     }
   }
 }

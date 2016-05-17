@@ -96,7 +96,7 @@ def main [
 //: Can't put this in type_info because later layers will add support for more
 //: complex type trees where metadata depends on *combinations* of types.
 
-:(after "Types")
+:(before "struct reagent")
 struct container_metadata {
   int size;
   vector<int> offset;
