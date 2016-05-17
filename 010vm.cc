@@ -310,16 +310,16 @@ type_tree* new_type_tree(const string_tree* properties) {
 
 //: avoid memory leaks for the type tree
 
-reagent::reagent(const reagent& old) {
-  original_string = old.original_string;
-  name = old.name;
-  value = old.value;
-  initialized = old.initialized;
-  for (int i = 0; i < SIZE(old.properties); ++i) {
-    properties.push_back(pair<string, string_tree*>(old.properties.at(i).first,
-                                                    old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
+reagent::reagent(const reagent& other) {
+  original_string = other.original_string;
+  name = other.name;
+  value = other.value;
+  initialized = other.initialized;
+  for (int i = 0; i < SIZE(other.properties); ++i) {
+    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first,
+                                                    other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
   }
-  type = old.type ? new type_tree(*old.type) : NULL;
+  type = other.type ? new type_tree(*other.type) : NULL;
   // End reagent Copy Constructor
 }
 
@@ -336,18 +336,18 @@ string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
   right = old.right ? new string_tree(*old.right) : NULL;
 }
 
-reagent& reagent::operator=(const reagent& old) {
-  original_string = old.original_string;
+reagent& reagent::operator=(const reagent& other) {
+  original_string = other.original_string;
   for (int i = 0; i < SIZE(properties); ++i)
     if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
-  for (int i = 0; i < SIZE(old.properties); ++i)
-    properties.push_back(pair<string, string_tree*>(old.properties.at(i).first, old.properties.at(i).second ? new string_tree(*old.properties.at(i).second) : NULL));
-  name = old.name;
-  value = old.value;
-  initialized = old.initialized;
+  for (int i = 0; i < SIZE(other.properties); ++i)
+    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first, other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
+  name = other.name;
+  value = other.value;
+  initialized = other.initialized;
   if (type) delete type;
-  type = old.type ? new type_tree(*old.type) : NULL;
+  type = other.type ? new type_tree(*other.type) : NULL;
   // End reagent Copy Operator
   return *this;
 }

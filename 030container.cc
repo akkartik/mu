@@ -108,9 +108,9 @@ struct container_metadata {
 :(before "End reagent Fields")
 container_metadata metadata;  // can't be a pointer into Container_metadata because we keep changing the base storage when we save/restore snapshots
 :(before "End reagent Copy Operator")
-metadata = old.metadata;
+metadata = other.metadata;
 :(before "End reagent Copy Constructor")
-metadata = old.metadata;
+metadata = other.metadata;
 
 :(before "End Globals")
 // todo: switch to map after figuring out how to consistently compare type trees
