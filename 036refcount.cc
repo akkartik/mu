@@ -19,13 +19,12 @@ def main [
 
 :(before "End write_memory(x) Special-cases")
 if (is_mu_address(x)) {
-  // compute old address of x, as well as new address we want to write in
   assert(scalar(data));
   assert(x.value);
+  assert(!x.metadata.size);
   update_refcounts(get_or_insert(Memory, x.value), data.at(0), payload_size(x));
 }
 :(code)
-// variant of write_memory for addresses
 void update_refcounts(int old_address, int new_address, int size) {
   if (old_address == new_address) {
     trace(9999, "mem") << "copying address to itself; refcount unchanged" << end();
@@ -56,10 +55,8 @@ void update_refcounts(int old_address, int new_address, int size) {
 }
 
 int payload_size(reagent/*copy*/ x) {
-  // lookup_memory without drop_one_lookup
-  if (x.value)
-    x.set_value(get_or_insert(Memory, x.value)+/*skip refcount*/1);
-  drop_from_type(x, "address");
+  x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
+  lookup_memory_core(x);
   return size_of(x)+/*refcount*/1;
 }
 

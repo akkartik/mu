@@ -94,7 +94,7 @@ def main [
 
 //: Global data structure for container metadata.
 //: Can't put this in type_info because later layers will add support for more
-//: complex type trees where metadata depends not just on the root of the type tree.
+//: complex type trees where metadata depends on *combinations* of types.
 
 :(after "Types")
 struct container_metadata {

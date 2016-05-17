@@ -89,10 +89,15 @@ void lookup_memory(reagent& x) {
     raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
     return;
   }
+  lookup_memory_core(x);
+}
+
+void lookup_memory_core(reagent& x) {
+  if (x.value == 0) return;
   trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
   drop_from_type(x, "address");
-  if (x.value != 0) {
+  if (x.value) {
     trace(9999, "mem") << "skipping refcount at " << x.value << end();
     x.set_value(x.value+1);  // skip refcount
   }
