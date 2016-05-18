@@ -121,6 +121,8 @@ case ASSUME_CONSOLE: {
   put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
   // increment refcount for event data
   put(Memory, event_data_address, 1);
+  // increment refcount for console
+  put(Memory, console_address, 1);
   break;
 }
 

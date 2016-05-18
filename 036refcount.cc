@@ -18,14 +18,22 @@ def main [
 +mem: decrementing refcount of 1000: 1 -> 0
 
 :(before "End write_memory(x) Special-cases")
-if (is_mu_address(x)) {
-  assert(scalar(data));
-  assert(x.value);
-  assert(!x.metadata.size);
-  update_refcounts(x, data.at(0));
+if (should_update_refcounts_in_write_memory(product_index)) {
+  if (is_mu_address(x)) {
+    assert(scalar(data));
+    assert(x.value);
+    assert(!x.metadata.size);
+    update_refcounts(x, data.at(0));
+  }
+  // End Update Refcounts in write_memory(x)
 }
 
 :(code)
+//: hook for a later layer
+bool should_update_refcounts_in_write_memory(int product_index) {
+  return true;
+}
+
 void update_refcounts(const reagent& old, int new_address) {
   assert(is_mu_address(old));
   update_refcounts(get_or_insert(Memory, old.value), new_address, old.type->right, payload_size(old));
@@ -323,7 +331,7 @@ int payload_size(const type_tree* type) {
 //: use metadata.address to update refcounts within containers, arrays and
 //: exclusive containers
 
-:(before "End write_memory(x) Special-cases")
+:(before "End Update Refcounts in write_memory(x)")
 if (is_mu_container(x) || is_mu_exclusive_container(x))
   update_container_refcounts(x, data);
 :(before "End Update Refcounts in PUT")

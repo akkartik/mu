@@ -192,8 +192,8 @@ if (x.name == "number-of-locals") {
   return;
 }
 
-//:: a little hook to automatically reclaim the default-space when returning
-//:: from a recipe
+//:: 'local-scope' is like 'new-default-space' except that we'll reclaim the
+//:: default-space when the routine exits
 
 :(scenario local_scope)
 def main [
@@ -209,26 +209,23 @@ def foo [
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
 
-:(code)  // pending test
-//? :(scenario local_scope_frees_up_allocations)
-//? def main [
-//?   local-scope
-//?   x:address:array:character <- new [abc]
-//? ]
-//? +mem: clearing x:address:array:character
+:(scenario local_scope_frees_up_addresses)
+def main [
+  local-scope
+  x:address:array:character <- new [abc]
+]
++mem: clearing x:address:array:character
+
+:(before "End Rewrite Instruction(curr, recipe result)")
+if (curr.name == "local-scope") {
+  rewrite_default_space_instruction(curr);
+}
 
 //: todo: do this in a transform, rather than magically in the reply instruction
 :(after "Falling Through End Of Recipe")
 try_reclaim_locals();
 :(after "Starting Reply")
 try_reclaim_locals();
-
-//: now 'local-scope' is identical to 'new-default-space' except that we'll
-//: reclaim the default-space when the routine exits
-:(before "End Rewrite Instruction(curr, recipe result)")
-if (curr.name == "local-scope") {
-  rewrite_default_space_instruction(curr);
-}
 
 :(code)
 void try_reclaim_locals() {
@@ -239,38 +236,67 @@ void try_reclaim_locals() {
   const instruction& inst = exiting_recipe.steps.at(0);
   if (inst.old_name != "local-scope") return;
   // reclaim any local variables unless they're being returned
-  // TODO: this isn't working yet. Doesn't handle address stored in
-  // containers created by 'copy' or 'merge'. We'd end up deleting the address
-  // even if some container containing it was returned.
-  // This might doom our whole refcounting-based approach :/
-//?   vector<double> zero;
-//?   zero.push_back(0);
-//?   for (int i = /*leave default space for last*/1; i < SIZE(exiting_recipe.steps); ++i) {
-//?     const instruction& inst = exiting_recipe.steps.at(i);
-//?     for (int i = 0; i < SIZE(inst.products); ++i) {
-//?       if (!is_mu_address(inst.products.at(i))) continue;
-//?       // local variables only
-//?       if (has_property(inst.products.at(i), "space")) continue;
-//?       if (has_property(inst.products.at(i), "lookup")) continue;
-//?       if (escaping(inst.products.at(i))) continue;
-//?       trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
-//?       write_memory(inst.products.at(i), zero);
-//?     }
-//?   }
+  vector<double> zeros;
+  for (int i = /*leave default space for last*/1; i < SIZE(exiting_recipe.steps); ++i) {
+    const instruction& inst = exiting_recipe.steps.at(i);
+    for (int i = 0; i < SIZE(inst.products); ++i) {
+      // local variables only
+      if (has_property(inst.products.at(i), "space")) continue;
+      if (has_property(inst.products.at(i), "lookup")) continue;
+      if (has_property(inst.products.at(i), "raw")) continue;  // tests often want to check such locations after they run
+      if (escaping(inst.products.at(i))) continue;
+      trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
+      zeros.resize(size_of(inst.products.at(i)));
+      write_memory(inst.products.at(i), zeros, /*always update refcounts*/-1);
+    }
+  }
+  trace(9999, "mem") << "automatically abandoning " << current_call().default_space << end();
   abandon(current_call().default_space,
           inst.products.at(0).type->right,
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
+//: since we don't decrement refcounts for escaping values above, make sure we
+//: don't increment them when the caller saves them either
+
+:(replace{} "bool should_update_refcounts_in_write_memory(int product_index)")
+bool should_update_refcounts_in_write_memory(int product_index) {
+  assert(Current_routine);  // run-time only
+  if (product_index == -1) return true;
+  assert(product_index >= 0);
+  const instruction& inst = current_instruction();
+  if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
+  if (!contains_key(Recipe, inst.operation)) return true;
+  const recipe& caller = get(Recipe, inst.operation);
+  if (caller.steps.empty()) return true;
+  // if the recipe deosn't begin with 'local-scope', always update refcounts
+  return caller.steps.at(0).old_name != "local-scope";
+}
+
+:(code)
 // is this reagent one of the values returned by the current (reply) instruction?
+// is the corresponding ingredient saved in the caller?
 bool escaping(const reagent& r) {
+  assert(Current_routine);  // run-time only
   // nothing escapes when you fall through past end of recipe
   if (current_step_index() >= SIZE(Current_routine->steps())) return false;
   for (long long i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-    if (r == current_instruction().ingredients.at(i))
+    if (r == current_instruction().ingredients.at(i)) {
+    if (caller_uses_product(i))
       return true;
+    }
   }
   return false;
+}
+
+bool caller_uses_product(int product_index) {
+  assert(Current_routine);  // run-time only
+  assert(!Current_routine->calls.empty());
+  if (Current_routine->calls.size() == 1) return false;
+  const call& caller = *++Current_routine->calls.begin();
+  const instruction& caller_inst = to_instruction(caller);
+  if (product_index >= SIZE(caller_inst.products)) return false;
+  return !is_dummy(caller_inst.products.at(product_index));
 }
 
 void rewrite_default_space_instruction(instruction& curr) {
@@ -283,6 +309,92 @@ void rewrite_default_space_instruction(instruction& curr) {
     raise << "new-default-space can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:address:array:location"));
 }
+
+:(scenario local_scope_ignores_nonlocal_spaces)
+def new-scope [
+  new-default-space
+  x:address:number <- new number:type
+  *x <- copy 34
+  return default-space:address:array:location
+]
+def use-scope [
+  local-scope
+  outer:address:array:location <- next-ingredient
+  0:address:array:location/names:new-scope <- copy outer
+  return *x:address:number/space:1
+]
+def main [
+  1:address:array:location/raw <- new-scope
+  2:number/raw <- use-scope 1:address:array:location/raw
+]
++mem: storing 34 in location 2
+
+:(scenario local_scope_frees_up_addresses_inside_containers)
+container foo [
+  x:number
+  y:address:number
+]
+def main [
+  local-scope
+  x:address:number <- new number:type
+  y:foo <- merge 34, x
+  # x and y are both cleared when main returns
+]
++mem: clearing x:address:number
++mem: decrementing refcount of 1006: 2 -> 1
++mem: clearing y:foo
++mem: decrementing refcount of 1006: 1 -> 0
++mem: automatically abandoning 1006
+
+:(scenario local_scope_returns_addresses_inside_containers)
+container foo [
+  x:number
+  y:address:number
+]
+def f [
+  local-scope
+  x:address:number <- new number:type
+  *x <- copy 12
+  y:foo <- merge 34, x
+  # since y is 'escaping' f, it should not be cleared
+  return y
+]
+def main [
+  1:foo <- f
+  3:number <- get 1:foo, x:offset
+  4:address:number <- get 1:foo, y:offset
+  5:number <- copy *4:address:number
+  1:foo <- put 1:foo, y:offset, 0
+  4:address:number <- copy 0
+]
++mem: storing 34 in location 1
++mem: storing 1006 in location 2
++mem: storing 34 in location 3
+# refcount of 1:foo shouldn't include any stray ones from f
++run: {4: ("address" "number")} <- get {1: "foo"}, {y: "offset"}
++mem: incrementing refcount of 1006: 1 -> 2
+# 1:foo wasn't abandoned/cleared
++run: {5: "number"} <- copy {4: ("address" "number"), "lookup": ()}
++mem: storing 12 in location 5
++run: {1: "foo"} <- put {1: "foo"}, {y: "offset"}, {0: "literal"}
++mem: decrementing refcount of 1006: 2 -> 1
++run: {4: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1006: 1 -> 0
++mem: automatically abandoning 1006
+
+:(scenario local_scope_claims_return_values_when_not_saved)
+def f [
+  local-scope
+  x:address:number <- new number:type
+  reply x:address:number
+]
+def main [
+  f  # doesn't save result
+]
+# x reclaimed
++mem: automatically abandoning 1004
+# f's local scope reclaimed
++mem: automatically abandoning 1000
 
 //:: all recipes must set default-space one way or another
 

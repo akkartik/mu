@@ -90,9 +90,8 @@ void run_current_routine()
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_original_string(current_instruction()) << '\n' << end();
     }
     else {
-      for (int i = 0; i < SIZE(current_instruction().products); ++i) {
-        write_memory(current_instruction().products.at(i), products.at(i));
-      }
+      for (int i = 0; i < SIZE(current_instruction().products); ++i)
+        write_memory(current_instruction().products.at(i), products.at(i), i);
     }
     // End of Instruction
     finish_instruction:;
@@ -267,7 +266,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
   return result;
 }
 
-void write_memory(reagent/*copy*/ x, const vector<double>& data) {
+void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*only when called in the run loop above to save results; -1 otherwise*/ product_index) {
   // Begin Preprocess write_memory(x, data)
   if (!x.type) {
     raise << "can't write to " << to_string(x) << "; no type\n" << end();

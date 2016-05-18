@@ -85,7 +85,7 @@ bool run_interactive(int address) {
   Current_routine = NULL;
   // call run(string) but without the scheduling
   load(string("recipe! interactive [\n") +
-          "local-scope\n" +
+          "new-default-space\n" +  // disable automatic abandon so tests can see changes
           "screen:address:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
           command + "\n" +
