@@ -16,7 +16,6 @@ def main [
 ]
 # successfully parsed
 
-:(scenarios run)
 :(scenario dilated_reagent_with_comment)
 def main [
   {1: number, foo: bar} <- copy 34  # test comment

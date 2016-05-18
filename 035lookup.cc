@@ -319,6 +319,17 @@ def main [
 ]
 +mem: storing 34 in location 3
 
+:(scenario dilated_reagent_in_static_array)
+def main [
+  {1: (array (address number) 3)} <- create-array
+  5:address:number <- new number:type
+  {1: (array (address number) 3)} <- put-index {1: (array (address number) 3)}, 0, 5:address:number
+  *5:address:number <- copy 34
+  6:number <- copy *5:address:number
+]
++run: creating array of size 4
++mem: storing 34 in location 6
+
 :(before "Update PUT_INDEX base in Check")
 if (!canonize_type(base)) break;
 :(before "Update PUT_INDEX index in Check")

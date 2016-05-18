@@ -3,6 +3,7 @@
 // come in handy later for expressing complex types, like "a dictionary from
 // (address to array of charaters) to (list of numbers)".
 
+:(scenarios load)
 :(scenario dilated_reagent_with_nested_brackets)
 def main [
   {1: number, foo: (bar (baz quux))} <- copy 34
@@ -68,32 +69,3 @@ container foo [
 container bar [
 ]
 +parse:   product: {1: ("foo" ("address" "array" "character") ("bar" "number"))}
-
-:(scenario dilated_reagent_in_static_array)
-def main [
-  {1: (array (address number) 3)} <- create-array
-  5:address:number <- new number:type
-  {1: (array (address number) 3)} <- put-index {1: (array (address number) 3)}, 0, 5:address:number
-  *5:address:number <- copy 34
-  6:number <- copy *5:address:number
-]
-+run: creating array of size 4
-+mem: storing 34 in location 6
-
-//: an exception is 'new', which takes a type tree as its ingredient *value*
-
-:(scenario dilated_reagent_with_new)
-def main [
-  x:address:address:number <- new {(address number): type}
-]
-+new: size of ("address" "number") is 1
-
-:(before "End Post-processing(expected_product) When Checking 'new'")
-{
-  string_tree* tmp_type_names = parse_string_tree(expected_product.type->name);
-  delete expected_product.type;
-  expected_product.type = new_type_tree(tmp_type_names);
-  delete tmp_type_names;
-}
-:(before "End Post-processing(type_name) When Converting 'new'")
-type_name = parse_string_tree(type_name);

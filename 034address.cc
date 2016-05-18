@@ -132,6 +132,12 @@ def main [
 ]
 +mem: storing 0 in location 3
 
+:(scenario dilated_reagent_with_new)
+def main [
+  1:address:address:number <- new {(address number): type}
+]
++new: size of ("address" "number") is 1
+
 //: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
 put(Type_ordinal, "type", 0);
@@ -180,7 +186,12 @@ bool product_of_new_is_valid(const instruction& inst) {
     drop_from_type(product, "array");
   }
   reagent/*copy*/ expected_product("x:"+inst.ingredients.at(0).name);
-  // End Post-processing(expected_product) When Checking 'new'
+  {
+    string_tree* tmp_type_names = parse_string_tree(expected_product.type->name);
+    delete expected_product.type;
+    expected_product.type = new_type_tree(tmp_type_names);
+    delete tmp_type_names;
+  }
   return types_strictly_match(product, expected_product);
 }
 
@@ -224,7 +235,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
     if (inst.name == "new") {
       inst.operation = ALLOCATE;
       string_tree* type_name = new string_tree(inst.ingredients.at(0).name);
-      // End Post-processing(type_name) When Converting 'new'
+      type_name = parse_string_tree(type_name);
       type_tree* type = new_type_tree(type_name);
       inst.ingredients.at(0).set_value(size_of(type));
       trace(9992, "new") << "size of " << to_string(type_name) << " is " << inst.ingredients.at(0).value << end();
