@@ -80,10 +80,10 @@ def main [
   4:number <- copy 3:address:array:number
   5:boolean <- equal 2:number, 4:number
 ]
-# reuse
+# both calls to new returned identical addresses
 +mem: storing 1 in location 5
 
-:(scenario refcounts_overwrite)
+:(scenario abandon_on_overwrite)
 def main [
   1:address:number <- new number:type
   # over-writing one allocation with another
@@ -95,7 +95,7 @@ def main [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: automatically abandoning 1000
 
-:(scenario refcounts_call_2)
+:(scenario abandon_after_call)
 def main [
   1:address:number <- new number:type
   # passing in addresses to recipes increments refcount
@@ -117,7 +117,7 @@ def foo [
 +mem: decrementing refcount of 1000: 1 -> 0
 +mem: automatically abandoning 1000
 
-:(scenario refcounts_array)
+:(scenario abandon_on_overwrite_array)
 def main [
   1:number <- copy 30
   # allocate an array
