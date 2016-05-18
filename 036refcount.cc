@@ -278,7 +278,7 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
   const type_info& info = get(Type, type->value);
   if (type->name == "address") {
     assert(type->right && type->right->name != "array");  // array types can't be handled without a full reagent and its value
-    out.push_back(address_element_info(base_offset, new type_tree(*type)));
+    out.push_back(address_element_info(base_offset, new type_tree(*type->right)));
     return true;
   }
   if (info.kind == PRIMITIVE) return true;
@@ -288,7 +288,7 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
     // Compute Container Address Offset(element)
     if (is_mu_address(element)) {
       trace(9993, "transform") << "address at offset " << curr_offset << end();
-      out.push_back(address_element_info(curr_offset, new type_tree(*element.type)));
+      out.push_back(address_element_info(curr_offset, new type_tree(*element.type->right)));
       ++curr_offset;
     }
     else if (is_mu_container(element)) {
@@ -346,13 +346,13 @@ void update_container_refcounts(const reagent& x, const vector<double>& data) {
   const container_metadata& metadata = get(Container_metadata, x.type);
   for (int i = 0; i < SIZE(metadata.address); ++i) {
     const address_element_info& info = metadata.address.at(i);
-    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type));
+    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type)+/*refcount*/1);
   }
   for (map<pair<int, int>, vector<address_element_info> >::const_iterator p = metadata.maybe_address.begin(); p != metadata.maybe_address.end(); ++p) {
     if (data.at(p->first.first) != p->first.second) continue;
     for (int i = 0; i < SIZE(p->second); ++i) {
       const address_element_info& info = p->second.at(i);
-      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type));
+      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type)+/*refcount*/1);
     }
   }
 }
@@ -515,13 +515,19 @@ def main [
 
 :(code)
 bool is_mu_container(const reagent& r) {
-  if (r.type->value == 0) return false;
-  type_info& info = get(Type, r.type->value);
+  return is_mu_container(r.type);
+}
+bool is_mu_container(const type_tree* type) {
+  if (type->value == 0) return false;
+  type_info& info = get(Type, type->value);
   return info.kind == CONTAINER;
 }
 
 bool is_mu_exclusive_container(const reagent& r) {
-  if (r.type->value == 0) return false;
-  type_info& info = get(Type, r.type->value);
+  return is_mu_exclusive_container(r.type);
+}
+bool is_mu_exclusive_container(const type_tree* type) {
+  if (type->value == 0) return false;
+  type_info& info = get(Type, type->value);
   return info.kind == EXCLUSIVE_CONTAINER;
 }

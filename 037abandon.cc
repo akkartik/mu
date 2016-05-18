@@ -16,7 +16,7 @@ def main [
 :(before "End Decrement Reference Count(old_address, payload_type, payload_size)")
 if (old_refcount == 0) {
   trace(9999, "mem") << "automatically abandoning " << old_address << end();
-  abandon(old_address, payload_size);
+  abandon(old_address, payload_type, payload_size);
 }
 
 //: When abandoning addresses we'll save them to a 'free list', segregated by size.
@@ -25,17 +25,46 @@ if (old_refcount == 0) {
 map<int, int> free_list;
 
 :(code)
-void abandon(int address, int size) {
-  trace(9999, "abandon") << "saving in free-list of size " << size << end();
+void abandon(int address, const type_tree* payload_type, int payload_size) {
+  trace(9999, "abandon") << "updating refcounts inside " << address << ": " << to_string(payload_type) << end();
 //?   Total_free += size;
 //?   Num_free++;
 //?   cerr << "abandon: " << size << '\n';
+  // decrement any contained refcounts
+  if (payload_type->name == "array") {
+    reagent element;
+    element.type = copy_array_element(payload_type);
+    int array_length = get_or_insert(Memory, address+/*skip refcount*/1);
+    assert(element.type->name != "array");
+    if (is_mu_address(element)) {
+      for (element.value = address+/*skip refcount*/1+/*skip length*/1; element.value < address+/*skip refcount*/1+/*skip length*/1+array_length; ++element.value)
+        update_refcounts(element, 0);
+    }
+    else if (is_mu_container(element) || is_mu_exclusive_container(element)) {
+      int element_size = size_of(element);
+      vector<double> zeros;
+      zeros.resize(element_size);
+      for (int i = 0; i < array_length; ++i) {
+        element.value = address + /*skip refcount*/1 + /*skip array length*/1 + i*element_size;
+        update_container_refcounts(element, zeros);
+      }
+    }
+  }
+  else if (is_mu_container(payload_type) || is_mu_exclusive_container(payload_type)) {
+    reagent tmp;
+    tmp.value = address + /*skip refcount*/1;
+    tmp.type = new type_tree(*payload_type);
+    vector<double> zeros;
+    zeros.resize(size_of(payload_type));
+    update_container_refcounts(tmp, zeros);
+  }
   // clear memory
-  for (int curr = address; curr < address+size; ++curr)
+  for (int curr = address; curr < address+payload_size; ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  put(Memory, address, get_or_insert(Current_routine->free_list, size));
-  put(Current_routine->free_list, size, address);
+  trace(9999, "abandon") << "saving " << address << " in free-list of size " << payload_size << end();
+  put(Memory, address, get_or_insert(Current_routine->free_list, payload_size));
+  put(Current_routine->free_list, payload_size, address);
 }
 
 :(before "ensure_space(size)" following "case ALLOCATE")
@@ -128,4 +157,82 @@ def main [
 ]
 +run: {10: ("address" "array" "number")} <- new {number: "type"}, {25: "literal"}
 # abandoned array is of old size (20, not 25)
-+abandon: saving in free-list of size 22
++abandon: saving 1000 in free-list of size 22
+
+:(scenario refcounts_abandon_address_in_container)
+# container containing an address
+container foo [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:address:foo <- new foo:type
+  *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
+  1:address:number <- copy 0
+  2:address:foo <- copy 0
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: ("address" "foo")} <- new {foo: "type"}
++mem: incrementing refcount of 1002: 0 -> 1
++run: {2: ("address" "foo"), "lookup": ()} <- put {2: ("address" "foo"), "lookup": ()}, {x: "offset"}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {1: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 2 -> 1
++run: {2: ("address" "foo")} <- copy {0: "literal"}
+# start abandoning container containing address
++mem: decrementing refcount of 1002: 1 -> 0
+# nested abandon
++mem: decrementing refcount of 1000: 1 -> 0
++abandon: saving 1000 in free-list of size 2
+# actually abandon the container containing address
++abandon: saving 1002 in free-list of size 2
+
+# todo: move past dilated reagent
+:(scenario refcounts_abandon_address_in_array)
+def main [
+  1:address:number <- new number:type
+  2:address:array:address:number <- new {(address number): type}, 3
+  *2:address:array:address:number <- put-index *2:address:array:address:number, 1, 1:address:number
+  1:address:number <- copy 0
+  2:address:array:address:number <- copy 0
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: ("address" "array" "address" "number"), "lookup": ()} <- put-index {2: ("address" "array" "address" "number"), "lookup": ()}, {1: "literal"}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {1: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 2 -> 1
++run: {2: ("address" "array" "address" "number")} <- copy {0: "literal"}
+# nested abandon
++mem: decrementing refcount of 1000: 1 -> 0
++abandon: saving 1000 in free-list of size 2
+
+:(scenario refcounts_abandon_address_in_container_in_array)
+# container containing an address
+container foo [
+  x:address:number
+]
+def main [
+  1:address:number <- new number:type
+  2:address:array:foo <- new foo:type, 3
+  3:foo <- merge 1:address:number
+  *2:address:array:foo <- put-index *2:address:array:foo, 1, 3:foo
+  1:address:number <- copy 0
+  3:foo <- merge 0
+  2:address:array:foo <- copy 0
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {3: "foo"} <- merge {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {2: ("address" "array" "foo"), "lookup": ()} <- put-index {2: ("address" "array" "foo"), "lookup": ()}, {1: "literal"}, {3: "foo"}
++mem: incrementing refcount of 1000: 2 -> 3
++run: {1: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 3 -> 2
++run: {3: "foo"} <- merge {0: "literal"}
++mem: decrementing refcount of 1000: 2 -> 1
++run: {2: ("address" "array" "foo")} <- copy {0: "literal"}
+# nested abandon
++mem: decrementing refcount of 1000: 1 -> 0
++abandon: saving 1000 in free-list of size 2

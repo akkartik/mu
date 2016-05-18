@@ -258,6 +258,7 @@ void try_reclaim_locals() {
 //?     }
 //?   }
   abandon(current_call().default_space,
+          inst.products.at(0).type->right,
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
