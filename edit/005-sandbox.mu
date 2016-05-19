@@ -268,10 +268,7 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
     # render sandbox menu
     row <- add row, 1
     screen <- move-cursor screen, row, left
-    print screen, idx, 240/dark-grey
-    clear-line-until screen, right
-    delete-icon:character <- copy 120/x
-    print screen, delete-icon, 245/grey
+    screen <- render-sandbox-menu screen, idx, left, right
     # save menu row so we can detect clicks to it later
     *sandbox <- put *sandbox, starting-row-on-screen:offset, row
     # render sandbox contents
@@ -311,6 +308,23 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
   next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
   next-idx:number <- add idx, 1
   row, screen <- render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx
+]
+
+def render-sandbox-menu screen:address:screen, sandbox-index:number, left:number, right:number -> screen:address:screen [
+  local-scope
+  load-ingredients
+  move-cursor-to-column screen, left
+  print screen, sandbox-index, 240/dark-grey
+  clear-line-until screen, right
+  delete-icon:character <- copy 120/x
+  print screen, delete-icon, 245/grey
+]
+
+def move-cursor-to-column screen:address:screen, column:number -> screen:address:screen [
+  local-scope
+  load-ingredients
+  row:number, _ <- cursor-position screen
+  move-cursor screen, row, column
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
