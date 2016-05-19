@@ -222,7 +222,7 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def clear-line-until screen:address:screen, right:number -> screen:address:screen [
+def clear-line-until screen:address:screen, right:number/inclusive -> screen:address:screen [
   local-scope
   load-ingredients
   _, column:number <- cursor-position screen

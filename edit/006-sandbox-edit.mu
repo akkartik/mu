@@ -2,7 +2,7 @@
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 100/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
@@ -16,32 +16,31 @@ recipe foo [
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  reply 4           ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # click somewhere in the first row of the sandbox
   assume-console [
-    left-click 3, 30
+    left-click 3, 90
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # it pops back into editor
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊foo                .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  reply 4           ┊                   .
-    .]                   ┊                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .
-    .                    ┊                   .
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊foo                                              .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊                                                 .
+    .]                                                 ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
   # cursor should be in the right place
   assume-console [
@@ -51,14 +50,13 @@ recipe foo [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊0foo               .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  reply 4           ┊                   .
-    .]                   ┊                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                   .
-    .                    ┊                   .
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊0foo                                             .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊                                                 .
+    .]                                                 ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -158,7 +156,7 @@ scenario sandbox-with-print-can-be-edited [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊print-integer screen, 4                          .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4                             .               .
@@ -187,7 +185,7 @@ scenario sandbox-with-print-can-be-edited [
 
 scenario editing-sandbox-after-scrolling-resets-scroll [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -205,37 +203,37 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # edit the second sandbox
   assume-console [
-    left-click 2, 20
+    left-click 2, 90
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
-    .                              .
-    .               ┊add 2, 2      .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊add 2, 2                                         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
 scenario editing-sandbox-updates-sandbox-count [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -251,18 +249,20 @@ scenario editing-sandbox-updates-sandbox-count [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊1            x.
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # edit the second sandbox, then resave
   assume-console [
-    left-click 3, 20
+    left-click 3, 90
     press F4
   ]
   run [
@@ -270,14 +270,16 @@ scenario editing-sandbox-updates-sandbox-count [
   ]
   # no change in contents
   screen-should-contain [
-    .                              .
-    .               ┊              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊1            x.
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # now try to scroll past end
   assume-console [
@@ -288,14 +290,14 @@ scenario editing-sandbox-updates-sandbox-count [
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
-  # screen should show just final sandbox
+  # screen should show just final sandbox with the right index (1)
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]

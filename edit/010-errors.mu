@@ -231,7 +231,7 @@ scenario run-hides-errors-from-past-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -259,7 +259,7 @@ z <- add x, y
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .load-ingredients                                  ┊0                                               x.
+    .load-ingredients                                  ┊0   edit          copy            delete         .
     .y:address:number <- copy 0                        ┊foo 2                                            .
     .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t y                                              .
@@ -278,7 +278,7 @@ z <- add x, y
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .load-ingredients                                  ┊0                                               x.
+    .load-ingredients                                  ┊0   edit          copy            delete         .
     .y:address:number <- copy 0                        ┊foo 2                                            .
     .z <- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t y                                              .
@@ -533,7 +533,7 @@ scenario run-instruction-and-print-errors [
     .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
@@ -566,7 +566,7 @@ scenario run-instruction-and-print-errors [
     .                                                                                                    .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                x.
+    .                                                  ┊                                                 .
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
     .                                                  ┊                                                ↩.
@@ -597,7 +597,7 @@ scenario run-instruction-and-print-errors-only-once [
     .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊get 1234:number, foo:offset                      .
     .                                                  ┊unknown element foo in container number          .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
@@ -630,7 +630,7 @@ scenario sandbox-can-handle-infinite-loop [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .    loop                                          ┊0                                               x.
+    .    loop                                          ┊0   edit          copy            delete         .
     .  }                                               ┊foo                                              .
     .]                                                 ┊took too long!                                   .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -662,7 +662,7 @@ reply b
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .a:number <- next-ingredient                       ┊0                                               x.
+    .a:number <- next-ingredient                       ┊0   edit          copy            delete         .
     .b:number <- next-ingredient                       ┊foo 4, 0                                         .
     .stash [dividing by], b                            ┊foo: divide by zero in '_, c:number <- divide-wi↩.
     ._, c:number <- divide-with-remainder a, b         ┊th-remainder a, b'                               .
@@ -681,7 +681,7 @@ reply b
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .a:number <- next-ingredient                       ┊0                                               x.
+    .a:number <- next-ingredient                       ┊0   edit          copy            delete         .
     .b:number <- next-ingredient                       ┊foo 4, 0                                         .
     .stash [dividing by], b                            ┊dividing by 0                                    .
     ._, c:number <- divide-with-remainder a, b         ┊foo: divide by zero in '_, c:number <- divide-wi↩.

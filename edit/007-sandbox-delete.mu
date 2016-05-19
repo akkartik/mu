@@ -19,11 +19,11 @@ scenario deleting-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊1                                               x.
+    .                                                  ┊1   edit          copy            delete         .
     .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -41,7 +41,7 @@ scenario deleting-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0                                               x.
+    .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -140,7 +140,7 @@ def fixup-delete env:address:programming-environment-data, next:address:sandbox-
 
 scenario deleting-sandbox-after-scroll [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -157,36 +157,36 @@ scenario deleting-sandbox-after-scroll [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊1            x.
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
   ]
   # delete the second sandbox
   assume-console [
-    left-click 6, 29
+    left-click 6, 99
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
 scenario deleting-top-sandbox-after-scroll [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -203,36 +203,36 @@ scenario deleting-top-sandbox-after-scroll [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊1            x.
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
   ]
   # delete the second sandbox
   assume-console [
-    left-click 2, 29
+    left-click 2, 99
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
 scenario deleting-final-sandbox-after-scroll [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -250,37 +250,37 @@ scenario deleting-final-sandbox-after-scroll [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # delete the second sandbox
   assume-console [
-    left-click 2, 29
+    left-click 2, 99
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # implicitly scroll up to first sandbox
   screen-should-contain [
-    .                              .
-    .               ┊              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
 scenario deleting-updates-sandbox-count [
   trace-until 100/app  # trace too long
-  assume-screen 30/width, 10/height
+  assume-screen 100/width, 10/height
   # initialize environment
   1:address:array:character <- new []
   2:address:array:character <- new []
@@ -296,20 +296,20 @@ scenario deleting-updates-sandbox-count [
   ]
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                              .
-    .               ┊              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊0            x.
-    .               ┊add 1, 1      .
-    .               ┊2             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊1            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # delete the second sandbox, then try to scroll down twice
   assume-console [
-    left-click 3, 29
+    left-click 3, 99
     press page-down
     press page-down
   ]
@@ -318,12 +318,12 @@ scenario deleting-updates-sandbox-count [
   ]
   # shouldn't go past last sandbox
   screen-should-contain [
-    .                              .
-    .               ┊━━━━━━━━━━━━━━.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.
-    .               ┊add 2, 2      .
-    .               ┊4             .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .                                                                                 run (F4)           .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]

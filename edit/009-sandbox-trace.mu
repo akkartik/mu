@@ -2,7 +2,7 @@
 
 scenario sandbox-click-on-code-toggles-app-trace [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 100/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
@@ -16,17 +16,17 @@ recipe foo [
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  stash [abc]                                     ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # click on the code in the sandbox
   assume-console [
-    left-click 4, 21
+    left-click 4, 51
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -35,28 +35,28 @@ recipe foo [
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .␣                                                 ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  stash [abc]                                     ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 245/grey, [
-    .                                        .
-    .                    ┊                   .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                  x.
-    .                    ┊                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                                    .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # click again on the same region
   assume-console [
-    left-click 4, 25
+    left-click 4, 55
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -64,19 +64,19 @@ recipe foo [
   ]
   # trace hidden again
   screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .␣                                                 ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  stash [abc]                                     ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
 scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 100/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
@@ -91,33 +91,33 @@ recipe foo [
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊0                 x.
-    .  reply 4           ┊foo                .
-    .]                   ┊4                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  stash [abc]                                     ┊0   edit          copy            delete         .
+    .  reply 4                                         ┊foo                                              .
+    .]                                                 ┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # click on the code in the sandbox
   assume-console [
-    left-click 4, 21
+    left-click 4, 51
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # trace now printed above result
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  stash [abc]       ┊0                 x.
-    .  reply 4           ┊foo                .
-    .]                   ┊abc                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  stash [abc]                                     ┊0   edit          copy            delete         .
+    .  reply 4                                         ┊foo                                              .
+    .]                                                 ┊abc                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 

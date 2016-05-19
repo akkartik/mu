@@ -2,7 +2,7 @@
 
 scenario sandbox-click-on-result-toggles-color-to-green [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 100/width, 10/height
   # basic recipe
   1:address:array:character <- new [ 
 recipe foo [
@@ -16,32 +16,32 @@ recipe foo [
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                    ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  reply 4           ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # click on the '4' in the result
   assume-console [
-    left-click 5, 21
+    left-click 5, 51
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                     4                  .
-    .                                        .
-    .                                        .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   4                                                .
+    .                                                                                                    .
+    .                                                                                                    .
   ]
   # cursor should remain unmoved
   run [
@@ -49,14 +49,16 @@ recipe foo [
     print screen:address:screen, 4:character/cursor
   ]
   screen-should-contain [
-    .                     run (F4)           .
-    .␣                   ┊                   .
-    .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.
-    .  reply 4           ┊0                 x.
-    .]                   ┊foo                .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .
-    .                    ┊━━━━━━━━━━━━━━━━━━━.
-    .                    ┊                   .
+    .                                                                                 run (F4)           .
+    .␣                                                 ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
   ]
   # now change the result
   # then rerun
@@ -71,14 +73,14 @@ recipe foo [
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                     3                  .
-    .                                        .
-    .                                        .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                                                                    .
+    .                                                   3                                                .
+    .                                                                                                    .
+    .                                                                                                    .
   ]
 ]
 
