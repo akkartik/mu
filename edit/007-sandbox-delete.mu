@@ -67,7 +67,7 @@ scenario deleting-sandboxes [
 after <global-touch> [
   # on a sandbox delete icon? process delete
   {
-    was-delete?:boolean <- delete-sandbox t, env
+    was-delete?:boolean <- try-delete-sandbox t, env
     break-unless was-delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env
@@ -77,7 +77,7 @@ after <global-touch> [
   }
 ]
 
-def delete-sandbox t:touch-event, env:address:programming-environment-data -> was-delete?:boolean, env:address:programming-environment-data [
+def try-delete-sandbox t:touch-event, env:address:programming-environment-data -> was-delete?:boolean, env:address:programming-environment-data [
   local-scope
   load-ingredients
   click-column:number <- get t, column:offset

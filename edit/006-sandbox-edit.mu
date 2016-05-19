@@ -25,9 +25,69 @@ recipe foo [
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
-  # click somewhere in the first row of the sandbox
+  # click at left edge of edit button
   assume-console [
-    left-click 3, 90
+    left-click 3, 55
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  # it pops back into editor
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊foo                                              .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊                                                 .
+    .]                                                 ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+  # cursor should be in the right place
+  assume-console [
+    type [0]
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊0foo                                             .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊                                                 .
+    .]                                                 ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario clicking-on-a-sandbox-moves-it-to-editor-2 [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 10/height
+  # basic recipe
+  1:address:array:character <- new [ 
+recipe foo [
+  reply 4
+]]
+  # run it
+  2:address:array:character <- new [foo]
+  assume-console [
+    press F4
+  ]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # click at right edge of edit button (just before 'copy')
+  assume-console [
+    left-click 3, 68
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -63,30 +123,45 @@ recipe foo [
 after <global-touch> [
   # below sandbox editor? pop appropriate sandbox contents back into sandbox editor
   {
-    sandbox-left-margin:number <- get *current-sandbox, left:offset
-    click-column:number <- get t, column:offset
-    on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
-    break-unless on-sandbox-side?
-    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
-    break-unless first-sandbox
-    first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
-    click-row:number <- get t, row:offset
-    below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
-    break-unless below-sandbox-editor?
-    empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
-    break-unless empty-sandbox-editor?  # don't clobber existing contents
-    # identify the sandbox to edit and remove it from the sandbox list
-    sandbox:address:sandbox-data <- extract-sandbox env, click-row
-    break-unless sandbox
-    text:address:array:character <- get *sandbox, data:offset
-    current-sandbox <- insert-text current-sandbox, text
-    *env <- put *env, render-from:offset, -1
+    was-edit?:boolean <- try-edit-sandbox t, env
+    break-unless was-edit?
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     loop +next-event:label
   }
+]
+
+def try-edit-sandbox t:touch-event, env:address:programming-environment-data -> was-edit?:boolean, env:address:programming-environment-data [
+  local-scope
+  load-ingredients
+  click-column:number <- get t, column:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  sandbox-left-margin:number <- get *current-sandbox, left:offset
+  on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
+  return-unless on-sandbox-side?, 0/false
+  first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+  return-unless first-sandbox, 0/false
+  first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
+  click-row:number <- get t, row:offset
+  below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
+  return-unless below-sandbox-editor?, 0/false
+  empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
+  return-unless empty-sandbox-editor?, 0/false  # don't clobber existing contents
+  sandbox-right-margin:number <- get *current-sandbox, right:offset
+  edit-button-left:number, edit-button-right:number, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  left-of-edit-button?:boolean <- lesser-than click-column, edit-button-left
+  return-if left-of-edit-button?, 0/false
+  right-of-edit-button?:boolean <- greater-than click-column, edit-button-right
+  return-if right-of-edit-button?, 0/false
+  # identify the sandbox to edit and remove it from the sandbox list
+  sandbox:address:sandbox-data <- extract-sandbox env, click-row
+  return-unless sandbox, 0/false
+  text:address:array:character <- get *sandbox, data:offset
+  current-sandbox <- insert-text current-sandbox, text
+  *env <- put *env, render-from:offset, -1
+  return 1/true
 ]
 
 def empty-editor? editor:address:editor-data -> result:boolean [
@@ -169,7 +244,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   # edit the sandbox
   assume-console [
-    left-click 3, 70
+    left-click 3, 65
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -213,7 +288,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   ]
   # edit the second sandbox
   assume-console [
-    left-click 2, 90
+    left-click 2, 55
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -262,7 +337,7 @@ scenario editing-sandbox-updates-sandbox-count [
   ]
   # edit the second sandbox, then resave
   assume-console [
-    left-click 3, 90
+    left-click 3, 60
     press F4
   ]
   run [

@@ -218,7 +218,7 @@ scenario run-hides-errors-from-past-sandboxes [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   ]
   assume-console [
-    left-click 3, 80
+    left-click 3, 58
     press ctrl-k
     type [add 2, 2]  # valid code
     press F4  # update sandbox
