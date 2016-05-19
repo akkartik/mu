@@ -336,10 +336,12 @@ void deduce_types_from_header(const recipe_ordinal r) {
   trace(9991, "transform") << "--- deduce types from header for " << caller_recipe.name << end();
   map<string, const type_tree*> header_type;
   for (int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
+    if (!caller_recipe.ingredients.at(i).type) continue;  // error handled elsewhere
     put(header_type, caller_recipe.ingredients.at(i).name, caller_recipe.ingredients.at(i).type);
     trace(9993, "transform") << "type of " << caller_recipe.ingredients.at(i).name << " is " << names_to_string(caller_recipe.ingredients.at(i).type) << end();
   }
   for (int i = 0; i < SIZE(caller_recipe.products); ++i) {
+    if (!caller_recipe.products.at(i).type) continue;  // error handled elsewhere
     put(header_type, caller_recipe.products.at(i).name, caller_recipe.products.at(i).type);
     trace(9993, "transform") << "type of " << caller_recipe.products.at(i).name << " is " << names_to_string(caller_recipe.products.at(i).type) << end();
   }
@@ -350,8 +352,8 @@ void deduce_types_from_header(const recipe_ordinal r) {
       if (inst.ingredients.at(i).type) continue;
       if (header_type.find(inst.ingredients.at(i).name) == header_type.end())
         continue;
-      if (!inst.ingredients.at(i).type)
-        inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
+      if (!contains_key(header_type, inst.ingredients.at(i).name)) continue;  // error handled elsewhere
+      inst.ingredients.at(i).type = new type_tree(*get(header_type, inst.ingredients.at(i).name));
       trace(9993, "transform") << "type of " << inst.ingredients.at(i).name << " is " << names_to_string(inst.ingredients.at(i).type) << end();
     }
     for (int i = 0; i < SIZE(inst.products); ++i) {
@@ -359,8 +361,8 @@ void deduce_types_from_header(const recipe_ordinal r) {
       if (inst.products.at(i).type) continue;
       if (header_type.find(inst.products.at(i).name) == header_type.end())
         continue;
-      if (!inst.products.at(i).type)
-        inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
+      if (!contains_key(header_type, inst.products.at(i).name)) continue;  // error handled elsewhere
+      inst.products.at(i).type = new type_tree(*get(header_type, inst.products.at(i).name));
       trace(9993, "transform") << "type of " << inst.products.at(i).name << " is " << names_to_string(inst.products.at(i).type) << end();
     }
   }

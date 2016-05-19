@@ -65,10 +65,12 @@ scenario deleting-sandboxes [
 ]
 
 after <global-touch> [
-  # on a sandbox delete icon? process delete
+  # support 'delete' button
   {
-    was-delete?:boolean <- try-delete-sandbox t, env
-    break-unless was-delete?
+    delete?:boolean <- should-attempt-delete? click-row, click-column, env
+    break-unless delete?
+    delete?, env <- try-delete-sandbox click-row, env
+    break-unless delete?
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
@@ -77,63 +79,70 @@ after <global-touch> [
   }
 ]
 
-def try-delete-sandbox t:touch-event, env:address:programming-environment-data -> was-delete?:boolean, env:address:programming-environment-data [
+# some preconditions for attempting to delete a sandbox
+def should-attempt-delete? click-row:number, click-column:number, env:address:programming-environment-data -> result:boolean [
   local-scope
   load-ingredients
-  click-column:number <- get t, column:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  right:number <- get *current-sandbox, right:offset
-  at-right?:boolean <- equal click-column, right
-  return-unless at-right?, 0/false
-  click-row:number <- get t, row:offset
-  {
-    first:address:sandbox-data <- get *env, sandbox:offset
-    reply-unless first, 0/false
-    target-row:number <- get *first, starting-row-on-screen:offset
-    delete-first?:boolean <- equal target-row, click-row
-    break-unless delete-first?
-    new-first:address:sandbox-data <- get *first, next-sandbox:offset
-    *env <- put *env, sandbox:offset, new-first
-    env <- fixup-delete env, new-first
-    return 1/true  # force rerender
-  }
-  prev:address:sandbox-data <- get *env, sandbox:offset
-  assert prev, [failed to find any sandboxes!]
-  curr:address:sandbox-data <- get *prev, next-sandbox:offset
-  {
-    break-unless curr
-    # more sandboxes to check
-    {
-      target-row:number <- get *curr, starting-row-on-screen:offset
-      delete-curr?:boolean <- equal target-row, click-row
-      break-unless delete-curr?
-      # delete this sandbox
-      next:address:sandbox-data <- get *curr, next-sandbox:offset
-      *prev <- put *prev, next-sandbox:offset, next
-      env <- fixup-delete env, next
-      return 1/true  # force rerender
-    }
-    prev <- copy curr
-    curr <- get *curr, next-sandbox:offset
-    loop
-  }
-  return 0/false
+  # are we below the sandbox editor?
+  click-sandbox-area?:boolean <- click-on-sandbox-area? click-row, click-column, env
+  reply-unless click-sandbox-area?, 0/false
+  # narrower, is the click in the columns spanning the 'copy' button?
+  first-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  assert first-sandbox, [!!]
+  sandbox-left-margin:number <- get *first-sandbox, left:offset
+  sandbox-right-margin:number <- get *first-sandbox, right:offset
+  _, _, _, _, delete-button-left:number <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  result <- within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
-def fixup-delete env:address:programming-environment-data, next:address:sandbox-data -> env:address:programming-environment-data [
+def try-delete-sandbox click-row:number, env:address:programming-environment-data -> clicked-on-delete-button?:boolean, env:address:programming-environment-data [
   local-scope
   load-ingredients
+  # identify the sandbox to delete, if the click was actually on the 'delete' button
+  sandbox:address:sandbox-data <- find-sandbox env, click-row
+  return-unless sandbox, 0/false
+  clicked-on-delete-button? <- copy 1/true
+  env <- delete-sandbox env, sandbox
+]
+
+def delete-sandbox env:address:programming-environment-data, sandbox:address:sandbox-data -> env:address:programming-environment-data [
+  local-scope
+  load-ingredients
+  curr-sandbox:address:sandbox-data <- get *env, sandbox:offset
+  first-sandbox?:boolean <- equal curr-sandbox, sandbox
+  {
+    # first sandbox? pop
+    break-unless first-sandbox?
+    next-sandbox:address:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+    *env <- put *env, sandbox:offset, next-sandbox
+  }
+  {
+    # not first sandbox?
+    break-if first-sandbox?
+    prev-sandbox:address:sandbox-data <- copy curr-sandbox
+    curr-sandbox <- get *curr-sandbox, next-sandbox:offset
+    {
+      assert curr-sandbox, [sandbox not found! something is wrong.]
+      found?:boolean <- equal curr-sandbox, sandbox
+      break-if found?
+      prev-sandbox <- copy curr-sandbox
+      curr-sandbox <- get *curr-sandbox, next-sandbox:offset
+      loop
+    }
+    # snip sandbox out of its list
+    next-sandbox:address:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+    *prev-sandbox <- put *prev-sandbox, next-sandbox:offset, next-sandbox
+  }
   # update sandbox count
   sandbox-count:number <- get *env, number-of-sandboxes:offset
   sandbox-count <- subtract sandbox-count, 1
   *env <- put *env, number-of-sandboxes:offset, sandbox-count
+  # reset scroll if deleted sandbox was last
   {
-    break-if next
-    # deleted sandbox was last
+    break-if next-sandbox
     render-from:number <- get *env, render-from:offset
     reset-scroll?:boolean <- equal render-from, sandbox-count
     break-unless reset-scroll?
-    # deleted sandbox was only sandbox rendered, so reset scroll
     *env <- put *env, render-from:offset, -1
   }
 ]
