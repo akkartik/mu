@@ -310,25 +310,6 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.products.push_back(reagent("default-space:address:array:location"));
 }
 
-:(scenario local_scope_ignores_nonlocal_spaces)
-def new-scope [
-  new-default-space
-  x:address:number <- new number:type
-  *x <- copy 34
-  return default-space:address:array:location
-]
-def use-scope [
-  local-scope
-  outer:address:array:location <- next-ingredient
-  0:address:array:location/names:new-scope <- copy outer
-  return *x:address:number/space:1
-]
-def main [
-  1:address:array:location/raw <- new-scope
-  2:number/raw <- use-scope 1:address:array:location/raw
-]
-+mem: storing 34 in location 2
-
 :(scenario local_scope_frees_up_addresses_inside_containers)
 container foo [
   x:number
@@ -337,7 +318,7 @@ container foo [
 def main [
   local-scope
   x:address:number <- new number:type
-  y:foo <- merge 34, x
+  y:foo <- merge 34, x:address:number
   # x and y are both cleared when main returns
 ]
 +mem: clearing x:address:number
@@ -354,10 +335,10 @@ container foo [
 def f [
   local-scope
   x:address:number <- new number:type
-  *x <- copy 12
-  y:foo <- merge 34, x
+  *x:address:number <- copy 12
+  y:foo <- merge 34, x:address:number
   # since y is 'escaping' f, it should not be cleared
-  return y
+  return y:foo
 ]
 def main [
   1:foo <- f
