@@ -273,7 +273,7 @@ def editor-render screen:address:screen, editor:address:editor-data -> screen:ad
   left:number <- get *editor, left:offset
   right:number <- get *editor, right:offset
   row:number, column:number <- render screen, editor
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   row <- add row, 1
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1

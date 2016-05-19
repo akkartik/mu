@@ -269,7 +269,7 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
     row <- add row, 1
     screen <- move-cursor screen, row, left
     print screen, idx, 240/dark-grey
-    clear-line-delimited screen, left, right
+    clear-line-until screen, right
     delete-icon:character <- copy 120/x
     print screen, delete-icon, 245/grey
     # save menu row so we can detect clicks to it later

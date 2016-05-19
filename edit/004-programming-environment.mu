@@ -411,7 +411,7 @@ def render-recipes screen:address:screen, env:address:programming-environment-da
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
   row:number, column:number, screen <- render screen, recipes
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   row <- add row, 1
   <render-recipe-components-end>
   # draw dotted line after recipes
@@ -428,7 +428,7 @@ def render-sandbox-side screen:address:screen, env:address:programming-environme
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
   row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right, 9473/horizontal
@@ -507,7 +507,7 @@ def render screen:address:screen, s:address:array:character, left:number, right:
     loop
   }
   was-at-left?:boolean <- equal column, left
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   {
     break-if was-at-left?
     row <- add row, 1
@@ -570,7 +570,7 @@ def render-code screen:address:screen, s:address:array:character, left:number, r
     loop
   }
   was-at-left?:boolean <- equal column, left
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   {
     break-if was-at-left?
     row <- add row, 1

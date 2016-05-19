@@ -172,7 +172,7 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
         before-cursor <- prev curr
       }
       # clear rest of line in this window
-      clear-line-delimited screen, column, right
+      clear-line-until screen, right
       # skip to next line
       row <- add row, 1
       column <- copy left
@@ -222,9 +222,10 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def clear-line-delimited screen:address:screen, column:number, right:number -> screen:address:screen [
+def clear-line-until screen:address:screen, right:number -> screen:address:screen [
   local-scope
   load-ingredients
+  _, column:number <- cursor-position screen
   space:character <- copy 32/space
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
@@ -252,7 +253,7 @@ def clear-screen-from screen:address:screen, row:number, column:number, left:num
   }
   # if not, go the slower route
   screen <- move-cursor screen, row, column
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
   return screen/same-as-ingredient:0
 ]
@@ -267,7 +268,7 @@ def clear-rest-of-screen screen:address:screen, row:number, left:number, right:n
     at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
     break-if at-bottom-of-screen?
     screen <- move-cursor screen, row, left
-    clear-line-delimited screen, left, right
+    clear-line-until screen, right
     row <- add row, 1
     loop
   }
