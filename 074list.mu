@@ -47,6 +47,15 @@ scenario list-handling [
   ]
 ]
 
+def length l:address:list:_elem -> result:number [
+  local-scope
+  load-ingredients
+  return-unless l, 0
+  rest:address:list:_elem <- rest l
+  length-of-rest:number <- length rest
+  result <- add length-of-rest, 1
+]
+
 def to-text in:address:list:_elem -> result:address:array:character [
   local-scope
   load-ingredients
