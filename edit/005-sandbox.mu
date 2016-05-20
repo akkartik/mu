@@ -321,18 +321,18 @@ def render-sandbox-menu screen:address:screen, sandbox-index:number, left:number
   print screen, sandbox-index, 232/dark-grey, 245/grey
   start-buttons:number <- subtract edit-button-left, 1
   clear-line-until screen, start-buttons, 245/grey
-  print screen, [edit], 232/black, 130/background-orange
-  clear-line-until screen, edit-button-right, 130/background-orange
+  print screen, [edit], 232/black, 94/background-orange
+  clear-line-until screen, edit-button-right, 94/background-orange
   _, col:number <- cursor-position screen
   at-start-of-copy-button?:boolean <- equal col, copy-button-left
   assert at-start-of-copy-button?, [aaa]
-  print screen, [copy], 232/black, 28/background-green
-  clear-line-until screen, copy-button-right, 28/background-green
+  print screen, [copy], 232/black, 58/background-green
+  clear-line-until screen, copy-button-right, 58/background-green
   _, col:number <- cursor-position screen
   at-start-of-delete-button?:boolean <- equal col, delete-button-left
   assert at-start-of-delete-button?, [bbb]
-  print screen, [delete], 232/black, 124/background-red
-  clear-line-until screen, right, 124/background-red
+  print screen, [delete], 232/black, 52/background-red
+  clear-line-until screen, right, 52/background-red
 ]
 
 # divide up the menu bar for a sandbox into 3 segments, for edit/copy/delete buttons
