@@ -353,13 +353,6 @@ def sandbox-menu-columns left:number, right:number -> edit-button-left:number, e
   copy-button-right:number <- subtract delete-button-left, 1
 ]
 
-def move-cursor-to-column screen:address:screen, column:number -> screen:address:screen [
-  local-scope
-  load-ingredients
-  row:number, _ <- cursor-position screen
-  move-cursor screen, row, column
-]
-
 # assumes programming environment has no sandboxes; restores them from previous session
 def restore-sandboxes env:address:programming-environment-data -> env:address:programming-environment-data [
   local-scope

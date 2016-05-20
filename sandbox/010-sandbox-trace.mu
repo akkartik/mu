@@ -2,7 +2,7 @@
 
 scenario sandbox-click-on-code-toggles-app-trace [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 50/width, 10/height
   # run a stash instruction
   1:address:array:character <- new [stash [abc]]
   assume-console [
@@ -11,13 +11,13 @@ scenario sandbox-click-on-code-toggles-app-trace [
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                                        .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .stash [abc]                             .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .stash [abc]                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # click on the code in the sandbox
   assume-console [
@@ -30,24 +30,24 @@ scenario sandbox-click-on-code-toggles-app-trace [
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
-    .                     run (F4)           .
-    .␣                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .stash [abc]                             .
-    .abc                                     .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                               run (F4)           .
+    .␣                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .stash [abc]                                       .
+    .abc                                               .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   screen-should-contain-in-color 245/grey, [
-    .                                        .
-    .                                        .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                       x.
-    .                                        .
-    .abc                                     .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                                                  .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
+    .                                                  .
+    .abc                                               .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # click again on the same region
   assume-console [
@@ -59,19 +59,19 @@ scenario sandbox-click-on-code-toggles-app-trace [
   ]
   # trace hidden again
   screen-should-contain [
-    .                     run (F4)           .
-    .␣                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .stash [abc]                             .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                               run (F4)           .
+    .␣                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .stash [abc]                                       .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
 ]
 
 scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 50/width, 10/height
   # run a stash instruction and some code
   1:address:array:character <- new [stash [abc]
 add 2, 2]
@@ -81,15 +81,15 @@ add 2, 2]
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                                        .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .stash [abc]                             .
-    .add 2, 2                                .
-    .4                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .stash [abc]                                       .
+    .add 2, 2                                          .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # click on the code in the sandbox
   assume-console [
@@ -100,16 +100,16 @@ add 2, 2]
   ]
   # trace now printed above result
   screen-should-contain [
-    .                     run (F4)           .
-    .                                        .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .stash [abc]                             .
-    .add 2, 2                                .
-    .abc                                     .
-    .4                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .stash [abc]                                       .
+    .add 2, 2                                          .
+    .abc                                               .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
 ]
 

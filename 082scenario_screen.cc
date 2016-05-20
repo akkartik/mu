@@ -234,6 +234,7 @@ void check_screen(const string& expected_contents, const int color) {
         if (Current_scenario && !Scenario_testing_scenario) {
           // genuine test in a mu file
           raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
+          dump_screen();
         }
         else {
           // just testing check_screen

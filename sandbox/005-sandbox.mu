@@ -3,6 +3,9 @@
 # Running code in the sandbox editor prepends its contents to a list of
 # (non-editable) sandboxes below the editor, showing the result and a maybe
 # few other things.
+#
+# This layer draws the menubar buttons non-editable sandboxes but they don't
+# do anything yet. Later layers implement each button.
 
 container programming-environment-data [
   sandbox:address:sandbox-data  # list of sandboxes, from top to bottom
@@ -43,7 +46,7 @@ scenario run-and-show-results [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .divide-with-remainder 11, 3                       .
     .3                                                 .
     .2                                                 .
@@ -65,19 +68,12 @@ scenario run-and-show-results [
     .                                                  .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                 x.
+    .                                                  .
     .                                                  .
     .3                                                 .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
-  ]
-  # sandbox title in reverse video
-  screen-should-contain-in-color 240/dark-grey, [
-    .                                                  .
-    .                                                  .
-    .                                                  .
-    .0                                                 .
   ]
   # run another command
   assume-console [
@@ -93,11 +89,11 @@ scenario run-and-show-results [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .divide-with-remainder 11, 3                       .
     .3                                                 .
     .2                                                 .
@@ -260,10 +256,7 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
     # render sandbox menu
     row <- add row, 1
     screen <- move-cursor screen, row, left
-    print screen, idx, 240/dark-grey
-    clear-line-until screen, right
-    delete-icon:character <- copy 120/x
-    print screen, delete-icon, 245/grey
+    screen <- render-sandbox-menu screen, idx, left, right
     # save menu row so we can detect clicks to it later
     *sandbox <- put *sandbox, starting-row-on-screen:offset, row
     # render sandbox contents
@@ -303,6 +296,46 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
   next-sandbox:address:sandbox-data <- get *sandbox, next-sandbox:offset
   next-idx:number <- add idx, 1
   row, screen <- render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx, env
+]
+
+def render-sandbox-menu screen:address:screen, sandbox-index:number, left:number, right:number -> screen:address:screen [
+  local-scope
+  load-ingredients
+  move-cursor-to-column screen, left
+  edit-button-left:number, edit-button-right:number, copy-button-left:number, copy-button-right:number, delete-button-left:number <- sandbox-menu-columns left, right
+  print screen, sandbox-index, 232/dark-grey, 245/grey
+  start-buttons:number <- subtract edit-button-left, 1
+  clear-line-until screen, start-buttons, 245/grey
+  print screen, [edit], 232/black, 94/background-orange
+  clear-line-until screen, edit-button-right, 94/background-orange
+  _, col:number <- cursor-position screen
+  at-start-of-copy-button?:boolean <- equal col, copy-button-left
+  assert at-start-of-copy-button?, [aaa]
+  print screen, [copy], 232/black, 58/background-green
+  clear-line-until screen, copy-button-right, 58/background-green
+  _, col:number <- cursor-position screen
+  at-start-of-delete-button?:boolean <- equal col, delete-button-left
+  assert at-start-of-delete-button?, [bbb]
+  print screen, [delete], 232/black, 52/background-red
+  clear-line-until screen, right, 52/background-red
+]
+
+# divide up the menu bar for a sandbox into 3 segments, for edit/copy/delete buttons
+# delete-button-right == right
+# all left/right pairs are inclusive
+def sandbox-menu-columns left:number, right:number -> edit-button-left:number, edit-button-right:number, copy-button-left:number, copy-button-right:number, delete-button-left:number [
+  local-scope
+  load-ingredients
+  start-buttons:number <- add left, 4/space-for-sandbox-index
+  buttons-space:number <- subtract right, start-buttons
+  button-width:number <- divide-with-remainder buttons-space, 3  # integer division
+  buttons-wide-enough?:boolean <- greater-or-equal button-width, 8
+  assert buttons-wide-enough?, [sandbox must be at least 30 or so characters wide]
+  edit-button-left:number <- copy start-buttons
+  copy-button-left:number <- add start-buttons, button-width
+  edit-button-right:number <- subtract copy-button-left, 1
+  delete-button-left:number <- subtract right, button-width
+  copy-button-right:number <- subtract delete-button-left, 1
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
@@ -427,7 +460,7 @@ return z
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -451,7 +484,7 @@ return z
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .5                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -477,7 +510,7 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .print-integer screen, 4                           .
     .screen:                                           .
     .  .4                             .                .
@@ -545,7 +578,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -565,7 +598,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .␣                                                x.
+    .␣   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -585,7 +618,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .                               run (F4)           .
     .␣                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -687,11 +720,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                               run (F4)           .
     .␣                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -711,11 +744,11 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .␣                                                x.
+    .␣   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -732,7 +765,7 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -749,7 +782,7 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -766,11 +799,11 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -790,11 +823,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                               run (F4)           .
     .␣                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -814,11 +847,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                               run (F4)           .
     .␣                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -844,7 +877,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -862,7 +895,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -880,7 +913,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -898,7 +931,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.  # no change
+    .0   edit           copy           delete          .  # no change
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.

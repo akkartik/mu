@@ -74,6 +74,8 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
       touch-type:number <- get t, type:offset
       is-left-click?:boolean <- equal touch-type, 65513/mouse-left
       loop-unless is-left-click?, +next-event:label
+      click-row:number <- get t, row:offset
+      click-column:number <- get t, column:offset
       # later exceptions for non-editor touches will go here
       <global-touch>
       move-cursor-in-editor screen, current-sandbox, t

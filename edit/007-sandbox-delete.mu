@@ -30,9 +30,9 @@ scenario deleting-sandboxes [
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
-  # delete second sandbox
+  # delete second sandbox by clicking on left edge of 'delete' button
   assume-console [
-    left-click 7, 99
+    left-click 7, 85
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -48,7 +48,7 @@ scenario deleting-sandboxes [
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
   ]
-  # delete first sandbox
+  # delete first sandbox by clicking at right edge of 'delete' button
   assume-console [
     left-click 3, 99
   ]

@@ -143,7 +143,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: unknown element foo in container number      .
     .foo: first ingredient of 'get' should be a contai↩.
@@ -233,7 +233,7 @@ scenario run-hides-errors-from-past-sandboxes [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -261,7 +261,7 @@ z <- add x, y
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_2: 'add' requires number ingredients, but got↩.
     . y                                                .
@@ -280,7 +280,7 @@ z <- add x, y
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_3: 'add' requires number ingredients, but got↩.
     . y                                                .
@@ -356,7 +356,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: missing type for x in 'x <- copy 0'          .
     .foo: can't copy 0 to x; types don't match         .
@@ -388,7 +388,7 @@ def foo «
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .9: unbalanced '\\\[' for recipe                      .
     .9: unbalanced '\\\[' for recipe                      .
@@ -418,7 +418,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: first ingredient of 'get' should be a contai↩.
     .ner, but got x:address:point                      .
@@ -447,7 +447,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: second ingredient of 'get' should have type ↩.
     .'offset', but got x:number                        .
@@ -473,7 +473,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: use before set: y                            .
   ]
@@ -488,7 +488,7 @@ def foo [
     .  errors found                 run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo                                               .
     .foo: use before set: y                            .
   ]
@@ -509,7 +509,7 @@ scenario run-instruction-and-print-errors [
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .get 1:address:point, 1:offset                     .
     .first ingredient of 'get' should be a container, ↩.
     .but got 1:address:point                           .
@@ -548,7 +548,7 @@ scenario run-instruction-and-print-errors-only-once [
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .get 1234:number, foo:offset                       .
     .unknown element foo in container number           .
     .first ingredient of 'get' should be a container, ↩.
@@ -577,7 +577,7 @@ loop
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .{                                                 .
     .loop                                              .
     .}                                                 .
@@ -611,7 +611,7 @@ return b
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo 4, 0                                          .
     .foo: divide by zero in '_, c:number <- divide-wit↩.
     .h-remainder a, b'                                 .
@@ -630,7 +630,7 @@ return b
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .foo 4, 0                                          .
     .dividing by 0                                     .
     .foo: divide by zero in '_, c:number <- divide-wit↩.

@@ -222,26 +222,6 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def clear-line-until screen:address:screen, right:number/inclusive -> screen:address:screen [
-  local-scope
-  load-ingredients
-  _, column:number <- cursor-position screen
-  space:character <- copy 32/space
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
-  {
-    # default bg-color to black
-    break-if bg-color-found?
-    bg-color <- copy 0/black
-  }
-  {
-    done?:boolean <- greater-than column, right
-    break-if done?
-    screen <- print screen, space, 7/white, bg-color  # foreground color is mostly unused except if the cursor shows up at this cell
-    column <- add column, 1
-    loop
-  }
-]
-
 def clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number -> screen:address:screen [
   local-scope
   load-ingredients

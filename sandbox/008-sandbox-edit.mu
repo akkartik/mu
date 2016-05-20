@@ -2,7 +2,7 @@
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
   trace-until 100/app  # trace too long
-  assume-screen 40/width, 10/height
+  assume-screen 50/width, 10/height
   # run something
   1:address:array:character <- new [add 2, 2]
   assume-console [
@@ -11,36 +11,28 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
-    .                     run (F4)           .
-    .                                        .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                      x.
-    .add 2, 2                                .
-    .4                                       .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
-    .                                        .
-    .                                        .
+    .                               run (F4)           .
+    .                                                  .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .0   edit           copy           delete          .
+    .add 2, 2                                          .
+    .4                                                 .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # click somewhere on the sandbox
   assume-console [
-    left-click 3, 0
+    left-click 3, 4
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   # it pops back into editor
   screen-should-contain [
-    .                     run (F4)           .
-    .add 2, 2                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
+    .                               run (F4)           .
+    .add 2, 2                                          .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
   # cursor should be in the right place
   assume-console [
@@ -50,40 +42,20 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   ]
   screen-should-contain [
-    .                     run (F4)           .
-    .0add 2, 2                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
-    .                                        .
+    .                               run (F4)           .
+    .0add 2, 2                                         .
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  .
   ]
 ]
 
 after <global-touch> [
-  # below editor? pop appropriate sandbox contents back into sandbox editor provided it's empty
+  # support 'edit' button
   {
-    sandbox-left-margin:number <- get *current-sandbox, left:offset
-    click-column:number <- get t, column:offset
-    on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
-    break-unless on-sandbox-side?
-    first-sandbox:address:sandbox-data <- get *env, sandbox:offset
-    break-unless first-sandbox
-    first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
-    click-row:number <- get t, row:offset
-    below-sandbox-editor?:boolean <- greater-or-equal click-row, first-sandbox-begins
-    break-unless below-sandbox-editor?
-    empty-sandbox-editor?:boolean <- empty-editor? current-sandbox
-    break-unless empty-sandbox-editor?  # don't clobber existing contents
-    # identify the sandbox to edit and remove it from the sandbox list
-    sandbox:address:sandbox-data <- extract-sandbox env, click-row
-    break-unless sandbox
-    text:address:array:character <- get *sandbox, data:offset
-    current-sandbox <- insert-text current-sandbox, text
-    *env <- put *env, render-from:offset, -1
+    edit?:boolean <- should-attempt-edit? click-row, click-column, env
+    break-unless edit?
+    edit?, env <- try-edit-sandbox click-row, env
+    break-unless edit?
     hide-screen screen
     screen <- render-sandbox-side screen, env
     screen <- update-cursor screen, current-sandbox, env
@@ -92,52 +64,40 @@ after <global-touch> [
   }
 ]
 
-def empty-editor? editor:address:editor-data -> result:boolean [
+# some preconditions for attempting to edit a sandbox
+def should-attempt-edit? click-row:number, click-column:number, env:address:programming-environment-data -> result:boolean [
   local-scope
   load-ingredients
-  head:address:duplex-list:character <- get *editor, data:offset
-  first:address:duplex-list:character <- next head
-  result <- not first
+  # are we below the sandbox editor?
+  click-sandbox-area?:boolean <- click-on-sandbox-area? click-row, env
+  reply-unless click-sandbox-area?, 0/false
+  # narrower, is the click in the columns spanning the 'edit' button?
+  first-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  assert first-sandbox, [!!]
+  sandbox-left-margin:number <- get *first-sandbox, left:offset
+  sandbox-right-margin:number <- get *first-sandbox, right:offset
+  edit-button-left:number, edit-button-right:number, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  edit-button-vertical-area?:boolean <- within-range? click-column, edit-button-left, edit-button-right
+  reply-unless edit-button-vertical-area?, 0/false
+  # finally, is sandbox editor empty?
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  result <- empty-editor? current-sandbox
 ]
 
-def extract-sandbox env:address:programming-environment-data, click-row:number -> result:address:sandbox-data, env:address:programming-environment-data [
+def try-edit-sandbox click-row:number, env:address:programming-environment-data -> clicked-on-edit-button?:boolean, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  curr-sandbox:address:sandbox-data <- get *env, sandbox:offset
-  start:number <- get *curr-sandbox, starting-row-on-screen:offset
-  in-editor?:boolean <- lesser-than click-row, start
-  return-if in-editor?, 0
-  first-sandbox?:boolean <- equal click-row, start
-  {
-    # first sandbox? pop
-    break-unless first-sandbox?
-    next-sandbox:address:sandbox-data <- get *curr-sandbox, next-sandbox:offset
-    *env <- put *env, sandbox:offset, next-sandbox
-  }
-  {
-    # not first sandbox?
-    break-if first-sandbox?
-    prev-sandbox:address:sandbox-data <- copy curr-sandbox
-    curr-sandbox <- get *curr-sandbox, next-sandbox:offset
-    {
-      next-sandbox:address:sandbox-data <- get *curr-sandbox, next-sandbox:offset
-      break-unless next-sandbox
-      # if click-row < sandbox.next-sandbox.starting-row-on-screen, break
-      next-start:number <- get *next-sandbox, starting-row-on-screen:offset
-      found?:boolean <- lesser-than click-row, next-start
-      break-if found?
-      prev-sandbox <- copy curr-sandbox
-      curr-sandbox <- copy next-sandbox
-      loop
-    }
-    # snip sandbox out of its list
-    *prev-sandbox <- put *prev-sandbox, next-sandbox:offset, next-sandbox
-  }
-  result <- copy curr-sandbox
-  # update sandbox count
-  sandbox-count:number <- get *env, number-of-sandboxes:offset
-  sandbox-count <- subtract sandbox-count, 1
-  *env <- put *env, number-of-sandboxes:offset, sandbox-count
+  # identify the sandbox to edit, if the click was actually on the 'edit' button
+  sandbox:address:sandbox-data <- find-sandbox env, click-row
+  return-unless sandbox, 0/false
+  clicked-on-edit-button? <- copy 1/true
+  # 'edit' button = 'copy' button + 'delete' button
+  text:address:array:character <- get *sandbox, data:offset
+  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox <- insert-text current-sandbox, text
+  env <- delete-sandbox env, sandbox
+  # reset scroll
+  *env <- put *env, render-from:offset, -1
 ]
 
 scenario sandbox-with-print-can-be-edited [
@@ -155,7 +115,7 @@ scenario sandbox-with-print-can-be-edited [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .print-integer screen, 4                           .
     .screen:                                           .
     .  .4                             .                .
@@ -168,7 +128,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   # edit the sandbox
   assume-console [
-    left-click 3, 70
+    left-click 3, 18
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -203,7 +163,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -211,7 +171,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   ]
   # edit the second sandbox
   assume-console [
-    left-click 2, 20
+    left-click 2, 10
   ]
   run [
     event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
@@ -221,7 +181,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     .                               run (F4)           .
     .add 2, 2                                          .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -249,15 +209,15 @@ scenario editing-sandbox-updates-sandbox-count [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
   ]
   # edit the second sandbox, then resave
   assume-console [
-    left-click 3, 20
+    left-click 3, 10
     press F4
   ]
   run [
@@ -268,11 +228,11 @@ scenario editing-sandbox-updates-sandbox-count [
     .                               run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .0                                                x.
+    .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
   ]
   # now try to scroll past end
   assume-console [
@@ -287,7 +247,7 @@ scenario editing-sandbox-updates-sandbox-count [
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .1                                                x.
+    .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.

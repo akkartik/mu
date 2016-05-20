@@ -368,6 +368,26 @@ def clear-line screen:address:screen -> screen:address:screen [
   clear-line-on-display
 ]
 
+def clear-line-until screen:address:screen, right:number/inclusive -> screen:address:screen [
+  local-scope
+  load-ingredients
+  _, column:number <- cursor-position screen
+  space:character <- copy 32/space
+  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  {
+    # default bg-color to black
+    break-if bg-color-found?
+    bg-color <- copy 0/black
+  }
+  {
+    done?:boolean <- greater-than column, right
+    break-if done?
+    screen <- print screen, space, 7/white, bg-color  # foreground color is mostly unused except if the cursor shows up at this cell
+    column <- add column, 1
+    loop
+  }
+]
+
 def cursor-position screen:address:screen -> row:number, column:number [
   local-scope
   load-ingredients
@@ -523,6 +543,13 @@ def cursor-to-next-line screen:address:screen -> screen:address:screen [
   load-ingredients
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
+]
+
+def move-cursor-to-column screen:address:screen, column:number -> screen:address:screen [
+  local-scope
+  load-ingredients
+  row:number, _ <- cursor-position screen
+  move-cursor screen, row, column
 ]
 
 def screen-width screen:address:screen -> width:number [
