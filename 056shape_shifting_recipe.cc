@@ -78,7 +78,7 @@ skip_shape_shifting_variants:;
 :(before "End Instruction Operation Checks")
 if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES
     && any_type_ingredient_in_header(inst.operation)) {
-  raise << maybe(caller.name) << "instruction " << inst.name << " has no valid specialization\n" << end();
+  raise << maybe(caller.name) << "instruction '" << inst.name << "' has no valid specialization\n" << end();
   return;
 }
 
@@ -280,13 +280,13 @@ void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const r
     return;
   }
   if (!x.type) {
-    raise << maybe(variant.original_name) << "unknown type for " << x.original_string << " (check the name for typos)\n" << end();
+    raise << maybe(variant.original_name) << "unknown type for '" << x.original_string << "' (check the name for typos)\n" << end();
     return;
   }
   if (contains_key(type, x.name)) return;
   if (x.type->name == "offset" || x.type->name == "variant") return;  // special-case for container-access instructions
   put(type, x.name, x.type);
-  trace(9993, "transform") << "type of " << x.name << " is " << names_to_string(x.type) << end();
+  trace(9993, "transform") << "type of '" << x.name << "' is " << names_to_string(x.type) << end();
 }
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const type_tree*>& mappings, const recipe& caller_recipe, bool* error) {
@@ -390,7 +390,7 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
   string before = to_string(x);
   trace(9993, "transform") << "replacing in ingredient " << x.original_string << end();
   if (!x.type) {
-    raise << "specializing " << caller.original_name << ": missing type for " << x.original_string << '\n' << end();
+    raise << "specializing " << caller.original_name << ": missing type for '" << x.original_string << "'\n" << end();
     return;
   }
   replace_type_ingredients(x.type, mappings);
@@ -778,7 +778,7 @@ def foo x:address:_elem -> y:address:_elem [
   load-ingredients
   y <- copy x
 ]
-+error: main: instruction foo has no valid specialization
++error: main: instruction 'foo' has no valid specialization
 
 :(scenario specialize_with_literal_5)
 def main [
@@ -864,8 +864,8 @@ def foo a:d1:_elem -> b:number [
 container d1:_elem [
   x:_elem
 ]
-+error: foo: unknown type for e (check the name for typos)
-+error: specializing foo: missing type for e
++error: foo: unknown type for 'e' (check the name for typos)
++error: specializing foo: missing type for 'e'
 # and it doesn't crash
 
 :(scenario missing_type_in_shape_shifting_recipe_2)
@@ -883,8 +883,8 @@ def foo a:d1:_elem -> b:number [
 container d1:_elem [
   x:_elem
 ]
-+error: foo: unknown type for e (check the name for typos)
-+error: specializing foo: missing type for e
++error: foo: unknown type for 'e' (check the name for typos)
++error: specializing foo: missing type for 'e'
 # and it doesn't crash
 
 :(scenarios transform)

@@ -184,8 +184,8 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
       default: {
         if (!types_coercible(container, ingredients.at(ingredient_index))) {
           raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_original_string(inst) << "'\n" << end();
-          raise << "  (expected " << debug_string(container) << ")\n" << end();
-          raise << "  (got " << debug_string(ingredients.at(ingredient_index)) << ")\n" << end();
+          raise << "  (expected '" << debug_string(container) << "')\n" << end();
+          raise << "  (got '" << debug_string(ingredients.at(ingredient_index)) << "')\n" << end();
           return;
         }
         ++ingredient_index;

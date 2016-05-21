@@ -83,7 +83,7 @@ def foo a:number <- b:number [
 % Hide_errors = true;
 def main
 ]
-+error: recipe body must begin with '['
++error: main: recipe body must begin with '['
 
 :(scenario recipe_handles_missing_bracket_2)
 % Hide_errors = true;
@@ -94,7 +94,7 @@ def main
 ]
 # doesn't overflow line when reading header
 -parse: header ingredient: local-scope
-+error: recipe body must begin with '['
++error: main: recipe body must begin with '['
 
 :(scenario recipe_handles_missing_bracket_3)
 % Hide_errors = true;
@@ -105,7 +105,7 @@ def main  # comment
 ]
 # doesn't overflow line when reading header
 -parse: header ingredient: local-scope
-+error: recipe body must begin with '['
++error: main: recipe body must begin with '['
 
 :(after "Begin debug_string(recipe x)")
 out << "ingredients:\n";
@@ -290,7 +290,7 @@ def add2 x:number, x:number -> z:number [
   load-ingredients
   return z
 ]
-+error: add2: x can't repeat in the ingredients
++error: add2: 'x' can't repeat in the ingredients
 
 :(before "End recipe Fields")
 map<string, int> ingredient_index;
@@ -306,7 +306,7 @@ void check_header_ingredients(const recipe_ordinal r) {
   trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
   for (int i = 0; i < SIZE(caller_recipe.ingredients); ++i) {
     if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
-      raise << maybe(caller_recipe.name) << caller_recipe.ingredients.at(i).name << " can't repeat in the ingredients\n" << end();
+      raise << maybe(caller_recipe.name) << "'" << caller_recipe.ingredients.at(i).name << "' can't repeat in the ingredients\n" << end();
     put(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name, i);
   }
 }
@@ -485,7 +485,7 @@ def add2 x:number, y:number -> x:number [
   local-scope
   load-ingredients
 ]
-+error: main: '3:number <- add2 1:number, 2:number' should write to 1:number rather than 3:number
++error: main: '3:number <- add2 1:number, 2:number' should write to '1:number' rather than '3:number'
 
 :(before "End Includes")
 using std::min;

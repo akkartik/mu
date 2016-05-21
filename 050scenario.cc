@@ -75,11 +75,11 @@ scenario parse_scenario(istream& in) {
   scenario result;
   result.name = next_word(in);
   if (contains_key(Scenario_names, result.name))
-    raise << "duplicate scenario name: " << result.name << '\n' << end();
+    raise << "duplicate scenario name: '" << result.name << "'\n" << end();
   Scenario_names.insert(result.name);
   skip_whitespace_and_comments(in);
   if (in.peek() != '[') {
-    raise << "Expected '[' after scenario " << result.name << '\n' << end();
+    raise << "Expected '[' after scenario '" << result.name << "'\n" << end();
     exit(0);
   }
   // scenarios are take special 'code' strings so we need to ignore brackets
@@ -263,7 +263,7 @@ def main [
   ]
 ]
 +run: checking location 1
-+error: expected location 1 to contain 13 but saw 0
++error: expected location '1' to contain 13 but saw 0
 
 :(before "End Primitive Recipe Declarations")
 MEMORY_SHOULD_CONTAIN,
@@ -301,10 +301,10 @@ void check_memory(const string& s) {
     if (!is_integer(rhs) && !is_noninteger(rhs)) {
       if (Current_scenario && !Scenario_testing_scenario)
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": location " << address << " can't contain non-number " << rhs << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": location '" << address << "' can't contain non-number " << rhs << "\n" << end();
       else
         // just testing scenario support
-        raise << "location " << address << " can't contain non-number " << rhs << '\n' << end();
+        raise << "location '" << address << "' can't contain non-number " << rhs << '\n' << end();
       if (!Scenario_testing_scenario) {
         Passed = false;
         ++Num_failures;
@@ -313,16 +313,16 @@ void check_memory(const string& s) {
     }
     double value = to_double(rhs);
     if (contains_key(locations_checked, address))
-      raise << "duplicate expectation for location " << address << '\n' << end();
+      raise << "duplicate expectation for location '" << address << "'\n" << end();
     trace(9999, "run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
         // genuine test in a mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+        raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
       }
       else {
         // just testing scenario support
-        raise << "expected location " << address << " to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+        raise << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
       }
       if (!Scenario_testing_scenario) {
         Passed = false;
@@ -353,16 +353,16 @@ void check_type(const string& lhs, istream& in) {
     return;
   }
   // End Scenario Type Cases
-  raise << "don't know how to check memory for " << lhs << '\n' << end();
+  raise << "don't know how to check memory for '" << lhs << "'\n" << end();
 }
 
 void check_string(int address, const string& literal) {
   trace(9999, "run") << "checking string length at " << address << end();
   if (get_or_insert(Memory, address) != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_string(address) << ")\n" << end();
+      raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_string(address) << ")\n" << end();
     else
-      raise << "expected location " << address << " to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+      raise << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
     if (!Scenario_testing_scenario) {
       Passed = false;
       ++Num_failures;
@@ -399,7 +399,7 @@ def main [
     1 <- 0
   ]
 ]
-+error: duplicate expectation for location 1
++error: duplicate expectation for location '1'
 
 :(scenario memory_check_string_length)
 % Scenario_testing_scenario = true;
@@ -413,7 +413,7 @@ def main [
     1:array:character <- [ab]
   ]
 ]
-+error: expected location 1 to contain length 2 of string [ab] but saw 3
++error: expected location '1' to contain length 2 of string [ab] but saw 3
 
 :(scenario memory_check_string)
 def main [
@@ -438,7 +438,7 @@ def main [
     1 <- [abc]
   ]
 ]
-+error: location 1 can't contain non-number [abc]
++error: location '1' can't contain non-number [abc]
 
 :(scenario memory_check_with_comment)
 % Scenario_testing_scenario = true;
@@ -634,11 +634,11 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   break;

@@ -81,7 +81,7 @@ void canonize(reagent& x) {
 
 void lookup_memory(reagent& x) {
   if (!x.type || x.type->value != get(Type_ordinal, "address")) {
-    raise << maybe(current_recipe_name()) << "tried to /lookup " << x.original_string << " but it isn't an address\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to /lookup '" << x.original_string << "' but it isn't an address\n" << end();
     return;
   }
   // compute value
@@ -158,7 +158,7 @@ assert(!has_property(element, "lookup"));
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->value != get(Type_ordinal, "address")) {
-      raise << "can't lookup non-address: " << to_string(r) << ": " << to_string(r.type) << '\n' << end();
+      raise << "can't lookup non-address: '" << to_string(r) << "': '" << to_string(r.type) << "'\n" << end();
       return false;
     }
     drop_from_type(r, "address");
@@ -241,7 +241,7 @@ canonize(base);
 def main [
   1:number/raw <- new number:type
 ]
-+error: main: product of 'new' has incorrect type: 1:number/raw <- new number:type
++error: main: product of 'new' has incorrect type: '1:number/raw <- new number:type'
 
 :(after "Update NEW product in Check")
 canonize_type(product);
@@ -436,7 +436,7 @@ def main [
     properties.push_back(pair<string, string_tree*>("lookup", NULL));
   }
   if (name.empty())
-    raise << "illegal name " << original_string << '\n' << end();
+    raise << "illegal name '" << original_string << "'\n" << end();
 }
 
 //:: helpers for debugging

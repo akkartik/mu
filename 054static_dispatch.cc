@@ -613,7 +613,7 @@ def foo a:boolean -> b:number [
   load-ingredients
   return 35
 ]
-+error: main: missing type for x in 'y:number <- foo x'
++error: main: missing type for 'x' in 'y:number <- foo x'
 +error: main: failed to find a matching call for 'y:number <- foo x'
 
 :(before "End Includes")

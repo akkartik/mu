@@ -15,7 +15,7 @@ def main [
 def main [
   x:number <- copy y:number
 ]
-+error: main: use before set: y
++error: main: use before set: 'y'
 # todo: detect conditional defines
 
 :(after "Transform.push_back(compute_container_sizes)")
@@ -54,14 +54,14 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(inst.ingredients.at(in))) names_used = true;
       if (is_integer(inst.ingredients.at(in).name)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise << maybe(caller.name) << "use before set: " << inst.ingredients.at(in).name << '\n' << end();
+        raise << maybe(caller.name) << "use before set: '" << inst.ingredients.at(in).name << "'\n" << end();
       }
       int v = lookup_name(inst.ingredients.at(in), r);
       if (v >= 0) {
         inst.ingredients.at(in).set_value(v);
       }
       else {
-        raise << maybe(caller.name) << "can't find a place to store " << inst.ingredients.at(in).name << '\n' << end();
+        raise << maybe(caller.name) << "can't find a place to store '" << inst.ingredients.at(in).name << "'\n" << end();
         return;
       }
     }
@@ -80,7 +80,7 @@ void transform_names(const recipe_ordinal r) {
         inst.products.at(out).set_value(v);
       }
       else {
-        raise << maybe(caller.name) << "can't find a place to store " << inst.products.at(out).name << '\n' << end();
+        raise << maybe(caller.name) << "can't find a place to store '" << inst.products.at(out).name << "'\n" << end();
         return;
       }
     }
@@ -92,7 +92,7 @@ void transform_names(const recipe_ordinal r) {
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
     // End Null-type is_disqualified Exceptions
-    raise << maybe(recipe_name) << "missing type for " << x.original_string << " in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << to_original_string(inst) << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -123,7 +123,7 @@ int find_element_name(const type_ordinal t, const string& name, const string& re
   const type_info& container = get(Type, t);
   for (int i = 0; i < SIZE(container.elements); ++i)
     if (container.elements.at(i).name == name) return i;
-  raise << maybe(recipe_name) << "unknown element " << name << " in container " << get(Type, t).name << '\n' << end();
+  raise << maybe(recipe_name) << "unknown element '" << name << "' in container '" << get(Type, t).name << "'\n" << end();
   return -1;
 }
 

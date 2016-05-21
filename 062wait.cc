@@ -59,11 +59,11 @@ put(Recipe_ordinal, "wait-for-location", WAIT_FOR_LOCATION);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_LOCATION: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_location(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires a location ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires a location ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
   }
   break;
 }
@@ -115,20 +115,20 @@ case GET_LOCATION: {
   reagent/*copy*/ base = inst.ingredients.at(0);
   if (!canonize_type(base)) break;
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-location' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-location' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   const reagent& offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get-location' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get-location' should have type 'offset', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-      raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for '" << get(Type, base_type).name << "'\n" << end();
       break;
     }
   }
@@ -137,7 +137,7 @@ case GET_LOCATION: {
   }
   if (inst.products.empty()) break;
   if (!is_mu_location(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'get-location " << base.original_string << ", " << offset.original_string << "' should write to type location but " << inst.products.at(0).name << " has type " << names_to_string_without_quotes(inst.products.at(0).type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'get-location " << base.original_string << ", " << offset.original_string << "' should write to type location but '" << inst.products.at(0).name << "' has type '" << names_to_string_without_quotes(inst.products.at(0).type) << "'\n" << end();
     break;
   }
   break;
@@ -179,7 +179,7 @@ def main [
   14:number <- copy 36
   get-location 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
-+error: main: invalid offset 2 for point-number
++error: main: invalid offset 2 for 'point-number'
 
 :(scenario get_location_out_of_bounds_2)
 % Hide_errors = true;
@@ -189,7 +189,7 @@ def main [
   14:number <- copy 36
   get-location 12:point-number/raw, -1:offset
 ]
-+error: main: invalid offset -1 for point-number
++error: main: invalid offset -1 for 'point-number'
 
 :(scenario get_location_product_type_mismatch)
 % Hide_errors = true;
@@ -202,7 +202,7 @@ def main [
   13:boolean <- copy 0
   15:boolean <- get-location 12:boolbool, 1:offset
 ]
-+error: main: 'get-location 12:boolbool, 1:offset' should write to type location but 15 has type boolean
++error: main: 'get-location 12:boolbool, 1:offset' should write to type location but '15' has type 'boolean'
 
 :(scenario get_location_indirect)
 # 'get-location' can read from container address
@@ -260,11 +260,11 @@ put(Recipe_ordinal, "wait-for-routine", WAIT_FOR_ROUTINE);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_ROUTINE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got " << to_original_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'wait-for-routine' should be a routine id generated by 'start-running', but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'wait-for-routine' should be a routine id generated by 'start-running', but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -272,7 +272,7 @@ case WAIT_FOR_ROUTINE: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise << maybe(current_recipe_name()) << "routine can't wait for itself! " << to_original_string(current_instruction()) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   Current_routine->state = WAITING;

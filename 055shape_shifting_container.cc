@@ -132,7 +132,7 @@ bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out) {
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
     if (out.find(curr) != out.end()) {
-      raise << "can't repeat type ingredient names in a single container definition: " << curr << '\n' << end();
+      raise << "can't repeat type ingredient names in a single container definition: '" << curr << "'\n" << end();
       return false;
     }
     put(out, curr, next_type_ordinal++);
@@ -607,6 +607,6 @@ def main [
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!type->right)
-    raise << "illegal type '" << to_string(type) << "' seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three\n" << end();
   replace_type_ingredients(element.type, type->right, info);
 }

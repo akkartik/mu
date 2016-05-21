@@ -17,11 +17,11 @@ case TRACE: {
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'trace' should be a number (depth), but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'trace' should be a number (depth), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'trace' should be a literal string (label), but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'trace' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   break;
@@ -203,11 +203,11 @@ case ASSERT: {
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "'assert' requires a literal string for its second ingredient, but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'assert' requires a literal string for its second ingredient, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   break;
@@ -273,11 +273,11 @@ put(Recipe_ordinal, "$system", _SYSTEM);
 :(before "End Primitive Recipe Checks")
 case _SYSTEM: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal_string(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "ingredient to '$system' must be a literal text, but got " << to_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "ingredient to '$system' must be a literal text, but got '" << to_string(inst) << "'\n" << end();
   }
   break;
 }

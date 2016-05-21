@@ -6,7 +6,7 @@ put(Recipe_ordinal, "to-location-array", TO_LOCATION_ARRAY);
 case TO_LOCATION_ARRAY: {
   const recipe& caller = get(Recipe, r);
   if (!is_address_of_array_of_numbers(inst.products.at(0))) {
-    raise << maybe(caller.name) << "product of 'to-location-array' has incorrect type: " << to_original_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "product of 'to-location-array' has incorrect type: '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;

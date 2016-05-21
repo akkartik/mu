@@ -56,28 +56,28 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
           || !type->right->right
           || type->right->right->value != get(Type_ordinal, "location")
           || type->right->right->right) {
-        raise << "slot 0 should always have type address:array:location, but is " << to_string(inst.products.at(j)) << '\n' << end();
+        raise << "slot 0 should always have type address:array:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
       if (!s) {
-        raise << "slot 0 requires a /names property in recipe " << get(Recipe, r).name << end();
+        raise << "slot 0 requires a /names property in recipe '" << get(Recipe, r).name << "'\n" << end();
         continue;
       }
-      if (s->right) raise << "slot 0 should have a single value in /names, but got " << to_string(inst.products.at(j)) << '\n' << end();
+      if (s->right) raise << "slot 0 should have a single value in /names, but got '" << to_string(inst.products.at(j)) << "'\n" << end();
       const string& surrounding_recipe_name = s->value;
       if (surrounding_recipe_name.empty()) {
-        raise << "slot 0 doesn't initialize its /names property in recipe " << get(Recipe, r).name << end();
+        raise << "slot 0 doesn't initialize its /names property in recipe '" << get(Recipe, r).name << "'\n" << end();
         continue;
       }
       if (contains_key(Surrounding_space, r)
           && get(Surrounding_space, r) != get(Recipe_ordinal, surrounding_recipe_name)) {
-        raise << "recipe " << get(Recipe, r).name << " can have only one 'surrounding' recipe but has " << get(Recipe, get(Surrounding_space, r)).name << " and " << surrounding_recipe_name << '\n' << end();
+        raise << "recipe '" << get(Recipe, r).name << "' can have only one 'surrounding' recipe but has '" << get(Recipe, get(Surrounding_space, r)).name << "' and '" << surrounding_recipe_name << "'\n" << end();
         continue;
       }
       trace(9993, "name") << "lexically surrounding space for recipe " << get(Recipe, r).name << " comes from " << surrounding_recipe_name << end();
       if (!contains_key(Recipe_ordinal, surrounding_recipe_name)) {
-        raise << "can't find recipe providing surrounding space for " << get(Recipe, r).name << ": " << surrounding_recipe_name << '\n' << end();
+        raise << "can't find recipe providing surrounding space for '" << get(Recipe, r).name << "'; looking for '" << surrounding_recipe_name << "'\n" << end();
         continue;
       }
       put(Surrounding_space, r, get(Recipe_ordinal, surrounding_recipe_name));
@@ -110,7 +110,7 @@ int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
 int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& done, vector<recipe_ordinal>& path) {
   if (!Name[r].empty()) return Name[r][x.name];
   if (contains_key(done, r)) {
-    raise << "can't compute address of " << to_string(x) << " because " << end();
+    raise << "can't compute address of '" << to_string(x) << "' because\n" << end();
     for (int i = 1; i < SIZE(path); ++i) {
       raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
@@ -127,7 +127,7 @@ int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& d
 recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, int n) {
   if (n == 0) return r;
   if (!contains_key(Surrounding_space, r)) {
-    raise << "don't know surrounding recipe of " << get(Recipe, r).name << '\n' << end();
+    raise << "don't know surrounding recipe of '" << get(Recipe, r).name << "'\n" << end();
     return -1;
   }
   assert(contains_key(Surrounding_space, r));
@@ -140,7 +140,7 @@ bool already_transformed(const reagent& r, const map<string, int>& names) {
   if (has_property(r, "space")) {
     string_tree* p = property(r, "space");
     if (!p || p->right) {
-      raise << "/space property should have exactly one (non-negative integer) value in " << r.original_string << '\n' << end();
+      raise << "/space property should have exactly one (non-negative integer) value in '" << r.original_string << "'\n" << end();
       return false;
     }
     if (p->value != "0") return true;
@@ -154,8 +154,8 @@ def f [
   local-scope
   x:number/space:1 <- copy 34
 ]
-+error: don't know surrounding recipe of f
-+error: f: can't find a place to store x
++error: don't know surrounding recipe of 'f'
++error: f: can't find a place to store 'x'
 
 //: extra test for try_reclaim_locals() from previous layers
 :(scenario local_scope_ignores_nonlocal_spaces)

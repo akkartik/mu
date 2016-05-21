@@ -12,7 +12,7 @@ def main [
   x:number <- copy 1
   x:boolean <- copy 1
 ]
-+error: main: x used with multiple types
++error: main: 'x' used with multiple types
 
 :(after "Begin Instruction Modifying Transforms")
 Transform.push_back(check_or_set_types_by_name);  // idempotent
@@ -51,16 +51,16 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
     known.insert(x);
   }
   if (!types_strictly_match(known.find(x)->type, x.type)) {
-    raise << maybe(caller.name) << x.name << " used with multiple types\n" << end();
+    raise << maybe(caller.name) << "'" << x.name << "' used with multiple types\n" << end();
     return;
   }
   if (x.type->name == "array") {
     if (!x.type->right) {
-      raise << maybe(caller.name) << x.name << " can't be just an array. What is it an array of?\n" << end();
+      raise << maybe(caller.name) << "'" << x.name << ": can't be just an array. What is it an array of?\n" << end();
       return;
     }
     if (!x.type->right->right) {
-      raise << caller.name << " can't determine the size of array variable " << x.name << ". Either allocate it separately and make the type of " << x.name << " address:..., or specify the length of the array in the type of " << x.name << ".\n" << end();
+      raise << caller.name << " can't determine the size of array variable '" << x.name << "'. Either allocate it separately and make the type of '" << x.name << "' an address, or specify the length of the array in the type of '" << x.name << "'.\n" << end();
       return;
     }
   }
@@ -91,7 +91,7 @@ def main [
   x <- copy 1
   x:number <- copy 2
 ]
-+error: main: missing type for x in 'x <- copy 1'
++error: main: missing type for 'x' in 'x <- copy 1'
 
 :(scenario typo_in_address_type_fails)
 % Hide_errors = true;
@@ -106,7 +106,7 @@ def main [
 def main [
   x:array:number <- merge 2, 12, 13
 ]
-+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:..., or specify the length of the array in the type of x.
++error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.
 
 :(scenarios transform)
 :(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)

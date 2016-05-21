@@ -26,20 +26,20 @@ case CREATE_ARRAY: {
   reagent/*copy*/ product = inst.products.at(0);
   // Update CREATE_ARRAY product in Check
   if (!is_mu_array(product)) {
-    raise << maybe(get(Recipe, r).name) << "'create-array' cannot create non-array " << product.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'create-array' cannot create non-array '" << product.original_string << "'\n" << end();
     break;
   }
   if (!product.type->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what? " << to_original_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what? '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   if (!product.type->right->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what size? " << to_original_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what size? '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_integer(product.type->right->right->name)) {
-    raise << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got " << product.type->right->right->name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got '" << product.type->right->right->name << "'\n" << end();
     break;
   }
   break;
@@ -123,18 +123,18 @@ $error: 0
 container foo [
   x:array:number
 ]
-+error: container 'foo' cannot determine size of element x
++error: container 'foo' cannot determine size of element 'x'
 
 :(before "End Load Container Element Definition")
 {
   const type_tree* type = info.elements.back().type;
   if (type->name == "array") {
     if (!type->right) {
-      raise << "container '" << name << "' doesn't specify type of array elements for " << info.elements.back().name << '\n' << end();
+      raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
       continue;
     }
     if (!type->right->right) {  // array has no length
-      raise << "container '" << name << "' cannot determine size of element " << info.elements.back().name << '\n' << end();
+      raise << "container '" << name << "' cannot determine size of element '" << info.elements.back().name << "'\n" << end();
       continue;
     }
   }
@@ -176,13 +176,13 @@ case INDEX: {
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update INDEX base in Check
   if (!is_mu_array(base)) {
-    raise << maybe(get(Recipe, r).name) << "'index' on a non-array " << base.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'index' on a non-array '" << base.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = inst.ingredients.at(1);
   // Update INDEX index in Check
   if (!is_mu_number(index)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'index' should be a number, but got " << index.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'index' should be a number, but got '" << index.original_string << "'\n" << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -191,7 +191,7 @@ case INDEX: {
   reagent element;
   element.type = copy_array_element(base.type);
   if (!types_coercible(product, element)) {
-    raise << maybe(get(Recipe, r).name) << "'index' on " << base.original_string << " can't be saved in " << product.original_string << "; type should be " << names_to_string_without_quotes(element.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'index' on '" << base.original_string << "' can't be saved in '" << product.original_string << "'; type should be '" << names_to_string_without_quotes(element.type) << "'\n" << end();
     break;
   }
   break;
@@ -299,7 +299,7 @@ def main [
   7:number <- copy 16
   9:number <- index 1:array:point, 0
 ]
-+error: main: 'index' on 1:array:point can't be saved in 9:number; type should be point
++error: main: 'index' on '1:array:point' can't be saved in '9:number'; type should be 'point'
 
 //: we might want to call 'index' without saving the results, say in a sandbox
 
@@ -338,13 +338,13 @@ case PUT_INDEX: {
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update PUT_INDEX base in Check
   if (!is_mu_array(base)) {
-    raise << maybe(get(Recipe, r).name) << "'put-index' on a non-array " << base.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'put-index' on a non-array '" << base.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = inst.ingredients.at(1);
   // Update PUT_INDEX index in Check
   if (!is_mu_number(index)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put-index' should have type 'number', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put-index' should have type 'number', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ value = inst.ingredients.at(2);
@@ -352,7 +352,7 @@ case PUT_INDEX: {
   reagent element;
   element.type = copy_array_element(base.type);
   if (!types_coercible(element, value)) {
-    raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
   break;
@@ -444,7 +444,7 @@ case LENGTH: {
   reagent/*copy*/ array = inst.ingredients.at(0);
   // Update LENGTH array in Check
   if (!is_mu_array(array)) {
-    raise << "tried to calculate length of non-array " << array.original_string << '\n' << end();
+    raise << "tried to calculate length of non-array '" << array.original_string << "'\n" << end();
     break;
   }
   break;

@@ -78,7 +78,7 @@ case ASSUME_CONSOLE: {
       else if (contains_key(Key, key))
         put(Memory, Current_routine->alloc+1, Key[key]);
       else
-        raise << "assume-console: can't press " << key << '\n' << end();
+        raise << "assume-console: can't press '" << key << "'\n" << end();
       if (get_or_insert(Memory, Current_routine->alloc+1) < 256)
         // these keys are in ascii
         put(Memory, Current_routine->alloc, /*tag for 'text' variant of 'event' exclusive-container*/0);

@@ -68,19 +68,19 @@ void transform_labels(const recipe_ordinal r) {
 :(code)
 void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
-    raise << maybe(get(Recipe, r).name) << "jump target must be offset or label but is " << x.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "jump target must be offset or label but is '" << x.original_string << "'\n" << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (x.initialized) return;
   if (is_integer(x.name)) return;  // non-labels will be handled like other number operands
   if (!is_jump_target(x.name)) {
-    raise << maybe(get(Recipe, r).name) << "can't jump to label " << x.name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "can't jump to label '" << x.name << "'\n" << end();
     x.set_value(0);  // no jump by default
     return;
   }
   if (!contains_key(offset, x.name)) {
-    raise << maybe(get(Recipe, r).name) << "can't find label " << x.name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "can't find label '" << x.name << "'\n" << end();
     x.set_value(0);  // no jump by default
     return;
   }
@@ -177,4 +177,4 @@ def main [
   $target
   5:number <- copy 0
 ]
-+error: main: can't jump to label $target
++error: main: can't jump to label '$target'

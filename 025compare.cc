@@ -22,7 +22,7 @@ case EQUAL: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'equal' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -86,7 +86,7 @@ case GREATER_THAN: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'greater-than' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'greater-than' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -95,7 +95,7 @@ case GREATER_THAN: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'greater-than' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'greater-than' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -153,7 +153,7 @@ case LESSER_THAN: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'lesser-than' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'lesser-than' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -162,7 +162,7 @@ case LESSER_THAN: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'lesser-than' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'lesser-than' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -220,7 +220,7 @@ case GREATER_OR_EQUAL: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'greater-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'greater-or-equal' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -229,7 +229,7 @@ case GREATER_OR_EQUAL: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -295,7 +295,7 @@ case LESSER_OR_EQUAL: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -304,7 +304,7 @@ case LESSER_OR_EQUAL: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'greater-or-equal' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -370,7 +370,7 @@ case MAX: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'max' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'max' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -379,7 +379,7 @@ case MAX: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'max' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'max' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -409,7 +409,7 @@ case MIN: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'min' can only compare numbers; got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'min' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -418,7 +418,7 @@ case MIN: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'min' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'min' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;

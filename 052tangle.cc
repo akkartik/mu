@@ -146,11 +146,11 @@ check_insert_fragments();
 void check_insert_fragments() {
   for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
     if (!contains_key(Fragments_used, p->first))
-      raise << "could not locate insert before " << p->first << '\n' << end();
+      raise << "could not locate insert before label " << p->first << '\n' << end();
   }
   for (map<string, recipe>::iterator p = After_fragments.begin(); p != After_fragments.end(); ++p) {
     if (!contains_key(Fragments_used, p->first))
-      raise << "could not locate insert after " << p->first << '\n' << end();
+      raise << "could not locate insert after label " << p->first << '\n' << end();
   }
 }
 
@@ -442,7 +442,7 @@ void test_new_fragment_after_tangle() {
 
 :(before "End before Command Handler")
 if (contains_key(Fragments_used, label))
-  raise << "we've already tangled some code at " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();
+  raise << "we've already tangled some code at label " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();
 :(before "End after Command Handler")
 if (contains_key(Fragments_used, label))
-  raise << "we've already tangled some code at " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();
+  raise << "we've already tangled some code at label " << label << " in a previous call to transform_all(). Those locations won't be updated.\n" << end();

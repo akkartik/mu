@@ -51,7 +51,7 @@ case CALL: {
     break;
   }
   if (!is_mu_recipe(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'call' should be a recipe, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'call' should be a recipe, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   break;

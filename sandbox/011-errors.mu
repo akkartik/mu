@@ -145,14 +145,9 @@ def foo [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: unknown element foo in container number      .
+    .foo: unknown element 'foo' in container 'number'  .
     .foo: first ingredient of 'get' should be a contai↩.
-    .ner, but got 123:number                           .
-    .foo: unknown element foo in container number      .
-    .foo: first ingredient of 'get' should be a contai↩.
-    .ner, but got 123:number                           .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
+    .ner, but got '123:number'                         .
   ]
   screen-should-contain-in-color 1/red, [
     .  errors found                                    .
@@ -264,7 +259,7 @@ z <- add x, y
     .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_2: 'add' requires number ingredients, but got↩.
-    . y                                                .
+    . 'y'                                              .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -283,7 +278,7 @@ z <- add x, y
     .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_3: 'add' requires number ingredients, but got↩.
-    . y                                                .
+    . 'y'                                              .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -358,12 +353,7 @@ def foo [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: missing type for x in 'x <- copy 0'          .
-    .foo: can't copy 0 to x; types don't match         .
-    .foo: missing type for x in 'x <- copy 0'          .
-    .foo: can't copy 0 to x; types don't match         .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
+    .foo: missing type for 'x' in 'x <- copy 0'        .
   ]
 ]
 
@@ -372,7 +362,7 @@ scenario run-shows-unbalanced-bracket-errors [
   assume-screen 50/width, 20/height
   # recipe is incomplete (unbalanced '[')
   1:address:array:character <- new [ 
-def foo «
+recipe foo «
   x <- copy 0
 ]
   replace 1:address:array:character, 171/«, 91  # '['
@@ -421,7 +411,7 @@ def foo [
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: first ingredient of 'get' should be a contai↩.
-    .ner, but got x:address:point                      .
+    .ner, but got 'x:address:point'                    .
   ]
 ]
 
@@ -450,7 +440,7 @@ def foo [
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: second ingredient of 'get' should have type ↩.
-    .'offset', but got x:number                        .
+    .'offset', but got 'x:number'                      .
   ]
 ]
 
@@ -475,7 +465,7 @@ def foo [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: use before set: y                            .
+    .foo: use before set: 'y'                          .
   ]
   # rerun the file, check for the same error
   assume-console [
@@ -490,7 +480,7 @@ def foo [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: use before set: y                            .
+    .foo: use before set: 'y'                          .
   ]
 ]
 
@@ -512,7 +502,7 @@ scenario run-instruction-and-print-errors [
     .0   edit           copy           delete          .
     .get 1:address:point, 1:offset                     .
     .first ingredient of 'get' should be a container, ↩.
-    .but got 1:address:point                           .
+    .but got '1:address:point'                         .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -523,7 +513,7 @@ scenario run-instruction-and-print-errors [
     .                                                  .
     .                                                  .
     .first ingredient of 'get' should be a container,  .
-    .but got 1:address:point                           .
+    .but got '1:address:point'                         .
     .                                                  .
     .                                                  .
   ]
@@ -550,9 +540,9 @@ scenario run-instruction-and-print-errors-only-once [
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .get 1234:number, foo:offset                       .
-    .unknown element foo in container number           .
+    .unknown element 'foo' in container 'number'       .
     .first ingredient of 'get' should be a container, ↩.
-    .but got 1234:number                               .
+    .but got '1234:number'                             .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]

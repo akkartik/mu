@@ -9,7 +9,7 @@ case ADD: {
   // primary goal of these checks is to forbid address arithmetic
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -18,7 +18,7 @@ case ADD: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'add' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'add' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -59,14 +59,14 @@ def main [
 def main [
   1:number <- add 2:boolean, 1
 ]
-+error: main: 'add' requires number ingredients, but got 2:boolean
++error: main: 'add' requires number ingredients, but got '2:boolean'
 
 :(scenario add_checks_return_type)
 % Hide_errors = true;
 def main [
   1:address:number <- add 2, 2
 ]
-+error: main: 'add' should yield a number, but got 1:address:number
++error: main: 'add' should yield a number, but got '1:address:number'
 
 :(before "End Primitive Recipe Declarations")
 SUBTRACT,
@@ -81,7 +81,7 @@ case SUBTRACT: {
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -90,7 +90,7 @@ case SUBTRACT: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'subtract' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'subtract' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -137,7 +137,7 @@ put(Recipe_ordinal, "multiply", MULTIPLY);
 case MULTIPLY: {
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -146,7 +146,7 @@ case MULTIPLY: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'multiply' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'multiply' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -194,7 +194,7 @@ case DIVIDE: {
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got " << inst.ingredients.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -203,7 +203,7 @@ case DIVIDE: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'divide' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'divide' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
   break;
@@ -260,7 +260,7 @@ case DIVIDE_WITH_REMAINDER: {
   }
   for (int i = 0; i < SIZE(inst.products); ++i) {
     if (!is_dummy(inst.products.at(i)) && !is_mu_number(inst.products.at(i))) {
-      raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got " << inst.products.at(i).original_string << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got '" << inst.products.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
     }
   }
@@ -343,7 +343,7 @@ case SHIFT_LEFT: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'shift-left' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-left' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;
@@ -414,7 +414,7 @@ case SHIFT_RIGHT: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'shift-right' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'shift-right' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;
@@ -485,7 +485,7 @@ case AND_BITS: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'and-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'and-bits' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;
@@ -543,7 +543,7 @@ case OR_BITS: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'or-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'or-bits' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;
@@ -595,7 +595,7 @@ case XOR_BITS: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'xor-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'xor-bits' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;
@@ -647,7 +647,7 @@ case FLIP_BITS: {
     break;
   }
   if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'flip-bits' should yield a number, but got " << inst.products.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'flip-bits' should yield a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
     goto finish_checking_instruction;
   }
   break;

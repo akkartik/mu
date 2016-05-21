@@ -216,7 +216,7 @@ void load_file_or_directory(string filename) {
   }
   ifstream fin(filename.c_str());
   if (!fin) {
-    raise << "no such file " << filename << '\n' << end();
+    raise << "no such file '" << filename << "'\n" << end();
     return;
   }
   trace(9990, "load") << "=== " << filename << end();
@@ -269,7 +269,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
 void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*only when called in the run loop above to save results; -1 otherwise*/ product_index) {
   // Begin Preprocess write_memory(x, data)
   if (!x.type) {
-    raise << "can't write to " << to_string(x) << "; no type\n" << end();
+    raise << "can't write to '" << to_string(x) << "'; no type\n" << end();
     return;
   }
   if (is_dummy(x)) return;
@@ -277,7 +277,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*onl
   // End Preprocess write_memory(x, data)
   if (x.value == 0) return;
   if (size_mismatch(x, data)) {
-    raise << maybe(current_recipe_name()) << "size mismatch in storing to " << x.original_string << " (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "size mismatch in storing to '" << x.original_string << "' (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
     return;
   }
   // End write_memory(x) Special-cases

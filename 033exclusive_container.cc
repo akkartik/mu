@@ -101,11 +101,11 @@ case MAYBE_CONVERT: {
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update MAYBE_CONVERT base in Check
   if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
-    raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got " << base.original_string << '\n' << end();
+    raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got '" << base.original_string << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise << maybe(caller.name) << "second ingredient of 'maybe-convert' should have type 'variant', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(caller.name) << "second ingredient of 'maybe-convert' should have type 'variant', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -123,13 +123,13 @@ case MAYBE_CONVERT: {
   }
   const reagent& variant = variant_type(base, offset.value);
   if (!types_coercible(product, variant)) {
-    raise << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but " << product.name << " has type " << to_string(product.type) << '\n' << end();
+    raise << maybe(caller.name) << "'maybe-convert " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should write to " << to_string(variant.type) << " but '" << product.name << "' has type " << to_string(product.type) << '\n' << end();
     break;
   }
   reagent/*copy*/ status = inst.products.at(1);
   // Update MAYBE_CONVERT status in Check
   if (!is_mu_boolean(status)) {
-    raise << maybe(get(Recipe, r).name) << "second product yielded by 'maybe-convert' should be a boolean, but tried to write to " << inst.products.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second product yielded by 'maybe-convert' should be a boolean, but tried to write to '" << inst.products.at(1).original_string << "'\n" << end();
     break;
   }
   break;
@@ -191,7 +191,7 @@ def main [
   14:number <- copy 36
   20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
-+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but 20 has type number
++error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number
 
 //:: Allow exclusive containers to be defined in mu code.
 
@@ -223,7 +223,7 @@ $error: 0
 exclusive-container foo [
   x:array:number
 ]
-+error: container 'foo' cannot determine size of element x
++error: container 'foo' cannot determine size of element 'x'
 
 //:: To construct exclusive containers out of variant types, use 'merge'.
 :(scenario lift_to_exclusive_container)
@@ -273,20 +273,20 @@ def main [
   1:number <- copy 0
   2:foo <- merge 1:number, 34
 ]
-+error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container foo
++error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo'
 
 :(before "End valid_merge Cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
   trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
   if (!is_literal(ingredients.at(ingredient_index))) {
-    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container " << container_info.name << '\n' << end();
+    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "'\n" << end();
     return;
   }
   reagent/*copy*/ ingredient = ingredients.at(ingredient_index);  // unnecessary copy just to keep this function from modifying caller
   populate_value(ingredient);
   if (ingredient.value >= SIZE(container_info.elements)) {
-    raise << maybe(caller.name) << "invalid tag at " << ingredient_index << " for " << container_info.name << " in '" << to_original_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "invalid tag at " << ingredient_index << " for '" << container_info.name << "' in '" << to_original_string(inst) << "'\n" << end();
     return;
   }
   const reagent& variant = variant_type(container, ingredient.value);

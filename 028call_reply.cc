@@ -64,7 +64,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       if (reply_inst.operation != RETURN) continue;
       // check types with the caller
       if (SIZE(caller_instruction.products) > SIZE(reply_inst.ingredients)) {
-        raise << maybe(caller.name) << "too few values replied from " << callee.name << '\n' << end();
+        raise << maybe(caller.name) << "too few values returned from " << callee.name << '\n' << end();
         break;
       }
       for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
@@ -72,8 +72,8 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         reagent/*copy*/ rhs = caller_instruction.products.at(i);
         // End Check RETURN Copy(lhs, rhs)
         if (!types_coercible(rhs, lhs)) {
-          raise << maybe(callee.name) << reply_inst.name << " ingredient " << lhs.original_string << " can't be saved in " << rhs.original_string << '\n' << end();
-          raise << to_string(lhs.type) << " vs " << to_string(rhs.type) << '\n' << end();
+          raise << maybe(callee.name) << reply_inst.name << " ingredient '" << lhs.original_string << "' can't be saved in '" << rhs.original_string << "'\n" << end();
+          raise << "  (" << to_string(lhs.type) << " vs " << to_string(rhs.type) << ")\n" << end();
           goto finish_reply_check;
         }
       }
@@ -83,7 +83,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
           string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
           if (!tmp || tmp->right) {
-            raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in " << to_original_string(reply_inst) << '\n' << end();
+            raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in '" << to_original_string(reply_inst) << "'\n" << end();
             goto finish_reply_check;
           }
           int ingredient_index = to_integer(tmp->value);
@@ -92,7 +92,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
             goto finish_reply_check;
           }
           if (!is_dummy(caller_instruction.products.at(i)) && !is_literal(caller_instruction.ingredients.at(ingredient_index)) && caller_instruction.products.at(i).name != caller_instruction.ingredients.at(ingredient_index).name) {
-            raise << maybe(caller.name) << "'" << to_original_string(caller_instruction) << "' should write to " << caller_instruction.ingredients.at(ingredient_index).original_string << " rather than " << caller_instruction.products.at(i).original_string << '\n' << end();
+            raise << maybe(caller.name) << "'" << to_original_string(caller_instruction) << "' should write to '" << caller_instruction.ingredients.at(ingredient_index).original_string << "' rather than '" << caller_instruction.products.at(i).original_string << "'\n" << end();
           }
         }
       }
@@ -112,7 +112,7 @@ def f [
   14:point <- copy 12:point/raw
   return 14:point
 ]
-+error: f: return ingredient 14:point can't be saved in 3:number
++error: f: return ingredient '14:point' can't be saved in '3:number'
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -129,7 +129,7 @@ def test1 [
   10:number <- next-ingredient
   return 10:number/same-as-ingredient:0
 ]
-+error: main: '2:number <- test1 1:number' should write to 1:number rather than 2:number
++error: main: '2:number <- test1 1:number' should write to '1:number' rather than '2:number'
 
 :(scenario return_same_as_ingredient_dummy)
 def main [

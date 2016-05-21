@@ -56,7 +56,7 @@ void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
   if (x.name == "default-space") return;
   if (!x.initialized) {
-    raise << to_original_string(current_instruction()) << ": reagent not initialized: " << x.original_string << '\n' << end();
+    raise << to_original_string(current_instruction()) << ": reagent not initialized: '" << x.original_string << "'\n" << end();
   }
   x.set_value(address(x.value, space_base(x)));
   x.properties.push_back(pair<string, string_tree*>("raw", NULL));
@@ -92,7 +92,7 @@ if (x.name == "default-space") {
       || !x.type->right->right
       || x.type->right->right->value != get(Type_ordinal, "location")
       || x.type->right->right->right) {
-    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
   }
   current_call().default_space = data.at(0);
   return;
@@ -397,7 +397,7 @@ void check_default_space(const recipe_ordinal r) {
   if (caller.steps.empty()) return;
   if (caller.steps.at(0).products.empty()
       || caller.steps.at(0).products.at(0).name != "default-space") {
-    raise << maybe(caller.name) << " does not seem to start with default-space or local-scope\n" << end();
+    raise << caller.name << " does not seem to start with default-space or local-scope\n" << end();
   }
 }
 :(after "Load .mu Core")

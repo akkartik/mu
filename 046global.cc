@@ -50,7 +50,7 @@ if (x.name == "global-space") {
       || !x.type->right->right
       || x.type->right->right->value != get(Type_ordinal, "location")
       || x.type->right->right->right) {
-    raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write " << to_string(data) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write '" << to_string(x.type) << "'\n" << end();
   }
   if (Current_routine->global_space)
     raise << "routine already has a global-space; you can't over-write your globals" << end();

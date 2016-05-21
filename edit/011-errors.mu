@@ -135,9 +135,9 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  get 123:number, foo:offset                      ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: unknown element foo in container number      ┊                                                 .
+    .foo: unknown element 'foo' in container 'number'  ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
-    .ner, but got 123:number                           ┊                                                 .
+    .ner, but got '123:number'                         ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -147,9 +147,9 @@ recipe foo [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .foo: unknown element foo in container number                                                        .
+    .foo: unknown element 'foo' in container 'number'                                                    .
     .foo: first ingredient of 'get' should be a contai                                                   .
-    .ner, but got 123:number                                                                             .
+    .ner, but got '123:number'                                                                           .
     .                                                                                                    .
   ]
 ]
@@ -262,7 +262,7 @@ z <- add x, y
     .load-ingredients                                  ┊0   edit          copy            delete         .
     .y:address:number <- copy 0                        ┊foo 2                                            .
     .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
-    .]                                                 ┊t y                                              .
+    .]                                                 ┊t 'y'                                            .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
@@ -281,7 +281,7 @@ z <- add x, y
     .load-ingredients                                  ┊0   edit          copy            delete         .
     .y:address:number <- copy 0                        ┊foo 2                                            .
     .z <- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.
-    .]                                                 ┊t y                                              .
+    .]                                                 ┊t 'y'                                            .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
@@ -368,7 +368,7 @@ recipe foo [
     .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x <- copy 0                                     ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: missing type for x in 'x <- copy 0'          ┊                                                 .
+    .foo: missing type for 'x' in 'x <- copy 0'        ┊                                                 .
   ]
 ]
 
@@ -427,7 +427,7 @@ recipe foo [
     .  get x:address:point, 1:offset                   ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
-    .ner, but got x:address:point                      ┊                                                 .
+    .ner, but got 'x:address:point'                    ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -461,7 +461,7 @@ recipe foo [
     .  get *y:address:point, x:number                  ┊                                                 .
     .]                                                 ┊                                                 .
     .foo: second ingredient of 'get' should have type ↩┊                                                 .
-    .'offset', but got x:number                        ┊                                                 .
+    .'offset', but got 'x:number'                      ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -489,7 +489,7 @@ recipe foo [
     .  local-scope                                     ┊                                                 .
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: use before set: y                            ┊                                                 .
+    .foo: use before set: 'y'                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -507,7 +507,7 @@ recipe foo [
     .  local-scope                                     ┊                                                 .
     .  x:number <- copy y:number                       ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: use before set: y                            ┊                                                 .
+    .foo: use before set: 'y'                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -535,9 +535,9 @@ scenario run-instruction-and-print-errors [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊get 1234:number, foo:offset                      .
-    .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊unknown element 'foo' in container 'number'      .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
-    .                                                  ┊ but got 1234:number                             .
+    .                                                  ┊ but got '1234:number'                           .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]
@@ -557,9 +557,9 @@ scenario run-instruction-and-print-errors [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .                                                   unknown element foo in container number          .
+    .                                                   unknown element 'foo' in container 'number'      .
     .                                                   first ingredient of 'get' should be a container, .
-    .                                                    but got 1234:number                             .
+    .                                                    but got '1234:number'                           .
     .                                                                                                    .
   ]
   screen-should-contain-in-color 245/grey, [
@@ -599,9 +599,9 @@ scenario run-instruction-and-print-errors-only-once [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊get 1234:number, foo:offset                      .
-    .                                                  ┊unknown element foo in container number          .
+    .                                                  ┊unknown element 'foo' in container 'number'      .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
-    .                                                  ┊ but got 1234:number                             .
+    .                                                  ┊ but got '1234:number'                           .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  ┊                                                 .
   ]

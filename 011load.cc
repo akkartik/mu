@@ -67,7 +67,7 @@ void slurp_body(istream& in, recipe& result) {
   in >> std::noskipws;
   skip_whitespace_but_not_newline(in);
   if (in.get() != '[')
-    raise << "recipe body must begin with '['\n" << end();
+    raise << result.name << ": recipe body must begin with '['\n" << end();
   skip_whitespace_and_comments(in);  // permit trailing comment after '['
   instruction curr;
   while (next_instruction(in, &curr)) {

@@ -154,13 +154,13 @@ put(Recipe_ordinal, "new", NEW);
 case NEW: {
   const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got " << to_original_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   // End NEW Check Special-cases
   const reagent& type = inst.ingredients.at(0);
   if (!is_mu_type_literal(type)) {
-    raise << maybe(caller.name) << "first ingredient of 'new' should be a type, but got " << type.original_string << '\n' << end();
+    raise << maybe(caller.name) << "first ingredient of 'new' should be a type, but got '" << type.original_string << "'\n" << end();
     break;
   }
   if (inst.products.empty()) {
@@ -168,7 +168,7 @@ case NEW: {
     break;
   }
   if (!product_of_new_is_valid(inst)) {
-    raise << maybe(caller.name) << "product of 'new' has incorrect type: " << to_original_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "product of 'new' has incorrect type: '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -197,7 +197,7 @@ bool product_of_new_is_valid(const instruction& inst) {
 
 void drop_from_type(reagent& r, string expected_type) {
   if (r.type->name != expected_type) {
-    raise << "can't drop2 " << expected_type << " from " << to_string(r) << '\n' << end();
+    raise << "can't drop2 " << expected_type << " from '" << to_string(r) << "'\n" << end();
     return;
   }
   type_tree* tmp = r.type;

@@ -77,7 +77,7 @@ def foo x:address:number [
   load-ingredients
   *x <- copy 34
 ]
-+error: foo: cannot modify x in instruction '*x <- copy 34' because it's an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'x' in instruction '*x <- copy 34' because it's an ingredient of recipe foo but not also a product
 
 :(scenario can_modify_immutable_pointers)
 def main [
@@ -109,7 +109,7 @@ def foo x:address:number [
   # this could be ok, but we're not going to try to be that smart
   *x <- copy 34
 ]
-+error: foo: cannot modify x in instruction '*x <- copy 34' because it's an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'x' in instruction '*x <- copy 34' because it's an ingredient of recipe foo but not also a product
 
 :(scenario cannot_call_mutating_recipes_on_immutable_ingredients)
 % Hide_errors = true;
@@ -129,7 +129,7 @@ def bar p:address:point -> p:address:point [
   # p could be modified here, but it doesn't have to be, it's already marked
   # mutable in the header
 ]
-+error: foo: cannot modify p in instruction 'bar p' because it's an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'p' in instruction 'bar p' because it's an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_copies_of_immutable_ingredients)
 % Hide_errors = true;
@@ -144,7 +144,7 @@ def foo p:address:point [
   q:address:point <- copy p
   *q <- put *q, x:offset, 34
 ]
-+error: foo: cannot modify q in instruction '*q <- put *q, x:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'q' in instruction '*q <- put *q, x:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
 
 :(scenario can_modify_copies_of_mutable_ingredients)
 def main [
@@ -174,7 +174,7 @@ def foo a:address:foo [
   x:address:array:number <- get *a, x:offset  # just a regular get of the container
   *x <- put-index *x, 0, 34  # but then a put-index on the result
 ]
-+error: foo: cannot modify x in instruction '*x <- put-index *x, 0, 34' because that would modify a which is an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'x' in instruction '*x <- put-index *x, 0, 34' because that would modify a which is an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_2)
 container foo [
@@ -207,7 +207,7 @@ def foo a:address:array:address:number [
   x:address:number <- index *a, 0  # just a regular index of the array
   *x <- copy 34  # but then modify the result
 ]
-+error: foo: cannot modify x in instruction '*x <- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'x' in instruction '*x <- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_4)
 container foo [
@@ -284,7 +284,7 @@ def bar [
   load-ingredients
   p:address:point <- next-ingredient  # optional ingredient; assumed to be mutable
 ]
-+error: foo: cannot modify p in instruction 'bar p' because it's an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'p' in instruction 'bar p' because it's an ingredient of recipe foo but not also a product
 
 //: when checking for immutable ingredients, remember to take space into account
 :(scenario check_space_of_reagents_in_immutability_checks)
@@ -405,7 +405,7 @@ def test-next x:address:test-list -> y:address:test-list/contained-in:x [
   load-ingredients
   y <- get *x, next:offset
 ]
-+error: foo: cannot modify p2 in instruction '*p2 <- put *p2, value:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
++error: foo: cannot modify 'p2' in instruction '*p2 <- put *p2, value:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
 
 :(code)
 void check_immutable_ingredient_in_instruction(const instruction& inst, const set<reagent>& current_ingredient_and_aliases, const string& original_ingredient_name, const recipe& caller) {
@@ -415,9 +415,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
         && current_ingredient_and_aliases.find(inst.products.at(i)) != current_ingredient_and_aliases.end()) {
       string current_product_name = inst.products.at(i).name;
       if (current_product_name == original_ingredient_name)
-        raise << maybe(caller.name) << "cannot modify " << current_product_name << " in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       else
-        raise << maybe(caller.name) << "cannot modify " << current_product_name << " in instruction '" << to_original_string(inst) << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << to_original_string(inst) << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       return;
     }
   }
@@ -438,9 +438,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (inst.operation == PUT || inst.operation == PUT_INDEX) {
         if (current_ingredient_index == 0) {
           if (current_ingredient_name == original_ingredient_name)
-            raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
           else
-            raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " in instruction '" << to_original_string(inst) << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
         }
       }
     }
@@ -449,9 +449,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
         else
-          raise << maybe(caller.name) << "cannot modify " << current_ingredient_name << " in instruction '" << to_original_string(inst) << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       }
     }
   }
@@ -460,7 +460,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
 bool is_modified_in_recipe(recipe_ordinal r, int ingredient_index, const recipe& caller) {
   const recipe& callee = get(Recipe, r);
   if (!callee.has_header) {
-    raise << maybe(caller.name) << "can't check mutability of ingredients in " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
+    raise << maybe(caller.name) << "can't check mutability of ingredients in recipe " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();
     return true;
   }
   if (ingredient_index >= SIZE(callee.ingredients)) return false;  // optional immutable ingredient
@@ -539,6 +539,6 @@ if (has_property(current_ingredient, "contained-in")) {
   if (tmp->left || tmp->right
       || !is_present_in_ingredients(caller, tmp->value)
       || !is_present_in_products(caller, tmp->value))
-    raise << maybe(caller.name) << "contained-in can only point to another ingredient+product, but got " << to_string(property(current_ingredient, "contained-in")) << '\n' << end();
+    raise << maybe(caller.name) << "/contained-in can only point to another ingredient+product, but got '" << to_string(property(current_ingredient, "contained-in")) << "'\n" << end();
   continue;
 }

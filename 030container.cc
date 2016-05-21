@@ -271,13 +271,13 @@ case GET: {
   reagent/*copy*/ base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   const reagent& offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   int offset_value = 0;
@@ -286,7 +286,7 @@ case GET: {
   else
     offset_value = offset.value;
   if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-    raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type).name << "'\n" << end();
     break;
   }
   if (inst.products.empty()) break;
@@ -294,7 +294,7 @@ case GET: {
   // Update GET product in Check
   const reagent/*copy*/ element = element_type(base.type, offset_value);
   if (!types_coercible(product, element)) {
-    raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but " << product.name << " has type " << names_to_string_without_quotes(product.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << product.name << "' has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
   }
   break;
@@ -351,7 +351,7 @@ def main [
   14:number <- copy 36
   get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
-+error: main: invalid offset 2 for point-number
++error: main: invalid offset '2' for 'point-number'
 
 :(scenario get_out_of_bounds_2)
 % Hide_errors = true;
@@ -361,7 +361,7 @@ def main [
   14:number <- copy 36
   get 12:point-number/raw, -1:offset
 ]
-+error: main: invalid offset -1 for point-number
++error: main: invalid offset '-1' for 'point-number'
 
 :(scenario get_product_type_mismatch)
 % Hide_errors = true;
@@ -371,7 +371,7 @@ def main [
   14:number <- copy 36
   15:address:number <- get 12:point-number/raw, 1:offset
 ]
-+error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type (address number)
++error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)
 
 //: we might want to call 'get' without saving the results, say in a sandbox
 
@@ -408,21 +408,21 @@ case PUT: {
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update PUT base in Check
   if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got " << inst.ingredients.at(0).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   type_ordinal base_type = base.type->value;
   reagent/*copy*/ offset = inst.ingredients.at(1);
   // Update PUT offset in Check
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put' should have type 'offset', but got " << inst.ingredients.at(1).original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'put' should have type 'offset', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-      raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for " << get(Type, base_type).name << '\n' << end();
+      raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type).name << "'\n" << end();
       break;
     }
   }
@@ -432,7 +432,7 @@ case PUT: {
   const reagent& value = inst.ingredients.at(2);
   const reagent& element = element_type(base.type, offset_value);
   if (!types_coercible(element, value)) {
-    raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should store " << names_to_string_without_quotes(element.type) << " but " << value.name << " has type " << names_to_string_without_quotes(value.type) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
   break;
@@ -546,7 +546,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   }
   else if (info.Num_calls_to_transform_all_at_first_definition != Num_calls_to_transform_all) {
     // extension after transform_all
-    raise << "there was a call to transform_all() between the definition of container " << name << " and a subsequent extension. This is not supported, since any recipes that used " << name << " values have already been transformed and 'frozen'.\n" << end();
+    raise << "there was a call to transform_all() between the definition of container '" << name << "' and a subsequent extension. This is not supported, since any recipes that used '" << name << "' values have already been transformed and \"frozen\".\n" << end();
     return;
   }
   info.name = name;
