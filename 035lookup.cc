@@ -315,7 +315,7 @@ def main [
   5:address:number <- copy 10/unsafe
   # 10 reserved for refcount
   11:number <- copy 1
-  5:address:array:number/lookup <- put-index 1:array:number:3, 5:address:number/lookup, 34
+  1:array:number:3 <- put-index 1:array:number:3, 5:address:number/lookup, 34
 ]
 +mem: storing 34 in location 3
 

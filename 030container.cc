@@ -435,6 +435,10 @@ case PUT: {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
+  if (!inst.products.empty() && inst.products.at(0).name != inst.ingredients.at(0).name) {
+    raise << maybe(get(Recipe, r).name) << "product of 'put' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -460,6 +464,16 @@ case PUT: {
   }
   goto finish_instruction;
 }
+
+:(scenario put_product_error)
+% Hide_errors = true;
+def main [
+  local-scope
+  load-ingredients
+  1:point <- merge 34, 35
+  3:point <- put 1:point, x:offset, 36
+]
++error: main: product of 'put' must be first ingredient '1:point', but got '3:point'
 
 //:: Allow containers to be defined in mu code.
 

@@ -355,6 +355,10 @@ case PUT_INDEX: {
     raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
+  if (!inst.products.empty() && inst.products.at(0).name != inst.ingredients.at(0).name) {
+    raise << maybe(get(Recipe, r).name) << "product of 'put-index' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -418,6 +422,16 @@ def main [
   1:array:point <- put-index 1:array:point, -1, 8:point
 ]
 +error: main: invalid index -1
+
+:(scenario put_index_product_error)
+% Hide_errors = true;
+def main [
+  local-scope
+  load-ingredients
+  1:array:number:3 <- create-array
+  4:array:number:3 <- put-index 1:array:number:3, 0, 34
+]
++error: main: product of 'put-index' must be first ingredient '1:array:number:3', but got '4:array:number:3'
 
 //:: compute the length of an array
 
