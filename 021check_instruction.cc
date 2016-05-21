@@ -27,7 +27,7 @@ void check_instruction(const recipe_ordinal r) {
         }
         for (int i = 0; i < SIZE(inst.ingredients); ++i) {
           if (!types_coercible(inst.products.at(i), inst.ingredients.at(i))) {
-            raise << maybe(get(Recipe, r).name) << "can't copy " << inst.ingredients.at(i).original_string << " to " << inst.products.at(i).original_string << "; types don't match\n" << end();
+            raise << maybe(get(Recipe, r).name) << "can't copy '" << inst.ingredients.at(i).original_string << "' to '" << inst.products.at(i).original_string << "'; types don't match\n" << end();
             goto finish_checking_instruction;
           }
         }
@@ -55,21 +55,21 @@ def main [
 def main [
   1:array:number <- copy 34
 ]
-+error: main: can't copy 34 to 1:array:number; types don't match
++error: main: can't copy '34' to '1:array:number'; types don't match
 
 :(scenario write_scalar_to_array_disallowed_2)
 % Hide_errors = true;
 def main [
   1:number, 2:array:number <- copy 34, 35
 ]
-+error: main: can't copy 35 to 2:array:number; types don't match
++error: main: can't copy '35' to '2:array:number'; types don't match
 
 :(scenario write_scalar_to_address_disallowed)
 % Hide_errors = true;
 def main [
   1:address:number <- copy 34
 ]
-+error: main: can't copy 34 to 1:address:number; types don't match
++error: main: can't copy '34' to '1:address:number'; types don't match
 
 :(scenario write_address_to_number_allowed)
 def main [

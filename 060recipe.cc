@@ -163,7 +163,7 @@ def f x:number -> y:number [
   load-ingredients
   y <- copy x
 ]
-+error: main: can't copy {1: (recipe number -> number)} to {2: (recipe boolean -> boolean)}; types don't match
++error: main: can't copy '{1: (recipe number -> number)}' to '{2: (recipe boolean -> boolean)}'; types don't match
 
 :(scenario copy_typecheck_recipe_variable_2)
 % Hide_errors = true;
@@ -175,7 +175,7 @@ def f x:boolean -> y:boolean [
   load-ingredients
   y <- copy x
 ]
-+error: main: can't copy f to {1: (recipe number -> number)}; types don't match
++error: main: can't copy 'f' to '{1: (recipe number -> number)}'; types don't match
 
 :(before "End Matching Types For Literal(to)")
 if (is_mu_recipe(to)) {

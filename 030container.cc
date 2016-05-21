@@ -30,7 +30,7 @@ def main [
 def main [
   2:point <- copy 1:number
 ]
-+error: main: can't copy 1:number to 2:point; types don't match
++error: main: can't copy '1:number' to '2:point'; types don't match
 
 :(before "End Mu Types Initialization")
 // A more complex container, containing another container as one of its
