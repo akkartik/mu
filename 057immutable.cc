@@ -79,6 +79,26 @@ def foo x:address:number [
 ]
 +error: foo: cannot modify 'x' in instruction '*x <- copy 34' because it's an ingredient of recipe foo but not also a product
 
+:(scenario cannot_modify_immutable_containers)
+% Hide_errors = true;
+def main [
+  local-scope
+  x:point-number <- merge 34, 35, 36
+  foo x
+]
+# immutable container
+def foo x:point-number [
+  local-scope
+  load-ingredients
+  # copy an element: ok
+  y:point <- get x, xy:offset
+  # modify the element: boom
+  # This could be ok if y contains no addresses, but we're not going to try to be that smart.
+  # It also makes the rules easier to reason about. If it's just an ingredient, just don't try to change it.
+  y <- put y, x:offset, 37
+]
++error: foo: cannot modify 'y' in instruction 'y <- put y, x:offset, 37' because that would modify 'x' which is an ingredient of recipe foo but not also a product
+
 :(scenario can_modify_immutable_pointers)
 def main [
   local-scope
@@ -321,7 +341,6 @@ void check_immutable_ingredients(recipe_ordinal r) {
   if (!caller.has_header) return;  // skip check for old-style recipes calling next-ingredient directly
   for (int i = 0; i < SIZE(caller.ingredients); ++i) {
     const reagent& current_ingredient = caller.ingredients.at(i);
-    if (!is_mu_address(current_ingredient)) continue;  // will be copied
     if (is_present_in_products(caller, current_ingredient.name)) continue;  // not expected to be immutable
     // End Immutable Ingredients Special-cases
     set<reagent> immutable_vars;
@@ -345,9 +364,10 @@ void update_aliases(const instruction& inst, set<reagent>& current_ingredient_an
         break;
       case GET:
       case INDEX:
-          // current_ingredient_indices can only have 0 or one value
+      case MAYBE_CONVERT:
+        // current_ingredient_indices can only have 0 or one value
         if (!current_ingredient_indices.empty()) {
-          if (is_mu_address(inst.products.at(0)))
+          if (is_mu_address(inst.products.at(0)) || is_mu_container(inst.products.at(0)) || is_mu_exclusive_container(inst.products.at(0)))
             current_ingredient_and_aliases.insert(inst.products.at(0));
         }
         break;
@@ -446,7 +466,6 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
     }
     else {
       // defined recipe
-      if (!is_mu_address(current_ingredient)) return;  // making a copy is ok
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
           raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
