@@ -207,7 +207,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
         before-cursor<span class="Special"> &lt;- </span>prev curr
       <span class="Delimiter">}</span>
       <span class="Comment"># clear rest of line in this window</span>
-      clear-line-delimited screen, column, right
+      clear-line-until screen, right
       <span class="Comment"># skip to next line</span>
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       column<span class="Special"> &lt;- </span>copy left
@@ -257,25 +257,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> row, column, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
 ]
 
-<span class="muRecipe">def</span> clear-line-delimited screen:address:screen, column:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
-  <span class="Delimiter">{</span>
-    <span class="Comment"># default bg-color to black</span>
-    <span class="muControl">break-if</span> bg-color-found?
-    bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-than column, right
-    <span class="muControl">break-if</span> done?
-    screen<span class="Special"> &lt;- </span>print screen, space, <span class="Constant">7/white</span>, bg-color  <span class="Comment"># foreground color is mostly unused except if the cursor shows up at this cell</span>
-    column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-]
-
 <span class="muRecipe">def</span> clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -287,7 +268,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, go the slower route</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
   <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>
 ]
@@ -302,7 +283,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     at-bottom-of-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
     <span class="muControl">break-if</span> at-bottom-of-screen?
     screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
-    clear-line-delimited screen, left, right
+    clear-line-until screen, right
     row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>

@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 031merge.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Construct types out of their constituent fields.</span>
+
+<span class="Delimiter">:(scenario merge)</span>
+container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
+]
+
+def main [
+  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+]
+<span class="traceContains">+mem: storing 3 in location 1</span>
+<span class="traceContains">+mem: storing 4 in location 2</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+MERGE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;merge&quot;</span><span class="Delimiter">,</span> MERGE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> MERGE: <span class="Delimiter">{</span>
+  <span class="Comment">// type-checking in a separate transform below</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> MERGE: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
+      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: type-check 'merge' to avoid interpreting numbers as addresses</span>
+
+<span class="Delimiter">:(scenario merge_check)</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_missing_element)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+]
+<span class="traceContains">+error: main: too few ingredients in '1:point &lt;- merge 3'</span>
+
+<span class="Delimiter">:(scenario merge_check_extra_element)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+]
+<span class="traceContains">+error: main: too many ingredients in '1:point &lt;- merge 3, 4, 5'</span>
+
+<span class="Comment">//: We want to avoid causing memory corruption, but other than that we want to</span>
+<span class="Comment">//: be flexible in how we construct containers of containers. It should be</span>
+<span class="Comment">//: equally easy to define a container out of primitives or intermediate</span>
+<span class="Comment">//: container fields.</span>
+
+<span class="Delimiter">:(scenario merge_check_recursive_containers)</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point<span class="Delimiter">,</span> <span class="Constant">5</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_recursive_containers_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+  <span class="Constant">2</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
+]
+<span class="traceContains">+error: main: too few ingredients in '2:point-number &lt;- merge 1:point'</span>
+
+<span class="Delimiter">:(scenario merge_check_recursive_containers_3)</span>
+def main [
+  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario merge_check_recursive_containers_4)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+]
+<span class="traceContains">+error: main: too few ingredients in '1:point-number &lt;- merge 3, 4'</span>
+
+<span class="Delimiter">:(scenario merge_check_reflexive)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
+  <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
+]
+$error: <span class="Constant">0</span>
+
+<span class="Comment">//: Since a container can be merged in several ways, we need to be able to</span>
+<span class="Comment">//: backtrack through different possibilities. Later we'll allow creating</span>
+<span class="Comment">//: exclusive containers which contain just one of rather than all of their</span>
+<span class="Comment">//: elements. That will also require backtracking capabilities. Here's the</span>
+<span class="Comment">//: state we need to maintain for backtracking:</span>
+
+<span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span class="Normal">struct</span> merge_check_point <span class="Delimiter">{</span>
+  reagent container<span class="Delimiter">;</span>
+  <span class="Normal">int</span> container_element_index<span class="Delimiter">;</span>
+  merge_check_point<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; c<span class="Delimiter">,</span> <span class="Normal">int</span> i<span class="Delimiter">)</span> :container<span class="Delimiter">(</span>c<span class="Delimiter">),</span> container_element_index<span class="Delimiter">(</span>i<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span class="Delimiter">};</span>
+
+<span class="Normal">struct</span> merge_check_state <span class="Delimiter">{</span>
+  stack&lt;merge_check_point&gt; data<span class="Delimiter">;</span>
+<span class="Delimiter">};</span>
+
+<span class="Delimiter">:(before &quot;End Checks&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_merge_calls<span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_merge_calls<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- type-check merge instructions in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name != <span class="Constant">&quot;merge&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a single product in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Comment">// Update product While Type-checking Merge</span>
+    type_ordinal product_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>product_type == <span class="Constant">0</span> || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind != CONTAINER &amp;&amp; info<span class="Delimiter">.</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    check_merge_call<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">,</span> product<span class="Delimiter">,</span> caller<span class="Delimiter">,</span> inst<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> check_merge_call<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; product<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> ingredient_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+  merge_check_state state<span class="Delimiter">;</span>
+  state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>push<span class="Delimiter">(</span>merge_check_point<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; vs &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &gt;= SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too few ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    reagent&amp; container = state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">;</span>
+    type_info&amp; container_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+    <span class="Normal">switch</span> <span class="Delimiter">(</span>container_info<span class="Delimiter">.</span>kind<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">case</span> CONTAINER: <span class="Delimiter">{</span>
+        <span class="Comment">// degenerate case: merge with the same type always succeeds</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index == <span class="Constant">0</span> &amp;&amp; types_coercible<span class="Delimiter">(</span>container<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span>
+          <span class="Identifier">return</span><span class="Delimiter">;</span>
+        <span class="Normal">const</span> reagent&amp; expected_ingredient = element_type<span class="Delimiter">(</span>container<span class="Delimiter">.</span>type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">);</span>
+        trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking container &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>container<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; || &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; vs ingredient &quot;</span> &lt;&lt; ingredient_index &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Comment">// if the current element is the ingredient we expect, move on to the next element/ingredient</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>types_coercible<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+          ++ingredient_index<span class="Delimiter">;</span>
+          ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
+          <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+            state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
+            <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+              <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
+                raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too many ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+              <span class="Identifier">return</span><span class="Delimiter">;</span>
+            <span class="Delimiter">}</span>
+            ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
+          <span class="Delimiter">}</span>
+        <span class="Delimiter">}</span>
+        <span class="Comment">// if not, maybe it's a field of the current element</span>
+        <span class="Normal">else</span> <span class="Delimiter">{</span>
+          <span class="Comment">// no change to ingredient_index</span>
+          state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>push<span class="Delimiter">(</span>merge_check_point<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">));</span>
+        <span class="Delimiter">}</span>
+        <span class="Identifier">break</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      <span class="Comment">// End valid_merge Cases</span>
+      <span class="Normal">default</span>: <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>container<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+          raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incorrect type of ingredient &quot;</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+          raise &lt;&lt; <span class="Constant">&quot;  (expected '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>container<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+          raise &lt;&lt; <span class="Constant">&quot;  (got '&quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+          <span class="Identifier">return</span><span class="Delimiter">;</span>
+        <span class="Delimiter">}</span>
+        ++ingredient_index<span class="Delimiter">;</span>
+        <span class="Comment">// ++state.data.top().container_element_index;  // unnecessary, but wouldn't do any harm</span>
+        <span class="Normal">do</span> <span class="Delimiter">{</span>
+          state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
+          <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+            <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
+              raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too many ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+            <span class="Identifier">return</span><span class="Delimiter">;</span>
+          <span class="Delimiter">}</span>
+          ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
+        <span class="Delimiter">}</span> <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">));</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// never gets here</span>
+  assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario merge_check_product)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+]
+<span class="traceContains">+error: main: 'merge' should yield a container in '1:number &lt;- merge 3'</span>
+
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;stack&gt;</span>
+<span class="Normal">using</span> std::stack<span class="Delimiter">;</span>
+
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

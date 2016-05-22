@@ -296,7 +296,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> read-file stdin:address:source:character, screen:address:screen<span class="muRecipe"> -&gt; </span>file:number, quit:boolean, error:boolean, stdin:address:source:character, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
+  c:character, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
@@ -338,11 +339,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
 ]
 
-<span class="Comment"># valid values: 0-7, -1 (quit), -2 (error)</span>
+<span class="Comment"># valid values for rank: 0-7</span>
 <span class="muRecipe">def</span> read-rank stdin:address:source:character, screen:address:screen<span class="muRecipe"> -&gt; </span>rank:number, quit?:boolean, error?:boolean, stdin:address:source:character, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
+  c:character, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
     q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
@@ -383,7 +385,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> expect-from-channel stdin:address:source:character, expected:character, screen:address:screen<span class="muRecipe"> -&gt; </span>result:boolean, stdin:address:source:character, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:character, stdin<span class="Special"> &lt;- </span>read stdin
+  c:character, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
   <span class="Delimiter">{</span>
     match?:boolean<span class="Special"> &lt;- </span>equal c, expected
     <span class="muControl">break-if</span> match?

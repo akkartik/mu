@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 061recipe.cc</title>
+<title>Mu - 060recipe.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -86,7 +86,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'call' should be a recipe, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'call' should be a recipe, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -178,7 +178,7 @@ recipe from_reagent<span class="Delimiter">(</span><span class="Normal">const</s
   <span class="Identifier">return</span> result_header<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_recipe<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_recipe<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -198,7 +198,7 @@ def f x:number <span class="Delimiter">-&gt;</span> y:number [
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
 ]
-<span class="traceContains">+error: main: can't copy {1: (recipe number -&gt; number)} to {2: (recipe boolean -&gt; boolean)}; types don't match</span>
+<span class="traceContains">+error: main: can't copy '{1: (recipe number -&gt; number)}' to '{2: (recipe boolean -&gt; boolean)}'; types don't match</span>
 
 <span class="Delimiter">:(scenario copy_typecheck_recipe_variable_2)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -210,7 +210,7 @@ def f x:boolean <span class="Delimiter">-&gt;</span> y:boolean [
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
 ]
-<span class="traceContains">+error: main: can't copy f to {1: (recipe number -&gt; number)}; types don't match</span>
+<span class="traceContains">+error: main: can't copy 'f' to '{1: (recipe number -&gt; number)}'; types don't match</span>
 
 <span class="Delimiter">:(before &quot;End Matching Types For Literal(to)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -229,6 +229,33 @@ def f x:boolean <span class="Delimiter">-&gt;</span> y:boolean [
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: make sure we don't accidentally break on a function literal</span>
+<span class="Delimiter">:(scenario jump_forbidden_on_recipe_literals)</span>
+<span class="Special">% Hide_errors = true;</span>
+def foo [
+  local-scope
+]
+def main [
+  local-scope
+  <span class="Delimiter">{</span>
+    <span class="Identifier">break</span>-<span class="Normal">if</span> foo
+  <span class="Delimiter">}</span>
+]
+<span class="Comment"># error should be as if foo is not a recipe</span>
+<span class="traceContains">+error: main: missing type for foo in 'break-if {foo: ()}'</span>
+
+<span class="Delimiter">:(before &quot;End JUMP_IF Checks&quot;)</span>
+check_for_recipe_literals<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;End JUMP_UNLESS Checks&quot;)</span>
+check_for_recipe_literals<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">));</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_for_recipe_literals<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

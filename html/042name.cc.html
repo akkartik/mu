@@ -52,10 +52,10 @@ def main [
 def main [
   <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy y:number
 ]
-<span class="traceContains">+error: main: use before set: y</span>
+<span class="traceContains">+error: main: use before set: 'y'</span>
 <span class="Comment"># todo: detect conditional defines</span>
 
-<span class="Delimiter">:(after &quot;End Type Modifying Transforms&quot;)</span>
+<span class="Delimiter">:(after &quot;Transform.push_back(compute_container_sizes)&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>transform_names<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -91,14 +91,14 @@ Name = Name_snapshot<span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!already_transformed<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> names<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;use before set: &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;use before set: '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
       <span class="Normal">int</span> v = lookup_name<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">),</span> r<span class="Delimiter">);</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>v &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
         inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>v<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
       <span class="Normal">else</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't find a place to store &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't find a place to store '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
@@ -117,7 +117,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
         inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>v<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
       <span class="Normal">else</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't find a place to store &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't find a place to store '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
@@ -129,7 +129,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
 <span class="Normal">bool</span> is_disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// End Null-type is_disqualified Exceptions</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -160,7 +160,7 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
   <span class="Normal">const</span> type_info&amp; container = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">);</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
-  raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;unknown element &quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot; in container &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;unknown element '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' in container '&quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -306,9 +306,9 @@ def main [
   <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> p:variant
 ]
 <span class="traceContains">+name: variant p of type number-or-point has tag 1</span>
+<span class="traceContains">+mem: storing 1 in location 22</span>
 <span class="traceContains">+mem: storing 35 in location 20</span>
 <span class="traceContains">+mem: storing 36 in location 21</span>
-<span class="traceContains">+mem: storing 1 in location 22</span>
 
 <span class="Delimiter">:(before &quot;End transform_names(inst) Special-cases&quot;)</span>
 <span class="Comment">// convert variant names of exclusive containers</span>

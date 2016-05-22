@@ -1,0 +1,580 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 036refcount.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.SalientComment { color: #00ffff; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Update refcounts when copying addresses.</span>
+<span class="Comment">//: The top of the address layer has more on refcounts.</span>
+
+<span class="Delimiter">:(scenario refcounts)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>/unsafe
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1000: &quot;literal&quot;, &quot;unsafe&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+
+<span class="Delimiter">:(before &quot;End write_memory(x) Special-cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>should_update_refcounts_in_write_memory<span class="Delimiter">(</span>product_index<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
+    assert<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>!x<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">);</span>
+    update_refcounts<span class="Delimiter">(</span>x<span class="Delimiter">,</span> data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// End Update Refcounts in write_memory(x)</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">//: hook for a later layer</span>
+<span class="Normal">bool</span> should_update_refcounts_in_write_memory<span class="Delimiter">(</span><span class="Normal">int</span> product_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> update_refcounts<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">,</span> <span class="Normal">int</span> new_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>old<span class="Delimiter">));</span>
+  update_refcounts<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old<span class="Delimiter">.</span>value<span class="Delimiter">),</span> new_address<span class="Delimiter">,</span> old<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> payload_size<span class="Delimiter">(</span>old<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> update_refcounts<span class="Delimiter">(</span><span class="Normal">int</span> old_address<span class="Delimiter">,</span> <span class="Normal">int</span> new_address<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* payload_type<span class="Delimiter">,</span> <span class="Normal">int</span> <span class="Comment">/*</span><span class="Comment">just in case it's an array</span><span class="Comment">*/</span>payload_size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>old_address == new_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copying address to itself; refcount unchanged&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// decrement refcount of old address</span>
+  assert<span class="Delimiter">(</span>old_address &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>old_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> old_refcount = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;decrementing refcount of &quot;</span> &lt;&lt; old_address &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; old_refcount &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <span class="Delimiter">(</span>old_refcount-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    --old_refcount<span class="Delimiter">;</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> old_address<span class="Delimiter">,</span> old_refcount<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>old_refcount &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      tb_shutdown<span class="Delimiter">();</span>
+      DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+      cerr &lt;&lt; <span class="Constant">&quot;Negative refcount: &quot;</span> &lt;&lt; old_address &lt;&lt; <span class="Constant">' '</span> &lt;&lt; old_refcount &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+      exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment">// End Decrement Reference Count(old_address, payload_type, payload_size)</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// increment refcount of new address</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>new_address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> new_refcount = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> new_address<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>new_refcount &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// == 0 only when new_address == old_address</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing refcount of &quot;</span> &lt;&lt; new_address &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; new_refcount &lt;&lt; <span class="Constant">&quot; -&gt; &quot;</span> &lt;&lt; <span class="Delimiter">(</span>new_refcount+<span class="Constant">1</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> new_address<span class="Delimiter">,</span> new_refcount+<span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">int</span> payload_size<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  lookup_memory_core<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario refcounts_reflexive)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># idempotent copies leave refcount unchanged</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: copying address to itself; refcount unchanged</span>
+
+<span class="Delimiter">:(scenario refcounts_call)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># passing in addresses to recipes increments refcount</span>
+  foo <span class="Constant">1</span>:address:number
+  <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+]
+def foo [
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- next-ingredient</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+
+<span class="Comment">//: fix up any instructions that don't follow the usual flow of read_memory</span>
+<span class="Comment">//: before the RUN switch, and write_memory after</span>
+
+<span class="Delimiter">:(scenario refcounts_put)</span>
+container foo [
+  <span class="Normal">x</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;foo&quot;)} &lt;- new {foo: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1002: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()} &lt;- put {2: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}, {x: &quot;offset&quot;}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="Comment"># put increments refcount</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+
+<span class="Delimiter">:(after &quot;Write Memory in PUT in Run&quot;)</span>
+reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">,</span> offset<span class="Delimiter">);</span>
+assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>element<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
+element<span class="Delimiter">.</span>value = address<span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>element<span class="Delimiter">))</span>
+  update_refcounts<span class="Delimiter">(</span>element<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span class="Comment">// End Update Refcounts in PUT</span>
+
+<span class="Delimiter">:(scenario refcounts_put_index)</span>
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># fake array because we can't yet create an array of addresses (wait for the</span>
+  <span class="Comment"># support for dilated reagents and parsing more complex type trees)</span>
+  <span class="Constant">1003</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># skip refcount at 1002</span>
+  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1002</span>/unsafe
+  *<span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:number<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;)} &lt;- copy {1002: &quot;literal&quot;, &quot;unsafe&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1002: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()} &lt;- put-index {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}, {0: &quot;literal&quot;}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="Comment"># put-index increments refcount</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+
+<span class="Delimiter">:(after &quot;Write Memory in PUT_INDEX in Run&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>element<span class="Delimiter">))</span>
+  update_refcounts<span class="Delimiter">(</span>element<span class="Delimiter">,</span> value<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span class="Comment">// End Update Refcounts in PUT_INDEX</span>
+
+<span class="Delimiter">:(scenario refcounts_maybe_convert)</span>
+exclusive-container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">p</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/p<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">4</span>:address:number<span class="Delimiter">,</span> <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">2</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/p
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="Comment"># merging in an address increments refcount</span>
+<span class="traceContains">+run: {2: &quot;foo&quot;} &lt;- merge {1: &quot;literal&quot;, &quot;p&quot;: ()}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {4: (&quot;address&quot; &quot;number&quot;)}, {5: &quot;boolean&quot;} &lt;- maybe-convert {2: &quot;foo&quot;}, {1: &quot;variant&quot;, &quot;p&quot;: ()}</span>
+<span class="Comment"># maybe-convert increments refcount on success</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+
+<span class="Delimiter">:(after &quot;Write Memory in Successful MAYBE_CONVERT&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
+  update_refcounts<span class="Delimiter">(</span>product<span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">));</span>
+<span class="Comment">// End Update Refcounts in Successful MAYBE_CONVERT</span>
+
+<span class="SalientComment">//:: manage refcounts in instructions that copy multiple locations at a time</span>
+
+<span class="Delimiter">:(scenario refcounts_copy_nested)</span>
+container foo [
+  <span class="Normal">x</span>:address:number  <span class="Comment"># address inside container</span>
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:foo
+]
+<span class="traceContains">+transform: compute address offsets for container foo</span>
+<span class="traceContains">+transform: checking container foo, element 0</span>
+<span class="traceContains">+transform: address at offset 0</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()} &lt;- put {2: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}, {x: &quot;offset&quot;}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="Comment"># copying a container increments refcounts of any contained addresses</span>
+<span class="traceContains">+run: {3: &quot;foo&quot;} &lt;- copy {2: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+
+<span class="Delimiter">:(after &quot;End type_tree Definition&quot;)</span>
+<span class="Normal">struct</span> address_element_info <span class="Delimiter">{</span>
+  <span class="Normal">int</span> offset<span class="Delimiter">;</span>  <span class="Comment">// where inside a container type (after flattening nested containers!) the address lies</span>
+  <span class="Normal">const</span> type_tree* payload_type<span class="Delimiter">;</span>  <span class="Comment">// all the information we need to compute sizes of items inside an address inside a container. Doesn't need to be a full-scale reagent, since an address inside a container can never be an array, and arrays are the only type that need to know their location to compute their size.</span>
+  address_element_info<span class="Delimiter">(</span><span class="Normal">int</span> o<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    offset = o<span class="Delimiter">;</span>
+    payload_type = p<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  address_element_info<span class="Delimiter">(</span><span class="Normal">const</span> address_element_info&amp; other<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    offset = other<span class="Delimiter">.</span>offset<span class="Delimiter">;</span>
+    payload_type = other<span class="Delimiter">.</span>payload_type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>payload_type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  ~address_element_info<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>payload_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">delete</span> payload_type<span class="Delimiter">;</span>
+      payload_type = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  address_element_info&amp; <span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> address_element_info&amp; other<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    offset = other<span class="Delimiter">.</span>offset<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>payload_type<span class="Delimiter">)</span> <span class="Normal">delete</span> payload_type<span class="Delimiter">;</span>
+    payload_type = other<span class="Delimiter">.</span>payload_type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>payload_type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    <span class="Identifier">return</span> *<span class="Normal">this</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">};</span>
+<span class="Delimiter">:(before &quot;struct container_metadata &quot;)</span>
+<span class="Comment">// valid fields for containers: size, offset, address, maybe_address (if container directly or indirectly contains exclusive containers with addresses)</span>
+<span class="Comment">// valid fields for exclusive containers: size, maybe_address</span>
+<span class="Delimiter">:(before &quot;End container_metadata Fields&quot;)</span>
+vector&lt;address_element_info&gt; address<span class="Delimiter">;</span>  <span class="Comment">// list of offsets containing addresses, and the sizes of their corresponding payloads</span>
+map&lt;pair&lt;<span class="Comment">/*</span><span class="Comment">offset</span><span class="Comment">*/</span><span class="Normal">int</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag</span><span class="Comment">*/</span><span class="Normal">int</span>&gt;<span class="Delimiter">,</span> vector&lt;address_element_info&gt; &gt; maybe_address<span class="Delimiter">;</span>
+
+<span class="Comment">//: populate metadata.address in a separate transform, because it requires</span>
+<span class="Comment">//: already knowing the sizes of all types</span>
+
+<span class="Delimiter">:(after &quot;Transform.push_back(compute_container_sizes)&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>compute_container_address_offsets<span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- compute address offsets for &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;- compute address offsets for &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      compute_container_address_offsets<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      compute_container_address_offsets<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">))</span>
+    r<span class="Delimiter">.</span>metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> compute_container_address_offsets<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> compute_container_address_offsets<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for container &quot;</span> &lt;&lt; info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!append_addresses<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> type<span class="Delimiter">,</span> metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> metadata<span class="Delimiter">))</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!metadata<span class="Delimiter">.</span>maybe_address<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for exclusive container &quot;</span> &lt;&lt; info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> tag = <span class="Constant">0</span><span class="Delimiter">;</span> tag &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!append_addresses<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip tag offset</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> variant_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> tag<span class="Delimiter">).</span>type<span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>maybe_address<span class="Delimiter">,</span> pair&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">tag offset</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">,</span> tag<span class="Delimiter">)),</span> metadata<span class="Delimiter">))</span>
+        <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// returns false on error (raised elsewhere)</span>
+<span class="Comment">//: error status is used in later layers</span>
+<span class="Normal">bool</span> append_addresses<span class="Delimiter">(</span><span class="Normal">int</span> base_offset<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* type<span class="Delimiter">,</span> vector&lt;address_element_info&gt;&amp; out<span class="Delimiter">,</span> container_metadata&amp; out_metadata<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right &amp;&amp; type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>  <span class="Comment">// array types can't be handled without a full reagent and its value</span>
+    out<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>address_element_info<span class="Delimiter">(</span>base_offset<span class="Delimiter">,</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)));</span>
+    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == PRIMITIVE<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr_index = <span class="Constant">0</span><span class="Delimiter">,</span> curr_offset = base_offset<span class="Delimiter">;</span> curr_index &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++curr_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking container &quot;</span> &lt;&lt; type<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;, element &quot;</span> &lt;&lt; curr_index &lt;&lt; end<span class="Delimiter">();</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> curr_index<span class="Delimiter">);</span>
+    <span class="Comment">// Compute Container Address Offset(element)</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address at offset &quot;</span> &lt;&lt; curr_offset &lt;&lt; end<span class="Delimiter">();</span>
+      out<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>address_element_info<span class="Delimiter">(</span>curr_offset<span class="Delimiter">,</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)));</span>
+      ++curr_offset<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!append_addresses<span class="Delimiter">(</span>curr_offset<span class="Delimiter">,</span> element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> out<span class="Delimiter">,</span> out_metadata<span class="Delimiter">))</span>
+        <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// error</span>
+      curr_offset += size_of<span class="Delimiter">(</span>element<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_exclusive_container<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> type_info&amp; element_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> tag = <span class="Constant">0</span><span class="Delimiter">;</span> tag &lt; SIZE<span class="Delimiter">(</span>element_info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        vector&lt;address_element_info&gt;&amp; tmp = get_or_insert<span class="Delimiter">(</span>out_metadata<span class="Delimiter">.</span>maybe_address<span class="Delimiter">,</span> pair&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>curr_offset<span class="Delimiter">,</span> tag<span class="Delimiter">));</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+          <span class="Normal">if</span> <span class="Delimiter">(</span>!append_addresses<span class="Delimiter">(</span>curr_offset+<span class="Constant">1</span><span class="Delimiter">,</span> variant_type<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> tag<span class="Delimiter">).</span>type<span class="Delimiter">,</span> tmp<span class="Delimiter">,</span> out_metadata<span class="Delimiter">))</span>
+            <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// error</span>
+        <span class="Delimiter">}</span>
+      <span class="Delimiter">}</span>
+      curr_offset += size_of<span class="Delimiter">(</span>element<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      <span class="Comment">// non-address primitive</span>
+      ++curr_offset<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">int</span> payload_size<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+  <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: use metadata.address to update refcounts within containers, arrays and</span>
+<span class="Comment">//: exclusive containers</span>
+
+<span class="Delimiter">:(before &quot;End Update Refcounts in write_memory(x)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_mu_exclusive_container<span class="Delimiter">(</span>x<span class="Delimiter">))</span>
+  update_container_refcounts<span class="Delimiter">(</span>x<span class="Delimiter">,</span> data<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Update Refcounts in PUT&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>element<span class="Delimiter">)</span> || is_mu_exclusive_container<span class="Delimiter">(</span>element<span class="Delimiter">))</span>
+  update_container_refcounts<span class="Delimiter">(</span>element<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;End Update Refcounts in PUT_INDEX&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>element<span class="Delimiter">)</span> || is_mu_exclusive_container<span class="Delimiter">(</span>element<span class="Delimiter">))</span>
+  update_container_refcounts<span class="Delimiter">(</span>element<span class="Delimiter">,</span> value<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Update Refcounts in Successful MAYBE_CONVERT&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>product<span class="Delimiter">)</span> || is_mu_exclusive_container<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  vector&lt;<span class="Normal">double</span>&gt; data<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; size_of<span class="Delimiter">(</span>product<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    data<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address+<span class="Comment">/*</span><span class="Comment">skip tag</span><span class="Comment">*/</span><span class="Constant">1</span>+i<span class="Delimiter">));</span>
+  update_container_refcounts<span class="Delimiter">(</span>product<span class="Delimiter">,</span> data<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> update_container_refcounts<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>is_mu_container<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_mu_exclusive_container<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
+  <span class="Normal">const</span> container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> address_element_info&amp; info = metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    update_refcounts<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value + info<span class="Delimiter">.</span>offset<span class="Delimiter">),</span> data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>info<span class="Delimiter">.</span>offset<span class="Delimiter">),</span> info<span class="Delimiter">.</span>payload_type<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>info<span class="Delimiter">.</span>payload_type<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;pair&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;<span class="Delimiter">,</span> vector&lt;address_element_info&gt; &gt;::const_iterator p = metadata<span class="Delimiter">.</span>maybe_address<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != metadata<span class="Delimiter">.</span>maybe_address<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>first<span class="Delimiter">)</span> != p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">.</span>second<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> address_element_info&amp; info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+      update_refcounts<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value + info<span class="Delimiter">.</span>offset<span class="Delimiter">),</span> data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>info<span class="Delimiter">.</span>offset<span class="Delimiter">),</span> info<span class="Delimiter">.</span>payload_type<span class="Delimiter">,</span> size_of<span class="Delimiter">(</span>info<span class="Delimiter">.</span>payload_type<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario refcounts_put_container)</span>
+container foo [
+  <span class="Normal">a</span>:bar  <span class="Comment"># contains an address</span>
+]
+container bar [
+  <span class="Normal">x</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  *<span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">3</span>:address:foo<span class="Delimiter">,</span> a:offset<span class="Delimiter">,</span> <span class="Constant">2</span>:bar
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: &quot;bar&quot;} &lt;- merge {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {3: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()} &lt;- put {3: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}, {a: &quot;offset&quot;}, {2: &quot;bar&quot;}</span>
+<span class="Comment"># put increments refcount inside container</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+
+<span class="Delimiter">:(scenario refcounts_put_index_container)</span>
+container bar [
+  <span class="Normal">x</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:address:array:bar<span class="Special"> &lt;- </span><span class="Normal">new</span> bar:type<span class="Delimiter">,</span> <span class="Constant">3</span>
+  *<span class="Constant">3</span>:address:array:bar<span class="Special"> &lt;- </span>put-index *<span class="Constant">3</span>:address:array:bar<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">2</span>:bar
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: &quot;bar&quot;} &lt;- merge {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {3: (&quot;address&quot; &quot;array&quot; &quot;bar&quot;), &quot;lookup&quot;: ()} &lt;- put-index {3: (&quot;address&quot; &quot;array&quot; &quot;bar&quot;), &quot;lookup&quot;: ()}, {0: &quot;literal&quot;}, {2: &quot;bar&quot;}</span>
+<span class="Comment"># put-index increments refcount inside container</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+
+<span class="Delimiter">:(scenario refcounts_maybe_convert_container)</span>
+exclusive-container foo [
+  <span class="Normal">a</span>:number
+  <span class="Normal">b</span>:bar  <span class="Comment"># contains an address</span>
+]
+container bar [
+  <span class="Normal">x</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">2</span>:bar
+  <span class="Constant">5</span>:bar<span class="Delimiter">,</span> <span class="Constant">6</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">3</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/b
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: &quot;bar&quot;} &lt;- merge {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {3: &quot;foo&quot;} &lt;- merge {1: &quot;literal&quot;, &quot;b&quot;: ()}, {2: &quot;bar&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+<span class="traceContains">+run: {5: &quot;bar&quot;}, {6: &quot;boolean&quot;} &lt;- maybe-convert {3: &quot;foo&quot;}, {1: &quot;variant&quot;, &quot;b&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 3 -&gt; 4</span>
+
+<span class="Delimiter">:(scenario refcounts_copy_doubly_nested)</span>
+container foo [
+  <span class="Normal">a</span>:bar  <span class="Comment"># no addresses</span>
+  <span class="Normal">b</span>:curr  <span class="Comment"># contains addresses</span>
+]
+container bar [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
+]
+container curr [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:address:number  <span class="Comment"># address inside container inside container</span>
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:curr<span class="Special"> &lt;- </span><span class="Normal">new</span> curr:type
+  *<span class="Constant">2</span>:address:curr<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:curr<span class="Delimiter">,</span> <span class="Constant">1</span>:offset/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  *<span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">3</span>:address:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset/b<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:curr
+  <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:foo
+]
+<span class="traceContains">+transform: compute address offsets for container foo</span>
+<span class="traceContains">+transform: checking container foo, element 1</span>
+<span class="traceContains">+transform: address at offset 3</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="Comment"># storing an address in a container updates its refcount</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;curr&quot;), &quot;lookup&quot;: ()} &lt;- put {2: (&quot;address&quot; &quot;curr&quot;), &quot;lookup&quot;: ()}, {1: &quot;offset&quot;, &quot;y&quot;: ()}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="Comment"># storing a container in a container updates refcounts of any contained addresses</span>
+<span class="traceContains">+run: {3: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()} &lt;- put {3: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}, {1: &quot;offset&quot;, &quot;b&quot;: ()}, {2: (&quot;address&quot; &quot;curr&quot;), &quot;lookup&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+<span class="Comment"># copying a container containing a container containing an address updates refcount</span>
+<span class="traceContains">+run: {4: &quot;foo&quot;} &lt;- copy {3: (&quot;address&quot; &quot;foo&quot;), &quot;lookup&quot;: ()}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 3 -&gt; 4</span>
+
+<span class="Delimiter">:(scenario refcounts_copy_exclusive_container_within_container)</span>
+container foo [
+  <span class="Normal">a</span>:number
+  <span class="Normal">b</span>:bar
+]
+exclusive-container bar [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
+  <span class="Normal">z</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">2</span>:bar
+  <span class="Constant">5</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">6</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">13</span><span class="Delimiter">,</span> <span class="Constant">5</span>:bar
+  <span class="Constant">8</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/z<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">9</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">8</span>:bar
+  <span class="Constant">11</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">9</span>:foo
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="Comment"># no change while merging items of other types</span>
+<span class="traceContains">+run: {8: &quot;bar&quot;} &lt;- merge {2: &quot;literal&quot;, &quot;z&quot;: ()}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {9: &quot;foo&quot;} &lt;- merge {14: &quot;literal&quot;}, {8: &quot;bar&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+<span class="traceContains">+run: {11: &quot;foo&quot;} &lt;- copy {9: &quot;foo&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 3 -&gt; 4</span>
+
+<span class="Delimiter">:(scenario refcounts_copy_container_within_exclusive_container)</span>
+exclusive-container foo [
+  <span class="Normal">a</span>:number
+  <span class="Normal">b</span>:bar
+]
+container bar [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
+  <span class="Normal">z</span>:address:number
+]
+def main [
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/a<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">6</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/a<span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">10</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/x<span class="Delimiter">,</span> <span class="Constant">15</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">13</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">10</span>:bar
+  <span class="Constant">17</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>:foo
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="Comment"># no change while merging items of other types</span>
+<span class="traceContains">+run: {10: &quot;bar&quot;} &lt;- merge {2: &quot;literal&quot;, &quot;x&quot;: ()}, {15: &quot;literal&quot;, &quot;y&quot;: ()}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {13: &quot;foo&quot;} &lt;- merge {1: &quot;literal&quot;, &quot;b&quot;: ()}, {10: &quot;bar&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 2 -&gt; 3</span>
+<span class="traceContains">+run: {17: &quot;foo&quot;} &lt;- copy {13: &quot;foo&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 3 -&gt; 4</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> is_mu_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> is_mu_container<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Normal">bool</span> is_mu_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> is_mu_exclusive_container<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

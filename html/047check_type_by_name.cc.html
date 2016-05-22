@@ -46,7 +46,7 @@ def main [
   <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Normal">x</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
-<span class="traceContains">+error: main: x used with multiple types</span>
+<span class="traceContains">+error: main: 'x' used with multiple types</span>
 
 <span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_or_set_types_by_name<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
@@ -85,16 +85,16 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     known<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>known<span class="Delimiter">.</span>find<span class="Delimiter">(</span>x<span class="Delimiter">)-&gt;</span>type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; used with multiple types</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' used with multiple types</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't be just an array. What is it an array of?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: can't be just an array. What is it an array of?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't determine the size of array variable &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;. Either allocate it separately and make the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; address:..., or specify the length of the array in the type of &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't determine the size of array variable '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'. Either allocate it separately and make the type of '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' an address, or specify the length of the array in the type of '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -125,7 +125,7 @@ def main [
   x<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
-<span class="traceContains">+error: main: missing type for x in 'x &lt;- copy 1'</span>
+<span class="traceContains">+error: main: missing type for 'x' in 'x &lt;- copy 1'</span>
 
 <span class="Delimiter">:(scenario typo_in_address_type_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -140,7 +140,7 @@ def main [
 def main [
   <span class="Normal">x</span>:array:number<span class="Special"> &lt;- </span>merge <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">13</span>
 ]
-<span class="traceContains">+error: main can't determine the size of array variable x. Either allocate it separately and make the type of x address:..., or specify the length of the array in the type of x.</span>
+<span class="traceContains">+error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)</span>

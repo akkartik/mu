@@ -9,7 +9,7 @@ container square [
 def nqueens n:number, queens:address:list:square -> result:number [
   local-scope
   load-ingredients
-  # if queens is already long enough, print it and return
+  # if 'queens' is already long enough, print it and return
   added-so-far:number <- length queens
   {
     done?:boolean <- greater-or-equal added-so-far, n

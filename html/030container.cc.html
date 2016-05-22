@@ -23,7 +23,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.PreProc { color: #800080; }
 -->
 </style>
 
@@ -49,7 +48,7 @@ get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<sp
 <span class="Comment">//: Containers can be copied around with a single instruction just like</span>
 <span class="Comment">//: numbers, no matter how large they are.</span>
 
-<span class="Comment">//: Tests in this layer often explicitly setup memory before reading it as a</span>
+<span class="Comment">//: Tests in this layer often explicitly set up memory before reading it as a</span>
 <span class="Comment">//: container. Don't do this in general. I'm tagging exceptions with /raw to</span>
 <span class="Comment">//: avoid errors.</span>
 <span class="Delimiter">:(scenario copy_multiple_locations)</span>
@@ -67,7 +66,7 @@ def main [
 def main [
   <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
 ]
-<span class="traceContains">+error: main: can't copy 1:number to 2:point; types don't match</span>
+<span class="traceContains">+error: main: can't copy '1:number' to '2:point'; types don't match</span>
 
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
 <span class="Comment">// A more complex container, containing another container as one of its</span>
@@ -129,11 +128,65 @@ def main [
 ]
 <span class="traceContains">+mem: storing 0 in location 7</span>
 
-<span class="Delimiter">:(before &quot;End size_of(type) Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// error value, but we'll raise it elsewhere</span>
-  <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Comment">//: Global data structure for container metadata.</span>
+<span class="Comment">//: Can't put this in type_info because later layers will add support for more</span>
+<span class="Comment">//: complex type trees where metadata depends on *combinations* of types.</span>
+
+<span class="Delimiter">:(before &quot;struct reagent&quot;)</span>
+<span class="Normal">struct</span> container_metadata <span class="Delimiter">{</span>
+  <span class="Normal">int</span> size<span class="Delimiter">;</span>
+  vector&lt;<span class="Normal">int</span>&gt; offset<span class="Delimiter">;</span>
+  <span class="Comment">// End container_metadata Fields</span>
+  container_metadata<span class="Delimiter">()</span> :size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// End container_metadata Constructor</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">};</span>
+<span class="Delimiter">:(before &quot;End reagent Fields&quot;)</span>
+container_metadata metadata<span class="Delimiter">;</span>  <span class="Comment">// can't be a pointer into Container_metadata because we keep changing the base storage when we save/restore snapshots</span>
+<span class="Delimiter">:(before &quot;End reagent Copy Operator&quot;)</span>
+metadata = other<span class="Delimiter">.</span>metadata<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End reagent Copy Constructor&quot;)</span>
+metadata = other<span class="Delimiter">.</span>metadata<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// todo: switch to map after figuring out how to consistently compare type trees</span>
+vector&lt;pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt; &gt; Container_metadata<span class="Delimiter">,</span> Container_metadata_snapshot<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End save_snapshots&quot;)</span>
+Container_metadata_snapshot = Container_metadata<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End restore_snapshots&quot;)</span>
+restore_container_metadata<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+atexit<span class="Delimiter">(</span>clear_container_metadata<span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// invariant: Container_metadata always contains a superset of Container_metadata_snapshot</span>
+<span class="Normal">void</span> restore_container_metadata<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>Container_metadata_snapshot<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == Container_metadata_snapshot<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">);</span>
+      <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">delete</span> Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">;</span>
+    Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  Container_metadata<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata_snapshot<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
+<span class="Normal">void</span> clear_container_metadata<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Container_metadata_snapshot<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">delete</span> Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">;</span>
+    Container_metadata<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  Container_metadata<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: do no work in size_of, simply lookup Container_metadata</span>
+
+<span class="Delimiter">:(before &quot;End size_of(reagent r) Cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">)</span> <span class="Identifier">return</span> r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End size_of(type) Cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// error value, but we'll raise it elsewhere</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left &amp;&amp; !type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
   <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
@@ -144,19 +197,83 @@ def main [
 <span class="Delimiter">}</span>
 type_info t = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>t<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// size of a container is the sum of the sizes of its elements</span>
-  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Comment">// todo: strengthen assertion to disallow mutual type recursion</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>t<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">-&gt;</span>value == type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; <span class="Constant">&quot;container &quot;</span> &lt;&lt; t<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; can't include itself as a member</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    reagent tmp<span class="Delimiter">;</span>
-    tmp<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">);</span>
-    result += size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">(</span>tmp<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
+  <span class="Comment">// Compute size_of Container</span>
+  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">).</span>size<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: precompute Container_metadata before we need size_of</span>
+<span class="Comment">//: also store a copy in each reagent in each instruction in each recipe</span>
+
+<span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)  // needs to happen before transform_names, therefore after &quot;End Type Modifying Transforms&quot; below</span>
+<span class="Delimiter">Transform.push_back(compute_container_sizes)</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> compute_container_sizes<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      compute_container_sizes<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      compute_container_sizes<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> compute_container_sizes<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  reagent rcopy = r<span class="Delimiter">;</span>
+  <span class="Comment">// Compute Container Size(reagent rcopy)</span>
+  set&lt;type_ordinal&gt; pending_metadata<span class="Delimiter">;</span>
+  compute_container_sizes<span class="Delimiter">(</span>rcopy<span class="Delimiter">.</span>type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> rcopy<span class="Delimiter">.</span>type<span class="Delimiter">))</span>
+    r<span class="Delimiter">.</span>metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> rcopy<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> compute_container_sizes<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">,</span> set&lt;type_ordinal&gt;&amp; pending_metadata<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>pending_metadata<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> pending_metadata<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> compute_container_sizes<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> compute_container_sizes<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    container_metadata metadata<span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+      <span class="Comment">// Compute Container Size(element)</span>
+      compute_container_sizes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+      metadata<span class="Delimiter">.</span>offset<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">);</span>  <span class="Comment">// save previous size as offset</span>
+      metadata<span class="Delimiter">.</span>size += size_of<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    Container_metadata<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt;<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">),</span> metadata<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// End compute_container_sizes Cases</span>
+<span class="Delimiter">}</span>
+
+container_metadata&amp; get<span class="Delimiter">(</span>vector&lt;pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt; &gt;&amp; all<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>all<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>matches<span class="Delimiter">(</span>all<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> key<span class="Delimiter">))</span>
+      <span class="Identifier">return</span> all<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  tb_shutdown<span class="Delimiter">();</span>
+  raise &lt;&lt; <span class="Constant">&quot;unknown size for type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>key<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> contains_key<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt; &gt;&amp; all<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>all<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>matches<span class="Delimiter">(</span>all<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> key<span class="Delimiter">))</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> matches<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* a<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>a == b<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!a || !b<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>value != b<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> matches<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> &amp;&amp; matches<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario stash_container)</span>
@@ -187,16 +304,16 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get' expects exactly 2 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// new copy for every invocation</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// new copy for every invocation</span>
   <span class="Comment">// Update GET base in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'get' should be a container, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'get' should be a container, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_ordinal base_type = base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-  reagent offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">const</span> reagent&amp; offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>offset<span class="Delimiter">)</span> || !is_mu_scalar<span class="Delimiter">(</span>offset<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'get' should have type 'offset', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'get' should have type 'offset', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">int</span> offset_value = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -205,22 +322,22 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">else</span>
     offset_value = offset<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset_value &lt; <span class="Constant">0</span> || offset_value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid offset &quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid offset '&quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot;' for '&quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-  reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update GET product in Check</span>
-  <span class="Normal">const</span> reagent element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
+  <span class="Normal">const</span> reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span> element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'get &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but '&quot;</span> &lt;&lt; product<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' has type &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> GET: <span class="Delimiter">{</span>
-  reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update GET base in Run</span>
   <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -230,11 +347,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   type_ordinal base_type = base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
   <span class="Normal">int</span> offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// copied from Check above</span>
-  <span class="Normal">int</span> src = base_address<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
-    src += size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>base<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">);</span>
+  <span class="Normal">int</span> src = base_address + base<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>offset<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
-  reagent element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset<span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">,</span> offset<span class="Delimiter">);</span>
   element<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// Read element</span>
@@ -243,13 +359,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">const</span> reagent element_type<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; base<span class="Delimiter">,</span> <span class="Normal">int</span> offset_value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> reagent element_type<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">,</span> <span class="Normal">int</span> offset_value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>offset_value &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
-  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">);</span>
-  reagent element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset_value<span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset_value<span class="Delimiter">);</span>
   <span class="Comment">// End element_type Special-cases</span>
   <span class="Identifier">return</span> element<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -271,7 +387,7 @@ def main [
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:offset  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
 ]
-<span class="traceContains">+error: main: invalid offset 2 for point-number</span>
+<span class="traceContains">+error: main: invalid offset '2' for 'point-number'</span>
 
 <span class="Delimiter">:(scenario get_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -281,7 +397,7 @@ def main [
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> -<span class="Constant">1</span>:offset
 ]
-<span class="traceContains">+error: main: invalid offset -1 for point-number</span>
+<span class="traceContains">+error: main: invalid offset '-1' for 'point-number'</span>
 
 <span class="Delimiter">:(scenario get_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -291,7 +407,7 @@ def main [
   <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   <span class="Constant">15</span>:address:number<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
-<span class="traceContains">+error: main: 'get 12:point-number/raw, 1:offset' should write to number but 15 has type (address number)</span>
+<span class="traceContains">+error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)</span>
 
 <span class="Comment">//: we might want to call 'get' without saving the results, say in a sandbox</span>
 
@@ -325,41 +441,45 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put' expects exactly 3 ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update PUT base in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'put' should be a container, but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'put' should be a container, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_ordinal base_type = base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-  reagent offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Comment">// Update PUT offset in Check</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>offset<span class="Delimiter">)</span> || !is_mu_scalar<span class="Delimiter">(</span>offset<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'put' should have type 'offset', but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'put' should have type 'offset', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">int</span> offset_value = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>offset<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// later layers permit non-integer offsets</span>
     offset_value = to_integer<span class="Delimiter">(</span>offset<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>offset_value &lt; <span class="Constant">0</span> || offset_value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid offset &quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot; for &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid offset '&quot;</span> &lt;&lt; offset_value &lt;&lt; <span class="Constant">&quot;' for '&quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
     offset_value = offset<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  reagent&amp; value = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
-  reagent element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
+  <span class="Normal">const</span> reagent&amp; value = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+  <span class="Normal">const</span> reagent&amp; element = element_type<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">,</span> offset_value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>element<span class="Delimiter">,</span> value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should store &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but &quot;</span> &lt;&lt; value<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has type &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>value<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'put &quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' should write to &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but '&quot;</span> &lt;&lt; value<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' has type &quot;</span> &lt;&lt; names_to_string_without_quotes<span class="Delimiter">(</span>value<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name != inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product of 'put' must be first ingredient '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> PUT: <span class="Delimiter">{</span>
-  reagent base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> base = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update PUT base in Run</span>
   <span class="Normal">int</span> base_address = base<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>base_address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -369,18 +489,27 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   type_ordinal base_type = base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
   <span class="Normal">int</span> offset = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>offset &lt; <span class="Constant">0</span> || offset &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base_type<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// copied from Check above</span>
-  <span class="Normal">int</span> address = base_address<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; offset<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span>
-    address += size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">(</span>base<span class="Delimiter">,</span> i<span class="Delimiter">));</span>
+  <span class="Normal">int</span> address = base_address + base<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>offset<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy to is &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// optimization: directly write the element rather than updating 'product'</span>
   <span class="Comment">// and writing the entire container</span>
+  <span class="Comment">// Write Memory in PUT in Run</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; address+i &lt;&lt; end<span class="Delimiter">();</span>
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">goto</span> finish_instruction<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario put_product_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  load-ingredients
+  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>put <span class="Constant">1</span>:point<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">36</span>
+]
+<span class="traceContains">+error: main: product of 'put' must be first ingredient '1:point', but got '3:point'</span>
 
 <span class="SalientComment">//:: Allow containers to be defined in mu code.</span>
 
@@ -416,10 +545,37 @@ container bar [
 <span class="traceContains">+parse:   element: {x: &quot;number&quot;}</span>
 <span class="traceContains">+parse:   element: {y: &quot;number&quot;}</span>
 
+<span class="Comment">//: if a container is defined again, the new fields add to the original definition</span>
+<span class="Delimiter">:(scenarios run)</span>
+<span class="Delimiter">:(scenario container_extend)</span>
+container foo [
+  <span class="Normal">x</span>:number
+]
+<span class="Comment"># add to previous definition</span>
+container foo [
+  <span class="Normal">y</span>:number
+]
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+]
+<span class="traceContains">+mem: storing 34 in location 3</span>
+<span class="traceContains">+mem: storing 35 in location 4</span>
+
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;container&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   insert_container<span class="Delimiter">(</span>command<span class="Delimiter">,</span> CONTAINER<span class="Delimiter">,</span> in<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
+
+<span class="Comment">//: Even though we allow containers to be extended, we don't allow this after</span>
+<span class="Comment">//: a call to transform_all. But we do want to detect this situation and raise</span>
+<span class="Comment">//: an error. This field will help us raise such errors.</span>
+<span class="Delimiter">:(before &quot;End type_info Fields&quot;)</span>
+<span class="Normal">int</span> Num_calls_to_transform_all_at_first_definition<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End type_info Constructor&quot;)</span>
+Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> insert_container<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; command<span class="Delimiter">,</span> kind_of_type kind<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -434,6 +590,15 @@ container bar [
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type number: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   skip_bracket<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">&quot;'container' must begin with '['&quot;</span><span class="Delimiter">);</span>
   type_info&amp; info = get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>Num_calls_to_transform_all_at_first_definition == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// initial definition of this container</span>
+    info<span class="Delimiter">.</span>Num_calls_to_transform_all_at_first_definition = Num_calls_to_transform_all<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>Num_calls_to_transform_all_at_first_definition != Num_calls_to_transform_all<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// extension after transform_all</span>
+    raise &lt;&lt; <span class="Constant">&quot;there was a call to transform_all() between the definition of container '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' and a subsequent extension. This is not supported, since any recipes that used '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' values have already been transformed and </span><span class="cSpecial">\&quot;</span><span class="Constant">frozen</span><span class="cSpecial">\&quot;</span><span class="Constant">.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   info<span class="Delimiter">.</span>name = name<span class="Delimiter">;</span>
   info<span class="Delimiter">.</span>kind = kind<span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
@@ -472,31 +637,28 @@ container bar [
     raise &lt;&lt; message &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenarios run)</span>
-<span class="Delimiter">:(scenario container_define_twice)</span>
-container foo [
-  <span class="Normal">x</span>:number
-]
-
-container foo [
-  <span class="Normal">y</span>:number
-]
-
-def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
-]
-<span class="traceContains">+mem: storing 34 in location 3</span>
-<span class="traceContains">+mem: storing 35 in location 4</span>
-
 <span class="Comment">//: ensure scenarios are consistent by always starting them at the same type</span>
 <span class="Comment">//: number.</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>  <span class="Comment">//: for tests</span>
 Next_type_ordinal = <span class="Constant">1000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Test Run Initialization&quot;)</span>
 assert<span class="Delimiter">(</span>Next_type_ordinal &lt; <span class="Constant">1000</span><span class="Delimiter">);</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> test_error_on_transform_all_between_container_definition_and_extension<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Comment">// define a container</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  a:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// try to extend the container after transform</span>
+  transform_all<span class="Delimiter">();</span>
+  CHECK_TRACE_DOESNT_CONTAIN_ERROR<span class="Delimiter">();</span>
+  Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  b:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTAINS_ERROR<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Allow container definitions anywhere in the codebase, but complain if you</span>
 <span class="SalientComment">//:: can't find a definition at the end.</span>
@@ -595,225 +757,6 @@ check_container_field_types<span class="Delimiter">();</span>
   check_invalid_types<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> block<span class="Delimiter">,</span> name<span class="Delimiter">);</span>
   check_invalid_types<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> block<span class="Delimiter">,</span> name<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: Construct types out of their constituent fields.</span>
-
-<span class="Delimiter">:(scenario merge)</span>
-container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:number
-]
-
-def main [
-  <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-]
-<span class="traceContains">+mem: storing 3 in location 1</span>
-<span class="traceContains">+mem: storing 4 in location 2</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-MERGE<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;merge&quot;</span><span class="Delimiter">,</span> MERGE<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> MERGE: <span class="Delimiter">{</span>
-  <span class="Comment">// type-checking in a separate transform below</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> MERGE: <span class="Delimiter">{</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
-      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: type-check 'merge' to avoid interpreting numbers as addresses</span>
-
-<span class="Delimiter">:(scenario merge_check)</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-]
-$error: <span class="Constant">0</span>
-
-<span class="Delimiter">:(scenario merge_check_missing_element)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-]
-<span class="traceContains">+error: main: too few ingredients in '1:point &lt;- merge 3'</span>
-
-<span class="Delimiter">:(scenario merge_check_extra_element)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-]
-<span class="traceContains">+error: main: too many ingredients in '1:point &lt;- merge 3, 4, 5'</span>
-
-<span class="Comment">//: We want to avoid causing memory corruption, but other than that we want to</span>
-<span class="Comment">//: be flexible in how we construct containers of containers. It should be</span>
-<span class="Comment">//: equally easy to define a container out of primitives or intermediate</span>
-<span class="Comment">//: container fields.</span>
-
-<span class="Delimiter">:(scenario merge_check_recursive_containers)</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point<span class="Delimiter">,</span> <span class="Constant">5</span>
-]
-$error: <span class="Constant">0</span>
-
-<span class="Delimiter">:(scenario merge_check_recursive_containers_2)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-  <span class="Constant">2</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
-]
-<span class="traceContains">+error: main: too few ingredients in '2:point-number &lt;- merge 1:point'</span>
-
-<span class="Delimiter">:(scenario merge_check_recursive_containers_3)</span>
-def main [
-  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-]
-$error: <span class="Constant">0</span>
-
-<span class="Delimiter">:(scenario merge_check_recursive_containers_4)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-]
-<span class="traceContains">+error: main: too few ingredients in '1:point-number &lt;- merge 3, 4'</span>
-
-<span class="Delimiter">:(scenario merge_check_reflexive)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
-  <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
-]
-$error: <span class="Constant">0</span>
-
-<span class="Comment">//: Since a container can be merged in several ways, we need to be able to</span>
-<span class="Comment">//: backtrack through different possibilities. Later we'll allow creating</span>
-<span class="Comment">//: exclusive containers which contain just one of rather than all of their</span>
-<span class="Comment">//: elements. That will also require backtracking capabilities. Here's the</span>
-<span class="Comment">//: state we need to maintain for backtracking:</span>
-
-<span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span class="Normal">struct</span> merge_check_point <span class="Delimiter">{</span>
-  reagent container<span class="Delimiter">;</span>
-  <span class="Normal">int</span> container_element_index<span class="Delimiter">;</span>
-  merge_check_point<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; c<span class="Delimiter">,</span> <span class="Normal">int</span> i<span class="Delimiter">)</span> :container<span class="Delimiter">(</span>c<span class="Delimiter">),</span> container_element_index<span class="Delimiter">(</span>i<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
-<span class="Delimiter">};</span>
-
-<span class="Normal">struct</span> merge_check_state <span class="Delimiter">{</span>
-  stack&lt;merge_check_point&gt; data<span class="Delimiter">;</span>
-<span class="Delimiter">};</span>
-
-<span class="Delimiter">:(before &quot;End Checks&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_merge_calls<span class="Delimiter">);</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> check_merge_calls<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- type-check merge instructions in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name != <span class="Constant">&quot;merge&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a single product in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    reagent product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    <span class="Comment">// Update product While Type-checking Merge</span>
-    type_ordinal product_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>product_type == <span class="Constant">0</span> || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind != CONTAINER &amp;&amp; info<span class="Delimiter">.</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    check_merge_call<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">,</span> product<span class="Delimiter">,</span> caller<span class="Delimiter">,</span> inst<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">void</span> check_merge_call<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; product<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">int</span> ingredient_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-  merge_check_state state<span class="Delimiter">;</span>
-  state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>push<span class="Delimiter">(</span>merge_check_point<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>!state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; vs &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &gt;= SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too few ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-      <span class="Identifier">return</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-    reagent&amp; container = state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">;</span>
-    type_info&amp; container_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-    <span class="Normal">switch</span> <span class="Delimiter">(</span>container_info<span class="Delimiter">.</span>kind<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">case</span> CONTAINER: <span class="Delimiter">{</span>
-        <span class="Comment">// degenerate case: merge with the same type always succeeds</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index == <span class="Constant">0</span> &amp;&amp; types_coercible<span class="Delimiter">(</span>container<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        reagent expected_ingredient = element_type<span class="Delimiter">(</span>container<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">);</span>
-        trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking container &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>container<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; || &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; vs ingredient &quot;</span> &lt;&lt; ingredient_index &lt;&lt; end<span class="Delimiter">();</span>
-        <span class="Comment">// if the current element is the ingredient we expect, move on to the next element/ingredient</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>types_coercible<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-          ++ingredient_index<span class="Delimiter">;</span>
-          ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
-          <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-            state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
-            <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-              <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
-                raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too many ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-              <span class="Identifier">return</span><span class="Delimiter">;</span>
-            <span class="Delimiter">}</span>
-            ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
-          <span class="Delimiter">}</span>
-        <span class="Delimiter">}</span>
-        <span class="Comment">// if not, maybe it's a field of the current element</span>
-        <span class="Normal">else</span> <span class="Delimiter">{</span>
-          <span class="Comment">// no change to ingredient_index</span>
-          state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>push<span class="Delimiter">(</span>merge_check_point<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">));</span>
-        <span class="Delimiter">}</span>
-        <span class="Identifier">break</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-      <span class="Comment">// End valid_merge Cases</span>
-      <span class="Normal">default</span>: <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>container<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-          raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incorrect type of ingredient &quot;</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          raise &lt;&lt; <span class="Constant">&quot;  (expected &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>container<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          raise &lt;&lt; <span class="Constant">&quot;  (got &quot;</span> &lt;&lt; debug_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-          <span class="Identifier">return</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-        ++ingredient_index<span class="Delimiter">;</span>
-        <span class="Comment">// ++state.data.top().container_element_index;  // unnecessary, but wouldn't do any harm</span>
-        <span class="Normal">do</span> <span class="Delimiter">{</span>
-          state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
-          <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-            <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
-              raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;too many ingredients in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-            <span class="Identifier">return</span><span class="Delimiter">;</span>
-          <span class="Delimiter">}</span>
-          ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
-        <span class="Delimiter">}</span> <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">));</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// never gets here</span>
-  assert<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(scenario merge_check_product)</span>
-<span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-]
-<span class="traceContains">+error: main: 'merge' should yield a container in '1:number &lt;- merge 3'</span>
-
-<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include </span><span class="Constant">&lt;stack&gt;</span>
-<span class="Normal">using</span> std::stack<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>

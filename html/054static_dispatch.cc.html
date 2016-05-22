@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 056static_dispatch.cc</title>
+<title>Mu - 054static_dispatch.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -209,14 +209,19 @@ string best_variant<span class="Delimiter">(</span>instruction&amp; inst<span cl
   candidates = strictly_matching_variants<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> variants<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!candidates<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> best_variant<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> candidates<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 
-  <span class="Comment">// Static Dispatch Phase 2 (shape-shifting recipes in a later layer)</span>
-  <span class="Comment">// End Static Dispatch Phase 2</span>
-
-  <span class="Comment">// Static Dispatch Phase 3</span>
-  candidates = strictly_matching_variants_except_literal_against_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> variants<span class="Delimiter">);</span>
+  <span class="Comment">// Static Dispatch Phase 2</span>
+  candidates = strictly_matching_variants_except_literal_zero_against_address<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> variants<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!candidates<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> best_variant<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> candidates<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 
+  <span class="Comment">// Static Dispatch Phase 3</span>
+  <span class="Comment">//: (shape-shifting recipes in a later layer)</span>
+  <span class="Comment">// End Static Dispatch Phase 3</span>
+
   <span class="Comment">// Static Dispatch Phase 4</span>
+  candidates = strictly_matching_variants_except_literal_against_address_or_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> variants<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!candidates<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> best_variant<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> candidates<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+
+  <span class="Comment">// Static Dispatch Phase 5</span>
   candidates = matching_variants<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> variants<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!candidates<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> best_variant<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> candidates<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 
@@ -274,28 +279,28 @@ vector&lt;recipe_ordinal&gt; strictly_matching_variants<span class="Delimiter">(
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">// phase 3</span>
-vector&lt;recipe_ordinal&gt; strictly_matching_variants_except_literal_against_boolean<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Comment">// phase 2</span>
+vector&lt;recipe_ordinal&gt; strictly_matching_variants_except_literal_zero_against_address<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking variant (strict except literals-against-booleans) &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; header_label<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>all_header_reagents_strictly_match_except_literal_against_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking variant (strict) &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; header_label<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>all_header_reagents_strictly_match_except_literal_zero_against_address<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span>
       result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> all_header_reagents_strictly_match_except_literal_against_boolean<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; variant<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> all_header_reagents_strictly_match_except_literal_zero_against_address<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; variant<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match_except_literal_against_boolean<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match_except_literal_zero_against_address<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;strict match failed: ingredient &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match_except_literal_against_boolean<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;strict match failed: product &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -303,7 +308,55 @@ vector&lt;recipe_ordinal&gt; strictly_matching_variants_except_literal_against_b
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Normal">bool</span> types_strictly_match_except_literal_zero_against_address<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
+  <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; is_mu_address<span class="Delimiter">(</span>to<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> from<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
 <span class="Comment">// phase 4</span>
+vector&lt;recipe_ordinal&gt; strictly_matching_variants_except_literal_against_address_or_boolean<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking variant (strict except literals-against-booleans) &quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; header_label<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>all_header_reagents_strictly_match_except_literal_against_address_or_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span>
+      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> all_header_reagents_strictly_match_except_literal_against_address_or_boolean<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; variant<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match_except_literal_against_address_or_boolean<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;strict match failed: ingredient &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; min<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">),</span> SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">));</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match_except_literal_against_address_or_boolean<span class="Delimiter">(</span>variant<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;strict match failed: product &quot;</span> &lt;&lt; i &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> types_strictly_match_except_literal_against_address_or_boolean<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
+  <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span>
+      &amp;&amp; to<span class="Delimiter">.</span>type &amp;&amp; to<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">))</span>
+    <span class="Identifier">return</span> boolean_matches_literal<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; is_mu_address<span class="Delimiter">(</span>to<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> from<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// phase 5</span>
 vector&lt;recipe_ordinal&gt; matching_variants<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt;&amp; variants<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;recipe_ordinal&gt; result<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -595,7 +648,7 @@ def foo a:boolean <span class="Delimiter">-&gt;</span> b:number [
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
-<span class="traceContains">+error: main: missing type for x in 'y:number &lt;- foo x'</span>
+<span class="traceContains">+error: main: missing type for 'x' in 'y:number &lt;- foo x'</span>
 <span class="traceContains">+error: main: failed to find a matching call for 'y:number &lt;- foo x'</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>

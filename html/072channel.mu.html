@@ -47,10 +47,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   run [
     <span class="Constant">1</span>:address:source:number, <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
     <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:number, <span class="Constant">34</span>
-    <span class="Constant">3</span>:number, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
+    <span class="Constant">3</span>:number, <span class="Constant">4</span>:boolean, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># read was successful</span>
   ]
 ]
 
@@ -109,7 +110,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
   *circular-buffer<span class="Special"> &lt;- </span>put-index *circular-buffer, free, val
   <span class="Comment"># mark its slot as filled</span>
-  <span class="Comment"># todo: clear the slot itself</span>
   free<span class="Special"> &lt;- </span>add free, <span class="Constant">1</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># wrap free around to 0 if necessary</span>
@@ -122,9 +122,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *chan<span class="Special"> &lt;- </span>put *chan, <span class="Constant">first-free:offset</span>, free
 ]
 
-<span class="muRecipe">def</span> read in:address:source:_elem<span class="muRecipe"> -&gt; </span>result:_elem, in:address:source:_elem [
+<span class="muRecipe">def</span> read in:address:source:_elem<span class="muRecipe"> -&gt; </span>result:_elem, fail?:boolean, in:address:source:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  fail?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>  <span class="Comment"># default status</span>
   chan:address:channel:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">chan:offset</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># block if chan is empty</span>
@@ -138,8 +139,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
   circular-buffer:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
   result<span class="Special"> &lt;- </span>index *circular-buffer, full
+  <span class="Comment"># clear the slot</span>
+  empty:address:_elem<span class="Special"> &lt;- </span>new <span class="Constant">_elem:type</span>
+  *circular-buffer<span class="Special"> &lt;- </span>put-index *circular-buffer, full, *empty
   <span class="Comment"># mark its slot as empty</span>
-  <span class="Comment"># todo: clear the slot itself</span>
   full<span class="Special"> &lt;- </span>add full, <span class="Constant">1</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># wrap full around to 0 if necessary</span>
@@ -159,7 +162,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
     <span class="muControl">break-if</span> empty?
-    _, in<span class="Special"> &lt;- </span>read in
+    _, _, in<span class="Special"> &lt;- </span>read in
   <span class="Delimiter">}</span>
 ]
 
@@ -194,7 +197,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   run [
     <span class="Constant">1</span>:address:source:number, <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
     <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:number, <span class="Constant">34</span>
-    _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
+    _, _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
     <span class="Constant">3</span>:address:channel:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:source:number, <span class="Constant">chan:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-full:offset</span>
     <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-free:offset</span>
@@ -212,7 +215,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">3</span>:address:channel:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:source:number, <span class="Constant">chan:offset</span>
     <span class="Comment"># write and read a value</span>
     <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:number, <span class="Constant">34</span>
-    _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
+    _, _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
     <span class="Comment"># first-free will now be 1</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-free:offset</span>
     <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-free:offset</span>
@@ -220,7 +223,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:number, <span class="Constant">34</span>
     <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-free:offset</span>
     <span class="Comment"># read second value, verify that first-full wraps</span>
-    _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
+    _, _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
     <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">3</span>:address:channel:number, <span class="Constant">first-full:offset</span>
   ]
   memory-should-contain [
@@ -277,7 +280,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">1</span>:address:source:number, <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
     <span class="Constant">3</span>:address:channel:number<span class="Special"> &lt;- </span>get *<span class="Constant">1</span>:address:source:number, <span class="Constant">chan:offset</span>
     <span class="Constant">2</span>:address:sink:number<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:number, <span class="Constant">34</span>
-    _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
+    _, _, <span class="Constant">1</span>:address:source:number<span class="Special"> &lt;- </span>read <span class="Constant">1</span>:address:source:number
     <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>channel-empty? <span class="Constant">3</span>:address:channel:number
     <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>channel-full? <span class="Constant">3</span>:address:channel:number
   ]
@@ -291,8 +294,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># every channel comes with a boolean signifying if it's been closed</span>
 <span class="Comment"># initially this boolean is false</span>
-<span class="Comment"># todo: can't yet include type ingredients when extending containers</span>
-<span class="muData">container</span> channel [
+<span class="muData">container</span> channel:_elem [
   closed?:boolean
 ]
 
@@ -324,7 +326,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;channel-read-empty&gt;</span> [
   closed?:boolean<span class="Special"> &lt;- </span>get *chan, <span class="Constant">closed?:offset</span>
-  <span class="muControl">return-if</span> closed?, <span class="Constant">0/hack</span>  <span class="Comment"># only scalar _elems supported in channels; need to support construction of arbitrary empty containers</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> closed?
+    empty-result:address:_elem<span class="Special"> &lt;- </span>new <span class="Constant">_elem:type</span>
+    <span class="muControl">return</span> *empty-result, <span class="Constant">1/true</span>
+  <span class="Delimiter">}</span>
 ]
 
 <span class="SalientComment">## helpers</span>
@@ -371,12 +377,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># repeat forever</span>
+  eof?:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
   <span class="Delimiter">{</span>
     line:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
     <span class="Comment"># read characters from 'in' until newline, copy into line</span>
     <span class="Delimiter">{</span>
 <span class="Constant">      +next-character</span>
-      c:character, in<span class="Special"> &lt;- </span>read in
+      c:character, eof?:boolean, in<span class="Special"> &lt;- </span>read in
+      <span class="muControl">break-if</span> eof?
       <span class="Comment"># drop a character on backspace</span>
       <span class="Delimiter">{</span>
         <span class="Comment"># special-case: if it's a backspace</span>
@@ -397,9 +405,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       line<span class="Special"> &lt;- </span>append line, c
       line-done?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
       <span class="muControl">break-if</span> line-done?
-      <span class="Comment"># stop buffering on eof (currently only generated by fake console)</span>
-      eof?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
-      <span class="muControl">break-if</span> eof?
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># copy line into 'buffered-out'</span>

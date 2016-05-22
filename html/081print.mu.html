@@ -403,6 +403,26 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   clear-line-on-display
 ]
 
+<span class="muRecipe">def</span> clear-line-until screen:address:screen, right:number/inclusive<span class="muRecipe"> -&gt; </span>screen:address:screen [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  _, column:number<span class="Special"> &lt;- </span>cursor-position screen
+  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
+  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># default bg-color to black</span>
+    <span class="muControl">break-if</span> bg-color-found?
+    bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-than column, right
+    <span class="muControl">break-if</span> done?
+    screen<span class="Special"> &lt;- </span>print screen, space, <span class="Constant">7/white</span>, bg-color  <span class="Comment"># foreground color is mostly unused except if the cursor shows up at this cell</span>
+    column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
 <span class="muRecipe">def</span> cursor-position screen:address:screen<span class="muRecipe"> -&gt; </span>row:number, column:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -558,6 +578,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   screen<span class="Special"> &lt;- </span>cursor-down screen
   screen<span class="Special"> &lt;- </span>cursor-to-start-of-line screen
+]
+
+<span class="muRecipe">def</span> move-cursor-to-column screen:address:screen, column:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  row:number, _<span class="Special"> &lt;- </span>cursor-position screen
+  move-cursor screen, row, column
 ]
 
 <span class="muRecipe">def</span> screen-width screen:address:screen<span class="muRecipe"> -&gt; </span>width:number [

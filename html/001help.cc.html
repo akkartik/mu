@@ -119,11 +119,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: unsigned and that'll cause warnings about mixing signed and unsigned,</span>
 <span class="Comment">//: yadda-yadda. Instead use this macro below to perform an unsafe cast to</span>
 <span class="Comment">//: signed. We'll just give up immediately if a container's ever too large.</span>
+<span class="Comment">//: Basically, Mu is not concerned about this being a little slower than it</span>
+<span class="Comment">//: could be. (<a href="https://gist.github.com/rygorous/e0f055bfb74e3d5f0af20690759de5a7)">https://gist.github.com/rygorous/e0f055bfb74e3d5f0af20690759de5a7)</a></span>
 <span class="Comment">//:</span>
-<span class="Comment">//: Addendum to corollary: We're going to uniformly avoid long long int</span>
-<span class="Comment">//: everywhere, since Clang on 32-bit platforms doesn't yet support</span>
-<span class="Comment">//: multiplication over 64-bit integers, and since that seems like a more</span>
-<span class="Comment">//: common situation to end up in than integer overflow.</span>
+<span class="Comment">//: Addendum to corollary: We're going to uniformly use int everywhere, to</span>
+<span class="Comment">//: indicate that we're oblivious to number size, and since Clang on 32-bit</span>
+<span class="Comment">//: platforms doesn't yet support multiplication over 64-bit integers, and</span>
+<span class="Comment">//: since multiplying two integers seems like a more common situation to end</span>
+<span class="Comment">//: up in than integer overflow.</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span><span class="Normal">sizeof</span><span class="PreProc">(</span><span class="Normal">int</span><span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Normal">static_cast</span><span class="PreProc">&lt;</span><span class="Normal">int</span><span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
 <span class="Comment">//:</span>

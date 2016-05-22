@@ -88,6 +88,18 @@ vector&lt;transform_fn&gt; Transform<span class="Delimiter">;</span>
   <span class="Comment">// End transform_all</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: Even though a run will involve many calls to transform_all() for tests,</span>
+<span class="Comment">//: our logical model is to load all code, then transform all code, then run.</span>
+<span class="Comment">//: If you load new code that should cause already-transformed recipes to</span>
+<span class="Comment">//: change, that's not supported. To help detect such situations and raise</span>
+<span class="Comment">//: helpful errors we track a count of the number of calls made to</span>
+<span class="Comment">//: transform_all().</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">int</span> Num_calls_to_transform_all = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;void transform_all()&quot;)</span>
+  ++Num_calls_to_transform_all<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> parse_int_reagents<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- parsing any uninitialized reagents as integers&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>

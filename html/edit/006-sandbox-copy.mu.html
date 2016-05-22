@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - edit/006-sandbox-copy.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muScenario { color: #00af00; }
+.Special { color: #c00000; }
+.Delimiter { color: #800080; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">## the 'copy' button makes it easy to duplicate a sandbox, and thence to</span>
+<span class="SalientComment">## see code operate in multiple situations</span>
+
+<span class="muScenario">scenario</span> copy-a-sandbox-to-editor [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  reply 4</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># click at left edge of 'copy' button</span>
+  assume-console [
+    left-click <span class="Constant">3</span>, <span class="Constant">69</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># it copies into editor</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># cursor should be in the right place</span>
+  assume-console [
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊0foo                                             .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> copy-a-sandbox-to-editor-2 [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  reply 4</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># click at right edge of 'copy' button (just before 'delete')</span>
+  assume-console [
+    left-click <span class="Constant">3</span>, <span class="Constant">84</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># it copies into editor</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># cursor should be in the right place</span>
+  assume-console [
+    type <span class="Constant">[0]</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊0foo                                             .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
+<span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
+  <span class="Comment"># support 'copy' button</span>
+  <span class="Delimiter">{</span>
+    copy?:boolean<span class="Special"> &lt;- </span>should-attempt-copy? click-row, click-column, env
+    <span class="muControl">break-unless</span> copy?
+    copy?, env<span class="Special"> &lt;- </span>try-copy-sandbox click-row, env
+    <span class="muControl">break-unless</span> copy?
+    hide-screen screen
+    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env
+    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    show-screen screen
+    <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="Comment"># some preconditions for attempting to copy a sandbox</span>
+<span class="muRecipe">def</span> should-attempt-copy? click-row:number, click-column:number, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># are we below the sandbox editor?</span>
+  click-sandbox-area?:boolean<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
+  <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
+  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
+  first-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  assert first-sandbox, <span class="Constant">[!!]</span>
+  sandbox-left-margin:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
+  sandbox-right-margin:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
+  _, _, copy-button-left:number, copy-button-right:number, _<span class="Special"> &lt;- </span>sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  copy-button-vertical-area?:boolean<span class="Special"> &lt;- </span>within-range? click-column, copy-button-left, copy-button-right
+  <span class="muControl">reply-unless</span> copy-button-vertical-area?, <span class="Constant">0/false</span>
+  <span class="Comment"># finally, is sandbox editor empty?</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  result<span class="Special"> &lt;- </span>empty-editor? current-sandbox
+]
+
+<span class="muRecipe">def</span> try-copy-sandbox click-row:number, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>clicked-on-copy-button?:boolean, env:address:programming-environment-data [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># identify the sandbox to copy, if the click was actually on the 'copy' button</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
+  clicked-on-copy-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
+  text:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox<span class="Special"> &lt;- </span>insert-text current-sandbox, text
+  <span class="Comment"># reset scroll</span>
+  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
+  <span class="Comment"># position cursor in sandbox editor</span>
+  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
+]
+
+<span class="muRecipe">def</span> find-sandbox env:address:programming-environment-data, click-row:number<span class="muRecipe"> -&gt; </span>result:address:sandbox-data [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  curr-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  <span class="Delimiter">{</span>
+    start:number<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    found?:boolean<span class="Special"> &lt;- </span>equal click-row, start
+    <span class="muControl">return-if</span> found?, curr-sandbox
+    curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
+]
+
+<span class="muRecipe">def</span> click-on-sandbox-area? click-row:number, click-column:number, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  sandbox-left-margin:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
+  on-sandbox-side?:boolean<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
+  <span class="muControl">return-unless</span> on-sandbox-side?, <span class="Constant">0/false</span>
+  first-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  <span class="muControl">return-unless</span> first-sandbox, <span class="Constant">0/false</span>
+  first-sandbox-begins:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+  result<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
+]
+
+<span class="muRecipe">def</span> empty-editor? editor:address:editor-data<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  head:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
+  first:address:duplex-list:character<span class="Special"> &lt;- </span>next head
+  result<span class="Special"> &lt;- </span>not first
+]
+
+<span class="muRecipe">def</span> within-range? x:number, low:number, high:number<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  not-too-far-left?:boolean<span class="Special"> &lt;- </span>greater-or-equal x, low
+  not-too-far-right?:boolean<span class="Special"> &lt;- </span>lesser-or-equal x, high
+  result<span class="Special"> &lt;- </span>and not-too-far-left? not-too-far-right?
+]
+
+<span class="muScenario">scenario</span> copy-fails-if-sandbox-editor-not-empty [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Comment"># basic recipe</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+<span class="Constant">recipe foo [</span>
+<span class="Constant">  reply 4</span>
+<span class="Constant">]</span>]
+  <span class="Comment"># run it</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  assume-console [
+    press F4
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># type something into the sandbox editor, then click on the 'copy' button</span>
+  assume-console [
+    left-click <span class="Constant">2</span>, <span class="Constant">70</span>  <span class="Comment"># put cursor in sandbox editor</span>
+    type <span class="Constant">[0]</span>  <span class="Comment"># type something</span>
+    left-click <span class="Constant">3</span>, <span class="Constant">70</span>  <span class="Comment"># click 'copy' button</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># copy doesn't happen</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊0                                                .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># cursor should be in the right place</span>
+  assume-console [
+    type <span class="Constant">[1]</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊01                                               .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  reply 4                                         ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -38,6 +38,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># Running code in the sandbox editor prepends its contents to a list of</span>
 <span class="Comment"># (non-editable) sandboxes below the editor, showing the result and a maybe</span>
 <span class="Comment"># few other things.</span>
+<span class="Comment">#</span>
+<span class="Comment"># This layer draws the menubar buttons non-editable sandboxes but they don't</span>
+<span class="Comment"># do anything yet. Later layers implement each button.</span>
 
 <span class="muRecipe">def!</span> main [
   <span class="Constant">local-scope</span>
@@ -93,7 +96,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊0                                               x.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊divide-with-remainder 11, 3                      .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
@@ -115,19 +118,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊                                                x.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># sandbox title in reverse video</span>
-  screen-should-contain-in-color <span class="Constant">240/dark-grey</span>, [
+  <span class="Comment"># sandbox menu in reverse video</span>
+  screen-should-contain-in-color <span class="Constant">232/black</span>, [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
-   <span class="Constant"> .                                                   0                                                .</span>
+   <span class="Constant"> .                                                   0   edit          copy            delete         .</span>
   ]
   <span class="Comment"># run another command</span>
   assume-console [
@@ -143,11 +146,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊0                                               x.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
    <span class="Constant"> .                                                  ┊4                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊1                                               x.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊divide-with-remainder 11, 3                      .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
@@ -303,10 +306,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># render sandbox menu</span>
     row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
     screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
-    print screen, idx, <span class="Constant">240/dark-grey</span>
-    clear-line-delimited screen, left, right
-    delete-icon:character<span class="Special"> &lt;- </span>copy <span class="Constant">120/x</span>
-    print screen, delete-icon, <span class="Constant">245/grey</span>
+    screen<span class="Special"> &lt;- </span>render-sandbox-menu screen, idx, left, right
     <span class="Comment"># save menu row so we can detect clicks to it later</span>
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">starting-row-on-screen:offset</span>, row
     <span class="Comment"># render sandbox contents</span>
@@ -348,6 +348,46 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   row, screen<span class="Special"> &lt;- </span>render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx
 ]
 
+<span class="muRecipe">def</span> render-sandbox-menu screen:address:screen, sandbox-index:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  move-cursor-to-column screen, left
+  edit-button-left:number, edit-button-right:number, copy-button-left:number, copy-button-right:number, delete-button-left:number<span class="Special"> &lt;- </span>sandbox-menu-columns left, right
+  print screen, sandbox-index, <span class="Constant">232/dark-grey</span>, <span class="Constant">245/grey</span>
+  start-buttons:number<span class="Special"> &lt;- </span>subtract edit-button-left, <span class="Constant">1</span>
+  clear-line-until screen, start-buttons, <span class="Constant">245/grey</span>
+  print screen, <span class="Constant">[edit]</span>, <span class="Constant">232/black</span>, <span class="Constant">94/background-orange</span>
+  clear-line-until screen, edit-button-right, <span class="Constant">94/background-orange</span>
+  _, col:number<span class="Special"> &lt;- </span>cursor-position screen
+  at-start-of-copy-button?:boolean<span class="Special"> &lt;- </span>equal col, copy-button-left
+  assert at-start-of-copy-button?, <span class="Constant">[aaa]</span>
+  print screen, <span class="Constant">[copy]</span>, <span class="Constant">232/black</span>, <span class="Constant">58/background-green</span>
+  clear-line-until screen, copy-button-right, <span class="Constant">58/background-green</span>
+  _, col:number<span class="Special"> &lt;- </span>cursor-position screen
+  at-start-of-delete-button?:boolean<span class="Special"> &lt;- </span>equal col, delete-button-left
+  assert at-start-of-delete-button?, <span class="Constant">[bbb]</span>
+  print screen, <span class="Constant">[delete]</span>, <span class="Constant">232/black</span>, <span class="Constant">52/background-red</span>
+  clear-line-until screen, right, <span class="Constant">52/background-red</span>
+]
+
+<span class="Comment"># divide up the menu bar for a sandbox into 3 segments, for edit/copy/delete buttons</span>
+<span class="Comment"># delete-button-right == right</span>
+<span class="Comment"># all left/right pairs are inclusive</span>
+<span class="muRecipe">def</span> sandbox-menu-columns left:number, right:number<span class="muRecipe"> -&gt; </span>edit-button-left:number, edit-button-right:number, copy-button-left:number, copy-button-right:number, delete-button-left:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  start-buttons:number<span class="Special"> &lt;- </span>add left, <span class="Constant">4/space-for-sandbox-index</span>
+  buttons-space:number<span class="Special"> &lt;- </span>subtract right, start-buttons
+  button-width:number<span class="Special"> &lt;- </span>divide-with-remainder buttons-space, <span class="Constant">3</span>  <span class="Comment"># integer division</span>
+  buttons-wide-enough?:boolean<span class="Special"> &lt;- </span>greater-or-equal button-width, <span class="Constant">8</span>
+  assert buttons-wide-enough?, <span class="Constant">[sandbox must be at least 30 or so characters wide]</span>
+  edit-button-left:number<span class="Special"> &lt;- </span>copy start-buttons
+  copy-button-left:number<span class="Special"> &lt;- </span>add start-buttons, button-width
+  edit-button-right:number<span class="Special"> &lt;- </span>subtract copy-button-left, <span class="Constant">1</span>
+  delete-button-left:number<span class="Special"> &lt;- </span>subtract right, button-width
+  copy-button-right:number<span class="Special"> &lt;- </span>subtract delete-button-left, <span class="Constant">1</span>
+]
+
 <span class="Comment"># assumes programming environment has no sandboxes; restores them from previous session</span>
 <span class="muRecipe">def</span> restore-sandboxes env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
@@ -360,26 +400,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     filename:address:array:character<span class="Special"> &lt;- </span>to-text idx
     contents:address:array:character<span class="Special"> &lt;- </span>restore filename
     <span class="muControl">break-unless</span> contents  <span class="Comment"># stop at first error; assuming file didn't exist</span>
+                           <span class="Comment"># todo: handle empty sandbox</span>
     <span class="Comment"># create new sandbox for file</span>
     curr<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
     *curr<span class="Special"> &lt;- </span>put *curr, <span class="Constant">data:offset</span>, contents
-    <span class="Comment"># restore expected output for sandbox if it exists</span>
+<span class="Constant">    &lt;end-restore-sandbox&gt;</span>
     <span class="Delimiter">{</span>
-      filename<span class="Special"> &lt;- </span>append filename, <span class="Constant">[.out]</span>
-      contents<span class="Special"> &lt;- </span>restore filename
-      <span class="muControl">break-unless</span> contents
-<span class="Constant">      &lt;end-restore-sandbox&gt;</span>
+      <span class="muControl">break-if</span> idx
+      *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, curr
     <span class="Delimiter">}</span>
-<span class="Constant">    +continue</span>
-    idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     <span class="Delimiter">{</span>
-      <span class="muControl">break-unless</span> prev
+      <span class="muControl">break-unless</span> idx
       *prev<span class="Special"> &lt;- </span>put *prev, <span class="Constant">next-sandbox:offset</span>, curr
     <span class="Delimiter">}</span>
+    idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
     prev<span class="Special"> &lt;- </span>copy curr
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, curr
   <span class="Comment"># update sandbox count</span>
   *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, idx
 ]
@@ -473,7 +510,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .local-scope                                       ┊0                                               x.</span>
+   <span class="Constant"> .local-scope                                       ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .z:number &lt;- add 2, 2                              ┊foo                                              .</span>
    <span class="Constant"> .reply z                                           ┊4                                                .</span>
    <span class="Constant"> .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -495,7 +532,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .local-scope                                       ┊0                                               x.</span>
+   <span class="Constant"> .local-scope                                       ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .z:number &lt;- add 2, 3                              ┊foo                                              .</span>
    <span class="Constant"> .reply z                                           ┊5                                                .</span>
    <span class="Constant"> .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -524,7 +561,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊0                                               x.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊print-integer screen, 4                          .</span>
    <span class="Constant"> .                                                  ┊screen:                                          .</span>
    <span class="Constant"> .                                                  ┊  .4                             .               .</span>
@@ -578,7 +615,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> scrolling-down-past-bottom-of-sandbox-editor [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize sandbox side</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
@@ -587,27 +624,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-console [
     <span class="Comment"># create a sandbox</span>
     press F4
-    <span class="Comment"># switch to sandbox editor and type in 2 lines</span>
-    press ctrl-n
-    type <span class="Constant">[abc</span>
-<span class="Constant">]</span>
   ]
-  run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
-    <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:address:screen, <span class="Constant">4</span>:character/cursor
-  ]
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .  # minor: F4 clears menu tooltip in very narrow screens</span>
-   <span class="Constant"> .               ┊abc           .</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
   ]
-  <span class="Comment"># hit 'down' at bottom of sandbox editor</span>
+  <span class="Comment"># switch to sandbox window and hit 'page-down'</span>
   assume-console [
-    press down-arrow
+    press ctrl-n
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -617,44 +646,37 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
-  <span class="Comment"># hit 'up'</span>
+  <span class="Comment"># hit 'page-up'</span>
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
     <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
-  <span class="Comment"># sandbox editor displays again</span>
+  <span class="Comment"># sandbox editor displays again, cursor is in editor</span>
   screen-should-contain [
-   <span class="Constant"> .                              .  # minor: F4 clears menu tooltip in very narrow screens</span>
-   <span class="Constant"> .               ┊abc           .</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊␣                                                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
   ]
 ]
 
-<span class="Comment"># down on sandbox side updates render-from when sandbox editor has cursor at bottom</span>
+<span class="Comment"># page-down on sandbox side updates render-from to scroll sandboxes</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-keypress&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-in-focus?
-    down?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65516/down-arrow</span>
-    <span class="muControl">break-unless</span> down?
-    sandbox-bottom:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">bottom:offset</span>
-    sandbox-cursor:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">cursor-row:offset</span>
-    sandbox-cursor-on-last-line?:boolean<span class="Special"> &lt;- </span>equal sandbox-bottom, sandbox-cursor
-    <span class="muControl">break-unless</span> sandbox-cursor-on-last-line?
+    page-down?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65518/page-down</span>
+    <span class="muControl">break-unless</span> page-down?
     sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># slide down if possible</span>
@@ -687,12 +709,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="Comment"># 'up' on sandbox side is like 'down': updates render-from when necessary</span>
+<span class="Comment"># 'page-up' on sandbox side is like 'page-down': updates render-from when necessary</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-keypress&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-in-focus?
-    up?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65517/up-arrow</span>
-    <span class="muControl">break-unless</span> up?
+    page-up?:boolean<span class="Special"> &lt;- </span>equal k, <span class="Constant">65519/page-up</span>
+    <span class="muControl">break-unless</span> page-up?
     render-from:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
     at-beginning?:boolean<span class="Special"> &lt;- </span>equal render-from, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> at-beginning?
@@ -726,7 +748,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> scrolling-down-on-recipe-side [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize sandbox side and create a sandbox</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">]</span>
@@ -749,20 +771,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor moves down on recipe side</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊              .</span>
-   <span class="Constant"> .␣              ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .␣                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> scrolling-through-multiple-sandboxes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -780,20 +799,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
   print screen:address:screen, <span class="Constant">4</span>:character/cursor
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊␣             .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊␣                                                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
-  <span class="Comment"># hit 'down'</span>
+  <span class="Comment"># hit 'page-down'</span>
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -803,76 +822,72 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
-  <span class="Comment"># hit 'down' again</span>
+  <span class="Comment"># hit 'page-down' again</span>
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># just second sandbox displayed</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># hit 'down' again</span>
+  <span class="Comment"># hit 'page-down' again</span>
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># hit 'up'</span>
+  <span class="Comment"># hit 'page-up'</span>
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># back to displaying both sandboxes without editor</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
-  <span class="Comment"># hit 'up' again</span>
+  <span class="Comment"># hit 'page-up' again</span>
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -881,42 +896,44 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊␣             .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊␣                                                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
-  <span class="Comment"># hit 'up' again</span>
+  <span class="Comment"># hit 'page-up' again</span>
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    <span class="Constant">4</span>:character/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
+    print screen:address:screen, <span class="Constant">4</span>:character/cursor
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊␣             .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊␣                                                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> scrolling-manages-sandbox-index-correctly [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -930,18 +947,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊              .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># hit 'down' and 'up' a couple of times. sandbox index should be stable</span>
+  <span class="Comment"># hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable</span>
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -949,35 +966,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># hit 'up' again</span>
+  <span class="Comment"># hit 'page-up' again</span>
   assume-console [
-    press up-arrow
+    press page-up
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊              .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># hit 'down'</span>
+  <span class="Comment"># hit 'page-down'</span>
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -985,13 +1002,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.  # no change</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 </pre>

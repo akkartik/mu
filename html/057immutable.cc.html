@@ -1,0 +1,602 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 057immutable.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: Ingredients of a recipe are meant to be immutable unless they're also</span>
+<span class="Comment">//: products. This layer will start enforcing this check.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: One hole for now: variables in surrounding spaces are implicitly mutable.</span>
+
+<span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products)</span>
+<span class="Comment"># mutable container</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  p<span class="Special"> &lt;- </span>foo p
+]
+def foo p:point <span class="Delimiter">-&gt;</span> p:point [
+  local-scope
+  load-ingredients
+  p<span class="Special"> &lt;- </span>put p<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products_2)</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  p<span class="Special"> &lt;- </span>foo p
+]
+<span class="Comment"># mutable address to container</span>
+def foo p:address:point <span class="Delimiter">-&gt;</span> p:address:point [
+  local-scope
+  load-ingredients
+  *p<span class="Special"> &lt;- </span>put *p<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products_3)</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
+  p<span class="Special"> &lt;- </span>foo p
+]
+<span class="Comment"># mutable address</span>
+def foo p:address:array:number <span class="Delimiter">-&gt;</span> p:address:array:number [
+  local-scope
+  load-ingredients
+  *p<span class="Special"> &lt;- </span>put-index *p<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario ignore_literal_ingredients_for_immutability_checks)</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> d1:type
+  <span class="Normal">q</span>:number<span class="Special"> &lt;- </span>foo p
+]
+def foo p:address:d1 <span class="Delimiter">-&gt;</span> q:number [
+  local-scope
+  load-ingredients
+  <span class="Normal">x</span>:address:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> d1:type
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> p:offset<span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># ignore this 'p'</span>
+  reply <span class="Constant">36</span>
+]
+container d1 [
+  <span class="Normal">p</span>:number
+  <span class="Normal">q</span>:number
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario cannot_modify_immutable_ingredients)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  foo x
+]
+<span class="Comment"># immutable address to primitive</span>
+def foo x:address:number [
+  local-scope
+  load-ingredients
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- copy 34' because it's an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario cannot_modify_immutable_containers)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">36</span>
+  foo x
+]
+<span class="Comment"># immutable container</span>
+def foo x:point-number [
+  local-scope
+  load-ingredients
+  <span class="Comment"># copy an element: ok</span>
+  <span class="Normal">y</span>:point<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> xy:offset
+  <span class="Comment"># modify the element: boom</span>
+  <span class="Comment"># This could be ok if y contains no addresses, but we're not going to try to be that smart.</span>
+  <span class="Comment"># It also makes the rules easier to reason about. If it's just an ingredient, just don't try to change it.</span>
+  y<span class="Special"> &lt;- </span>put y<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">37</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'y' in instruction 'y &lt;- put y, x:offset, 37' because that would modify 'x' which is an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario can_modify_immutable_pointers)</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  foo x
+]
+def foo x:address:number [
+  local-scope
+  load-ingredients
+  <span class="Comment"># modify the address, not the payload</span>
+  x<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario can_modify_immutable_pointers_but_not_their_payloads)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  foo x
+]
+def foo x:address:number [
+  local-scope
+  load-ingredients
+  <span class="Comment"># modify address; ok</span>
+  x<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Comment"># modify payload: boom</span>
+  <span class="Comment"># this could be ok, but we're not going to try to be that smart</span>
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- copy 34' because it's an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario cannot_call_mutating_recipes_on_immutable_ingredients)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  foo p
+]
+def foo p:address:point [
+  local-scope
+  load-ingredients
+  bar p
+]
+def bar p:address:point <span class="Delimiter">-&gt;</span> p:address:point [
+  local-scope
+  load-ingredients
+  <span class="Comment"># p could be modified here, but it doesn't have to be, it's already marked</span>
+  <span class="Comment"># mutable in the header</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'p' in instruction 'bar p' because it's an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario cannot_modify_copies_of_immutable_ingredients)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  foo p
+]
+def foo p:address:point [
+  local-scope
+  load-ingredients
+  <span class="Normal">q</span>:address:point<span class="Special"> &lt;- </span>copy p
+  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'q' in instruction '*q &lt;- put *q, x:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario can_modify_copies_of_mutable_ingredients)</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  foo p
+]
+def foo p:address:point <span class="Delimiter">-&gt;</span> p:address:point [
+  local-scope
+  load-ingredients
+  <span class="Normal">q</span>:address:point<span class="Special"> &lt;- </span>copy p
+  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo [
+  <span class="Normal">x</span>:address:array:number  <span class="Comment"># contains an address</span>
+]
+def main [
+  <span class="Comment"># don't run anything</span>
+]
+def foo a:address:foo [
+  local-scope
+  load-ingredients
+  <span class="Normal">x</span>:address:array:number<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset  <span class="Comment"># just a regular get of the container</span>
+  *x<span class="Special"> &lt;- </span>put-index *x<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># but then a put-index on the result</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- put-index *x, 0, 34' because that would modify a which is an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_2)</span>
+container foo [
+  <span class="Normal">x</span>:address:array:number  <span class="Comment"># contains an address</span>
+]
+def main [
+  <span class="Comment"># don't run anything</span>
+]
+def foo a:address:foo [
+  local-scope
+  load-ingredients
+  <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>
+  <span class="Comment"># modify b, completely unrelated to immutable ingredient a</span>
+  <span class="Normal">x</span>:address:array:number<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> x:offset
+  *x<span class="Special"> &lt;- </span>put-index *x<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_3)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo [
+  <span class="Normal">x</span>:number
+]
+def main [
+  <span class="Comment"># don't run anything</span>
+]
+def foo a:address:array:address:number [
+  local-scope
+  load-ingredients
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span>index *a<span class="Delimiter">,</span> <span class="Constant">0</span>  <span class="Comment"># just a regular index of the array</span>
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># but then modify the result</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_4)</span>
+container foo [
+  <span class="Normal">x</span>:address:array:number  <span class="Comment"># contains an address</span>
+]
+def main [
+  <span class="Comment"># don't run anything</span>
+]
+def foo a:address:array:address:number [
+  local-scope
+  load-ingredients
+  <span class="Normal">b</span>:address:array:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
+  <span class="Comment"># modify b, completely unrelated to immutable ingredient a</span>
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span>index *b<span class="Delimiter">,</span> <span class="Constant">0</span>
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario can_traverse_immutable_ingredients)</span>
+container test-list [
+  <span class="Normal">next</span>:address:test-list
+]
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  foo p
+]
+def foo p:address:test-list [
+  local-scope
+  load-ingredients
+  <span class="Normal">p2</span>:address:test-list<span class="Special"> &lt;- </span>bar p
+]
+def bar x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list [
+  local-scope
+  load-ingredients
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario treat_optional_ingredients_as_mutable)</span>
+def main [
+  <span class="Normal">k</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  test k
+]
+<span class="Comment"># recipe taking an immutable address ingredient</span>
+def test k:address:number [
+  local-scope
+  load-ingredients
+  foo k
+]
+<span class="Comment"># ..calling a recipe with an optional address ingredient</span>
+def foo <span class="Delimiter">-&gt;</span> [
+  local-scope
+  load-ingredients
+  <span class="Normal">k</span>:address:number<span class="Delimiter">,</span> found?:boolean<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Comment"># we don't further check k for immutability, but assume it's mutable</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario treat_optional_ingredients_as_mutable_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  foo p
+]
+def foo p:address:point [
+  local-scope
+  load-ingredients
+  bar p
+]
+def bar [
+  local-scope
+  load-ingredients
+  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># optional ingredient; assumed to be mutable</span>
+]
+<span class="traceContains">+error: foo: cannot modify 'p' in instruction 'bar p' because it's an ingredient of recipe foo but not also a product</span>
+
+<span class="Comment">//: when checking for immutable ingredients, remember to take space into account</span>
+<span class="Delimiter">:(scenario check_space_of_reagents_in_immutability_checks)</span>
+def main [
+  <span class="Normal">a</span>:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span>-closure
+  <span class="Normal">b</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  run-closure b:address:number<span class="Delimiter">,</span> a:address:array:location
+]
+def <span class="Normal">new</span>-closure [
+  <span class="Normal">new</span>-<span class="Normal">default</span>-space
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Identifier">return</span> <span class="Normal">default</span>-space
+]
+def run-closure x:address:number<span class="Delimiter">,</span> s:address:array:location [
+  local-scope
+  load-ingredients
+  <span class="Constant">0</span>:address:array:location/names:<span class="Normal">new</span>-closure<span class="Special"> &lt;- </span>copy s
+  <span class="Comment"># different space; always mutable</span>
+  *x:address:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(before &quot;End Transforms&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_immutable_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_immutable_ingredients<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// to ensure an address reagent isn't modified, it suffices to show that</span>
+  <span class="Comment">//   a) we never write to its contents directly,</span>
+  <span class="Comment">//   b) we never call 'put' or 'put-index' on it, and</span>
+  <span class="Comment">//   c) any non-primitive recipe calls in the body aren't returning it as a product</span>
+  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- check mutability of ingredients in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip check for old-style recipes calling next-ingredient directly</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> reagent&amp; current_ingredient = caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_present_in_products<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not expected to be immutable</span>
+    <span class="Comment">// End Immutable Ingredients Special-cases</span>
+    set&lt;reagent&gt; immutable_vars<span class="Delimiter">;</span>
+    immutable_vars<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>current_ingredient<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+      check_immutable_ingredient_in_instruction<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">,</span> current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">,</span> caller<span class="Delimiter">);</span>
+      update_aliases<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> update_aliases<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> set&lt;reagent&gt;&amp; current_ingredient_and_aliases<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  set&lt;<span class="Normal">int</span>&gt; current_ingredient_indices = ingredient_indices<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> current_ingredient_and_aliases<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Comment">// primitive recipe</span>
+    <span class="Normal">switch</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">case</span> COPY:
+        <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;<span class="Normal">int</span>&gt;::iterator p = current_ingredient_indices<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != current_ingredient_indices<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+          current_ingredient_and_aliases<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>*p<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+        <span class="Identifier">break</span><span class="Delimiter">;</span>
+      <span class="Normal">case</span> GET:
+      <span class="Normal">case</span> INDEX:
+      <span class="Normal">case</span> MAYBE_CONVERT:
+        <span class="Comment">// current_ingredient_indices can only have 0 or one value</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>!current_ingredient_indices<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+          <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_container<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_exclusive_container<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
+            current_ingredient_and_aliases<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+        <span class="Delimiter">}</span>
+        <span class="Identifier">break</span><span class="Delimiter">;</span>
+      <span class="Normal">default</span>: <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    <span class="Comment">// defined recipe</span>
+    set&lt;<span class="Normal">int</span>&gt; contained_in_product_indices = scan_contained_in_product_indices<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> current_ingredient_indices<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;<span class="Normal">int</span>&gt;::iterator p = contained_in_product_indices<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != contained_in_product_indices<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>*p &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">))</span>
+        current_ingredient_and_aliases<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+set&lt;<span class="Normal">int</span>&gt; scan_contained_in_product_indices<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> set&lt;<span class="Normal">int</span>&gt;&amp; ingredient_indices<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  set&lt;reagent&gt; selected_ingredients<span class="Delimiter">;</span>
+  <span class="Normal">const</span> recipe&amp; callee = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;<span class="Normal">int</span>&gt;::iterator p = ingredient_indices<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != ingredient_indices<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>*p &gt;= SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// optional immutable ingredient</span>
+    selected_ingredients<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>*p<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
+  set&lt;<span class="Normal">int</span>&gt; result<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> reagent&amp; current_product = callee<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Comment">// </span><span class="Todo">TODO</span>
+    <span class="Normal">const</span> string_tree* contained_in_name = property<span class="Delimiter">(</span>current_product<span class="Delimiter">,</span> <span class="Constant">&quot;contained-in&quot;</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>contained_in_name &amp;&amp; selected_ingredients<span class="Delimiter">.</span>find<span class="Delimiter">(</span>contained_in_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != selected_ingredients<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenarios transform)</span>
+<span class="Delimiter">:(scenario immutability_infects_contained_in_variables)</span>
+<span class="Special">% Hide_errors = true;</span>
+container test-list [
+  <span class="Normal">value</span>:number
+  <span class="Normal">next</span>:address:test-list
+]
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  foo p
+]
+def foo p:address:test-list [  <span class="Comment"># p is immutable</span>
+  local-scope
+  load-ingredients
+  <span class="Normal">p2</span>:address:test-list<span class="Special"> &lt;- </span>test-next p  <span class="Comment"># p2 is immutable</span>
+  *p2<span class="Special"> &lt;- </span>put *p2<span class="Delimiter">,</span> value:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+def test-next x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list/contained-in:x [
+  local-scope
+  load-ingredients
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+]
+<span class="traceContains">+error: foo: cannot modify 'p2' in instruction '*p2 &lt;- put *p2, value:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_immutable_ingredient_in_instruction<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> set&lt;reagent&gt;&amp; current_ingredient_and_aliases<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; original_ingredient_name<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// first check if the instruction is directly modifying something it shouldn't</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">)</span>
+        &amp;&amp; current_ingredient_and_aliases<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> != current_ingredient_and_aliases<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      string current_product_name = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>current_product_name == original_ingredient_name<span class="Delimiter">)</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_product_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because it's an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">else</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_product_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because that would modify &quot;</span> &lt;&lt; original_ingredient_name &lt;&lt; <span class="Constant">&quot; which is an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// check if there's any indirect modification going on</span>
+  set&lt;<span class="Normal">int</span>&gt; current_ingredient_indices = ingredient_indices<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> current_ingredient_and_aliases<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>current_ingredient_indices<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// ingredient not found in call</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;<span class="Normal">int</span>&gt;::iterator p = current_ingredient_indices<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != current_ingredient_indices<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> <span class="Normal">int</span> current_ingredient_index = *p<span class="Delimiter">;</span>
+    reagent current_ingredient = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>current_ingredient_index<span class="Delimiter">);</span>
+    canonize_type<span class="Delimiter">(</span>current_ingredient<span class="Delimiter">);</span>
+    <span class="Normal">const</span> string&amp; current_ingredient_name = current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Comment">// primitive recipe</span>
+      <span class="Comment">// we got here only because we got an instruction with an implicit product, and the instruction didn't explicitly spell it out</span>
+      <span class="Comment">//    put x, y:offset, z</span>
+      <span class="Comment">// instead of</span>
+      <span class="Comment">//    x &lt;- put x, y:offset, z</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == PUT || inst<span class="Delimiter">.</span>operation == PUT_INDEX<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>current_ingredient_index == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+          <span class="Normal">if</span> <span class="Delimiter">(</span>current_ingredient_name == original_ingredient_name<span class="Delimiter">)</span>
+            raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_ingredient_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because it's an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+          <span class="Normal">else</span>
+            raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_ingredient_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because that would modify '&quot;</span> &lt;&lt; original_ingredient_name &lt;&lt; <span class="Constant">&quot;' which is an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Delimiter">}</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      <span class="Comment">// defined recipe</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_modified_in_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation<span class="Delimiter">,</span> current_ingredient_index<span class="Delimiter">,</span> caller<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>current_ingredient_name == original_ingredient_name<span class="Delimiter">)</span>
+          raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_ingredient_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because it's an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Normal">else</span>
+          raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;cannot modify '&quot;</span> &lt;&lt; current_ingredient_name &lt;&lt; <span class="Constant">&quot;' in instruction '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' because that would modify '&quot;</span> &lt;&lt; original_ingredient_name &lt;&lt; <span class="Constant">&quot;' which is an ingredient of recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; but not also a product</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> is_modified_in_recipe<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">,</span> <span class="Normal">int</span> ingredient_index<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> recipe&amp; callee = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!callee<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't check mutability of ingredients in recipe &quot;</span> &lt;&lt; callee<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; because it uses 'next-ingredient' directly, rather than a recipe header.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &gt;= SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// optional immutable ingredient</span>
+  <span class="Identifier">return</span> is_present_in_products<span class="Delimiter">(</span>callee<span class="Delimiter">,</span> callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> is_present_in_products<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; callee<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; ingredient_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>callee<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == ingredient_name<span class="Delimiter">)</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> is_present_in_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; callee<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; ingredient_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == ingredient_name<span class="Delimiter">)</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+set&lt;<span class="Normal">int</span>&gt; ingredient_indices<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> set&lt;reagent&gt;&amp; ingredient_names<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  set&lt;<span class="Normal">int</span>&gt; result<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> != ingredient_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
+      result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: Sometimes you want to pass in two addresses, one pointing inside the</span>
+<span class="Comment">//: other. For example, you want to delete a node from a linked list. You</span>
+<span class="Comment">//: can't pass both pointers back out, because if a caller tries to make both</span>
+<span class="Comment">//: identical then you can't tell which value will be written on the way out.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Experimental solution: just tell mu that one points inside the other.</span>
+<span class="Comment">//: This way we can return just one pointer as high up as necessary to capture</span>
+<span class="Comment">//: all modifications performed by a recipe.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: We'll see if we end up wanting to abuse /contained-in for other reasons.</span>
+
+<span class="Delimiter">:(scenarios transform)</span>
+<span class="Delimiter">:(scenario can_modify_contained_in_addresses)</span>
+container test-list [
+  <span class="Normal">value</span>:number
+  <span class="Normal">next</span>:address:test-list
+]
+def main [
+  local-scope
+  <span class="Normal">p</span>:address:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  foo p
+]
+def foo p:address:test-list <span class="Delimiter">-&gt;</span> p:address:test-list [
+  local-scope
+  load-ingredients
+  <span class="Normal">p2</span>:address:test-list<span class="Special"> &lt;- </span>test-next p
+  p<span class="Special"> &lt;- </span>test-remove p2<span class="Delimiter">,</span> p
+]
+def test-next x:address:test-list <span class="Delimiter">-&gt;</span> y:address:test-list [
+  local-scope
+  load-ingredients
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+]
+def test-remove x:address:test-list/contained-in:from<span class="Delimiter">,</span> from:address:test-list <span class="Delimiter">-&gt;</span> from:address:test-list [
+  local-scope
+  load-ingredients
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> value:offset<span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># can modify x</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(before &quot;End Immutable Ingredients Special-cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>current_ingredient<span class="Delimiter">,</span> <span class="Constant">&quot;contained-in&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> string_tree* tmp = property<span class="Delimiter">(</span>current_ingredient<span class="Delimiter">,</span> <span class="Constant">&quot;contained-in&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>left || tmp<span class="Delimiter">-&gt;</span>right
+      || !is_present_in_ingredients<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> tmp<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span>
+      || !is_present_in_products<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> tmp<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;/contained-in can only point to another ingredient+product, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>property<span class="Delimiter">(</span>current_ingredient<span class="Delimiter">,</span> <span class="Constant">&quot;contained-in&quot;</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

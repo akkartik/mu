@@ -53,20 +53,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊0                                               x.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
    <span class="Constant"> .                                                  ┊4                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊1                                               x.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊divide-with-remainder 11, 3                      .</span>
    <span class="Constant"> .                                                  ┊3                                                .</span>
    <span class="Constant"> .                                                  ┊2                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># delete second sandbox</span>
+  <span class="Comment"># delete second sandbox by clicking on left edge of 'delete' button</span>
   assume-console [
-    left-click <span class="Constant">7</span>, <span class="Constant">99</span>
+    left-click <span class="Constant">7</span>, <span class="Constant">85</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -75,14 +75,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                                                  ┊0                                               x.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
    <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
    <span class="Constant"> .                                                  ┊4                                                .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
-  <span class="Comment"># delete first sandbox</span>
+  <span class="Comment"># delete first sandbox by clicking at right edge of 'delete' button</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">99</span>
   ]
@@ -99,10 +99,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
-  <span class="Comment"># on a sandbox delete icon? process delete</span>
+  <span class="Comment"># support 'delete' button</span>
   <span class="Delimiter">{</span>
-    was-delete?:boolean<span class="Special"> &lt;- </span>delete-sandbox t, env
-    <span class="muControl">break-unless</span> was-delete?
+    delete?:boolean<span class="Special"> &lt;- </span>should-attempt-delete? click-row, click-column, env
+    <span class="muControl">break-unless</span> delete?
+    delete?, env<span class="Special"> &lt;- </span>try-delete-sandbox click-row, env
+    <span class="muControl">break-unless</span> delete?
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env
     screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
@@ -111,70 +113,77 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> delete-sandbox t:touch-event, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>was-delete?:boolean, env:address:programming-environment-data [
+<span class="Comment"># some preconditions for attempting to delete a sandbox</span>
+<span class="muRecipe">def</span> should-attempt-delete? click-row:number, click-column:number, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>result:boolean [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
-  current-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
-  at-right?:boolean<span class="Special"> &lt;- </span>equal click-column, right
-  <span class="muControl">return-unless</span> at-right?, <span class="Constant">0/false</span>
-  click-row:number<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
-  <span class="Delimiter">{</span>
-    first:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
-    <span class="muControl">reply-unless</span> first, <span class="Constant">0/false</span>
-    target-row:number<span class="Special"> &lt;- </span>get *first, <span class="Constant">starting-row-on-screen:offset</span>
-    delete-first?:boolean<span class="Special"> &lt;- </span>equal target-row, click-row
-    <span class="muControl">break-unless</span> delete-first?
-    new-first:address:sandbox-data<span class="Special"> &lt;- </span>get *first, <span class="Constant">next-sandbox:offset</span>
-    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, new-first
-    env<span class="Special"> &lt;- </span>fixup-delete env, new-first
-    <span class="muControl">return</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
-  <span class="Delimiter">}</span>
-  prev:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
-  assert prev, <span class="Constant">[failed to find any sandboxes!]</span>
-  curr:address:sandbox-data<span class="Special"> &lt;- </span>get *prev, <span class="Constant">next-sandbox:offset</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> curr
-    <span class="Comment"># more sandboxes to check</span>
-    <span class="Delimiter">{</span>
-      target-row:number<span class="Special"> &lt;- </span>get *curr, <span class="Constant">starting-row-on-screen:offset</span>
-      delete-curr?:boolean<span class="Special"> &lt;- </span>equal target-row, click-row
-      <span class="muControl">break-unless</span> delete-curr?
-      <span class="Comment"># delete this sandbox</span>
-      next:address:sandbox-data<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
-      *prev<span class="Special"> &lt;- </span>put *prev, <span class="Constant">next-sandbox:offset</span>, next
-      env<span class="Special"> &lt;- </span>fixup-delete env, next
-      <span class="muControl">return</span> <span class="Constant">1/true</span>  <span class="Comment"># force rerender</span>
-    <span class="Delimiter">}</span>
-    prev<span class="Special"> &lt;- </span>copy curr
-    curr<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  <span class="muControl">return</span> <span class="Constant">0/false</span>
+  <span class="Comment"># are we below the sandbox editor?</span>
+  click-sandbox-area?:boolean<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
+  <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
+  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
+  first-sandbox:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  assert first-sandbox, <span class="Constant">[!!]</span>
+  sandbox-left-margin:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
+  sandbox-right-margin:number<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
+  _, _, _, _, delete-button-left:number<span class="Special"> &lt;- </span>sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  result<span class="Special"> &lt;- </span>within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
-<span class="muRecipe">def</span> fixup-delete env:address:programming-environment-data, next:address:sandbox-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
+<span class="muRecipe">def</span> try-delete-sandbox click-row:number, env:address:programming-environment-data<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:boolean, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  <span class="Comment"># identify the sandbox to delete, if the click was actually on the 'delete' button</span>
+  sandbox:address:sandbox-data<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
+  clicked-on-delete-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
+  env<span class="Special"> &lt;- </span>delete-sandbox env, sandbox
+]
+
+<span class="muRecipe">def</span> delete-sandbox env:address:programming-environment-data, sandbox:address:sandbox-data<span class="muRecipe"> -&gt; </span>env:address:programming-environment-data [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  curr-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  first-sandbox?:boolean<span class="Special"> &lt;- </span>equal curr-sandbox, sandbox
+  <span class="Delimiter">{</span>
+    <span class="Comment"># first sandbox? pop</span>
+    <span class="muControl">break-unless</span> first-sandbox?
+    next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="Comment"># not first sandbox?</span>
+    <span class="muControl">break-if</span> first-sandbox?
+    prev-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>copy curr-sandbox
+    curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    <span class="Delimiter">{</span>
+      assert curr-sandbox, <span class="Constant">[sandbox not found! something is wrong.]</span>
+      found?:boolean<span class="Special"> &lt;- </span>equal curr-sandbox, sandbox
+      <span class="muControl">break-if</span> found?
+      prev-sandbox<span class="Special"> &lt;- </span>copy curr-sandbox
+      curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># snip sandbox out of its list</span>
+    next-sandbox:address:sandbox-data<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    *prev-sandbox<span class="Special"> &lt;- </span>put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
+  <span class="Delimiter">}</span>
   <span class="Comment"># update sandbox count</span>
   sandbox-count:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
   sandbox-count<span class="Special"> &lt;- </span>subtract sandbox-count, <span class="Constant">1</span>
   *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
+  <span class="Comment"># reset scroll if deleted sandbox was last</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> next
-    <span class="Comment"># deleted sandbox was last</span>
+    <span class="muControl">break-if</span> next-sandbox
     render-from:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
     reset-scroll?:boolean<span class="Special"> &lt;- </span>equal render-from, sandbox-count
     <span class="muControl">break-unless</span> reset-scroll?
-    <span class="Comment"># deleted sandbox was only sandbox rendered, so reset scroll</span>
     *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muScenario">scenario</span> deleting-sandbox-after-scroll [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -187,40 +196,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     type <span class="Constant">[add 1, 1]</span>
     press F4
-    press down-arrow
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">6</span>, <span class="Constant">29</span>
+    left-click <span class="Constant">6</span>, <span class="Constant">99</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> deleting-top-sandbox-after-scroll [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -233,40 +242,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     type <span class="Constant">[add 1, 1]</span>
     press F4
-    press down-arrow
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">29</span>
+    left-click <span class="Constant">2</span>, <span class="Constant">99</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> deleting-final-sandbox-after-scroll [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -279,42 +288,42 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     type <span class="Constant">[add 1, 1]</span>
     press F4
-    press down-arrow
-    press down-arrow
+    press page-down
+    press page-down
   ]
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">29</span>
+    left-click <span class="Constant">2</span>, <span class="Constant">99</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># implicitly scroll up to first sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊              .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> deleting-updates-sandbox-count [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">30/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
@@ -330,35 +339,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊              .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊0            x.</span>
-   <span class="Constant"> .               ┊add 1, 1      .</span>
-   <span class="Constant"> .               ┊2             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊1            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ┊2                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊1   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
   ]
   <span class="Comment"># delete the second sandbox, then try to scroll down twice</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">29</span>
-    press down-arrow
-    press down-arrow
+    left-click <span class="Constant">3</span>, <span class="Constant">99</span>
+    press page-down
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># shouldn't go past last sandbox</span>
   screen-should-contain [
-   <span class="Constant"> .                              .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0            x.</span>
-   <span class="Constant"> .               ┊add 2, 2      .</span>
-   <span class="Constant"> .               ┊4             .</span>
-   <span class="Constant"> .               ┊━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .               ┊              .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊add 2, 2                                         .</span>
+   <span class="Constant"> .                                                  ┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 </pre>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 054parse_tree.cc</title>
+<title>Mu - 017parse_tree.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -36,6 +36,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">// come in handy later for expressing complex types, like &quot;a dictionary from</span>
 <span class="Comment">// (address to array of charaters) to (list of numbers)&quot;.</span>
 
+<span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario dilated_reagent_with_nested_brackets)</span>
 def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: <span class="Delimiter">(</span>bar <span class="Delimiter">(</span>baz quux<span class="Delimiter">))}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
@@ -101,35 +102,6 @@ container foo [
 container bar [
 ]
 <span class="traceContains">+parse:   product: {1: (&quot;foo&quot; (&quot;address&quot; &quot;array&quot; &quot;character&quot;) (&quot;bar&quot; &quot;number&quot;))}</span>
-
-<span class="Delimiter">:(scenario dilated_reagent_in_static_array)</span>
-def main [
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span><span class="Special"> &lt;- </span>create-array
-  <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span><span class="Special"> &lt;- </span>put-index <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)},</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">5</span>:address:number
-  *<span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>copy *<span class="Constant">5</span>:address:number
-]
-<span class="traceContains">+run: creating array of size 4</span>
-<span class="traceContains">+mem: storing 34 in location 6</span>
-
-<span class="Comment">//: an exception is 'new', which takes a type tree as its ingredient *value*</span>
-
-<span class="Delimiter">:(scenario dilated_reagent_with_new)</span>
-def main [
-  <span class="Normal">x</span>:address:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
-]
-<span class="traceContains">+new: size of (&quot;address&quot; &quot;number&quot;) is 1</span>
-
-<span class="Delimiter">:(before &quot;End Post-processing(expected_product) When Checking 'new'&quot;)</span>
-<span class="Delimiter">{</span>
-  string_tree* tmp_type_names = parse_string_tree<span class="Delimiter">(</span>expected_product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
-  <span class="Normal">delete</span> expected_product<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
-  expected_product<span class="Delimiter">.</span>type = new_type_tree<span class="Delimiter">(</span>tmp_type_names<span class="Delimiter">);</span>
-  <span class="Normal">delete</span> tmp_type_names<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Post-processing(type_name) When Converting 'new'&quot;)</span>
-type_name = parse_string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
 </pre>
 </body>
 </html>

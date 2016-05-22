@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - edit/009-sandbox-trace.mu</title>
+<title>Mu - edit/010-sandbox-trace.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
@@ -37,7 +37,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> sandbox-click-on-code-toggles-app-trace [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
@@ -51,17 +51,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                     run (F4)           .</span>
-   <span class="Constant"> .                    ┊                   .</span>
-   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  stash [abc]       ┊0                 x.</span>
-   <span class="Constant"> .]                   ┊foo                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]                                     ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># click on the code in the sandbox</span>
   assume-console [
-    left-click <span class="Constant">4</span>, <span class="Constant">21</span>
+    left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -70,28 +70,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># trace now printed and cursor shouldn't have budged</span>
   screen-should-contain [
-   <span class="Constant"> .                     run (F4)           .</span>
-   <span class="Constant"> .␣                   ┊                   .</span>
-   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  stash [abc]       ┊0                 x.</span>
-   <span class="Constant"> .]                   ┊foo                .</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .</span>
-   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .␣                                                 ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]                                     ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   screen-should-contain-in-color <span class="Constant">245/grey</span>, [
-   <span class="Constant"> .                                        .</span>
-   <span class="Constant"> .                    ┊                   .</span>
-   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                  x.</span>
-   <span class="Constant"> .                    ┊                   .</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                .</span>
-   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                                    .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># click again on the same region</span>
   assume-console [
-    left-click <span class="Constant">4</span>, <span class="Constant">25</span>
+    left-click <span class="Constant">4</span>, <span class="Constant">55</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
@@ -99,19 +99,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># trace hidden again</span>
   screen-should-contain [
-   <span class="Constant"> .                     run (F4)           .</span>
-   <span class="Constant"> .␣                   ┊                   .</span>
-   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  stash [abc]       ┊0                 x.</span>
-   <span class="Constant"> .]                   ┊foo                .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .␣                                                 ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]                                     ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ┊foo                                              .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> sandbox-shows-app-trace-and-result [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">40/width</span>, <span class="Constant">10/height</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
@@ -126,33 +126,33 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
-   <span class="Constant"> .                     run (F4)           .</span>
-   <span class="Constant"> .                    ┊                   .</span>
-   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  stash [abc]       ┊0                 x.</span>
-   <span class="Constant"> .  reply 4           ┊foo                .</span>
-   <span class="Constant"> .]                   ┊4                  .</span>
-<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]                                     ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .  reply 4                                         ┊foo                                              .</span>
+   <span class="Constant"> .]                                                 ┊4                                                .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
   <span class="Comment"># click on the code in the sandbox</span>
   assume-console [
-    left-click <span class="Constant">4</span>, <span class="Constant">21</span>
+    left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
     event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   ]
   <span class="Comment"># trace now printed above result</span>
   screen-should-contain [
-   <span class="Constant"> .                     run (F4)           .</span>
-   <span class="Constant"> .                    ┊                   .</span>
-   <span class="Constant"> .recipe foo [        ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  stash [abc]       ┊0                 x.</span>
-   <span class="Constant"> .  reply 4           ┊foo                .</span>
-   <span class="Constant"> .]                   ┊abc                .</span>
-   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                  .</span>
-   <span class="Constant"> .                    ┊━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .                    ┊                   .</span>
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .  stash [abc]                                     ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .  reply 4                                         ┊foo                                              .</span>
+   <span class="Constant"> .]                                                 ┊abc                                              .</span>
+   <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
 ]
 

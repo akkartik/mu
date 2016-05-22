@@ -111,7 +111,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Key<span class="Delimiter">,</span> key<span class="Delimiter">))</span>
         put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span><span class="Delimiter">,</span> Key[key]<span class="Delimiter">);</span>
       <span class="Normal">else</span>
-        raise &lt;&lt; <span class="Constant">&quot;assume-console: can't press &quot;</span> &lt;&lt; key &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;assume-console: can't press '&quot;</span> &lt;&lt; key &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc+<span class="Constant">1</span><span class="Delimiter">)</span> &lt; <span class="Constant">256</span><span class="Delimiter">)</span>
         <span class="Comment">// these keys are in ascii</span>
         put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">tag for 'text' variant of 'event' exclusive-container</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
@@ -154,6 +154,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span>+<span class="Comment">/*</span><span class="Comment">offset of 'data' in container 'events'</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> event_data_address<span class="Delimiter">);</span>
   <span class="Comment">// increment refcount for event data</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> event_data_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// increment refcount for console</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> console_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

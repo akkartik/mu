@@ -57,7 +57,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> HASH: <span class="Delimiter">{</span>
-  reagent input = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// copy</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> input = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>hash<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> input<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -111,22 +111,16 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Normal">size_t</span> hash_mu_array<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
-  reagent elem = r<span class="Delimiter">;</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> elem = r<span class="Delimiter">;</span>
   <span class="Normal">delete</span> elem<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
-  elem<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  elem<span class="Delimiter">.</span>type = copy_array_element<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i=<span class="Constant">0</span><span class="Delimiter">,</span> address = r<span class="Delimiter">.</span>value+<span class="Constant">1</span><span class="Delimiter">;</span> i &lt; size<span class="Delimiter">;</span> ++i<span class="Delimiter">,</span> address += size_of<span class="Delimiter">(</span>elem<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    reagent tmp = elem<span class="Delimiter">;</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> tmp = elem<span class="Delimiter">;</span>
     tmp<span class="Delimiter">.</span>value = address<span class="Delimiter">;</span>
     h = hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot; (&quot; &lt;&lt; address &lt;&lt; &quot;): &quot; &lt;&lt; h &lt;&lt; '\n';</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> h<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> is_mu_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">size_t</span> hash_mu_container<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -135,7 +129,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">int</span> address = r<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
   <span class="Normal">int</span> offset = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    reagent element = element_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>element<span class="Delimiter">,</span> <span class="Constant">&quot;ignore-for-hash&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     element<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>address+offset<span class="Delimiter">);</span>
     h = hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> element<span class="Delimiter">);</span>
@@ -145,16 +139,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">return</span> h<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
 <span class="Normal">size_t</span> hash_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">int</span> tag = get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">);</span>
-  reagent variant = variant_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> tag<span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> variant = variant_type<span class="Delimiter">(</span>r<span class="Delimiter">,</span> tag<span class="Delimiter">);</span>
   <span class="Comment">// todo: move this error to container definition time</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>variant<span class="Delimiter">,</span> <span class="Constant">&quot;ignore-for-hash&quot;</span><span class="Delimiter">))</span>
     raise &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;: /ignore-for-hash won't work in exclusive containers</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -402,7 +390,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:array:character), but got &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:array:character), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

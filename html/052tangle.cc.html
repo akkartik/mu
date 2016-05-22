@@ -76,6 +76,7 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
     Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Normal">else</span>
     raise &lt;&lt; <span class="Constant">&quot;can't tangle before label &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// End before Command Handler</span>
 <span class="Delimiter">}</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -85,6 +86,7 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
     After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Normal">else</span>
     raise &lt;&lt; <span class="Constant">&quot;can't tangle after label &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// End after Command Handler</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: after all recipes are loaded, insert fragments at appropriate labels.</span>
@@ -179,11 +181,11 @@ check_insert_fragments<span class="Delimiter">();</span>
 <span class="Normal">void</span> check_insert_fragments<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> recipe&gt;::iterator p = Before_fragments<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Before_fragments<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Fragments_used<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-      raise &lt;&lt; <span class="Constant">&quot;could not locate insert before &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;could not locate insert before label &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> recipe&gt;::iterator p = After_fragments<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != After_fragments<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Fragments_used<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span>
-      raise &lt;&lt; <span class="Constant">&quot;could not locate insert after &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;could not locate insert after label &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>first &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -450,6 +452,35 @@ before &lt;label1&gt; [
 <span class="traceAbsent">-mem: storing 12 in location 3</span>
 <span class="Comment"># nothing else</span>
 $mem: <span class="Constant">2</span>
+
+<span class="Comment">//: ensure that there are no new fragments created for a label after it's already been inserted to</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> test_new_fragment_after_tangle<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Comment">// define a recipe</span>
+  load<span class="Delimiter">(</span><span class="Constant">&quot;def foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  local-scope</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  &lt;label&gt;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;after &lt;label&gt; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  1:number/raw &lt;- copy 34</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  transform_all<span class="Delimiter">();</span>
+  CHECK_TRACE_DOESNT_CONTAIN_ERROR<span class="Delimiter">();</span>
+  Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Comment">// try to tangle into recipe foo after transform</span>
+  load<span class="Delimiter">(</span><span class="Constant">&quot;before &lt;label&gt; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;  2:number/raw &lt;- copy 35</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  CHECK_TRACE_CONTAINS_ERROR<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End before Command Handler&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Fragments_used<span class="Delimiter">,</span> label<span class="Delimiter">))</span>
+  raise &lt;&lt; <span class="Constant">&quot;we've already tangled some code at label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in a previous call to transform_all(). Those locations won't be updated.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End after Command Handler&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Fragments_used<span class="Delimiter">,</span> label<span class="Delimiter">))</span>
+  raise &lt;&lt; <span class="Constant">&quot;we've already tangled some code at label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in a previous call to transform_all(). Those locations won't be updated.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 </pre>
 </body>
 </html>

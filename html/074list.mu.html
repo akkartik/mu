@@ -42,12 +42,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   next:address:list:_elem
 ]
 
-<span class="muRecipe">def</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>in:address:list:_elem [
+<span class="muRecipe">def</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:address:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
   *result<span class="Special"> &lt;- </span>merge x, in
-  <span class="muControl">return</span> result  <span class="Comment"># needed explicitly because we need to replace 'in' with 'result'</span>
 ]
 
 <span class="muRecipe">def</span> first in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
@@ -80,6 +79,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
   ]
+]
+
+<span class="muRecipe">def</span> length l:address:list:_elem<span class="muRecipe"> -&gt; </span>result:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="muControl">return-unless</span> l, <span class="Constant">0</span>
+  rest:address:list:_elem<span class="Special"> &lt;- </span>rest l
+  length-of-rest:number<span class="Special"> &lt;- </span>length rest
+  result<span class="Special"> &lt;- </span>add length-of-rest, <span class="Constant">1</span>
 ]
 
 <span class="muRecipe">def</span> to-text in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:array:character [

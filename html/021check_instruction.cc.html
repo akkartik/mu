@@ -61,7 +61,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
         <span class="Delimiter">}</span>
         <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
           <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-            raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't copy &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;; types don't match</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+            raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't copy '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' to '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'; types don't match</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
             <span class="Identifier">goto</span> finish_checking_instruction<span class="Delimiter">;</span>
           <span class="Delimiter">}</span>
         <span class="Delimiter">}</span>
@@ -89,21 +89,21 @@ def main [
 def main [
   <span class="Constant">1</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-<span class="traceContains">+error: main: can't copy 34 to 1:array:number; types don't match</span>
+<span class="traceContains">+error: main: can't copy '34' to '1:array:number'; types don't match</span>
 
 <span class="Delimiter">:(scenario write_scalar_to_array_disallowed_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
-<span class="traceContains">+error: main: can't copy 35 to 2:array:number; types don't match</span>
+<span class="traceContains">+error: main: can't copy '35' to '2:array:number'; types don't match</span>
 
 <span class="Delimiter">:(scenario write_scalar_to_address_disallowed)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-<span class="traceContains">+error: main: can't copy 34 to 1:address:number; types don't match</span>
+<span class="traceContains">+error: main: can't copy '34' to '1:address:number'; types don't match</span>
 
 <span class="Delimiter">:(scenario write_address_to_number_allowed)</span>
 def main [
@@ -157,15 +157,6 @@ $error: <span class="Constant">0</span>
   <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> types_strictly_match_except_literal_against_boolean<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
-  <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span>
-      &amp;&amp; to<span class="Delimiter">.</span>type &amp;&amp; to<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">))</span>
-    <span class="Identifier">return</span> boolean_matches_literal<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
 <span class="Normal">bool</span> boolean_matches_literal<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!to<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -175,7 +166,8 @@ $error: <span class="Constant">0</span>
 
 <span class="Comment">// copy arguments because later layers will want to make changes to them</span>
 <span class="Comment">// without perturbing the caller</span>
-<span class="Normal">bool</span> types_strictly_match<span class="Delimiter">(</span>reagent to<span class="Delimiter">,</span> reagent from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> types_strictly_match<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> to<span class="Delimiter">,</span> reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess types_strictly_match(reagent to, reagent from)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; to<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
   <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
@@ -188,7 +180,7 @@ $error: <span class="Constant">0</span>
 
 <span class="Comment">// two types match if the second begins like the first</span>
 <span class="Comment">// (trees perform the same check recursively on each subtree)</span>
-<span class="Normal">bool</span> types_strictly_match<span class="Delimiter">(</span>type_tree* to<span class="Delimiter">,</span> type_tree* from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> types_strictly_match<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* to<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!to<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!from<span class="Delimiter">)</span> <span class="Identifier">return</span> to<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>value == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> from<span class="Delimiter">-&gt;</span>name == to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
@@ -212,25 +204,29 @@ $error: <span class="Constant">0</span>
   <span class="Identifier">return</span> has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;unsafe&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_array<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_array<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess is_mu_array(reagent r)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_address<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_address<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess is_mu_address(reagent r)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_boolean<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_boolean<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess is_mu_boolean(reagent r)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_number<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_number<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess is_mu_number(reagent r)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -241,7 +237,7 @@ $error: <span class="Constant">0</span>
   <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_mu_scalar<span class="Delimiter">(</span>reagent r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_mu_scalar<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
     <span class="Identifier">return</span> !r<span class="Delimiter">.</span>type || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;literal-string&quot;</span><span class="Delimiter">;</span>

@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - nqueens.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
+.Delimiter { color: #800080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># <a href="http://rosettacode.org/wiki/N-queens_problem">http://rosettacode.org/wiki/N-queens_problem</a></span>
+<span class="Comment"># port of the Arc solution at <a href="http://arclanguage.org/item?id=19743">http://arclanguage.org/item?id=19743</a></span>
+
+<span class="muData">container</span> square [
+  rank:number
+  file:number
+]
+
+<span class="muRecipe">def</span> nqueens n:number, queens:address:list:square<span class="muRecipe"> -&gt; </span>result:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># if 'queens' is already long enough, print it and return</span>
+  added-so-far:number<span class="Special"> &lt;- </span>length queens
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal added-so-far, n
+    <span class="muControl">break-unless</span> done?
+    stash queens
+    <span class="muControl">return</span> <span class="Constant">1</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># still work to do</span>
+  next-rank:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> queens
+    first:square<span class="Special"> &lt;- </span>first queens
+    existing-rank:number<span class="Special"> &lt;- </span>get first, <span class="Constant">rank:offset</span>
+    next-rank<span class="Special"> &lt;- </span>add existing-rank, <span class="Constant">1</span>
+  <span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  next-file:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal next-file, n
+    <span class="muControl">break-if</span> done?
+    curr:square<span class="Special"> &lt;- </span>merge next-rank, next-file
+    <span class="Delimiter">{</span>
+      curr-conflicts?:boolean<span class="Special"> &lt;- </span>conflict? curr, queens
+      <span class="muControl">break-if</span> curr-conflicts?
+      new-queens:address:list:square<span class="Special"> &lt;- </span>push curr, queens
+      sub-result:number<span class="Special"> &lt;- </span>nqueens n, new-queens
+      result<span class="Special"> &lt;- </span>add result, sub-result
+    <span class="Delimiter">}</span>
+    next-file<span class="Special"> &lt;- </span>add next-file, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">def</span> conflict? curr:square, queens:address:list:square<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  result1:boolean<span class="Special"> &lt;- </span>conflicting-file? curr, queens
+  <span class="muControl">reply-if</span> result1, result1
+  result2:boolean<span class="Special"> &lt;- </span>conflicting-diagonal? curr, queens
+  <span class="muControl">reply</span> result2
+]
+
+<span class="muRecipe">def</span> conflicting-file? curr:square, queens:address:list:square<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  curr-file:number<span class="Special"> &lt;- </span>get curr, <span class="Constant">file:offset</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> queens
+    q:square<span class="Special"> &lt;- </span>first queens
+    qfile:number<span class="Special"> &lt;- </span>get q, <span class="Constant">file:offset</span>
+    file-match?:boolean<span class="Special"> &lt;- </span>equal curr-file, qfile
+    <span class="muControl">reply-if</span> file-match?, <span class="Constant">1/conflict-found</span>
+    queens<span class="Special"> &lt;- </span>rest queens
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
+]
+
+<span class="muRecipe">def</span> conflicting-diagonal? curr:square, queens:address:list:square<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  curr-rank:number<span class="Special"> &lt;- </span>get curr, <span class="Constant">rank:offset</span>
+  curr-file:number<span class="Special"> &lt;- </span>get curr, <span class="Constant">file:offset</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> queens
+    q:square<span class="Special"> &lt;- </span>first queens
+    qrank:number<span class="Special"> &lt;- </span>get q, <span class="Constant">rank:offset</span>
+    qfile:number<span class="Special"> &lt;- </span>get q, <span class="Constant">file:offset</span>
+    rank-delta:number<span class="Special"> &lt;- </span>subtract qrank, curr-rank
+    file-delta:number<span class="Special"> &lt;- </span>subtract qfile, curr-file
+    rank-delta<span class="Special"> &lt;- </span>abs rank-delta
+    file-delta<span class="Special"> &lt;- </span>abs file-delta
+    diagonal-match?:boolean<span class="Special"> &lt;- </span>equal rank-delta, file-delta
+    <span class="muControl">reply-if</span> diagonal-match?, <span class="Constant">1/conflict-found</span>
+    queens<span class="Special"> &lt;- </span>rest queens
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

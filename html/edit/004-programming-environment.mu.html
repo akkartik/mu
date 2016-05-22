@@ -121,6 +121,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       touch-type:number<span class="Special"> &lt;- </span>get t, <span class="Constant">type:offset</span>
       is-left-click?:boolean<span class="Special"> &lt;- </span>equal touch-type, <span class="Constant">65513/mouse-left</span>
       <span class="muControl">loop-unless</span> is-left-click?, <span class="Constant">+next-event:label</span>
+      click-row:number<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
+      click-column:number<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
       <span class="Comment"># later exceptions for non-editor touches will go here</span>
 <span class="Constant">      &lt;global-touch&gt;</span>
       <span class="Comment"># send to both editors</span>
@@ -446,7 +448,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   left:number<span class="Special"> &lt;- </span>get *recipes, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *recipes, <span class="Constant">right:offset</span>
   row:number, column:number, screen<span class="Special"> &lt;- </span>render screen, recipes
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
 <span class="Constant">  &lt;render-recipe-components-end&gt;</span>
   <span class="Comment"># draw dotted line after recipes</span>
@@ -463,7 +465,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   left:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
   right:number<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
   row:number, column:number, screen, current-sandbox<span class="Special"> &lt;- </span>render screen, current-sandbox
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
   <span class="Comment"># draw solid line after code (you'll see why in later layers)</span>
   draw-horizontal screen, row, left, right, <span class="Constant">9473/horizontal</span>
@@ -542,7 +544,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   was-at-left?:boolean<span class="Special"> &lt;- </span>equal column, left
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> was-at-left?
     row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
@@ -605,7 +607,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   was-at-left?:boolean<span class="Special"> &lt;- </span>equal column, left
-  clear-line-delimited screen, column, right
+  clear-line-until screen, right
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> was-at-left?
     row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>

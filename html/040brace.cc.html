@@ -96,7 +96,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; <span class="Constant">&quot;missing '{' in &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;missing '{' in '&quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       open_braces<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
@@ -115,7 +115,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Comment">// check for errors</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>old_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos || inst<span class="Delimiter">.</span>old_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; inst<span class="Delimiter">.</span>old_name &lt;&lt; <span class="Constant">&quot; expects 1 or 2 ingredients, but got none</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>old_name &lt;&lt; <span class="Constant">&quot;' expects 1 or 2 ingredients, but got none</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
@@ -152,7 +152,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     target<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;offset&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;offset&quot;</span><span class="Delimiter">));</span>
     target<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
-      raise &lt;&lt; inst<span class="Delimiter">.</span>old_name &lt;&lt; <span class="Constant">&quot; needs a '{' before</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>old_name &lt;&lt; <span class="Constant">&quot;' needs a '{' before</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>old_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;loop&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span>
       target<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>open_braces<span class="Delimiter">.</span>top<span class="Delimiter">()</span>-index<span class="Delimiter">);</span>
     <span class="Normal">else</span>  <span class="Comment">// break instruction</span>
@@ -385,7 +385,7 @@ def test-factorial [
 def main [
   <span class="Identifier">break</span>
 ]
-<span class="traceContains">+error: break needs a '{' before</span>
+<span class="traceContains">+error: 'break' needs a '{' before</span>
 
 <span class="Delimiter">:(scenario break_conditional_without_ingredient_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -394,7 +394,7 @@ def main [
     <span class="Identifier">break</span>-<span class="Normal">if</span>
   <span class="Delimiter">}</span>
 ]
-<span class="traceContains">+error: break-if expects 1 or 2 ingredients, but got none</span>
+<span class="traceContains">+error: 'break-if' expects 1 or 2 ingredients, but got none</span>
 
 <span class="Comment">//: Using break we can now implement conditional returns.</span>
 
@@ -454,7 +454,7 @@ def test1 [
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> emit_return_block<span class="Delimiter">(</span>recipe&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; break_command<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  reagent condition = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> condition = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   vector&lt;reagent&gt; return_ingredients<span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>return_ingredients<span class="Delimiter">,</span> return_ingredients<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
 

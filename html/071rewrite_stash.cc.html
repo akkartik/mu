@@ -95,7 +95,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
         instruction def<span class="Delimiter">;</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>is_lookup_of_address_of_array<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
           def<span class="Delimiter">.</span>name = <span class="Constant">&quot;array-to-text-line&quot;</span><span class="Delimiter">;</span>
-          reagent tmp = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
+          reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> tmp = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
           drop_one_lookup<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
           def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
         <span class="Delimiter">}</span>
@@ -118,13 +118,13 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_instructions<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_lookup_of_address_of_array<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_lookup_of_address_of_array<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_static_array<span class="Delimiter">(</span>reagent x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_static_array<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// no canonize_type()</span>
   <span class="Identifier">return</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

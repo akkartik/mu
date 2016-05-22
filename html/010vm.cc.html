@@ -90,6 +90,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   vector&lt;pair&lt;string<span class="Delimiter">,</span> string_tree*&gt; &gt; properties<span class="Delimiter">;</span>  <span class="Comment">// can't be a map because the string_tree sometimes needs to be NULL, which can be confusing</span>
   <span class="Normal">double</span> value<span class="Delimiter">;</span>
   <span class="Normal">bool</span> initialized<span class="Delimiter">;</span>
+  <span class="Comment">// End reagent Fields</span>
   reagent<span class="Delimiter">(</span>string s<span class="Delimiter">);</span>
   reagent<span class="Delimiter">()</span> :type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~reagent<span class="Delimiter">();</span>
@@ -130,6 +131,8 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   <span class="Comment">// advanced: tree containing strings</span>
   string_tree<span class="Delimiter">(</span>string_tree* l<span class="Delimiter">,</span> string_tree* r<span class="Delimiter">)</span> :left<span class="Delimiter">(</span>l<span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span class="Delimiter">};</span>
+
+<span class="Comment">// End type_tree Definition</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Locations refer to a common 'memory'. Each location can store a number.</span>
@@ -205,7 +208,9 @@ atexit<span class="Delimiter">(</span>teardown_types<span class="Delimiter">);</
   kind_of_type kind<span class="Delimiter">;</span>
   vector&lt;reagent&gt; elements<span class="Delimiter">;</span>
   <span class="Comment">// End type_info Fields</span>
-  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  type_info<span class="Delimiter">()</span> :kind<span class="Delimiter">(</span>PRIMITIVE<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// End type_info Constructor</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 
 <span class="Normal">enum</span> primitive_recipes <span class="Delimiter">{</span>
@@ -341,16 +346,17 @@ type_tree* new_type_tree<span class="Delimiter">(</span><span class="Normal">con
 
 <span class="Comment">//: avoid memory leaks for the type tree</span>
 
-reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  original_string = old<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
-  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  initialized = old<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span>
-                                                    old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
+reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; other<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  original_string = other<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
+  name = other<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = other<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  initialized = other<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>other<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span>
+                                                    other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
-  type = old<span class="Delimiter">.</span>type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  type = other<span class="Delimiter">.</span>type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Comment">// End reagent Copy Constructor</span>
 <span class="Delimiter">}</span>
 
 type_tree::type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -366,18 +372,19 @@ string_tree::string_tree<span class="Delimiter">(</span><span class="Normal">con
   right = old<span class="Delimiter">.</span>right ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-reagent&amp; reagent::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  original_string = old<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
+reagent&amp; reagent::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; other<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  original_string = other<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> <span class="Normal">delete</span> properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">;</span>
   properties<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
-  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  initialized = old<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>other<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first<span class="Delimiter">,</span> other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>second<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  name = other<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = other<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  initialized = other<span class="Delimiter">.</span>initialized<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">)</span> <span class="Normal">delete</span> type<span class="Delimiter">;</span>
-  type = old<span class="Delimiter">.</span>type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  type = other<span class="Delimiter">.</span>type ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*other<span class="Delimiter">.</span>type<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Comment">// End reagent Copy Operator</span>
   <span class="Identifier">return</span> *<span class="Normal">this</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -417,7 +424,7 @@ string slurp_until<span class="Delimiter">(</span>istream&amp; in<span class="De
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> has_property<span class="Delimiter">(</span>reagent x<span class="Delimiter">,</span> string name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> has_property<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>first == name<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
