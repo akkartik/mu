@@ -300,10 +300,10 @@ for a more complex example where I write tests showing blocking reads from the
 keyboard and what gets printed to the screen -- things we don't typically
 associate with automated tests.
 
-b) Try skimming the [colorized source code](http://akkartik.github.io/mu). I'd
-like it to eventually be possible to get a pretty good sense for how things
-work just by skimming the files in order, skimming the top of each file and
-ignoring details lower down. Tell me how successful my efforts are.
+b) Try skimming the [colorized source code](https://akkartik.github.io/mu).
+I'd like it to eventually be possible to get a pretty good sense for how
+things work just by skimming the files in order, skimming the top of each file
+and ignoring details lower down. Tell me how successful my efforts are.
 
 c) Try running the tests:
 
