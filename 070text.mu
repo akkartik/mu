@@ -285,38 +285,6 @@ def buffer-to-array in:address:buffer -> result:address:array:character [
   }
 ]
 
-scenario integer-to-decimal-digit-zero [
-  run [
-    1:address:array:character/raw <- to-text 0
-    2:array:character/raw <- copy *1:address:array:character/raw
-  ]
-  memory-should-contain [
-    2:array:character <- [0]
-  ]
-]
-
-scenario integer-to-decimal-digit-positive [
-  run [
-    1:address:array:character/raw <- to-text 234
-    2:array:character/raw <- copy *1:address:array:character/raw
-  ]
-  memory-should-contain [
-    2:array:character <- [234]
-  ]
-]
-
-scenario integer-to-decimal-digit-negative [
-  run [
-    1:address:array:character/raw <- to-text -1
-    2:array:character/raw <- copy *1:address:array:character/raw
-  ]
-  memory-should-contain [
-    2 <- 2
-    3 <- 45  # '-'
-    4 <- 49  # '1'
-  ]
-]
-
 def append a:address:array:character, b:address:array:character -> result:address:array:character [
   local-scope
   load-ingredients
