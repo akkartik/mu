@@ -15,13 +15,6 @@ def array-to-text-line x:address:array:_elem -> y:address:array:character [
   y <- to-text *x
 ]
 
-# to-text on text is just the identity function
-def to-text x:address:array:character -> y:address:array:character [
-  local-scope
-  load-ingredients
-  return x
-]
-
 def equal a:address:array:character, b:address:array:character -> result:boolean [
   local-scope
   load-ingredients
@@ -269,73 +262,6 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-def to-text n:number -> result:address:array:character [
-  local-scope
-  load-ingredients
-  # is n zero?
-  {
-    break-if n
-    result <- new [0]
-    return
-  }
-  # save sign
-  negate-result:boolean <- copy 0
-  {
-    negative?:boolean <- lesser-than n, 0
-    break-unless negative?
-    negate-result <- copy 1
-    n <- multiply n, -1
-  }
-  # add digits from right to left into intermediate buffer
-  tmp:address:buffer <- new-buffer 30
-  digit-base:number <- copy 48  # '0'
-  {
-    done?:boolean <- equal n, 0
-    break-if done?
-    n, digit:number <- divide-with-remainder n, 10
-    c:character <- add digit-base, digit
-    tmp:address:buffer <- append tmp, c
-    loop
-  }
-  # add sign
-  {
-    break-unless negate-result:boolean
-    minus:character <- copy 45/-
-    tmp <- append tmp, minus
-  }
-  # reverse buffer into text result
-  len:number <- get *tmp, length:offset
-  buf:address:array:character <- get *tmp, data:offset
-  result <- new character:type, len
-  i:number <- subtract len, 1  # source index, decreasing
-  j:number <- copy 0  # destination index, increasing
-  {
-    # while i >= 0
-    done?:boolean <- lesser-than i, 0
-    break-if done?
-    # result[j] = tmp[i]
-    src:character <- index *buf, i
-    *result <- put-index *result, j, src
-    i <- subtract i, 1
-    j <- add j, 1
-    loop
-  }
-]
-
-def to-text x:boolean -> result:address:array:character [
-  local-scope
-  load-ingredients
-  n:number <- copy x:boolean
-  result <- to-text n
-]
-
-def to-text x:address:_elem -> result:address:array:character [
-  local-scope
-  load-ingredients
-  n:number <- copy x
-  result <- to-text n
-]
-
 def buffer-to-array in:address:buffer -> result:address:array:character [
   local-scope
   load-ingredients
@@ -394,6 +320,9 @@ scenario integer-to-decimal-digit-negative [
 def append a:address:array:character, b:address:array:character -> result:address:array:character [
   local-scope
   load-ingredients
+  # handle null addresses
+  reply-unless a, b
+  reply-unless b, a
   # result = new character[a.length + b.length]
   a-len:number <- length *a
   b-len:number <- length *b
@@ -437,6 +366,30 @@ scenario text-append-1 [
   ]
   memory-should-contain [
     4:array:character <- [hello, world!]
+  ]
+]
+
+scenario text-append-null [
+  run [
+    1:address:array:character/raw <- copy 0
+    2:address:array:character/raw <- new [ world!]
+    3:address:array:character/raw <- append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy *3:address:array:character/raw
+  ]
+  memory-should-contain [
+    4:array:character <- [ world!]
+  ]
+]
+
+scenario text-append-null-2 [
+  run [
+    1:address:array:character/raw <- new [hello,]
+    2:address:array:character/raw <- copy 0
+    3:address:array:character/raw <- append 1:address:array:character/raw, 2:address:array:character/raw
+    4:array:character/raw <- copy *3:address:array:character/raw
+  ]
+  memory-should-contain [
+    4:array:character <- [hello,]
   ]
 ]
 
