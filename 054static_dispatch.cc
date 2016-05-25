@@ -274,10 +274,8 @@ bool all_header_reagents_strictly_match_except_literal_zero_against_address(cons
 }
 
 bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from) {
-  // to sidestep type-checking, use /unsafe in the source.
-  // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_literal(from) && is_mu_address(to))
-    return from.name == "0" && !contains_type_ingredient_name(to);
+    return from.name == "0";
   return types_strictly_match(to, from);
 }
 
@@ -311,14 +309,10 @@ bool all_header_reagents_strictly_match_except_literal_against_address_or_boolea
 }
 
 bool types_strictly_match_except_literal_against_address_or_boolean(const reagent& to, const reagent& from) {
-  // to sidestep type-checking, use /unsafe in the source.
-  // this will be highlighted in red inside vim. just for setting up some tests.
   if (is_literal(from)
       && to.type && to.type->value == get(Type_ordinal, "boolean"))
     return boolean_matches_literal(to, from);
-  if (is_literal(from) && is_mu_address(to))
-    return from.name == "0" && !contains_type_ingredient_name(to);
-  return types_strictly_match(to, from);
+  return types_strictly_match_except_literal_zero_against_address(to, from);
 }
 
 // phase 5

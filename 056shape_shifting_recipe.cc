@@ -83,6 +83,13 @@ if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECI
   return;
 }
 
+:(replace{} "bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from)")
+bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from) {
+  if (is_literal(from) && is_mu_address(to))
+    return from.name == "0" && !contains_type_ingredient_name(to);
+  return types_strictly_match(to, from);
+}
+
 :(code)
 // phase 2 of static dispatch
 vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
