@@ -122,8 +122,8 @@ NOT,
 put(Recipe_ordinal, "not", NOT);
 :(before "End Primitive Recipe Checks")
 case NOT: {
-  if (SIZE(inst.products) > SIZE(inst.ingredients)) {
-    raise << maybe(get(Recipe, r).name) << "'not' cannot have fewer ingredients than products in '" << to_original_string(inst) << "'\n" << end();
+  if (SIZE(inst.products) != SIZE(inst.ingredients)) {
+    raise << "ingredients and products should match in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   for (int i = 0; i < SIZE(inst.ingredients); ++i) {
