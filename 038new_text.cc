@@ -69,7 +69,7 @@ def main [
 :(before "End print Special-cases(r, data)")
 if (is_mu_string(r)) {
   assert(scalar(data));
-  return read_mu_string(data.at(0))+' ';
+  return read_mu_string(data.at(0));
 }
 
 :(scenario unicode_string)
