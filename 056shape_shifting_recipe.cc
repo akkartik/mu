@@ -1070,4 +1070,4 @@ def main [
   local-scope
   foo 34
 ]
-$exit: 0
+$error: 0
