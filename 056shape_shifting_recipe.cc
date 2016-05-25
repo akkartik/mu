@@ -62,7 +62,8 @@ if (!candidates.empty()) {
     trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
     for (int t = 0; t < SIZE(Transform); ++t) {
       // one exception: skip tangle, which would have already occurred inside new_variant above
-      if (Transform.at(t) == insert_fragments) continue;
+      if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
+        continue;
       (*Transform.at(t))(new_recipe_ordinal);
     }
   }
@@ -228,17 +229,16 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   // make a copy
   assert(contains_key(Recipe, exemplar));
   assert(!contains_key(Recipe, new_recipe_ordinal));
-  put(Recipe, new_recipe_ordinal, get(Recipe, exemplar));
-  recipe& new_recipe = get(Recipe, new_recipe_ordinal);
+  recipe new_recipe = get(Recipe, exemplar);
   new_recipe.name = new_name;
-  trace(9993, "transform") << "switching " << inst.name << " to specialized " << header_label(new_recipe_ordinal) << end();
+  trace(9993, "transform") << "switching " << inst.name << " to specialized " << header_label(new_recipe) << end();
 
   // Replace type ingredients with concrete types in new_recipe.
   //
   // preprocessing: micro-manage a couple of transforms
   // a) perform tangle *before* replacing type ingredients, just in case
   // inserted code involves type ingredients
-  insert_fragments(new_recipe_ordinal);
+  insert_fragments(new_recipe);
   // b) do the work of check_types_by_name while supporting type-ingredients
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
@@ -249,9 +249,10 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     if (!error) replace_type_ingredients(new_recipe, mappings);
     for (map<string, const type_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
       delete p->second;
-    if (error) return 0;  // todo: delete new_recipe_ordinal from Recipes and other global state
+    if (error) return 0;
   }
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
+  put(Recipe, new_recipe_ordinal, new_recipe);
   return new_recipe_ordinal;
 }
 

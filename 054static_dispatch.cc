@@ -564,7 +564,9 @@ def foo x:number -> y:number [
 
 :(code)
 string header_label(recipe_ordinal r) {
-  const recipe& caller = get(Recipe, r);
+  return header_label(get(Recipe, r));
+}
+string header_label(const recipe& caller) {
   ostringstream out;
   out << "recipe " << caller.name;
   for (int i = 0; i < SIZE(caller.ingredients); ++i)

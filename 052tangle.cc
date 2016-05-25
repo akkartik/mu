@@ -69,14 +69,18 @@ tangle_done = false;
 
 :(code)
 void insert_fragments(const recipe_ordinal r) {
+  insert_fragments(get(Recipe, r));
+}
+
+void insert_fragments(recipe& r) {
   bool made_progress = true;
   int pass = 0;
   while (made_progress) {
     made_progress = false;
     // create a new vector because insertions invalidate iterators
     vector<instruction> result;
-    for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
-      const instruction& inst = get(Recipe, r).steps.at(i);
+    for (int i = 0; i < SIZE(r.steps); ++i) {
+      const instruction& inst = r.steps.at(i);
       if (!inst.is_label || !is_waypoint(inst.label) || inst.tangle_done) {
         result.push_back(inst);
         continue;
@@ -85,7 +89,7 @@ void insert_fragments(const recipe_ordinal r) {
       made_progress = true;
       Fragments_used.insert(inst.label);
       ostringstream prefix;
-      prefix << '+' << get(Recipe, r).name << '_' << pass << '_' << i;
+      prefix << '+' << r.name << '_' << pass << '_' << i;
       // ok to use contains_key even though Before_fragments uses [],
       // because appending an empty recipe is a noop
       if (contains_key(Before_fragments, inst.label))
@@ -94,7 +98,7 @@ void insert_fragments(const recipe_ordinal r) {
       if (contains_key(After_fragments, inst.label))
         append_fragment(result, After_fragments[inst.label].steps, prefix.str());
     }
-    get(Recipe, r).steps.swap(result);
+    r.steps.swap(result);
     ++pass;
   }
 }
