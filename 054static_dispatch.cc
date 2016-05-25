@@ -249,7 +249,7 @@ vector<recipe_ordinal> strictly_matching_variants_except_literal_zero_against_ad
   vector<recipe_ordinal> result;
   for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
-    trace(9992, "transform") << "checking variant (strict) " << i << ": " << header_label(variants.at(i)) << end();
+    trace(9992, "transform") << "checking variant (strict except literal-zero-against-address) " << i << ": " << header_label(variants.at(i)) << end();
     if (all_header_reagents_strictly_match_except_literal_zero_against_address(inst, get(Recipe, variants.at(i))))
       result.push_back(variants.at(i));
   }
@@ -286,7 +286,7 @@ vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address
   vector<recipe_ordinal> result;
   for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
-    trace(9992, "transform") << "checking variant (strict except literals-against-booleans) " << i << ": " << header_label(variants.at(i)) << end();
+    trace(9992, "transform") << "checking variant (strict except literal-against-boolean) " << i << ": " << header_label(variants.at(i)) << end();
     if (all_header_reagents_strictly_match_except_literal_against_address_or_boolean(inst, get(Recipe, variants.at(i))))
       result.push_back(variants.at(i));
   }
