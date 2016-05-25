@@ -122,6 +122,7 @@ case TO_TEXT: {
     raise << maybe(get(Recipe, r).name) << "'to-text' requires a single ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
+  // can handle any type
   break;
 }
 :(before "End Primitive Recipe Implementations")
