@@ -246,6 +246,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     map<string, const type_tree*> mappings;
     bool error = false;
     compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings, caller_recipe, &error);
+    if (!error) error = (SIZE(mappings) != type_ingredient_count_in_header(exemplar));
     if (!error) replace_type_ingredients(new_recipe, mappings);
     for (map<string, const type_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
       delete p->second;
@@ -444,6 +445,23 @@ void replace_type_ingredients(type_tree* type, const map<string, const type_tree
     type->value = get(Type_ordinal, type->name);
     type->right = new type_tree(*replacement->right);
   }
+}
+
+int type_ingredient_count_in_header(recipe_ordinal variant) {
+  const recipe& caller = get(Recipe, variant);
+  set<string> type_ingredients;
+  for (int i = 0; i < SIZE(caller.ingredients); ++i)
+    accumulate_type_ingredients(caller.ingredients.at(i).type, type_ingredients);
+  for (int i = 0; i < SIZE(caller.products); ++i)
+    accumulate_type_ingredients(caller.products.at(i).type, type_ingredients);
+  return SIZE(type_ingredients);
+}
+
+void accumulate_type_ingredients(const type_tree* type, set<string>& out) {
+  if (!type) return;
+  if (is_type_ingredient_name(type->name)) out.insert(type->name);
+  accumulate_type_ingredients(type->left, out);
+  accumulate_type_ingredients(type->right, out);
 }
 
 type_tree* parse_type_tree(const string& s) {
@@ -1070,5 +1088,17 @@ after <label1> [
 def main [
   local-scope
   foo 34
+]
+$error: 0
+
+:(scenario shape_shifting_recipe_coexists_with_primitive)
+# recipe overloading a primitive with a generic type
+def add a:address:foo:_elem [
+  assert 0, [should not get here]
+]
+
+def main [
+  # call primitive add with literal 0
+  add 0, 0
 ]
 $error: 0
