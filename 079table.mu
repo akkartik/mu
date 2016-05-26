@@ -3,24 +3,26 @@
 
 scenario table-read-write [
   run [
-    1:address:table:number:number <- new-table 30
-    put 1:address:table:number:number, 12, 34
-    2:number <- index 1:address:table:number:number, 12
+    local-scope
+    tab:address:table:number:number <- new-table 30
+    put-index tab, 12, 34
+    1:number/raw <- index tab, 12
   ]
   memory-should-contain [
-    2 <- 34
+    1 <- 34
   ]
 ]
 
 scenario table-read-write-non-integer [
   run [
-    1:address:array:character <- new [abc def]
-    {2: (address table (address array character) number)} <- new-table 30
-    put {2: (address table (address array character) number)}, 1:address:array:character, 34
-    3:number <- index {2: (address table (address array character) number)}, 1:address:array:character
+    local-scope
+    key:address:array:character <- new [abc def]
+    {tab: (address table (address array character) number)} <- new-table 30
+    put-index tab, key, 34
+    1:number/raw <- index tab, key
   ]
   memory-should-contain [
-    3 <- 34
+    1 <- 34
   ]
 ]
 
@@ -44,7 +46,7 @@ def new-table capacity:number -> result:address:table:_key:_value [
   *result <- merge 0/length, capacity, data
 ]
 
-def put table:address:table:_key:_value, key:_key, value:_value -> table:address:table:_key:_value [
+def put-index table:address:table:_key:_value, key:_key, value:_value -> table:address:table:_key:_value [
   local-scope
   load-ingredients
   hash:number <- hash key

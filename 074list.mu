@@ -29,21 +29,22 @@ def rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
 
 scenario list-handling [
   run [
-    1:address:list:number <- push 3, 0
-    1:address:list:number <- push 4, 1:address:list:number
-    1:address:list:number <- push 5, 1:address:list:number
-    2:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
-    3:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
-    4:number <- first 1:address:list:number
-    1:address:list:number <- rest 1:address:list:number
+    local-scope
+    x:address:list:number <- push 3, 0
+    x <- push 4, x
+    x <- push 5, x
+    10:number/raw <- first x
+    x <- rest x
+    11:number/raw <- first x
+    x <- rest x
+    12:number/raw <- first x
+    20:address:list:number/raw <- rest x
   ]
   memory-should-contain [
-    1 <- 0  # empty to empty, dust to dust..
-    2 <- 5
-    3 <- 4
-    4 <- 3
+    10 <- 5
+    11 <- 4
+    12 <- 3
+    20 <- 0  # nothing left
   ]
 ]
 

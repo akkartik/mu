@@ -2,20 +2,20 @@
 
 scenario first_scenario_in_mu [
   run [
-    1:number <- add 2, 2
+    10:number <- add 2, 2
   ]
   memory-should-contain [
-    1 <- 4
+    10 <- 4
   ]
 ]
 
 scenario scenario_with_comment_in_mu [
   run [
     # comment
-    1:number <- add 2, 2
+    10:number <- add 2, 2
   ]
   memory-should-contain [
-    1 <- 4
+    10 <- 4
   ]
 ]
 
@@ -23,40 +23,40 @@ scenario scenario_with_multiple_comments_in_mu [
   run [
     # comment1
     # comment2
-    1:number <- add 2, 2
+    10:number <- add 2, 2
   ]
   memory-should-contain [
-    1 <- 4
+    10 <- 4
   ]
 ]
 
 scenario check_text_in_memory [
   run [
-    1:number <- copy 3
-    2:character <- copy 97  # 'a'
-    3:character <- copy 98  # 'b'
-    4:character <- copy 99  # 'c'
+    10:number <- copy 3
+    11:character <- copy 97  # 'a'
+    12:character <- copy 98  # 'b'
+    13:character <- copy 99  # 'c'
   ]
   memory-should-contain [
-    1:array:character <- [abc]
+    10:array:character <- [abc]
   ]
 ]
 
 scenario check_trace [
   run [
-    1:number <- add 2, 2
+    10:number <- add 2, 2
   ]
   trace-should-contain [
-    mem: storing 4 in location 1
+    mem: storing 4 in location 10
   ]
 ]
 
 scenario check_trace_negative [
   run [
-    1:number <- add 2, 2
+    10:number <- add 2, 2
   ]
   trace-should-not-contain [
-    mem: storing 5 in location 1
+    mem: storing 3 in location 10
   ]
 ]
 

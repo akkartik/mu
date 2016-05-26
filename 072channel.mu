@@ -10,13 +10,14 @@
 
 scenario channel [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
-    2:address:sink:number <- write 2:address:sink:number, 34
-    3:number, 4:boolean, 1:address:source:number <- read 1:address:source:number
+    local-scope
+    source:address:source:number, sink:address:sink:number <- new-channel 3/capacity
+    sink <- write sink, 34
+    10:number/raw, 11:boolean/raw, source <- read source
   ]
   memory-should-contain [
-    3 <- 34
-    4 <- 0  # read was successful
+    10 <- 34
+    11 <- 0  # read was successful
   ]
 ]
 
@@ -133,125 +134,132 @@ def clear in:address:source:_elem -> in:address:source:_elem [
 
 scenario channel-initialization [
   run [
-    1:address:source:number <- new-channel 3/capacity
-    2:address:channel:number <- get *1:address:source:number, chan:offset
-    3:number <- get *2:address:channel:number, first-full:offset
-    4:number <- get *2:address:channel:number, first-free:offset
+    local-scope
+    source:address:source:number <- new-channel 3/capacity
+    chan:address:channel:number <- get *source, chan:offset
+    10:number/raw <- get *chan, first-full:offset
+    11:number/raw <- get *chan, first-free:offset
   ]
   memory-should-contain [
-    3 <- 0  # first-full
-    4 <- 0  # first-free
+    10 <- 0  # first-full
+    11 <- 0  # first-free
   ]
 ]
 
 scenario channel-write-increments-free [
   run [
-    _, 1:address:sink:number <- new-channel 3/capacity
-    1:address:sink:number <- write 1:address:sink:number, 34
-    2:address:channel:number <- get *1:address:sink:number, chan:offset
-    3:number <- get *2:address:channel:character, first-full:offset
-    4:number <- get *2:address:channel:character, first-free:offset
+    local-scope
+    _, sink:address:sink:number <- new-channel 3/capacity
+    sink <- write sink, 34
+    chan:address:channel:number <- get *sink, chan:offset
+    10:number/raw <- get *chan, first-full:offset
+    11:number/raw <- get *chan, first-free:offset
   ]
   memory-should-contain [
-    3 <- 0  # first-full
-    4 <- 1  # first-free
+    10 <- 0  # first-full
+    11 <- 1  # first-free
   ]
 ]
 
 scenario channel-read-increments-full [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
-    2:address:sink:number <- write 2:address:sink:number, 34
-    _, _, 1:address:source:number <- read 1:address:source:number
-    3:address:channel:number <- get *1:address:source:number, chan:offset
-    4:number <- get *3:address:channel:number, first-full:offset
-    5:number <- get *3:address:channel:number, first-free:offset
+    local-scope
+    source:address:source:number, sink:address:sink:number <- new-channel 3/capacity
+    sink <- write sink, 34
+    _, _, source <- read source
+    chan:address:channel:number <- get *source, chan:offset
+    10:number/raw <- get *chan, first-full:offset
+    11:number/raw <- get *chan, first-free:offset
   ]
   memory-should-contain [
-    4 <- 1  # first-full
-    5 <- 1  # first-free
+    10 <- 1  # first-full
+    11 <- 1  # first-free
   ]
 ]
 
 scenario channel-wrap [
   run [
+    local-scope
     # channel with just 1 slot
-    1:address:source:number, 2:address:sink:number <- new-channel 1/capacity
-    3:address:channel:number <- get *1:address:source:number, chan:offset
+    source:address:source:number, sink:address:sink:number <- new-channel 1/capacity
+    chan:address:channel:number <- get *source, chan:offset
     # write and read a value
-    2:address:sink:number <- write 2:address:sink:number, 34
-    _, _, 1:address:source:number <- read 1:address:source:number
+    sink <- write sink, 34
+    _, _, source <- read source
     # first-free will now be 1
-    4:number <- get *3:address:channel:number, first-free:offset
-    5:number <- get *3:address:channel:number, first-free:offset
+    10:number/raw <- get *chan, first-free:offset
+    11:number/raw <- get *chan, first-free:offset
     # write second value, verify that first-free wraps
-    2:address:sink:number <- write 2:address:sink:number, 34
-    6:number <- get *3:address:channel:number, first-free:offset
+    sink <- write sink, 34
+    20:number/raw <- get *chan, first-free:offset
     # read second value, verify that first-full wraps
-    _, _, 1:address:source:number <- read 1:address:source:number
-    7:number <- get *3:address:channel:number, first-full:offset
+    _, _, source <- read source
+    30:number/raw <- get *chan, first-full:offset
   ]
   memory-should-contain [
-    4 <- 1  # first-free after first write
-    5 <- 1  # first-full after first read
-    6 <- 0  # first-free after second write, wrapped
-    7 <- 0  # first-full after second read, wrapped
+    10 <- 1  # first-free after first write
+    11 <- 1  # first-full after first read
+    20 <- 0  # first-free after second write, wrapped
+    30 <- 0  # first-full after second read, wrapped
   ]
 ]
 
 scenario channel-new-empty-not-full [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
-    3:address:channel:number <- get *1:address:source:number, chan:offset
-    4:boolean <- channel-empty? 3:address:channel:number
-    5:boolean <- channel-full? 3:address:channel:number
+    local-scope
+    source:address:source:number <- new-channel 3/capacity
+    chan:address:channel:number <- get *source, chan:offset
+    10:boolean/raw <- channel-empty? chan
+    11:boolean/raw <- channel-full? chan
   ]
   memory-should-contain [
-    4 <- 1  # empty?
-    5 <- 0  # full?
+    10 <- 1  # empty?
+    11 <- 0  # full?
   ]
 ]
 
 scenario channel-write-not-empty [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 3/capacity
-    3:address:channel:number <- get *1:address:source:number, chan:offset
-    2:address:sink:number <- write 2:address:sink:number, 34
-    4:boolean <- channel-empty? 3:address:channel:number
-    5:boolean <- channel-full? 3:address:channel:number
+    source:address:source:number, sink:address:sink:number <- new-channel 3/capacity
+    chan:address:channel:number <- get *source, chan:offset
+    sink <- write sink, 34
+    10:boolean/raw <- channel-empty? chan
+    11:boolean/raw <- channel-full? chan
   ]
   memory-should-contain [
-    4 <- 0  # empty?
-    5 <- 0  # full?
+    10 <- 0  # empty?
+    11 <- 0  # full?
   ]
 ]
 
 scenario channel-write-full [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 1/capacity
-    3:address:channel:number <- get *1:address:source:number, chan:offset
-    2:address:sink:number <- write 2:address:sink:number, 34
-    4:boolean <- channel-empty? 3:address:channel:number
-    5:boolean <- channel-full? 3:address:channel:number
+    local-scope
+    source:address:source:number, sink:address:sink:number <- new-channel 1/capacity
+    chan:address:channel:number <- get *source, chan:offset
+    sink <- write sink, 34
+    10:boolean/raw <- channel-empty? chan
+    11:boolean/raw <- channel-full? chan
   ]
   memory-should-contain [
-    4 <- 0  # empty?
-    5 <- 1  # full?
+    10 <- 0  # empty?
+    11 <- 1  # full?
   ]
 ]
 
 scenario channel-read-not-full [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 1/capacity
-    3:address:channel:number <- get *1:address:source:number, chan:offset
-    2:address:sink:number <- write 2:address:sink:number, 34
-    _, _, 1:address:source:number <- read 1:address:source:number
-    4:boolean <- channel-empty? 3:address:channel:number
-    5:boolean <- channel-full? 3:address:channel:number
+    local-scope
+    source:address:source:number, sink:address:sink:number <- new-channel 1/capacity
+    chan:address:channel:number <- get *source, chan:offset
+    sink <- write sink, 34
+    _, _, source <- read source
+    10:boolean/raw <- channel-empty? chan
+    11:boolean/raw <- channel-full? chan
   ]
   memory-should-contain [
-    4 <- 1  # empty?
-    5 <- 0  # full?
+    10 <- 1  # empty?
+    11 <- 0  # full?
   ]
 ]
 
@@ -395,39 +403,40 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
 
 scenario buffer-lines-blocks-until-newline [
   run [
-    1:address:source:number, 2:address:sink:number <- new-channel 10/capacity
-    _, 3:address:sink:number/buffered-stdin <- new-channel 10/capacity
-    4:address:channel:number/buffered-stdin <- get *3:address:source:number, chan:offset
-    5:boolean <- channel-empty? 4:address:channel:character/buffered-stdin
-    assert 5:boolean, [ 
+    local-scope
+    source:address:source:character, sink:address:sink:character <- new-channel 10/capacity
+    _, buffered-stdin:address:sink:character/buffered-stdin <- new-channel 10/capacity
+    buffered-chan:address:channel:character <- get *buffered-stdin, chan:offset
+    empty?:boolean <- channel-empty? buffered-chan
+    assert empty?, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
-    6:number/buffer-routine <- start-running buffer-lines, 1:address:source:character/stdin, 3:address:sink:character/buffered-stdin
-    wait-for-routine 6:number/buffer-routine
-    7:boolean <- channel-empty? 4:address:channel:character/buffered-stdin
-    assert 7:boolean, [ 
+    buffer-routine:number <- start-running buffer-lines, source, buffered-stdin
+    wait-for-routine buffer-routine
+    empty? <- channel-empty? buffered-chan
+    assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
-    2:address:sink:character <- write 2:address:sink:character, 97/a
-    restart 6:number/buffer-routine
-    wait-for-routine 6:number/buffer-routine
-    8:boolean <- channel-empty? 4:address:channel:character/buffered-stdin
-    assert 8:boolean, [ 
+    sink <- write sink, 97/a
+    restart buffer-routine
+    wait-for-routine buffer-routine
+    empty? <- channel-empty? buffered-chan
+    assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
-    2:address:sink:character <- write 2:address:sink:character, 98/b
-    restart 6:number/buffer-routine
-    wait-for-routine 6:number/buffer-routine
-    9:boolean <- channel-empty? 4:address:channel:character/buffered-stdin
-    assert 9:boolean, [ 
+    sink <- write sink, 98/b
+    restart buffer-routine
+    wait-for-routine buffer-routine
+    empty? <- channel-empty? buffered-chan
+    assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
-    2:address:sink:character <- write 2:address:sink:character, 10/newline
-    restart 6:number/buffer-routine
-    wait-for-routine 6:number/buffer-routine
-    10:boolean <- channel-empty? 4:address:channel:character/buffered-stdin
-    11:boolean/completed? <- not 10:boolean
-    assert 11:boolean/completed?, [ 
+    sink <- write sink, 10/newline
+    restart buffer-routine
+    wait-for-routine buffer-routine
+    empty? <- channel-empty? buffered-chan
+    data-emitted?:boolean <- not empty?
+    assert data-emitted?, [ 
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
     trace 1, [test], [reached end]
   ]

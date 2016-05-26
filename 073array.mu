@@ -1,13 +1,14 @@
 scenario array-from-args [
   run [
-    1:address:array:character <- new-array 0, 1, 2
-    2:array:character <- copy *1:address:array:character
+    local-scope
+    x:address:array:character <- new-array 0, 1, 2
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    2 <- 3  # array length
-    3 <- 0
-    4 <- 1
-    5 <- 2
+    10 <- 3  # array length
+    11 <- 0
+    12 <- 1
+    13 <- 2
   ]
 ]
 

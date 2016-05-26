@@ -172,162 +172,175 @@ def print screen:address:screen, c:character -> screen:address:screen [
 
 scenario print-character-at-top-left [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a:character
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    1:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    3 <- 6  # width*height
-    4 <- 97  # 'a'
-    5 <- 7  # white
-    6 <- 0
+    1 <- 6  # width*height
+    2 <- 97  # 'a'
+    3 <- 7  # white
+    # rest of screen is empty
+    4 <- 0
   ]
 ]
 
 scenario print-character-in-color [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a, 1/red
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    3:array:screen-cell <- copy *2:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a:character, 1/red
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    1:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    3 <- 6  # width*height
-    4 <- 97  # 'a'
-    5 <- 1  # red
-    6 <- 0
+    1 <- 6  # width*height
+    2 <- 97  # 'a'
+    3 <- 1  # red
+    # rest of screen is empty
+    4 <- 0
   ]
 ]
 
 scenario print-backspace-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
+    backspace:character <- copy 8/backspace
+    fake-screen <- print fake-screen, backspace
+    10:number/raw <- get *fake-screen, cursor-column:offset
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    11:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    2 <- 0  # cursor column
-    4 <- 6  # width*height
-    5 <- 32  # space, not 'a'
-    6 <- 7  # white
-    7 <- 0
+    10 <- 0  # cursor column
+    11 <- 6  # width*height
+    12 <- 32  # space, not 'a'
+    13 <- 7  # white
+    # rest of screen is empty
+    14 <- 0
   ]
 ]
 
 scenario print-extra-backspace-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
-    12:character <- copy 8/backspace
-    1:address:screen <- print 1:address:screen, 12:character/backspace
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
+    backspace:character <- copy 8/backspace
+    fake-screen <- print fake-screen, backspace
+    fake-screen <- print fake-screen, backspace
+    1:number/raw <- get *fake-screen, cursor-column:offset
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    3:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    2 <- 0  # cursor column
-    4 <- 6  # width*height
-    5 <- 32  # space, not 'a'
-    6 <- 7  # white
-    7 <- 0
+    1 <- 0  # cursor column
+    3 <- 6  # width*height
+    4 <- 32  # space, not 'a'
+    5 <- 7  # white
+    # rest of screen is empty
+    6 <- 0
   ]
 ]
 
 scenario print-character-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 2/width, 2/height
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    12:character <- copy 98/b
-    1:address:screen <- print 1:address:screen, 12:character/b
-    13:character <- copy 99/b
-    1:address:screen <- print 1:address:screen, 13:character/c
-    2:number <- get *1:address:screen, cursor-column:offset
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 2/width, 2/height
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
+    b:character <- copy 98/b
+    fake-screen <- print fake-screen, b
+    c:character <- copy 99/c
+    fake-screen <- print fake-screen, c
+    10:number/raw <- get *fake-screen, cursor-column:offset
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    11:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    2 <- 1  # cursor column
-    4 <- 4  # width*height
-    5 <- 97  # 'a'
-    6 <- 7  # white
-    7 <- 99  # 'c' over 'b'
-    8 <- 7  # white
-    9 <- 0
+    10 <- 1  # cursor column
+    11 <- 4  # width*height
+    12 <- 97  # 'a'
+    13 <- 7  # white
+    14 <- 99  # 'c' over 'b'
+    15 <- 7  # white
+    # rest of screen is empty
+    16 <- 0
   ]
 ]
 
 scenario print-newline-character [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    10:character <- copy 10/newline
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
-    4:address:array:screen-cell <- get *1:address:screen, data:offset
-    5:array:screen-cell <- copy *4:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    newline:character <- copy 10/newline
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
+    fake-screen <- print fake-screen, newline
+    10:number/raw <- get *fake-screen, cursor-row:offset
+    11:number/raw <- get *fake-screen, cursor-column:offset
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    12:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    2 <- 1  # cursor row
-    3 <- 0  # cursor column
-    5 <- 6  # width*height
-    6 <- 97  # 'a'
-    7 <- 7  # white
-    8 <- 0
+    10 <- 1  # cursor row
+    11 <- 0  # cursor column
+    12 <- 6  # width*height
+    13 <- 97  # 'a'
+    14 <- 7  # white
+    # rest of screen is empty
+    15 <- 0
   ]
 ]
 
 scenario print-newline-at-bottom-line [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    10:character <- copy 10/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    newline:character <- copy 10/newline
+    fake-screen <- print fake-screen, newline
+    fake-screen <- print fake-screen, newline
+    fake-screen <- print fake-screen, newline
+    10:number/raw <- get *fake-screen, cursor-row:offset
+    11:number/raw <- get *fake-screen, cursor-column:offset
   ]
   memory-should-contain [
-    2 <- 1  # cursor row
-    3 <- 0  # cursor column
+    10 <- 1  # cursor row
+    11 <- 0  # cursor column
   ]
 ]
 
 scenario print-character-at-bottom-right [
   run [
-    1:address:screen <- new-fake-screen 2/width, 2/height
-    10:character <- copy 10/newline
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    11:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 11:character/a
-    12:character <- copy 98/b
-    1:address:screen <- print 1:address:screen, 12:character/b
-    13:character <- copy 99/c
-    1:address:screen <- print 1:address:screen, 13:character/c
-    1:address:screen <- print 1:address:screen, 10:character/newline
-    14:character <- copy 100/d
-    1:address:screen <- print 1:address:screen, 14:character/d
-    2:number <- get *1:address:screen, cursor-row:offset
-    3:number <- get *1:address:screen, cursor-column:offset
-    4:address:array:screen-cell <- get *1:address:screen, data:offset
-    20:array:screen-cell <- copy *4:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 2/width, 2/height
+    newline:character <- copy 10/newline
+    fake-screen <- print fake-screen, newline
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
+    b:character <- copy 98/b
+    fake-screen <- print fake-screen, b
+    c:character <- copy 99/c
+    fake-screen <- print fake-screen, c
+    fake-screen <- print fake-screen, newline
+    d:character <- copy 100/d
+    fake-screen <- print fake-screen, d
+    10:number/raw <- get *fake-screen, cursor-row:offset
+    11:number/raw <- get *fake-screen, cursor-column:offset
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    20:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    2 <- 1  # cursor row
-    3 <- 1  # cursor column
+    10 <- 1  # cursor row
+    11 <- 1  # cursor column
     20 <- 4  # width*height
     21 <- 0  # unused
     22 <- 7  # white
@@ -337,6 +350,7 @@ scenario print-character-at-bottom-right [
     26 <- 7  # white
     27 <- 100  # 'd' over 'b' and 'c' and newline
     28 <- 7  # white
+    # rest of screen is empty
     29 <- 0
   ]
 ]
@@ -417,32 +431,33 @@ def move-cursor screen:address:screen, new-row:number, new-column:number -> scre
 
 scenario clear-line-erases-printed-characters [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    10:character <- copy 97/a
-    1:address:screen <- print 1:address:screen, 10:character/a
+    a:character <- copy 97/a
+    fake-screen <- print fake-screen, a
     # move cursor to start of line
-    1:address:screen <- move-cursor 1:address:screen, 0/row, 0/column
+    fake-screen <- move-cursor fake-screen, 0/row, 0/column
     # clear line
-    1:address:screen <- clear-line 1:address:screen
-    2:address:array:screen-cell <- get *1:address:screen, data:offset
-    20:array:screen-cell <- copy *2:address:array:screen-cell
+    fake-screen <- clear-line fake-screen
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    10:array:screen-cell/raw <- copy *cell
   ]
   # screen should be blank
   memory-should-contain [
-    20 <- 6  # width*height
+    10 <- 6  # width*height
+    11 <- 0
+    12 <- 7
+    13 <- 0
+    14 <- 7
+    15 <- 0
+    16 <- 7
+    17 <- 0
+    18 <- 7
+    19 <- 0
+    20 <- 7
     21 <- 0
     22 <- 7
-    23 <- 0
-    24 <- 7
-    25 <- 0
-    26 <- 7
-    27 <- 0
-    28 <- 7
-    29 <- 0
-    30 <- 7
-    31 <- 0
-    32 <- 7
   ]
 ]
 
@@ -657,21 +672,23 @@ def print screen:address:screen, s:address:array:character -> screen:address:scr
 
 scenario print-text-stops-at-right-margin [
   run [
-    1:address:screen <- new-fake-screen 3/width, 2/height
-    2:address:array:character <- new [abcd]
-    1:address:screen <- print 1:address:screen, 2:address:array:character
-    3:address:array:screen-cell <- get *1:address:screen, data:offset
-    4:array:screen-cell <- copy *3:address:array:screen-cell
+    local-scope
+    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    s:address:array:character <- new [abcd]
+    fake-screen <- print fake-screen, s:address:array:character
+    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    10:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    4 <- 6  # width*height
-    5 <- 97  # 'a'
-    6 <- 7  # white
-    7 <- 98  # 'b'
-    8 <- 7  # white
-    9 <- 100  # 'd' overwrites 'c'
-    10 <- 7  # white
-    11 <- 0  # unused
+    10 <- 6  # width*height
+    11 <- 97  # 'a'
+    12 <- 7  # white
+    13 <- 98  # 'b'
+    14 <- 7  # white
+    15 <- 100  # 'd' overwrites 'c'
+    16 <- 7  # white
+    # rest of screen is empty
+    17 <- 0
   ]
 ]
 
