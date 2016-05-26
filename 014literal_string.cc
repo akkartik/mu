@@ -107,10 +107,10 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
 :(after "Parsing reagent(string s)")
 if (s.at(0) == '[') {
   assert(*s.rbegin() == ']');
-  // delete [] delimiters
-  s.erase(0, 1);
-  strip_last(s);
   name = s;
+  // delete [] delimiters
+  name.erase(0, 1);
+  strip_last(name);
   type = new type_tree("literal-string", 0);
   return;
 }

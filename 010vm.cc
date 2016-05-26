@@ -57,7 +57,7 @@ struct reagent {
   double value;
   bool initialized;
   // End reagent Fields
-  reagent(string s);
+  reagent(const string& s);
   reagent() :type(NULL), value(0), initialized(false) {}
   ~reagent();
   void clear();
@@ -258,7 +258,7 @@ void instruction::clear() { is_label=false; label.clear(); name.clear(); old_nam
 bool instruction::is_empty() { return !is_label && name.empty(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
-reagent::reagent(string s) :original_string(s), type(NULL), value(0), initialized(false) {
+reagent::reagent(const string& s) :original_string(s), type(NULL), value(0), initialized(false) {
   // Parsing reagent(string s)
   istringstream in(s);
   in >> std::noskipws;
