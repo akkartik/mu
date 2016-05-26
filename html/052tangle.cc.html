@@ -104,14 +104,18 @@ tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> insert_fragments<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  insert_fragments<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> insert_fragments<span class="Delimiter">(</span>recipe&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">bool</span> made_progress = <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">int</span> pass = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>made_progress<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     made_progress = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Comment">// create a new vector because insertions invalidate iterators</span>
     vector&lt;instruction&gt; result<span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">const</span> instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> instruction&amp; inst = r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>is_label || !is_waypoint<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">)</span> || inst<span class="Delimiter">.</span>tangle_done<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -120,7 +124,7 @@ tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span
       made_progress = <span class="Constant">true</span><span class="Delimiter">;</span>
       Fragments_used<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>label<span class="Delimiter">);</span>
       ostringstream prefix<span class="Delimiter">;</span>
-      prefix &lt;&lt; <span class="Constant">'+'</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; pass &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; i<span class="Delimiter">;</span>
+      prefix &lt;&lt; <span class="Constant">'+'</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; pass &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; i<span class="Delimiter">;</span>
       <span class="Comment">// ok to use contains_key even though Before_fragments uses [],</span>
       <span class="Comment">// because appending an empty recipe is a noop</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Before_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span>
@@ -129,7 +133,7 @@ tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span
       <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>After_fragments<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>label<span class="Delimiter">))</span>
         append_fragment<span class="Delimiter">(</span>result<span class="Delimiter">,</span> After_fragments[inst<span class="Delimiter">.</span>label]<span class="Delimiter">.</span>steps<span class="Delimiter">,</span> prefix<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
     <span class="Delimiter">}</span>
-    get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+    r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
     ++pass<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>

@@ -91,7 +91,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   <span class="Normal">double</span> value<span class="Delimiter">;</span>
   <span class="Normal">bool</span> initialized<span class="Delimiter">;</span>
   <span class="Comment">// End reagent Fields</span>
-  reagent<span class="Delimiter">(</span>string s<span class="Delimiter">);</span>
+  reagent<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">);</span>
   reagent<span class="Delimiter">()</span> :type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~reagent<span class="Delimiter">();</span>
   <span class="Normal">void</span> clear<span class="Delimiter">();</span>
@@ -292,7 +292,7 @@ instruction::instruction<span class="Delimiter">()</span> :is_label<span class="
 <span class="Normal">bool</span> instruction::is_empty<span class="Delimiter">()</span> <span class="Delimiter">{</span> <span class="Identifier">return</span> !is_label &amp;&amp; name<span class="Delimiter">.</span>empty<span class="Delimiter">();</span> <span class="Delimiter">}</span>
 
 <span class="Comment">// Reagents have the form &lt;name&gt;:&lt;type&gt;:&lt;type&gt;:.../&lt;property&gt;/&lt;property&gt;/...</span>
-reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>s<span class="Delimiter">),</span> type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> :original_string<span class="Delimiter">(</span>s<span class="Delimiter">),</span> type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// Parsing reagent(string s)</span>
   istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
@@ -309,14 +309,18 @@ reagent::reagent<span class="Delimiter">(</span>string s<span class="Delimiter">
   <span class="Normal">if</span> <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
     type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">));</span>
   <span class="Comment">// other properties</span>
+  slurp_properties<span class="Delimiter">(</span>in<span class="Delimiter">,</span> properties<span class="Delimiter">);</span>
+  <span class="Comment">// End Parsing reagent</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> slurp_properties<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> vector&lt;pair&lt;string<span class="Delimiter">,</span> string_tree*&gt; &gt;&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     istringstream row<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">'/'</span><span class="Delimiter">));</span>
     row &gt;&gt; std::noskipws<span class="Delimiter">;</span>
     string key = slurp_until<span class="Delimiter">(</span>row<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
     string_tree* value = parse_property_list<span class="Delimiter">(</span>row<span class="Delimiter">);</span>
-    properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>key<span class="Delimiter">,</span> value<span class="Delimiter">));</span>
+    out<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>key<span class="Delimiter">,</span> value<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// End Parsing reagent</span>
 <span class="Delimiter">}</span>
 
 string_tree* parse_property_list<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>

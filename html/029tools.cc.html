@@ -68,6 +68,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   string label = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
   ostringstream out<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">2</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i &gt; <span class="Constant">2</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     out &lt;&lt; print_mu<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span>depth<span class="Delimiter">,</span> label<span class="Delimiter">)</span> &lt;&lt; out<span class="Delimiter">.</span>str<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -88,6 +89,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> STASH: <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     out &lt;&lt; print_mu<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;app&quot;</span><span class="Delimiter">)</span> &lt;&lt; out<span class="Delimiter">.</span>str<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -116,11 +118,13 @@ def main [
 <span class="Delimiter">:(code)</span>
 string print_mu<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
-    <span class="Identifier">return</span> r<span class="Delimiter">.</span>name+<span class="Constant">' '</span><span class="Delimiter">;</span>
+    <span class="Identifier">return</span> r<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
   <span class="Comment">// End print Special-cases(r, data)</span>
   ostringstream out<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-    out &lt;&lt; no_scientific<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>i<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
+    out &lt;&lt; no_scientific<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
