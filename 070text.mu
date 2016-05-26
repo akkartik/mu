@@ -50,10 +50,10 @@ scenario text-equal-reflexive [
   run [
     local-scope
     x:address:array:character <- new [abc]
-    3:boolean/raw <- equal x, x
+    10:boolean/raw <- equal x, x
   ]
   memory-should-contain [
-    3 <- 1  # x == x for all x
+    10 <- 1  # x == x for all x
   ]
 ]
 
@@ -62,10 +62,10 @@ scenario text-equal-identical [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abc]
-    3:boolean/raw <- equal x, y
+    10:boolean/raw <- equal x, y
   ]
   memory-should-contain [
-    3 <- 1  # abc == abc
+    10 <- 1  # abc == abc
   ]
 ]
 
@@ -74,10 +74,10 @@ scenario text-equal-distinct-lengths [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abcd]
-    3:boolean/raw <- equal x, y
+    10:boolean/raw <- equal x, y
   ]
   memory-should-contain [
-    3 <- 0  # abc != abcd
+    10 <- 0  # abc != abcd
   ]
   trace-should-contain [
     text-equal: comparing lengths
@@ -92,10 +92,10 @@ scenario text-equal-with-empty [
     local-scope
     x:address:array:character <- new []
     y:address:array:character <- new [abcd]
-    3:boolean/raw <- equal x, y
+    10:boolean/raw <- equal x, y
   ]
   memory-should-contain [
-    3 <- 0  # "" != abcd
+    10 <- 0  # "" != abcd
   ]
 ]
 
@@ -104,10 +104,10 @@ scenario text-equal-common-lengths-but-distinct [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [abd]
-    3:boolean/raw <- equal x, y
+    10:boolean/raw <- equal x, y
   ]
   memory-should-contain [
-    3 <- 0  # abc != abd
+    10 <- 0  # abc != abd
   ]
 ]
 
@@ -212,33 +212,33 @@ scenario buffer-append-works [
     c:character <- copy 99/c
     x <- append x, c
     s2:address:array:character <- get *x, data:offset
-    1:boolean/raw <- equal s1, s2
-    2:array:character/raw <- copy *s2
+    10:boolean/raw <- equal s1, s2
+    11:array:character/raw <- copy *s2
     +buffer-filled
     c:character <- copy 100/d
     x <- append x, c
     s3:address:array:character <- get *x, data:offset
-    10:boolean/raw <- equal s1, s3
-    11:number/raw <- get *x, length:offset
-    12:array:character/raw <- copy *s3
+    20:boolean/raw <- equal s1, s3
+    21:number/raw <- get *x, length:offset
+    30:array:character/raw <- copy *s3
   ]
   memory-should-contain [
     # before +buffer-filled
-    1 <- 1   # no change in data pointer
-    2 <- 3   # size of data
-    3 <- 97  # data
-    4 <- 98
-    5 <- 99
+    10 <- 1   # no change in data pointer
+    11 <- 3   # size of data
+    12 <- 97  # data
+    13 <- 98
+    14 <- 99
     # in the end
-    10 <- 0   # data pointer has grown
-    11 <- 4   # final length
-    12 <- 6   # but data's capacity has doubled
-    13 <- 97  # data
-    14 <- 98
-    15 <- 99
-    16 <- 100
-    17 <- 0
-    18 <- 0
+    20 <- 0   # data pointer has grown
+    21 <- 4   # final length
+    30 <- 6   # but data's capacity has doubled
+    31 <- 97  # data
+    32 <- 98
+    33 <- 99
+    34 <- 100
+    35 <- 0
+    36 <- 0
   ]
 ]
 
@@ -253,12 +253,12 @@ scenario buffer-append-handles-backspace [
     c:character <- copy 8/backspace
     x <- append x, c
     s:address:array:character <- buffer-to-array x
-    1:array:character/raw <- copy *s
+    10:array:character/raw <- copy *s
   ]
   memory-should-contain [
-    1 <- 1   # length
-    2 <- 97  # contents
-    3 <- 0
+    10 <- 1   # length
+    11 <- 97  # contents
+    12 <- 0
   ]
 ]
 
@@ -331,10 +331,10 @@ scenario text-append-1 [
     x:address:array:character <- new [hello,]
     y:address:array:character <- new [ world!]
     z:address:array:character <- append x, y
-    1:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    1:array:character <- [hello, world!]
+    10:array:character <- [hello, world!]
   ]
 ]
 
@@ -344,10 +344,10 @@ scenario text-append-null [
     x:address:array:character <- copy 0
     y:address:array:character <- new [ world!]
     z:address:array:character <- append x, y
-    1:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    1:array:character <- [ world!]
+    10:array:character <- [ world!]
   ]
 ]
 
@@ -357,10 +357,10 @@ scenario text-append-null-2 [
     x:address:array:character <- new [hello,]
     y:address:array:character <- copy 0
     z:address:array:character <- append x, y
-    1:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    1:array:character <- [hello,]
+    10:array:character <- [hello,]
   ]
 ]
 
@@ -369,10 +369,10 @@ scenario replace-character-in-text [
     local-scope
     x:address:array:character <- new [abc]
     x <- replace x, 98/b, 122/z
-    1:array:character/raw <- copy *x
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    1:array:character <- [azc]
+    10:array:character <- [azc]
   ]
 ]
 
@@ -393,10 +393,10 @@ scenario replace-character-at-start [
     local-scope
     x:address:array:character <- new [abc]
     x <- replace x, 97/a, 122/z
-    1:array:character/raw <- copy *x
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    1:array:character <- [zbc]
+    10:array:character <- [zbc]
   ]
 ]
 
@@ -405,10 +405,10 @@ scenario replace-character-at-end [
     local-scope
     x:address:array:character <- new [abc]
     x <- replace x, 99/c, 122/z
-    1:array:character/raw <- copy *x
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    1:array:character <- [abz]
+    10:array:character <- [abz]
   ]
 ]
 
@@ -417,10 +417,10 @@ scenario replace-character-missing [
     local-scope
     x:address:array:character <- new [abc]
     x <- replace x, 100/d, 122/z
-    1:array:character/raw <- copy *x
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    1:array:character <- [abc]
+    10:array:character <- [abc]
   ]
 ]
 
@@ -429,10 +429,10 @@ scenario replace-all-characters [
     local-scope
     x:address:array:character <- new [banana]
     x <- replace x, 97/a, 122/z
-    1:array:character/raw <- copy *x
+    10:array:character/raw <- copy *x
   ]
   memory-should-contain [
-    1:array:character <- [bznznz]
+    10:array:character <- [bznznz]
   ]
 ]
 
@@ -516,10 +516,10 @@ scenario interpolate-works [
     x:address:array:character <- new [abc _]
     y:address:array:character <- new [def]
     z:address:array:character <- interpolate x, y
-    1:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    1:array:character <- [abc def]
+    10:array:character <- [abc def]
   ]
 ]
 
@@ -529,11 +529,11 @@ scenario interpolate-at-start [
     x:address:array:character <- new [_, hello!]
     y:address:array:character <- new [abc]
     z:address:array:character <- interpolate x, y
-    1:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    1:array:character <- [abc, hello!]
-    13 <- 0  # out of bounds
+    10:array:character <- [abc, hello!]
+    22 <- 0  # out of bounds
   ]
 ]
 
@@ -542,10 +542,10 @@ scenario interpolate-at-end [
     x:address:array:character <- new [hello, _]
     y:address:array:character <- new [abc]
     z:address:array:character <- interpolate x, y
-    4:array:character/raw <- copy *z
+    10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    4:array:character <- [hello, abc]
+    10:array:character <- [hello, abc]
   ]
 ]
 
@@ -741,10 +741,10 @@ scenario text-find-next [
   run [
     local-scope
     x:address:array:character <- new [a/b]
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 1
+    10 <- 1
   ]
 ]
 
@@ -752,10 +752,10 @@ scenario text-find-next-empty [
   run [
     local-scope
     x:address:array:character <- new []
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 0
+    10 <- 0
   ]
 ]
 
@@ -763,10 +763,10 @@ scenario text-find-next-initial [
   run [
     local-scope
     x:address:array:character <- new [/abc]
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 0  # prefix match
+    10 <- 0  # prefix match
   ]
 ]
 
@@ -774,10 +774,10 @@ scenario text-find-next-final [
   run [
     local-scope
     x:address:array:character <- new [abc/]
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 3  # suffix match
+    10 <- 3  # suffix match
   ]
 ]
 
@@ -785,10 +785,10 @@ scenario text-find-next-missing [
   run [
     local-scope
     x:address:array:character <- new [abcd]
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 4  # no match
+    10 <- 4  # no match
   ]
 ]
 
@@ -796,10 +796,10 @@ scenario text-find-next-invalid-index [
   run [
     local-scope
     x:address:array:character <- new [abc]
-    1:number/raw <- find-next x, 47/slash, 4/start-index
+    10:number/raw <- find-next x, 47/slash, 4/start-index
   ]
   memory-should-contain [
-    1 <- 4  # no change
+    10 <- 4  # no change
   ]
 ]
 
@@ -807,10 +807,10 @@ scenario text-find-next-first [
   run [
     local-scope
     x:address:array:character <- new [ab/c/]
-    1:number/raw <- find-next x, 47/slash, 0/start-index
+    10:number/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
-    1 <- 2  # first '/' of multiple
+    10 <- 2  # first '/' of multiple
   ]
 ]
 
@@ -818,10 +818,10 @@ scenario text-find-next-second [
   run [
     local-scope
     x:address:array:character <- new [ab/c/]
-    1:number/raw <- find-next x, 47/slash, 3/start-index
+    10:number/raw <- find-next x, 47/slash, 3/start-index
   ]
   memory-should-contain [
-    1 <- 4  # second '/' of multiple
+    10 <- 4  # second '/' of multiple
   ]
 ]
 
@@ -876,10 +876,10 @@ scenario find-next-no-match [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [bd]
-    1:number/raw <- find-next x, y, 0
+    10:number/raw <- find-next x, y, 0
   ]
   memory-should-contain [
-    1 <- 3  # not found
+    10 <- 3  # not found
   ]
 ]
 
@@ -888,10 +888,10 @@ scenario find-next-suffix-match [
     local-scope
     x:address:array:character <- new [abcd]
     y:address:array:character <- new [cd]
-    1:number/raw <- find-next x, y, 0
+    10:number/raw <- find-next x, y, 0
   ]
   memory-should-contain [
-    1 <- 2
+    10 <- 2
   ]
 ]
 
@@ -900,10 +900,10 @@ scenario find-next-suffix-match-2 [
     local-scope
     x:address:array:character <- new [abcd]
     y:address:array:character <- new [cde]
-    1:number/raw <- find-next x, y, 0
+    10:number/raw <- find-next x, y, 0
   ]
   memory-should-contain [
-    1 <- 4  # not found
+    10 <- 4  # not found
   ]
 ]
 
@@ -944,10 +944,10 @@ scenario match-at-checks-pattern-at-index [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [ab]
-    1:boolean/raw <- match-at x, y, 0
+    10:boolean/raw <- match-at x, y, 0
   ]
   memory-should-contain [
-    1 <- 1  # match found
+    10 <- 1  # match found
   ]
 ]
 
@@ -955,10 +955,10 @@ scenario match-at-reflexive [
   run [
     local-scope
     x:address:array:character <- new [abc]
-    1:boolean/raw <- match-at x, x, 0
+    10:boolean/raw <- match-at x, x, 0
   ]
   memory-should-contain [
-    1 <- 1  # match found
+    10 <- 1  # match found
   ]
 ]
 
@@ -967,10 +967,10 @@ scenario match-at-outside-bounds [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [a]
-    1:boolean/raw <- match-at x, y, 4
+    10:boolean/raw <- match-at x, y, 4
   ]
   memory-should-contain [
-    1 <- 0  # never matches
+    10 <- 0  # never matches
   ]
 ]
 
@@ -979,10 +979,10 @@ scenario match-at-empty-pattern [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new []
-    1:boolean/raw <- match-at x, y, 0
+    10:boolean/raw <- match-at x, y, 0
   ]
   memory-should-contain [
-    1 <- 1  # always matches empty pattern given a valid index
+    10 <- 1  # always matches empty pattern given a valid index
   ]
 ]
 
@@ -991,10 +991,10 @@ scenario match-at-empty-pattern-outside-bound [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new []
-    1:boolean/raw <- match-at x, y, 4
+    10:boolean/raw <- match-at x, y, 4
   ]
   memory-should-contain [
-    1 <- 0  # no match
+    10 <- 0  # no match
   ]
 ]
 
@@ -1003,10 +1003,10 @@ scenario match-at-empty-text [
     local-scope
     x:address:array:character <- new []
     y:address:array:character <- new [abc]
-    1:boolean/raw <- match-at x, y, 0
+    10:boolean/raw <- match-at x, y, 0
   ]
   memory-should-contain [
-    1 <- 0  # no match
+    10 <- 0  # no match
   ]
 ]
 
@@ -1014,10 +1014,10 @@ scenario match-at-empty-against-empty [
   run [
     local-scope
     x:address:array:character <- new []
-    1:boolean/raw <- match-at x, x, 0
+    10:boolean/raw <- match-at x, x, 0
   ]
   memory-should-contain [
-    1 <- 1  # matches because pattern is also empty
+    10 <- 1  # matches because pattern is also empty
   ]
 ]
 
@@ -1026,10 +1026,10 @@ scenario match-at-inside-bounds [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [bc]
-    1:boolean/raw <- match-at x, y, 1
+    10:boolean/raw <- match-at x, y, 1
   ]
   memory-should-contain [
-    1 <- 1  # match
+    10 <- 1  # match
   ]
 ]
 
@@ -1038,10 +1038,10 @@ scenario match-at-inside-bounds-2 [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:character <- new [bc]
-    1:boolean/raw <- match-at x, y, 0
+    10:boolean/raw <- match-at x, y, 0
   ]
   memory-should-contain [
-    1 <- 0  # no match
+    10 <- 0  # no match
   ]
 ]
 
@@ -1092,16 +1092,16 @@ scenario text-split-1 [
     local-scope
     x:address:array:character <- new [a/b]
     y:address:array:address:array:character <- split x, 47/slash
-    1:number/raw <- length *y
+    10:number/raw <- length *y
     a:address:array:character <- index *y, 0
     b:address:array:character <- index *y, 1
-    10:array:character/raw <- copy *a
-    20:array:character/raw <- copy *b
+    20:array:character/raw <- copy *a
+    30:array:character/raw <- copy *b
   ]
   memory-should-contain [
-    1 <- 2  # length of result
-    10:array:character <- [a]
-    20:array:character <- [b]
+    10 <- 2  # length of result
+    20:array:character <- [a]
+    30:array:character <- [b]
   ]
 ]
 
@@ -1110,19 +1110,19 @@ scenario text-split-2 [
     local-scope
     x:address:array:character <- new [a/b/c]
     y:address:array:address:array:character <- split x, 47/slash
-    1:number/raw <- length *y
+    10:number/raw <- length *y
     a:address:array:character <- index *y, 0
     b:address:array:character <- index *y, 1
     c:address:array:character <- index *y, 2
-    10:array:character/raw <- copy *a
-    20:array:character/raw <- copy *b
-    30:array:character/raw <- copy *c
+    20:array:character/raw <- copy *a
+    30:array:character/raw <- copy *b
+    40:array:character/raw <- copy *c
   ]
   memory-should-contain [
-    1 <- 3  # length of result
-    10:array:character <- [a]
-    20:array:character <- [b]
-    30:array:character <- [c]
+    10 <- 3  # length of result
+    20:array:character <- [a]
+    30:array:character <- [b]
+    40:array:character <- [c]
   ]
 ]
 
@@ -1131,13 +1131,13 @@ scenario text-split-missing [
     local-scope
     x:address:array:character <- new [abc]
     y:address:array:address:array:character <- split x, 47/slash
-    1:number/raw <- length *y
+    10:number/raw <- length *y
     a:address:array:character <- index *y, 0
-    10:array:character/raw <- copy *a
+    20:array:character/raw <- copy *a
   ]
   memory-should-contain [
-    1 <- 1  # length of result
-    10:array:character <- [abc]
+    10 <- 1  # length of result
+    20:array:character <- [abc]
   ]
 ]
 
@@ -1146,10 +1146,10 @@ scenario text-split-empty [
     local-scope
     x:address:array:character <- new []
     y:address:array:address:array:character <- split x, 47/slash
-    1:number/raw <- length *y
+    10:number/raw <- length *y
   ]
   memory-should-contain [
-    1 <- 0  # empty result
+    10 <- 0  # empty result
   ]
 ]
 
@@ -1158,22 +1158,22 @@ scenario text-split-empty-piece [
     local-scope
     x:address:array:character <- new [a/b//c]
     y:address:array:address:array:character <- split x:address:array:character, 47/slash
-    1:number/raw <- length *y
+    10:number/raw <- length *y
     a:address:array:character <- index *y, 0
     b:address:array:character <- index *y, 1
     c:address:array:character <- index *y, 2
     d:address:array:character <- index *y, 3
-    10:array:character/raw <- copy *a
-    20:array:character/raw <- copy *b
-    30:array:character/raw <- copy *c
-    40:array:character/raw <- copy *d
+    20:array:character/raw <- copy *a
+    30:array:character/raw <- copy *b
+    40:array:character/raw <- copy *c
+    50:array:character/raw <- copy *d
   ]
   memory-should-contain [
-    1 <- 4  # length of result
-    10:array:character <- [a]
-    20:array:character <- [b]
-    30:array:character <- []
-    40:array:character <- [c]
+    10 <- 4  # length of result
+    20:array:character <- [a]
+    30:array:character <- [b]
+    40:array:character <- []
+    50:array:character <- [c]
   ]
 ]
 
