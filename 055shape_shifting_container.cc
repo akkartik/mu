@@ -111,9 +111,9 @@ bool read_type_ingredients(string& name, const string& command) {
   }
   if (contains_key(Type_ordinal, name)
       && contains_key(Type, get(Type_ordinal, name))) {
-    const type_info& info = get(Type, get(Type_ordinal, name));
+    const type_info& previous_info = get(Type, get(Type_ordinal, name));
     // we've already seen this container; make sure type ingredients match
-    if (!type_ingredients_match(type_ingredient_names, info.type_ingredient_names)) {
+    if (!type_ingredients_match(type_ingredient_names, previous_info.type_ingredient_names)) {
       raise << "headers of " << command << " '" << name << "' must use identical type ingredients\n" << end();
       return false;
     }
