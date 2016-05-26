@@ -275,14 +275,18 @@ reagent::reagent(const string& s) :original_string(s), type(NULL), value(0), ini
   if (name == "_" && type == NULL)
     type = new type_tree("literal", get(Type_ordinal, "literal"));
   // other properties
+  slurp_properties(in, properties);
+  // End Parsing reagent
+}
+
+void slurp_properties(istream& in, vector<pair<string, string_tree*> >& out) {
   while (has_data(in)) {
     istringstream row(slurp_until(in, '/'));
     row >> std::noskipws;
     string key = slurp_until(row, ':');
     string_tree* value = parse_property_list(row);
-    properties.push_back(pair<string, string_tree*>(key, value));
+    out.push_back(pair<string, string_tree*>(key, value));
   }
-  // End Parsing reagent
 }
 
 string_tree* parse_property_list(istream& in) {
