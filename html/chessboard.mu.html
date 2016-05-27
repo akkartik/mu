@@ -64,10 +64,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
   ]
   run [
+    <span class="Constant">local-scope</span>
     screen:address:screen, console:address:console<span class="Special"> &lt;- </span>chessboard screen:address:screen, console:address:console
     <span class="Comment"># icon for the cursor</span>
-    <span class="Constant">1</span>:character/cursor-icon<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    screen<span class="Special"> &lt;- </span>print screen, <span class="Constant">1</span>:character/cursor-icon
+    cursor-icon:character<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
+    screen<span class="Special"> &lt;- </span>print screen, cursor-icon
   ]
   screen-should-contain [
   <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
@@ -234,8 +235,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> printing-the-board [
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
-    <span class="Constant">1</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
-    screen:address:screen<span class="Special"> &lt;- </span>print-board screen:address:screen, <span class="Constant">1</span>:address:array:address:array:character/board
+    <span class="Constant">local-scope</span>
+    board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+    screen:address:screen<span class="Special"> &lt;- </span>print-board screen:address:screen, board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>
@@ -398,67 +400,68 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-blocking [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">1</span>:address:source:character, <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    <span class="Constant">3</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move, <span class="Constant">1</span>:address:source:character, screen:address:screen
+    <span class="Constant">local-scope</span>
+    source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+    read-move-routine:number/routine<span class="Special"> &lt;- </span>start-running read-move, source, screen:address:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'a'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">97/a</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a']</span>
     <span class="Comment"># press '2'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">50/'2'</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2']</span>
     <span class="Comment"># press '-'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">45/'-'</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">45/'-'</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?/routine-state, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after hyphen 'a2-']</span>
     <span class="Comment"># press 'a'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">97/a</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?/routine-state, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a2-a']</span>
     <span class="Comment"># press '4'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">52/'4'</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">52/'4'</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2-a4']</span>
     <span class="Comment"># press 'newline'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">10</span>  <span class="Comment"># newline</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10</span>  <span class="Comment"># newline</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' now completes</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number
-    <span class="Constant">5</span>:boolean/completed?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">1/completed</span>
-    assert <span class="Constant">5</span>:boolean/completed?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    completed?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to terminate on newline]</span>
     trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
   ]
@@ -470,22 +473,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-quit [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">1</span>:address:source:character, <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    <span class="Constant">3</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move, <span class="Constant">1</span>:address:channel:character, screen:address:screen
+    <span class="Constant">local-scope</span>
+    source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+    read-move-routine:number<span class="Special"> &lt;- </span>start-running read-move, source, screen:address:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'q'</span>
-    <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">2</span>:address:sink:character, <span class="Constant">113/q</span>
-    restart <span class="Constant">3</span>:number/routine
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">113/q</span>
+    restart read-move-routine
     <span class="Comment"># 'read-move' completes</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/completed?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">1/completed</span>
-    assert <span class="Constant">5</span>:boolean/completed?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
+    completed?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to terminate on 'q']</span>
     trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
   ]
@@ -497,17 +501,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-illegal-file [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">1</span>:address:source:character, <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    <span class="Constant">3</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move, <span class="Constant">1</span>:address:source:character, screen:address:screen
+    <span class="Constant">local-scope</span>
+    source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+    read-move-routine:number<span class="Special"> &lt;- </span>start-running read-move, source, screen:address:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
-    <span class="Constant">1</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:sink:character, <span class="Constant">50/'2'</span>
-    restart <span class="Constant">3</span>:number/routine
-    wait-for-routine <span class="Constant">3</span>:number
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
+    restart read-move-routine
+    wait-for-routine read-move-routine
   ]
   screen-should-contain [
    <span class="Constant"> .file too low: 2     .</span>
@@ -518,18 +523,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-illegal-rank [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">1</span>:address:source:character, <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    <span class="Constant">3</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move, <span class="Constant">1</span>:address:source:character, screen:address:screen
+    <span class="Constant">local-scope</span>
+    source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+    read-move-routine:number<span class="Special"> &lt;- </span>start-running read-move, source, screen:address:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
-    <span class="Constant">1</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:sink:character, <span class="Constant">97/a</span>
-    <span class="Constant">1</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:sink:character, <span class="Constant">97/a</span>
-    restart <span class="Constant">3</span>:number/routine
-    wait-for-routine <span class="Constant">3</span>:number
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    restart read-move-routine
+    wait-for-routine read-move-routine
   ]
   screen-should-contain [
    <span class="Constant"> .rank too high: a    .</span>
@@ -540,18 +546,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-empty [
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">1</span>:address:source:character, <span class="Constant">2</span>:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    <span class="Constant">3</span>:number/routine<span class="Special"> &lt;- </span>start-running read-move, <span class="Constant">1</span>:address:source:character, screen:address:screen
+    <span class="Constant">local-scope</span>
+    source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+    read-move-routine:number<span class="Special"> &lt;- </span>start-running read-move, source, screen:address:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
-    wait-for-routine <span class="Constant">3</span>:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>routine-state <span class="Constant">3</span>:number/id
-    <span class="Constant">5</span>:boolean/waiting?<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number/routine-state, <span class="Constant">3/waiting</span>
-    assert <span class="Constant">5</span>:boolean/waiting?, <span class="Constant">[ </span>
+    wait-for-routine read-move-routine
+    read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
+    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
-    <span class="Constant">1</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:sink:character, <span class="Constant">10/newline</span>
-    <span class="Constant">1</span>:address:sink:character<span class="Special"> &lt;- </span>write <span class="Constant">1</span>:address:sink:character, <span class="Constant">97/a</span>
-    restart <span class="Constant">3</span>:number/routine
-    wait-for-routine <span class="Constant">3</span>:number
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10/newline</span>
+    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    restart read-move-routine
+    wait-for-routine read-move-routine
   ]
   screen-should-contain [
    <span class="Constant"> .that's not enough   .</span>
@@ -576,11 +583,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> making-a-move [
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
-    <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>initial-position
-    <span class="Constant">3</span>:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-    *<span class="Constant">3</span>:address:move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
-    <span class="Constant">2</span>:address:array:address:array:character/board<span class="Special"> &lt;- </span>make-move <span class="Constant">2</span>:address:array:address:array:character/board, <span class="Constant">3</span>:address:move
-    screen:address:screen<span class="Special"> &lt;- </span>print-board screen:address:screen, <span class="Constant">2</span>:address:array:address:array:character/board
+    <span class="Constant">local-scope</span>
+    board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+    move:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
+    *move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
+    board<span class="Special"> &lt;- </span>make-move board, move
+    screen:address:screen<span class="Special"> &lt;- </span>print-board screen:address:screen, board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>

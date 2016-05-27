@@ -169,15 +169,12 @@ element<span class="Delimiter">.</span>value = address<span class="Delimiter">;<
 <span class="Delimiter">:(scenario refcounts_put_index)</span>
 def main [
   <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Comment"># fake array because we can't yet create an array of addresses (wait for the</span>
-  <span class="Comment"># support for dilated reagents and parsing more complex type trees)</span>
-  <span class="Constant">1003</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># skip refcount at 1002</span>
-  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1002</span>/unsafe
+  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
   *<span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:number<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
-<span class="traceContains">+run: {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;)} &lt;- copy {1002: &quot;literal&quot;, &quot;unsafe&quot;: ()}</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;)} &lt;- new {(address number): &quot;type&quot;}, {3: &quot;literal&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1002: 0 -&gt; 1</span>
 <span class="traceContains">+run: {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()} &lt;- put-index {2: (&quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}, {0: &quot;literal&quot;}, {1: (&quot;address&quot; &quot;number&quot;)}</span>
 <span class="Comment"># put-index increments refcount</span>
