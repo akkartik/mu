@@ -134,15 +134,12 @@ if (is_mu_address(element))
 :(scenario refcounts_put_index)
 def main [
   1:address:number <- new number:type
-  # fake array because we can't yet create an array of addresses (wait for the
-  # support for dilated reagents and parsing more complex type trees)
-  1003:number/raw <- copy 3  # skip refcount at 1002
-  2:address:array:address:number <- copy 1002/unsafe
+  2:address:array:address:number <- new {(address number): type}, 3
   *2:address:array:address:number <- put-index *2:address:array:address:number, 0, 1:address:number
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: {2: ("address" "array" "address" "number")} <- copy {1002: "literal", "unsafe": ()}
++run: {2: ("address" "array" "address" "number")} <- new {(address number): "type"}, {3: "literal"}
 +mem: incrementing refcount of 1002: 0 -> 1
 +run: {2: ("address" "array" "address" "number"), "lookup": ()} <- put-index {2: ("address" "array" "address" "number"), "lookup": ()}, {0: "literal"}, {1: ("address" "number")}
 # put-index increments refcount
