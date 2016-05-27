@@ -37,24 +37,26 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> table-read-write [
   run [
-    <span class="Constant">1</span>:address:table:number:number<span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
-    put <span class="Constant">1</span>:address:table:number:number, <span class="Constant">12</span>, <span class="Constant">34</span>
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:address:table:number:number, <span class="Constant">12</span>
+    <span class="Constant">local-scope</span>
+    tab:address:table:number:number<span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
+    put-index tab, <span class="Constant">12</span>, <span class="Constant">34</span>
+    <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>index tab, <span class="Constant">12</span>
   ]
   memory-should-contain [
-    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> table-read-write-non-integer [
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
-    <span class="Delimiter">{</span><span class="Constant">2</span>: (address table (address array character) number)<span class="Delimiter">}</span><span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
-    put <span class="Delimiter">{</span><span class="Constant">2</span>: (address table (address array character) number)<span class="Delimiter">}</span>, <span class="Constant">1</span>:address:array:character, <span class="Constant">34</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>index <span class="Delimiter">{</span><span class="Constant">2</span>: (address table (address array character) number)<span class="Delimiter">}</span>, <span class="Constant">1</span>:address:array:character
+    <span class="Constant">local-scope</span>
+    key:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
+    <span class="Delimiter">{</span>tab: (address table (address array character) number)<span class="Delimiter">}</span><span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
+    put-index tab, key, <span class="Constant">34</span>
+    <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>index tab, key
   ]
   memory-should-contain [
-    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
   ]
 ]
 
@@ -78,7 +80,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result<span class="Special"> &lt;- </span>merge <span class="Constant">0/length</span>, capacity, data
 ]
 
-<span class="muRecipe">def</span> put table:address:table:_key:_value, key:_key, value:_value<span class="muRecipe"> -&gt; </span>table:address:table:_key:_value [
+<span class="muRecipe">def</span> put-index table:address:table:_key:_value, key:_key, value:_value<span class="muRecipe"> -&gt; </span>table:address:table:_key:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   hash:number<span class="Special"> &lt;- </span>hash key

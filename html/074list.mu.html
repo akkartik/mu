@@ -63,21 +63,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> list-handling [
   run [
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, <span class="Constant">1</span>:address:list:number
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, <span class="Constant">1</span>:address:list:number
-    <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>first <span class="Constant">1</span>:address:list:number
-    <span class="Constant">1</span>:address:list:number<span class="Special"> &lt;- </span>rest <span class="Constant">1</span>:address:list:number
+    <span class="Constant">local-scope</span>
+    x:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    x<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, x
+    x<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, x
+    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>first x
+    x<span class="Special"> &lt;- </span>rest x
+    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>first x
+    x<span class="Special"> &lt;- </span>rest x
+    <span class="Constant">12</span>:number/<span class="Special">raw &lt;- </span>first x
+    <span class="Constant">20</span>:address:list:number/<span class="Special">raw &lt;- </span>rest x
   ]
   memory-should-contain [
-    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty to empty, dust to dust..</span>
-    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
-    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># nothing left</span>
   ]
 ]
 
