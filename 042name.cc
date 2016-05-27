@@ -59,6 +59,12 @@ void transform_names(const recipe_ordinal r) {
       int v = lookup_name(inst.ingredients.at(in), r);
       if (v >= 0) {
         inst.ingredients.at(in).set_value(v);
+        // HACK: belongs in a later layer, either in the scenario layer which
+        // introduces the 'run' pseudo-instruction which is translated to
+        // run_* recipes, or later when we start using screens and consoles in
+        // scenarios.
+        if (is_special_name(inst.ingredients.at(in).name) && caller.name.substr(0, 4) == "run_")
+          inst.ingredients.at(in).properties.push_back(pair<string, string_tree*>("raw", NULL));
       }
       else {
         raise << maybe(caller.name) << "can't find a place to store '" << inst.ingredients.at(in).name << "'\n" << end();
@@ -78,6 +84,12 @@ void transform_names(const recipe_ordinal r) {
       int v = lookup_name(inst.products.at(out), r);
       if (v >= 0) {
         inst.products.at(out).set_value(v);
+        // HACK: belongs in a later layer, either in the scenario layer which
+        // introduces the 'run' pseudo-instruction which is translated to
+        // run_* recipes, or later when we start using screens and consoles in
+        // scenarios.
+        if (is_special_name(inst.products.at(out).name) && caller.name.substr(0, 4) == "run_")
+          inst.products.at(out).properties.push_back(pair<string, string_tree*>("raw", NULL));
       }
       else {
         raise << maybe(caller.name) << "can't find a place to store '" << inst.products.at(out).name << "'\n" << end();
