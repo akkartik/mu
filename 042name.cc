@@ -59,12 +59,7 @@ void transform_names(const recipe_ordinal r) {
       int v = lookup_name(inst.ingredients.at(in), r);
       if (v >= 0) {
         inst.ingredients.at(in).set_value(v);
-        // HACK: belongs in a later layer, either in the scenario layer which
-        // introduces the 'run' pseudo-instruction which is translated to
-        // run_* recipes, or later when we start using screens and consoles in
-        // scenarios.
-        if (is_special_name(inst.ingredients.at(in).name) && caller.name.substr(0, 4) == "run_")
-          inst.ingredients.at(in).properties.push_back(pair<string, string_tree*>("raw", NULL));
+        // Done Placing Ingredient(inst, in, caller)
       }
       else {
         raise << maybe(caller.name) << "can't find a place to store '" << inst.ingredients.at(in).name << "'\n" << end();
@@ -84,12 +79,7 @@ void transform_names(const recipe_ordinal r) {
       int v = lookup_name(inst.products.at(out), r);
       if (v >= 0) {
         inst.products.at(out).set_value(v);
-        // HACK: belongs in a later layer, either in the scenario layer which
-        // introduces the 'run' pseudo-instruction which is translated to
-        // run_* recipes, or later when we start using screens and consoles in
-        // scenarios.
-        if (is_special_name(inst.products.at(out).name) && caller.name.substr(0, 4) == "run_")
-          inst.products.at(out).properties.push_back(pair<string, string_tree*>("raw", NULL));
+        // Done Placing Product(inst, out, caller)
       }
       else {
         raise << maybe(caller.name) << "can't find a place to store '" << inst.products.at(out).name << "'\n" << end();
@@ -153,6 +143,7 @@ bool is_named_location(const reagent& x) {
   return !is_integer(x.name);
 }
 
+// all names here should either be disqualified or also in bind_special_scenario_names
 bool is_special_name(const string& s) {
   if (s == "_") return true;
   if (s == "0") return true;
