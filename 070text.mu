@@ -513,13 +513,13 @@ def interpolate template:address:array:character -> result:address:array:charact
 scenario interpolate-works [
   run [
     local-scope
-    x:address:array:character <- new [abc _]
+    x:address:array:character <- new [abc_ghi]
     y:address:array:character <- new [def]
     z:address:array:character <- interpolate x, y
     10:array:character/raw <- copy *z
   ]
   memory-should-contain [
-    10:array:character <- [abc def]
+    10:array:character <- [abcdefghi]
   ]
 ]
 
