@@ -576,6 +576,160 @@ scenario editor-provides-edited-contents [
   ]
 ]
 
+# keep the bottom of recipes from scrolling off the screen
+
+scenario scrolling-down-past-bottom-of-recipe-editor [
+  local-scope
+  trace-until 100/app
+  assume-screen 100/width, 10/height
+  env:address:programming-environment-data <- new-programming-environment screen:address:screen, [], []
+  render-all screen, env
+  assume-console [
+    press enter
+    press down-arrow
+  ]
+  event-loop screen, console:address:console, env
+  # no scroll
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario cursor-down-in-recipe-editor [
+  local-scope
+  trace-until 100/app
+  assume-screen 100/width, 10/height
+  env:address:programming-environment-data <- new-programming-environment screen:address:screen, [], []
+  render-all screen, env
+  assume-console [
+    press enter
+    press up-arrow
+    press down-arrow  # while cursor isn't at bottom
+  ]
+  event-loop screen, console:address:console, env
+  cursor:character <- copy 9251/␣
+  print screen:address:screen, cursor
+  # cursor moves back to bottom
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .␣                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+# we'll not use the recipe-editor's 'bottom' element directly, because later
+# layers will add other stuff to the left side below the editor (error messages)
+
+container programming-environment-data [
+  recipe-bottom:number
+]
+
+after <render-recipe-components-end> [
+  *env <- put *env, recipe-bottom:offset, row
+]
+
+after <global-keypress> [
+  {
+    break-if sandbox-in-focus?
+    down-arrow?:boolean <- equal k, 65516/down-arrow
+    break-unless down-arrow?
+    recipe-editor:address:editor-data <- get *env, recipes:offset
+    recipe-cursor-row:number <- get *recipe-editor, cursor-row:offset
+    recipe-editor-bottom:number <- get *recipe-editor, bottom:offset
+    at-bottom-of-editor?:boolean <- greater-or-equal recipe-cursor-row, recipe-editor-bottom
+    break-unless at-bottom-of-editor?
+    more-to-scroll?:boolean <- more-to-scroll? env, screen
+    break-if more-to-scroll?
+    loop +next-event:label
+  }
+  {
+    break-if sandbox-in-focus?
+    page-down?:boolean <- equal k, 65518/page-down
+    break-unless page-down?
+    more-to-scroll?:boolean <- more-to-scroll? env, screen
+    break-if more-to-scroll?
+    loop +next-event:label
+  }
+]
+
+after <global-type> [
+  {
+    break-if sandbox-in-focus?
+    page-down?:boolean <- equal k, 6/ctrl-f
+    break-unless page-down?
+    more-to-scroll?:boolean <- more-to-scroll? env, screen
+    break-if more-to-scroll?
+    loop +next-event:label
+  }
+]
+
+def more-to-scroll? env:address:programming-environment-data, screen:address:screen -> result:boolean [
+  local-scope
+  load-ingredients
+  recipe-bottom:number <- get *env, recipe-bottom:offset
+  height:number <- screen-height screen
+  result <- greater-or-equal recipe-bottom, height
+]
+
+scenario scrolling-down-past-bottom-of-recipe-editor-2 [
+  local-scope
+  trace-until 100/app
+  assume-screen 100/width, 10/height
+  env:address:programming-environment-data <- new-programming-environment screen:address:screen, [], []
+  render-all screen, env
+  assume-console [
+    # add a line
+    press enter
+    # cursor back to top line
+    press up-arrow
+    # try to scroll
+    press page-down  # or ctrl-f
+  ]
+  event-loop screen, console:address:console, env
+  # no scroll, and cursor remains at top line
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario scrolling-down-past-bottom-of-recipe-editor-3 [
+  local-scope
+  trace-until 100/app
+  assume-screen 100/width, 10/height
+  env:address:programming-environment-data <- new-programming-environment screen:address:screen, [], [ab
+cd]
+  render-all screen, env
+  assume-console [
+    # add a line
+    press enter
+    # switch to sandbox
+    press ctrl-n
+    # move cursor
+    press down-arrow
+  ]
+  event-loop screen, console:address:console, env
+  cursor:character <- copy 9251/␣
+  print screen:address:screen, cursor
+  # no scroll on recipe side, cursor moves on sandbox side
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊ab                                               .
+    .                                                  ┊␣d                                               .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
 # scrolling through sandboxes
 
 scenario scrolling-down-past-bottom-of-sandbox-editor [
@@ -727,7 +881,7 @@ scenario scrolling-down-on-recipe-side [
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   # hit 'down' in recipe editor
   assume-console [
-    press down-arrow
+    press page-down
   ]
   run [
     event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
@@ -737,8 +891,8 @@ scenario scrolling-down-on-recipe-side [
   # cursor moves down on recipe side
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .␣                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .␣                                                 ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
     .                                                  ┊add 2, 2                                         .
   ]

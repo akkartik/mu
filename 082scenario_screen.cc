@@ -149,7 +149,7 @@ Name[r]["screen"] = SCREEN;
 if (curr.name == "assume-screen") {
   curr.name = "new-fake-screen";
   assert(curr.products.empty());
-  curr.products.push_back(reagent("screen:address:screen"));
+  curr.products.push_back(reagent("screen:address:screen/raw"));  // only allowed in scenario blocks
   curr.products.at(0).set_value(SCREEN);
 }
 
@@ -203,7 +203,6 @@ struct raw_string_stream {
 
 :(code)
 void check_screen(const string& expected_contents, const int color) {
-  assert(!current_call().default_space);  // not supported
   int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
@@ -339,7 +338,6 @@ case _DUMP_SCREEN: {
 
 :(code)
 void dump_screen() {
-  assert(!current_call().default_space);  // not supported
   int screen_location = get_or_insert(Memory, SCREEN) + /*skip refcount*/1;
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   int screen_width = get_or_insert(Memory, screen_location+width_offset);
