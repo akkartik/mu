@@ -107,6 +107,7 @@ initialize_signal_handlers();  // not always necessary, but doesn't hurt
 // based on https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c
 void initialize_signal_handlers() {
   struct sigaction action;
+  bzero(&action, sizeof(action));
   action.sa_sigaction = dump_and_exit;
   sigemptyset(&action.sa_mask);
   sigaction(SIGABRT, &action, NULL);  // assert() failure or integer overflow on linux (with -ftrapv)
