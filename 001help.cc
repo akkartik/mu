@@ -97,7 +97,74 @@ bool is_equal(char* s, const char* lit) {
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
 
 //: 5. Integer overflow is guarded against at runtime using the -ftrapv flag
-//: to the compiler, supported by both GCC and LLVM.
+//: to the compiler, supported by Clang (GCC version only works sometimes:
+//: http://stackoverflow.com/questions/20851061/how-to-make-gcc-ftrapv-work).
+:(before "atexit(teardown)")
+initialize_signal_handlers();  // not always necessary, but doesn't hurt
+//? cerr << INT_MAX+1 << '\n';  // test overflow
+//? assert(false);  // test SIGABRT
+:(code)
+// based on https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c
+void initialize_signal_handlers() {
+  struct sigaction action;
+  action.sa_sigaction = dump_and_exit;
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGABRT, &action, NULL);  // assert() failure or integer overflow on linux (with -ftrapv)
+  sigaction(SIGILL,  &action, NULL);  // integer overflow on OS X (with -ftrapv)
+  sigaction(SIGFPE,  &action, NULL);  // floating-point overflow and underflow
+}
+void dump_and_exit(int sig, siginfo_t* siginfo, unused void* dummy) {
+  switch (sig) {
+    case SIGABRT:
+      #ifndef __APPLE__
+        cerr << "SIGABRT: might be an integer overflow if it wasn't an assert() failure\n";
+        _Exit(1);
+      #endif
+      break;
+    case SIGILL:
+      #ifdef __APPLE__
+        cerr << "SIGILL: most likely caused by integer overflow\n";
+        _Exit(1);
+      #endif
+      break;
+    case SIGFPE:
+      switch(siginfo->si_code)
+      {
+        case FPE_INTDIV:
+          cerr << "SIGFPE: (integer divide by zero)\n";
+          break;
+        case FPE_INTOVF:
+          cerr << "SIGFPE: (integer overflow)\n";  // dormant; requires hardware support
+          break;
+        case FPE_FLTDIV:
+          cerr << "SIGFPE: (floating-point divide by zero)\n";
+          break;
+        case FPE_FLTOVF:
+          cerr << "SIGFPE: (floating-point overflow)\n";
+          break;
+        case FPE_FLTUND:
+          cerr << "SIGFPE: (floating-point underflow)\n";
+          break;
+        case FPE_FLTRES:
+          cerr << "SIGFPE: (floating-point inexact result)\n";
+          break;
+        case FPE_FLTINV:
+          cerr << "SIGFPE: (floating-point invalid operation)\n";
+          break;
+        case FPE_FLTSUB:
+          cerr << "SIGFPE: (subscript out of range)\n";
+          break;
+        default:
+          cerr << "SIGFPE: arithmetic exception\n";
+          break;
+      }
+      _Exit(1);
+    default:
+      break;
+  }
+}
+:(before "End Includes")
+#include <signal.h>
 
 //: 6. Map's operator[] being non-const is fucking evil.
 :(before "Globals")  // can't generate prototypes for these
