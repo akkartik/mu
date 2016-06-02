@@ -96,8 +96,8 @@ bool is_equal(char* s, const char* lit) {
 :(before "End Includes")
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
 //:
-//: 5. Integer overflow is still impossible to guard against. Maybe after
-//: reading http://www.cs.utah.edu/~regehr/papers/overflow12.pdf
+//: 5. Integer overflow is guarded against at runtime using the -ftrapv flag
+//: to the compiler, supported by both GCC and LLVM.
 //:
 //: 6. Map's operator[] being non-const is fucking evil.
 :(before "Globals")  // can't generate prototypes for these

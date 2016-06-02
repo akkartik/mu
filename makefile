@@ -4,7 +4,7 @@ CXX ?= c++
 CFLAGS ?= -g -O3
 
 mu_bin: makefile mu.cc termbox/libtermbox.a
-	${CXX} ${CFLAGS} -Wall -Wextra -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
+	${CXX} ${CFLAGS} -Wall -Wextra -ftrapv -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
