@@ -215,3 +215,5 @@ using std::cerr;
 #include <cstring>
 #include <string>
 using std::string;
+
+#define unused  __attribute__((unused))

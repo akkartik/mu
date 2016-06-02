@@ -360,8 +360,6 @@ using std::ofstream;
 
 #include "termbox/termbox.h"
 
-#define unused  __attribute__((unused))
-
 :(before "End Globals")
 //: In future layers we'll use the depth field as follows:
 //:
