@@ -95,10 +95,10 @@ bool is_equal(char* s, const char* lit) {
 //: up in than integer overflow.
 :(before "End Includes")
 #define SIZE(X) (assert((X).size() < (1LL<<(sizeof(int)*8-2))), static_cast<int>((X).size()))
-//:
+
 //: 5. Integer overflow is guarded against at runtime using the -ftrapv flag
 //: to the compiler, supported by both GCC and LLVM.
-//:
+
 //: 6. Map's operator[] being non-const is fucking evil.
 :(before "Globals")  // can't generate prototypes for these
 // from http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map
@@ -124,10 +124,11 @@ template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::
 }
 //: The contract: any container that relies on get_or_insert should never call
 //: contains_key.
-//:
+
 //: 7. istreams are a royal pain in the arse. You have to be careful about
 //: what subclass you try to putback into. You have to watch out for the pesky
 //: failbit and badbit. Just avoid eof() and use this helper instead.
+:(code)
 bool has_data(istream& in) {
   return in && !in.eof();
 }
