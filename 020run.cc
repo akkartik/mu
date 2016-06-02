@@ -243,8 +243,8 @@ void load_all(string dir) {
   free(files);
 }
 :(before "End Includes")
-#include<dirent.h>
-#include<sys/stat.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 //:: Reading from memory, writing to memory.
 

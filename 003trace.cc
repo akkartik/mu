@@ -340,25 +340,25 @@ string trim(const string& s) {
 }
 
 :(before "End Includes")
-#include<vector>
+#include <vector>
 using std::vector;
-#include<list>
+#include <list>
 using std::list;
-#include<map>
+#include <map>
 using std::map;
-#include<set>
+#include <set>
 using std::set;
-#include<algorithm>
+#include <algorithm>
 
-#include<sstream>
+#include <sstream>
 using std::istringstream;
 using std::ostringstream;
 
-#include<fstream>
+#include <fstream>
 using std::ifstream;
 using std::ofstream;
 
-#include"termbox/termbox.h"
+#include "termbox/termbox.h"
 
 #define unused  __attribute__((unused))
 

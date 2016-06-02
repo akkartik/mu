@@ -133,17 +133,17 @@ bool has_data(istream& in) {
 }
 
 :(before "End Includes")
-#include<assert.h>
+#include <assert.h>
 
-#include<iostream>
+#include <iostream>
 using std::istream;
 using std::ostream;
 using std::iostream;
 using std::cin;
 using std::cout;
 using std::cerr;
-#include<iomanip>
+#include <iomanip>
 
-#include<cstring>
-#include<string>
+#include <cstring>
+#include <string>
 using std::string;

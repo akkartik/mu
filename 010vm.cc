@@ -671,6 +671,6 @@ void test_trim_floating_point() {
 }
 
 :(before "End Includes")
-#include<utility>
+#include <utility>
 using std::pair;
-#include<math.h>
+#include <math.h>
