@@ -43,6 +43,7 @@ def prev in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contai
 
 scenario duplex-list-handling [
   run [
+    local-scope
     # reserve locations 0-9 to check for missing null check
     10:number/raw <- copy 34
     11:number/raw <- copy 35
@@ -99,6 +100,7 @@ def insert x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem
 
 scenario inserting-into-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -135,6 +137,7 @@ scenario inserting-into-duplex-list [
 
 scenario inserting-at-end-of-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -172,6 +175,7 @@ scenario inserting-at-end-of-duplex-list [
 
 scenario inserting-after-start-of-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -237,6 +241,7 @@ def remove x:address:duplex-list:_elem/contained-in:in, in:address:duplex-list:_
 
 scenario removing-from-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -265,6 +270,7 @@ scenario removing-from-duplex-list [
 
 scenario removing-from-start-of-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -290,6 +296,7 @@ scenario removing-from-start-of-duplex-list [
 
 scenario removing-from-end-of-duplex-list [
   run [
+    local-scope
     list:address:duplex-list:character <- push 3, 0
     list <- push 4, list
     list <- push 5, list
