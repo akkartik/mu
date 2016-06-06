@@ -112,7 +112,6 @@ void initialize_signal_handlers() {
   sigemptyset(&action.sa_mask);
   sigaction(SIGABRT, &action, NULL);  // assert() failure or integer overflow on linux (with -ftrapv)
   sigaction(SIGILL,  &action, NULL);  // integer overflow on OS X (with -ftrapv)
-  sigaction(SIGFPE,  &action, NULL);  // floating-point overflow and underflow
 }
 void dump_and_exit(int sig, siginfo_t* siginfo, unused void* dummy) {
   switch (sig) {
@@ -128,38 +127,6 @@ void dump_and_exit(int sig, siginfo_t* siginfo, unused void* dummy) {
         _Exit(1);
       #endif
       break;
-    case SIGFPE:
-      switch(siginfo->si_code)
-      {
-        case FPE_INTDIV:
-          cerr << "SIGFPE: (integer divide by zero)\n";
-          break;
-        case FPE_INTOVF:
-          cerr << "SIGFPE: (integer overflow)\n";  // dormant; requires hardware support
-          break;
-        case FPE_FLTDIV:
-          cerr << "SIGFPE: (floating-point divide by zero)\n";
-          break;
-        case FPE_FLTOVF:
-          cerr << "SIGFPE: (floating-point overflow)\n";
-          break;
-        case FPE_FLTUND:
-          cerr << "SIGFPE: (floating-point underflow)\n";
-          break;
-        case FPE_FLTRES:
-          cerr << "SIGFPE: (floating-point inexact result)\n";
-          break;
-        case FPE_FLTINV:
-          cerr << "SIGFPE: (floating-point invalid operation)\n";
-          break;
-        case FPE_FLTSUB:
-          cerr << "SIGFPE: (subscript out of range)\n";
-          break;
-        default:
-          cerr << "SIGFPE: arithmetic exception\n";
-          break;
-      }
-      _Exit(1);
     default:
       break;
   }
