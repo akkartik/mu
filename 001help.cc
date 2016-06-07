@@ -113,7 +113,7 @@ void initialize_signal_handlers() {
   sigaction(SIGABRT, &action, NULL);  // assert() failure or integer overflow on linux (with -ftrapv)
   sigaction(SIGILL,  &action, NULL);  // integer overflow on OS X (with -ftrapv)
 }
-void dump_and_exit(int sig, siginfo_t* siginfo, unused void* dummy) {
+void dump_and_exit(int sig, unused siginfo_t* dummy1, unused void* dummy2) {
   switch (sig) {
     case SIGABRT:
       #ifndef __APPLE__
@@ -133,6 +133,32 @@ void dump_and_exit(int sig, siginfo_t* siginfo, unused void* dummy) {
 }
 :(before "End Includes")
 #include <signal.h>
+
+//: For good measure we'll also enable SIGFPE.
+:(before "atexit(teardown)")
+feenableexcept(FE_OVERFLOW | FE_UNDERFLOW);
+//? assert(sizeof(int) == 4 && sizeof(float) == 4);
+//? //                          | exp   |  mantissa
+//? int smallest_subnormal = 0b00000000000000000000000000000001;
+//? float smallest_subnormal_f = *reinterpret_cast<int*>(&smallest_subnormal);
+//? cerr << "ε/2: " << smallest_subnormal_f/2 << " (underflow)\n";  // test SIGFPE
+:(before "End Includes")
+#include <fenv.h>
+:(code)
+#ifdef __APPLE__
+// Public domain polyfill for feenableexcept on OS X
+// http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c
+inline int feenableexcept (unsigned int excepts) {
+  static fenv_t fenv;
+  unsigned int new_excepts = excepts & FE_ALL_EXCEPT;
+  unsigned int old_excepts;
+  if (fegetenv(&fenv)) return -1;
+  old_excepts = fenv.__control & FE_ALL_EXCEPT;
+  fenv.__control &= ~new_excepts;
+  fenv.__mxcsr   &= ~(new_excepts << 7);
+  return fesetenv(&fenv) ? -1 : old_excepts;
+}
+#endif
 
 //: 6. Map's operator[] being non-const is fucking evil.
 :(before "Globals")  // can't generate prototypes for these
