@@ -691,12 +691,40 @@ defg]
 after <insert-character-special-case> [
   # if the line wraps at the cursor, move cursor to start of next row
   {
-    # if we're at the column just before the wrap indicator
-    wrap-column:number <- subtract right, 1
+    # if either:
+    # a) we're at the end of the line and at the column of the wrap indicator, or
+    # b) we're not at end of line and just before the column of the wrap indicator
+    wrap-column:number <- copy right
+    before-wrap-column:number <- subtract wrap-column, 1
     at-wrap?:boolean <- greater-or-equal cursor-column, wrap-column
-    break-unless at-wrap?
-    cursor-column <- subtract cursor-column, wrap-column
-    cursor-column <- add cursor-column, left
+    just-before-wrap?:boolean <- greater-or-equal cursor-column, before-wrap-column
+    next:address:duplex-list:character <- next before-cursor
+    # at end of line? next == 0 || next.value == 10/newline
+    at-end-of-line?:boolean <- equal next, 0
+    {
+      break-if at-end-of-line?
+      next-character:character <- get *next, value:offset
+      at-end-of-line? <- equal next-character, 10/newline
+    }
+    # break unless ((eol? and at-wrap?) or (~eol? and just-before-wrap?))
+    move-cursor-to-next-line?:boolean <- copy 0/false
+    {
+      break-if at-end-of-line?
+      move-cursor-to-next-line? <- copy just-before-wrap?
+      # if we're moving the cursor because it's in the middle of a wrapping
+      # line, adjust it to left-most column
+      potential-new-cursor-column:number <- copy left
+    }
+    {
+      break-unless at-end-of-line?
+      move-cursor-to-next-line? <- copy at-wrap?
+      # if we're moving the cursor because it's at the end of a wrapping line,
+      # adjust it to one past the left-most column to make room for the
+      # newly-inserted wrap-indicator
+      potential-new-cursor-column:number <- add left, 1/make-room-for-wrap-indicator
+    }
+    break-unless move-cursor-to-next-line?
+    cursor-column <- copy potential-new-cursor-column
     *editor <- put *editor, cursor-column:offset, cursor-column
     cursor-row <- add cursor-row, 1
     *editor <- put *editor, cursor-row:offset, cursor-row
@@ -710,33 +738,7 @@ after <insert-character-special-case> [
   }
 ]
 
-scenario editor-wraps-cursor-after-inserting-characters [
-  assume-screen 10/width, 5/height
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
-  assume-console [
-    left-click 1, 4  # line is full; no wrap icon yet
-    type [f]
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
-  ]
-  screen-should-contain [
-    .          .
-    .abcd↩     .
-    .fe        .
-    .┈┈┈┈┈     .
-    .          .
-  ]
-  memory-should-contain [
-    3 <- 2  # cursor row
-    4 <- 1  # cursor column
-  ]
-]
-
-scenario editor-wraps-cursor-after-inserting-characters-2 [
+scenario editor-wraps-cursor-after-inserting-characters-in-middle-of-line [
   assume-screen 10/width, 5/height
   1:address:array:character <- new [abcde]
   2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
@@ -759,6 +761,35 @@ scenario editor-wraps-cursor-after-inserting-characters-2 [
   memory-should-contain [
     3 <- 2  # cursor row
     4 <- 0  # cursor column
+  ]
+]
+
+scenario editor-wraps-cursor-after-inserting-characters-at-end-of-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  # create an editor containing two lines
+  contents:address:array:character <- new [abc
+xyz]
+  1:address:editor-data/raw <- new-editor contents, screen, 0/left, 5/right
+  screen-should-contain [
+    .          .
+    .abc       .
+    .xyz       .
+    .          .
+  ]
+  assume-console [
+    left-click 1, 4  # at end of first line
+    type [de]  # trigger wrap
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, 1:address:editor-data/raw
+  ]
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .e         .
+    .xyz       .
+    .┈┈┈┈┈     .
   ]
 ]
 
