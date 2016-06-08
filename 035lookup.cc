@@ -261,14 +261,18 @@ def main [
 +mem: storing 15 in location 4
 +mem: storing 16 in location 5
 
-:(before "Update CREATE_ARRAY product in Check")
-// 'create-array' does not support indirection. Static arrays are meant to be
-// allocated on the 'stack'.
-assert(!has_property(product, "lookup"));
-:(before "Update CREATE_ARRAY product in Run")
-// 'create-array' does not support indirection. Static arrays are meant to be
-// allocated on the 'stack'.
-assert(!has_property(product, "lookup"));
+:(scenario create_array_indirect)
+def main [
+  1000:number/raw <- copy 1  # pretend refcount
+  1:address:array:number:3 <- copy 1000/unsafe  # pretend allocation
+  1:address:array:number:3/lookup <- create-array
+]
++mem: storing 3 in location 1001
+
+:(after "Update CREATE_ARRAY product in Check")
+if (!canonize_type(product)) break;
+:(after "Update CREATE_ARRAY product in Run")
+canonize(product);
 
 :(scenario index_indirect)
 def main [
