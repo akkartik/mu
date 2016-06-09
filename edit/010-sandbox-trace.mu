@@ -121,6 +121,48 @@ recipe foo [
   ]
 ]
 
+scenario clicking-on-app-trace-does-nothing [
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 10/height
+  1:address:array:character <- new []
+  # create and expand the trace
+  2:address:array:character <- new [stash 123456789]
+  assume-console [
+    press F4
+    left-click 4, 51
+  ]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊stash 123456789                                  .
+    .                                                  ┊123456789                                        .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+  # click on the stash under the edit-button region (or any of the other buttons, really)
+  assume-console [
+    left-click 5, 57
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  ]
+  # no change; doesn't die
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊stash 123456789                                  .
+    .                                                  ┊123456789                                        .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+  ]
+]
+
 container sandbox-data [
   trace:address:array:character
   display-trace?:boolean
