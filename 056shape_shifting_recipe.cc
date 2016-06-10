@@ -269,20 +269,20 @@ void compute_type_names(recipe& variant) {
   trace(9993, "transform") << "compute type names: " << variant.name << end();
   map<string, type_tree*> type_names;
   for (int i = 0; i < SIZE(variant.ingredients); ++i)
-    save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant);
+    save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant, "");
   for (int i = 0; i < SIZE(variant.products); ++i)
-    save_or_deduce_type_name(variant.products.at(i), type_names, variant);
+    save_or_deduce_type_name(variant.products.at(i), type_names, variant, "");
   for (int i = 0; i < SIZE(variant.steps); ++i) {
     instruction& inst = variant.steps.at(i);
     trace(9993, "transform") << "  instruction: " << to_string(inst) << end();
     for (int in = 0; in < SIZE(inst.ingredients); ++in)
-      save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant);
+      save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant, " in '" + to_original_string(inst) + "'");
     for (int out = 0; out < SIZE(inst.products); ++out)
-      save_or_deduce_type_name(inst.products.at(out), type_names, variant);
+      save_or_deduce_type_name(inst.products.at(out), type_names, variant, " in '" + to_original_string(inst) + "'");
   }
 }
 
-void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const recipe& variant) {
+void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const recipe& variant, const string& context) {
   trace(9994, "transform") << "    checking " << to_string(x) << ": " << names_to_string(x.type) << end();
   if (!x.type && contains_key(type, x.name)) {
     x.type = new type_tree(*get(type, x.name));
@@ -290,7 +290,7 @@ void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const r
     return;
   }
   if (!x.type) {
-    raise << maybe(variant.original_name) << "unknown type for '" << x.original_string << "' (check the name for typos)\n" << end();
+    raise << maybe(variant.original_name) << "unknown type for '" << x.original_string << "'" << context << " (check the name for typos)\n" << end();
     return;
   }
   if (contains_key(type, x.name)) return;
@@ -891,7 +891,7 @@ def foo a:d1:_elem -> b:number [
 container d1:_elem [
   x:_elem
 ]
-+error: foo: unknown type for 'e' (check the name for typos)
++error: foo: unknown type for 'e' in 'copy e' (check the name for typos)
 +error: specializing foo: missing type for 'e'
 # and it doesn't crash
 
@@ -910,7 +910,7 @@ def foo a:d1:_elem -> b:number [
 container d1:_elem [
   x:_elem
 ]
-+error: foo: unknown type for 'e' (check the name for typos)
++error: foo: unknown type for 'e' in 'get e, x:offset' (check the name for typos)
 +error: specializing foo: missing type for 'e'
 # and it doesn't crash
 
