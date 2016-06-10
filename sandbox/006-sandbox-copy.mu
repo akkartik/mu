@@ -179,6 +179,7 @@ def find-sandbox env:address:programming-environment-data, click-row:number -> r
   load-ingredients
   curr-sandbox:address:sandbox-data <- get *env, sandbox:offset
   {
+    break-unless curr-sandbox
     start:number <- get *curr-sandbox, starting-row-on-screen:offset
     found?:boolean <- equal click-row, start
     return-if found?, curr-sandbox
