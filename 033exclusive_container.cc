@@ -269,16 +269,36 @@ container bar [
   z:number
 ]
 def main [
-  local-scope
   1:number <- copy 0
   2:foo <- merge 1:number, 34
 ]
 +error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:number, 34'
 
+:(scenario merge_handles_exclusive_container_inside_exclusive_container)
+exclusive-container foo [
+  x:number
+  y:bar
+]
+exclusive-container bar [
+  a:number
+  b:number
+]
+def main [
+  1:number <- copy 0
+  2:bar <- merge 0/a, 34
+  4:foo <- merge 1/y, 2:bar
+]
++mem: storing 0 in location 5
++mem: storing 34 in location 6
+$error: 0
+
 :(before "End check_merge_call Cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
   trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
+  // easy case: exact match
+  if (types_strictly_match(container, inst.ingredients.at(ingredient_index)))
+    return;
   if (!is_literal(ingredients.at(ingredient_index))) {
     raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "' in '" << to_original_string(inst) << "'\n" << end();
     return;
