@@ -71,7 +71,7 @@ void update_refcounts(int old_address, int new_address, const type_tree* payload
 int payload_size(reagent/*copy*/ x) {
   x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   lookup_memory_core(x);
-  return size_of(x)+/*refcount*/1;
+  return size_of(x) + /*refcount*/1;
 }
 
 :(scenario refcounts_reflexive)
@@ -322,7 +322,7 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
 
 int payload_size(const type_tree* type) {
   assert(type->name == "address");
-  return size_of(type->right)+/*refcount*/1;
+  return size_of(type->right) + /*refcount*/1;
 }
 
 //: use metadata.address to update refcounts within containers, arrays and
