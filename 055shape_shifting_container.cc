@@ -253,7 +253,7 @@ replace_type_ingredients(element, type, info);
 replace_type_ingredients(element, type, info);
 :(before "Compute Container Address Offset(element)")
 replace_type_ingredients(element, type, info);
-if (contains_type_ingredient(element)) return true;  // error raised elsewhere
+if (contains_type_ingredient(element)) return;  // error raised elsewhere
 
 :(code)
 void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {

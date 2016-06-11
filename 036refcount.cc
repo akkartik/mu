@@ -263,30 +263,25 @@ void compute_container_address_offsets(type_tree* type) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
     trace(9994, "transform") << "compute address offsets for container " << info.name << end();
-    if (!append_addresses(0, type, metadata.address, metadata))
-      return;  // error
+    append_addresses(0, type, metadata.address, metadata);
   }
   if (info.kind == EXCLUSIVE_CONTAINER) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.maybe_address.empty()) return;
     trace(9994, "transform") << "compute address offsets for exclusive container " << info.name << end();
-    for (int tag = 0; tag < SIZE(info.elements); ++tag) {
-      if (!append_addresses(/*skip tag offset*/1, variant_type(type, tag).type, get_or_insert(metadata.maybe_address, pair<int, int>(/*tag offset*/0, tag)), metadata))
-        return;  // error
-    }
+    for (int tag = 0; tag < SIZE(info.elements); ++tag)
+      append_addresses(/*skip tag offset*/1, variant_type(type, tag).type, get_or_insert(metadata.maybe_address, pair<int, int>(/*tag offset*/0, tag)), metadata);
   }
 }
 
-// returns false on error (raised elsewhere)
-//: error status is used in later layers
-bool append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out, container_metadata& out_metadata) {
+void append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out, container_metadata& out_metadata) {
   const type_info& info = get(Type, type->value);
   if (type->name == "address") {
     assert(type->right && type->right->name != "array");  // array types can't be handled without a full reagent and its value
     out.push_back(address_element_info(base_offset, new type_tree(*type->right)));
-    return true;
+    return;
   }
-  if (info.kind == PRIMITIVE) return true;
+  if (info.kind == PRIMITIVE) return;
   for (int curr_index = 0, curr_offset = base_offset; curr_index < SIZE(info.elements); ++curr_index) {
     trace(9993, "transform") << "checking container " << type->name << ", element " << curr_index << end();
     reagent/*copy*/ element = element_type(type, curr_index);
@@ -297,18 +292,15 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
       ++curr_offset;
     }
     else if (is_mu_container(element)) {
-      if (!append_addresses(curr_offset, element.type, out, out_metadata))
-        return false;  // error
+      append_addresses(curr_offset, element.type, out, out_metadata);
       curr_offset += size_of(element);
     }
     else if (is_mu_exclusive_container(element)) {
       const type_info& element_info = get(Type, element.type->value);
       for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
         vector<address_element_info>& tmp = get_or_insert(out_metadata.maybe_address, pair<int, int>(curr_offset, tag));
-        if (tmp.empty()) {
-          if (!append_addresses(curr_offset+1, variant_type(element.type, tag).type, tmp, out_metadata))
-            return false;  // error
-        }
+        if (tmp.empty())
+          append_addresses(curr_offset+1, variant_type(element.type, tag).type, tmp, out_metadata);
       }
       curr_offset += size_of(element);
     }
@@ -317,7 +309,6 @@ bool append_addresses(int base_offset, const type_tree* type, vector<address_ele
       ++curr_offset;
     }
   }
-  return true;
 }
 
 int payload_size(const type_tree* type) {
