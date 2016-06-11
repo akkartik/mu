@@ -92,14 +92,12 @@ def main [
 ]
 +mem: storing 0 in location 7
 
-//: Global data structure for container metadata.
 //: Can't put this in type_info because later layers will add support for more
 //: complex type trees where metadata depends on *combinations* of types.
-
 :(before "struct reagent")
 struct container_metadata {
   int size;
-  vector<int> offset;
+  vector<int> offset;  // not used by exclusive containers
   // End container_metadata Fields
   container_metadata() :size(0) {
     // End container_metadata Constructor

@@ -222,12 +222,49 @@ struct address_element_info {
     return *this;
   }
 };
-:(before "struct container_metadata ")
-// valid fields for containers: size, offset, address, maybe_address (if container directly or indirectly contains exclusive containers with addresses)
-// valid fields for exclusive containers: size, maybe_address
+
+// For exclusive containers we might sometimes have an address at some offset
+// if some other offset has a specific tag. This struct encapsulates such
+// guards.
+struct tag_condition_info {
+  int offset;
+  int tag;
+  tag_condition_info(int o, int t) :offset(o), tag(t) {}
+};
+
 :(before "End container_metadata Fields")
-vector<address_element_info> address;  // list of offsets containing addresses, and the sizes of their corresponding payloads
-map<pair</*offset*/int, /*tag*/int>, vector<address_element_info> > maybe_address;
+// a list of facts of the form:
+//
+//  IF offset o1 has tag t2 AND offset o2 has tag t2 AND .., THEN
+//    for all address_element_infos:
+//      you need to update refcounts for the address at offset pointing to a payload of type payload_type (just in case we need to abandon something in the process)
+map<set<tag_condition_info>, set<address_element_info> > address;
+:(code)
+bool operator<(const set<tag_condition_info>& a, const set<tag_condition_info>& b) {
+  if (a.size() != b.size()) return a.size() < b.size();
+  for (set<tag_condition_info>::const_iterator pa = a.begin(), pb = b.begin();  pa != a.end();  ++pa, ++pb) {
+    if (pa->offset != pb->offset) return pa->offset < pb->offset;
+    if (pa->tag != pb->tag) return pa->tag < pb->tag;
+  }
+  return false;  // equal
+}
+bool operator<(const tag_condition_info& a, const tag_condition_info& b) {
+  if (a.offset != b.offset) return a.offset < b.offset;
+  if (a.tag != b.tag) return a.tag < b.tag;
+  return false;  // equal
+}
+bool operator<(const set<address_element_info>& a, const set<address_element_info>& b) {
+  if (a.size() != b.size()) return a.size() < b.size();
+  for (set<address_element_info>::const_iterator pa = a.begin(), pb = b.begin();  pa != a.end();  ++pa, ++pb) {
+    if (pa->offset != pb->offset) return pa->offset < pb->offset;
+  }
+  return false;  // equal
+}
+bool operator<(const address_element_info& a, const address_element_info& b) {
+  if (a.offset != b.offset) return a.offset < b.offset;
+  return false;  // equal
+}
+
 
 //: populate metadata.address in a separate transform, because it requires
 //: already knowing the sizes of all types
@@ -263,22 +300,24 @@ void compute_container_address_offsets(type_tree* type) {
     container_metadata& metadata = get(Container_metadata, type);
     if (!metadata.address.empty()) return;
     trace(9994, "transform") << "compute address offsets for container " << info.name << end();
-    append_addresses(0, type, metadata.address, metadata);
+    append_addresses(0, type, metadata.address, set<tag_condition_info>());
   }
   if (info.kind == EXCLUSIVE_CONTAINER) {
     container_metadata& metadata = get(Container_metadata, type);
-    if (!metadata.maybe_address.empty()) return;
     trace(9994, "transform") << "compute address offsets for exclusive container " << info.name << end();
-    for (int tag = 0; tag < SIZE(info.elements); ++tag)
-      append_addresses(/*skip tag offset*/1, variant_type(type, tag).type, get_or_insert(metadata.maybe_address, pair<int, int>(/*tag offset*/0, tag)), metadata);
+    for (int tag = 0; tag < SIZE(info.elements); ++tag) {
+      set<tag_condition_info> key;
+      key.insert(tag_condition_info(/*tag is at offset*/0, tag));
+      append_addresses(/*skip tag offset*/1, variant_type(type, tag).type, metadata.address, key);
+    }
   }
 }
 
-void append_addresses(int base_offset, const type_tree* type, vector<address_element_info>& out, container_metadata& out_metadata) {
+void append_addresses(int base_offset, const type_tree* type, map<set<tag_condition_info>, set<address_element_info> >& out, const set<tag_condition_info>& key) {
   const type_info& info = get(Type, type->value);
   if (type->name == "address") {
     assert(type->right && type->right->name != "array");  // array types can't be handled without a full reagent and its value
-    out.push_back(address_element_info(base_offset, new type_tree(*type->right)));
+    get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
     return;
   }
   if (info.kind == PRIMITIVE) return;
@@ -288,19 +327,21 @@ void append_addresses(int base_offset, const type_tree* type, vector<address_ele
     // Compute Container Address Offset(element)
     if (is_mu_address(element)) {
       trace(9993, "transform") << "address at offset " << curr_offset << end();
-      out.push_back(address_element_info(curr_offset, new type_tree(*element.type->right)));
+      get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*element.type->right)));
       ++curr_offset;
     }
     else if (is_mu_container(element)) {
-      append_addresses(curr_offset, element.type, out, out_metadata);
+      append_addresses(curr_offset, element.type, out, key);
       curr_offset += size_of(element);
     }
     else if (is_mu_exclusive_container(element)) {
       const type_info& element_info = get(Type, element.type->value);
       for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
-        vector<address_element_info>& tmp = get_or_insert(out_metadata.maybe_address, pair<int, int>(curr_offset, tag));
+        set<tag_condition_info> new_key = key;
+        new_key.insert(tag_condition_info(curr_offset, tag));
+        set<address_element_info>& tmp = get_or_insert(out, new_key);
         if (tmp.empty())
-          append_addresses(curr_offset+1, variant_type(element.type, tag).type, tmp, out_metadata);
+          append_addresses(curr_offset+/*skip tag*/1, variant_type(element.type, tag).type, out, new_key);
       }
       curr_offset += size_of(element);
     }
@@ -341,17 +382,19 @@ if (is_mu_container(product) || is_mu_exclusive_container(product)) {
 void update_container_refcounts(const reagent& x, const vector<double>& data) {
   assert(is_mu_container(x) || is_mu_exclusive_container(x));
   const container_metadata& metadata = get(Container_metadata, x.type);
-  for (int i = 0; i < SIZE(metadata.address); ++i) {
-    const address_element_info& info = metadata.address.at(i);
-    update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type)+/*refcount*/1);
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+    if (!all_match(data, p->first)) continue;
+    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
+      update_refcounts(get_or_insert(Memory, x.value + info->offset), data.at(info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
   }
-  for (map<pair<int, int>, vector<address_element_info> >::const_iterator p = metadata.maybe_address.begin(); p != metadata.maybe_address.end(); ++p) {
-    if (data.at(p->first.first) != p->first.second) continue;
-    for (int i = 0; i < SIZE(p->second); ++i) {
-      const address_element_info& info = p->second.at(i);
-      update_refcounts(get_or_insert(Memory, x.value + info.offset), data.at(info.offset), info.payload_type, size_of(info.payload_type)+/*refcount*/1);
-    }
+}
+
+bool all_match(const vector<double>& data, const set<tag_condition_info>& conditions) {
+  for (set<tag_condition_info>::const_iterator p = conditions.begin(); p != conditions.end(); ++p) {
+    if (data.at(p->offset) != p->tag)
+      return false;
   }
+  return true;
 }
 
 :(scenario refcounts_put_container)
