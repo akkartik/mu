@@ -320,34 +320,42 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
     get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
     return;
   }
-  if (info.kind == PRIMITIVE) return;
-  for (int curr_index = 0, curr_offset = base_offset; curr_index < SIZE(info.elements); ++curr_index) {
-    trace(9993, "transform") << "checking container " << type->name << ", element " << curr_index << end();
-    reagent/*copy*/ element = element_type(type, curr_index);
-    // Compute Container Address Offset(element)
-    if (is_mu_address(element)) {
-      trace(9993, "transform") << "address at offset " << curr_offset << end();
-      get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*element.type->right)));
-      ++curr_offset;
-    }
-    else if (is_mu_container(element)) {
-      append_addresses(curr_offset, element.type, out, key);
-      curr_offset += size_of(element);
-    }
-    else if (is_mu_exclusive_container(element)) {
-      const type_info& element_info = get(Type, element.type->value);
-      for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
-        set<tag_condition_info> new_key = key;
-        new_key.insert(tag_condition_info(curr_offset, tag));
-        set<address_element_info>& tmp = get_or_insert(out, new_key);
-        if (tmp.empty())
-          append_addresses(curr_offset+/*skip tag*/1, variant_type(element.type, tag).type, out, new_key);
+  if (info.kind == CONTAINER) {
+    for (int curr_index = 0, curr_offset = base_offset; curr_index < SIZE(info.elements); ++curr_index) {
+      trace(9993, "transform") << "checking container " << type->name << ", element " << curr_index << end();
+      reagent/*copy*/ element = element_type(type, curr_index);
+      // Compute Container Address Offset(element)
+      if (is_mu_address(element)) {
+        trace(9993, "transform") << "address at offset " << curr_offset << end();
+        get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*element.type->right)));
+        ++curr_offset;
       }
-      curr_offset += size_of(element);
+      else if (is_mu_container(element)) {
+        append_addresses(curr_offset, element.type, out, key);
+        curr_offset += size_of(element);
+      }
+      else if (is_mu_exclusive_container(element)) {
+        const type_info& element_info = get(Type, element.type->value);
+        for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
+          set<tag_condition_info> new_key = key;
+          new_key.insert(tag_condition_info(curr_offset, tag));
+          if (!contains_key(out, new_key))
+            append_addresses(curr_offset+/*skip tag*/1, variant_type(element.type, tag).type, out, new_key);
+        }
+        curr_offset += size_of(element);
+      }
+      else {
+        // non-address primitive
+        ++curr_offset;
+      }
     }
-    else {
-      // non-address primitive
-      ++curr_offset;
+  }
+  else if (info.kind == EXCLUSIVE_CONTAINER) {
+    for (int tag = 0; tag < SIZE(info.elements); ++tag) {
+      set<tag_condition_info> new_key = key;
+      new_key.insert(tag_condition_info(base_offset, tag));
+      if (!contains_key(out, new_key))
+        append_addresses(base_offset+/*skip tag*/1, variant_type(type, tag).type, out, new_key);
     }
   }
 }
@@ -552,6 +560,28 @@ def main [
 +mem: incrementing refcount of 1000: 2 -> 3
 +run: {17: "foo"} <- copy {13: "foo"}
 +mem: incrementing refcount of 1000: 3 -> 4
+
+:(scenario refcounts_copy_exclusive_container_within_exclusive_container)
+exclusive-container foo [
+  a:number
+  b:bar
+]
+exclusive-container bar [
+  x:number
+  y:address:number
+]
+def main [
+  1:address:number <- new number:type
+  10:foo <- merge 1/b, 1/y, 1:address:number
+  20:foo <- copy 10:foo
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
+# no change while merging items of other types
++run: {10: "foo"} <- merge {1: "literal", "b": ()}, {1: "literal", "y": ()}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {20: "foo"} <- copy {10: "foo"}
++mem: incrementing refcount of 1000: 2 -> 3
 
 :(code)
 bool is_mu_container(const reagent& r) {
