@@ -218,12 +218,8 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   string label, contents;
   split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
-    if (label != p->label)
-      continue;
-
-    if (contents != trim(p->contents))
-      continue;
-
+    if (label != p->label) continue;
+    if (contents != trim(p->contents)) continue;
     ++curr_expected_line;
     while (curr_expected_line < SIZE(expected_lines) && expected_lines.at(curr_expected_line).empty())
       ++curr_expected_line;
@@ -232,8 +228,14 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   }
 
   ++Num_failures;
-  cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
-  DUMP(label);
+  if (line_exists_anywhere(label, contents)) {
+    cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): line [" << label << ": " << contents << "] out of order in trace:\n";
+    DUMP("");
+  }
+  else {
+    cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): missing [" << contents << "] in trace:\n";
+    DUMP(label);
+  }
   Passed = false;
   return false;
 }
@@ -249,6 +251,14 @@ void split_label_contents(const string& s, string* label, string* contents) {
     *label = trim(s.substr(0, pos));
     *contents = trim(s.substr(pos+SIZE(delim)));
   }
+}
+
+bool line_exists_anywhere(const string& label, const string& contents) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (label != p->label) continue;
+    if (contents == trim(p->contents)) return true;
+  }
+  return false;
 }
 
 
