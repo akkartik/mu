@@ -313,6 +313,7 @@ void append_addresses(int base_offset, const type_tree* type, vector<address_ele
 
 int payload_size(const type_tree* type) {
   assert(type->name == "address");
+  assert(type->right->name != "array");
   return size_of(type->right) + /*refcount*/1;
 }
 
