@@ -273,14 +273,14 @@ def main [
   1:number <- copy 0
   2:foo <- merge 1:number, 34
 ]
-+error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo'
++error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:number, 34'
 
-:(before "End valid_merge Cases")
+:(before "End check_merge_call Cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
   trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
   if (!is_literal(ingredients.at(ingredient_index))) {
-    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "'\n" << end();
+    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "' in '" << to_original_string(inst) << "'\n" << end();
     return;
   }
   reagent/*copy*/ ingredient = ingredients.at(ingredient_index);  // unnecessary copy just to keep this function from modifying caller
