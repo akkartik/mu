@@ -64,6 +64,10 @@ case CALL: {
     trace("trace") << "indirect 'call': incrementing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
+  if (!ingredients.at(0).at(0)) {
+    raise << maybe(current_recipe_name()) << "tried to call empty recipe in '" << to_string(current_instruction()) << "'" << end();
+    break;
+  }
   const instruction& caller_instruction = current_instruction();
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee

@@ -72,7 +72,7 @@ after <global-touch> [
     delete?, env <- try-delete-sandbox click-row, env
     break-unless delete?
     hide-screen screen
-    screen <- render-sandbox-side screen, env
+    screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     loop +next-event:label
@@ -154,7 +154,7 @@ scenario deleting-sandbox-after-scroll [
   1:address:array:character <- new []
   2:address:array:character <- new []
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -200,7 +200,7 @@ scenario deleting-top-sandbox-after-scroll [
   1:address:array:character <- new []
   2:address:array:character <- new []
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -246,7 +246,7 @@ scenario deleting-final-sandbox-after-scroll [
   1:address:array:character <- new []
   2:address:array:character <- new []
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -294,7 +294,7 @@ scenario deleting-updates-sandbox-count [
   1:address:array:character <- new []
   2:address:array:character <- new []
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes
   assume-console [
     press ctrl-n

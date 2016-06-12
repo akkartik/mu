@@ -10,7 +10,7 @@ def! main [
   initial-sandbox:address:array:character <- new []
   hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
-  render-all 0/screen, env
+  render-all 0/screen, env, render
   event-loop 0/screen, 0/console, env
   # never gets here
 ]
@@ -111,7 +111,7 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
       {
         break-if more-events?
         env, screen <- resize screen, env
-        screen <- render-all screen, env
+        screen <- render-all screen, env, render
         render-all-on-no-more-events? <- copy 0/false  # full render done
       }
       loop +next-event:label
@@ -136,14 +136,14 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
           {
             break-unless render-all-on-no-more-events?
             # no more events, and we have to force render
-            screen <- render-all screen, env
+            screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
             jump +finish-event:label
           }
           # no more events, no force render
           {
             break-unless render?
-            screen <- render-recipes screen, env
+            screen <- render-recipes screen, env, render
             jump +finish-event:label
           }
         }
@@ -164,14 +164,14 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
           {
             break-unless render-all-on-no-more-events?
             # no more events, and we have to force render
-            screen <- render-all screen, env
+            screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
             jump +finish-event:label
           }
           # no more events, no force render
           {
             break-unless render?
-            screen <- render-sandbox-side screen, env
+            screen <- render-sandbox-side screen, env, render
             jump +finish-event:label
           }
         }
@@ -241,7 +241,7 @@ scenario edit-multiple-editors [
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # type one letter in each of them
   assume-console [
     left-click 1, 1
@@ -286,7 +286,7 @@ scenario multiple-editors-cover-only-their-own-areas [
     1:address:array:character <- new [abc]
     2:address:array:character <- new [def]
     3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-    render-all screen, 3:address:programming-environment-data
+    render-all screen, 3:address:programming-environment-data, render
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -304,7 +304,7 @@ scenario editor-in-focus-keeps-cursor [
   1:address:array:character <- new [abc]
   2:address:array:character <- new [def]
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   # initialize programming environment and highlight cursor
   assume-console []
   run [
@@ -338,14 +338,14 @@ scenario editor-in-focus-keeps-cursor [
 ]
 
 scenario backspace-in-sandbox-editor-joins-lines [
-  trace-until 100/app  # trace too long
+#?   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
   1:address:array:character <- new []
   2:address:array:character <- new [abc
 def]
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
-  render-all screen, 3:address:programming-environment-data
+  render-all screen, 3:address:programming-environment-data, render
   screen-should-contain [
     .           run (F4)           .
     .               ┊abc           .
@@ -372,7 +372,7 @@ def]
   ]
 ]
 
-def render-all screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+def render-all screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -392,8 +392,8 @@ def render-all screen:address:screen, env:address:programming-environment-data -
   height:number <- screen-height screen
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   #
-  screen <- render-recipes screen, env
-  screen <- render-sandbox-side screen, env
+  screen <- render-recipes screen, env, render-editor
+  screen <- render-sandbox-side screen, env, render-editor
   <render-components-end>
   #
   recipes:address:editor-data <- get *env, recipes:offset
@@ -404,7 +404,7 @@ def render-all screen:address:screen, env:address:programming-environment-data -
   show-screen screen
 ]
 
-def render-recipes screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+def render-recipes screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render recipes]
@@ -412,7 +412,7 @@ def render-recipes screen:address:screen, env:address:programming-environment-da
   # render recipes
   left:number <- get *recipes, left:offset
   right:number <- get *recipes, right:offset
-  row:number, column:number, screen <- render screen, recipes
+  row:number, column:number, screen <- call render-editor, screen, recipes
   clear-line-until screen, right
   row <- add row, 1
   <render-recipe-components-end>
@@ -423,13 +423,13 @@ def render-recipes screen:address:screen, env:address:programming-environment-da
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+def render-sandbox-side screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
-  row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
+  row:number, column:number, screen, current-sandbox <- call render-editor, screen, current-sandbox
   clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
@@ -586,7 +586,7 @@ after <global-type> [
   {
     redraw-screen?:boolean <- equal c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:address:programming-environment-data
+    screen <- render-all screen, env:address:programming-environment-data, render
     sync-screen screen
     loop +next-event:label
   }

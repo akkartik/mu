@@ -201,7 +201,7 @@ after <global-touch> [
     x <- not x
     *sandbox <- put *sandbox, display-trace?:offset, x
     hide-screen screen
-    screen <- render-sandbox-side screen, env, 1/clear
+    screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     # no change in cursor
     show-screen screen
