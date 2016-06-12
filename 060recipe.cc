@@ -136,11 +136,19 @@ recipe from_reagent(const reagent& r) {
       curr = curr->right;  // skip delimiter
       break;
     }
-    result_header.ingredients.push_back("recipe:"+curr->name);
+    result_header.ingredients.push_back(next_recipe_reagent(curr));
   }
   for (; curr; curr=curr->right)
-    result_header.products.push_back("recipe:"+curr->name);
+    result_header.products.push_back(next_recipe_reagent(curr));
   return result_header;
+}
+
+reagent next_recipe_reagent(const type_tree* curr) {
+  if (!curr->left) return reagent("recipe:"+curr->name);
+  reagent result;
+  result.name = "recipe";
+  result.type = new type_tree(*curr->left);
+  return result;
 }
 
 bool is_mu_recipe(const reagent& r) {
@@ -195,6 +203,19 @@ if (is_mu_recipe(to)) {
   }
   return true;
 }
+
+:(scenario call_variable_compound_ingredient)
+def main [
+  {1: (recipe (address number) -> number)} <- copy f
+  2:address:number <- copy 0
+  3:number <- call {1: (recipe (address number) -> number)}, 2:address:number
+]
+def f x:address:number -> y:number [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
+$error: 0
 
 //: make sure we don't accidentally break on a function literal
 :(scenario jump_forbidden_on_recipe_literals)
