@@ -260,14 +260,14 @@ vector<recipe_ordinal> strictly_matching_variants_except_literal_zero_against_ad
 bool all_header_reagents_strictly_match_except_literal_zero_against_address(const instruction& inst, const recipe& variant) {
   for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_strictly_match_except_literal_zero_against_address(variant.ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "strict match failed: ingredient " << i << end();
+      trace(9993, "transform") << "match failed: ingredient " << i << end();
       return false;
     }
   }
   for (int i = 0; i < min(SIZE(inst.products), SIZE(variant.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_strictly_match(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "strict match failed: product " << i << end();
+      trace(9993, "transform") << "match failed: product " << i << end();
       return false;
     }
   }
@@ -295,14 +295,14 @@ vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address
 bool all_header_reagents_strictly_match_except_literal_against_address_or_boolean(const instruction& inst, const recipe& variant) {
   for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_strictly_match_except_literal_against_address_or_boolean(variant.ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "strict match failed: ingredient " << i << end();
+      trace(9993, "transform") << "match failed: ingredient " << i << end();
       return false;
     }
   }
   for (int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_strictly_match_except_literal_against_address_or_boolean(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "strict match failed: product " << i << end();
+      trace(9993, "transform") << "match failed: product " << i << end();
       return false;
     }
   }
@@ -331,14 +331,14 @@ vector<recipe_ordinal> matching_variants(const instruction& inst, vector<recipe_
 bool all_header_reagents_match(const instruction& inst, const recipe& variant) {
   for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!types_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "strict match failed: ingredient " << i << end();
+      trace(9993, "transform") << "match failed: ingredient " << i << end();
       return false;
     }
   }
   for (int i = 0; i < min(SIZE(variant.products), SIZE(inst.products)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!types_match(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "strict match failed: product " << i << end();
+      trace(9993, "transform") << "match failed: product " << i << end();
       return false;
     }
   }
