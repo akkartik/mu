@@ -7,7 +7,7 @@ def! main [
   hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-sandbox
   env <- restore-sandboxes env
-  render-sandbox-side 0/screen, env
+  render-sandbox-side 0/screen, env, render
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   update-cursor 0/screen, current-sandbox, env
   show-screen 0/screen
@@ -95,8 +95,8 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
       }
       {
         break-if more-events?
-        env <- resize screen, env
-        screen <- render-all screen, env
+        env, screen <- resize screen, env
+        screen <- render-all screen, env, render-without-moving-cursor
         render-all-on-no-more-events? <- copy 0/false  # full render done
       }
       loop +next-event:label
@@ -118,14 +118,14 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
         {
           break-unless render-all-on-no-more-events?
           # no more events, and we have to force render
-          screen <- render-all screen, env
+          screen <- render-all screen, env, render
           render-all-on-no-more-events? <- copy 0/false
           jump +finish-event:label
         }
         # no more events, no force render
         {
           break-unless render?
-          screen <- render-sandbox-side screen, env
+          screen <- render-sandbox-side screen, env, render
           jump +finish-event:label
         }
       }
@@ -151,7 +151,90 @@ def resize screen:address:screen, env:address:programming-environment-data -> en
   *current-sandbox <- put *current-sandbox, cursor-column:offset, 0
 ]
 
-def render-all screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+# Variant of 'render' that updates cursor-row and cursor-column based on
+# before-cursor (rather than the other way around). If before-cursor moves
+# off-screen, it resets cursor-row and cursor-column.
+def render-without-moving-cursor screen:address:screen, editor:address:editor-data -> last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
+  local-scope
+  load-ingredients
+  return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  left:number <- get *editor, left:offset
+  screen-height:number <- screen-height screen
+  right:number <- get *editor, right:offset
+  curr:address:duplex-list:character <- get *editor, top-of-screen:offset
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr <- next curr
+  +render-loop-initialization
+  color:number <- copy 7/white
+  row:number <- copy 1/top
+  column:number <- copy left
+  # save before-cursor
+  old-before-cursor:address:duplex-list:character <- get *editor, before-cursor:offset
+  # initialze cursor-row/cursor-column/before-cursor to the top of the screen
+  # by default
+  *editor <- put *editor, cursor-row:offset, row
+  *editor <- put *editor, cursor-column:offset, column
+  top-of-screen:address:duplex-list:character <- get *editor, top-of-screen:offset
+  *editor <- put *editor, before-cursor:offset, top-of-screen
+  screen <- move-cursor screen, row, column
+  {
+    +next-character
+    break-unless curr
+    off-screen?:boolean <- greater-or-equal row, screen-height
+    break-if off-screen?
+    # if we find old-before-cursor still on the new resized screen, update
+    # editor-data.cursor-row and editor-data.cursor-column based on
+    # old-before-cursor
+    {
+      at-cursor?:boolean <- equal old-before-cursor, prev
+      break-unless at-cursor?
+      *editor <- put *editor, cursor-row:offset, row
+      *editor <- put *editor, cursor-column:offset, column
+      *editor <- put *editor, before-cursor:offset, old-before-cursor
+    }
+    c:character <- get *curr, value:offset
+    <character-c-received>
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      clear-line-until screen, right
+      # skip to next line
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      curr <- next curr
+      prev <- next prev
+      loop +next-character:label
+    }
+    {
+      # at right? wrap. even if there's only one more letter left; we need
+      # room for clicking on the cursor after it.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment curr
+      loop +next-character:label
+    }
+    print screen, c, color
+    curr <- next curr
+    prev <- next prev
+    column <- add column, 1
+    loop
+  }
+  # save first character off-screen
+  *editor <- put *editor, bottom-of-screen:offset, curr
+  *editor <- put *editor, bottom:offset, row
+  return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+]
+
+def render-all screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -166,7 +249,7 @@ def render-all screen:address:screen, env:address:programming-environment-data -
   screen <- move-cursor screen, 0/row, button-start
   print screen, [ run (F4) ], 255/white, 161/reddish
   #
-  screen <- render-sandbox-side screen, env
+  screen <- render-sandbox-side screen, env, render-editor
   <render-components-end>
   #
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
@@ -176,13 +259,13 @@ def render-all screen:address:screen, env:address:programming-environment-data -
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+def render-sandbox-side screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   left:number <- get *current-sandbox, left:offset
   right:number <- get *current-sandbox, right:offset
-  row:number, column:number, screen, current-sandbox <- render screen, current-sandbox
+  row:number, column:number, screen, current-sandbox <- call render-editor, screen, current-sandbox
   clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
@@ -331,7 +414,7 @@ after <global-type> [
   {
     redraw-screen?:boolean <- equal c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:address:programming-environment-data
+    screen <- render-all screen, env:address:programming-environment-data, render
     sync-screen screen
     loop +next-event:label
   }

@@ -112,7 +112,7 @@ after <global-keypress> [
     error?:boolean, env, screen <- run-sandboxes env, screen, test-recipes
 #?     test-recipes <- copy 0  # abandon
     # F4 might update warnings and results on both sides
-    screen <- render-all screen, env
+    screen <- render-all screen, env, render
     {
       break-if error?
       screen <- update-status screen, [                 ], 245/grey
@@ -218,7 +218,7 @@ def save-sandboxes env:address:programming-environment-data [
   }
 ]
 
-def! render-sandbox-side screen:address:screen, env:address:programming-environment-data -> screen:address:screen, env:address:programming-environment-data [
+def! render-sandbox-side screen:address:screen, env:address:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:address:screen, env:address:programming-environment-data [
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
@@ -231,7 +231,7 @@ def! render-sandbox-side screen:address:screen, env:address:programming-environm
   {
     render-current-sandbox?:boolean <- equal render-from, -1
     break-unless render-current-sandbox?
-    row, column, screen, current-sandbox <- render screen, current-sandbox
+    row, column, screen, current-sandbox <- call render-editor, screen, current-sandbox
     clear-screen-from screen, row, column, left, right
     row <- add row, 1
   }
@@ -568,7 +568,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   # initialize
   1:address:array:character <- new [add 2, 2]
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
-  render-all screen, 2:address:programming-environment-data
+  render-all screen, 2:address:programming-environment-data, render
   assume-console [
     # create a sandbox
     press F4
@@ -644,7 +644,7 @@ after <global-keypress> [
       *env <- put *env, render-from:offset, render-from
     }
     hide-screen screen
-    screen <- render-sandbox-side screen, env
+    screen <- render-sandbox-side screen, env, render
     show-screen screen
     jump +finish-event:label
   }
@@ -673,7 +673,7 @@ after <global-keypress> [
     render-from <- subtract render-from, 1
     *env <- put *env, render-from:offset, render-from
     hide-screen screen
-    screen <- render-sandbox-side screen, env
+    screen <- render-sandbox-side screen, env, render
     show-screen screen
     jump +finish-event:label
   }
@@ -704,7 +704,7 @@ scenario scrolling-through-multiple-sandboxes [
   # initialize environment
   1:address:array:character <- new []
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
-  render-all screen, 2:address:programming-environment-data
+  render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes
   assume-console [
     press ctrl-n
@@ -865,7 +865,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   # initialize environment
   1:address:array:character <- new []
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
-  render-all screen, 2:address:programming-environment-data
+  render-all screen, 2:address:programming-environment-data, render
   # create a sandbox
   assume-console [
     press ctrl-n

@@ -57,7 +57,7 @@ after <global-touch> [
     edit?, env <- try-edit-sandbox click-row, env
     break-unless edit?
     hide-screen screen
-    screen <- render-sandbox-side screen, env
+    screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env
     show-screen screen
     loop +next-event:label
@@ -148,7 +148,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   # initialize environment
   1:address:array:character <- new []
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
-  render-all screen, 2:address:programming-environment-data
+  render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -195,7 +195,7 @@ scenario editing-sandbox-updates-sandbox-count [
   # initialize environment
   1:address:array:character <- new []
   2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
-  render-all screen, 2:address:programming-environment-data
+  render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
