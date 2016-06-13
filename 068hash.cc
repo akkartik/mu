@@ -22,7 +22,7 @@ case HASH: {
 }
 :(before "End Primitive Recipe Implementations")
 case HASH: {
-  reagent/*copy*/ input = current_instruction().ingredients.at(0);
+  const reagent& input = current_instruction().ingredients.at(0);
   products.resize(1);
   products.at(0).push_back(hash(0, input));
   break;
@@ -31,7 +31,7 @@ case HASH: {
 //: in all the code below, the intermediate results of hashing are threaded through 'h'
 
 :(code)
-size_t hash(size_t h, reagent& r) {
+size_t hash(size_t h, reagent/*copy*/ r) {
   canonize(r);
   if (is_mu_string(r))  // optimization
     return hash_mu_string(h, r);
