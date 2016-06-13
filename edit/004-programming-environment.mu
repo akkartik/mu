@@ -111,7 +111,7 @@ def event-loop screen:address:screen, console:address:console, env:address:progr
       {
         break-if more-events?
         env, screen <- resize screen, env
-        screen <- render-all screen, env, render
+        screen <- render-all screen, env, render-without-moving-cursor
         render-all-on-no-more-events? <- copy 0/false  # full render done
       }
       loop +next-event:label
@@ -207,6 +207,90 @@ def resize screen:address:screen, env:address:programming-environment-data -> en
   *current-sandbox <- put *current-sandbox, cursor-row:offset, 1
   *current-sandbox <- put *current-sandbox, cursor-column:offset, left
 ]
+
+# Variant of 'render' that updates cursor-row and cursor-column based on
+# before-cursor (rather than the other way around). If before-cursor moves
+# off-screen, it resets cursor-row and cursor-column.
+def render-without-moving-cursor screen:address:screen, editor:address:editor-data -> last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
+  local-scope
+  load-ingredients
+  return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  left:number <- get *editor, left:offset
+  screen-height:number <- screen-height screen
+  right:number <- get *editor, right:offset
+  curr:address:duplex-list:character <- get *editor, top-of-screen:offset
+  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr <- next curr
+  +render-loop-initialization
+  color:number <- copy 7/white
+  row:number <- copy 1/top
+  column:number <- copy left
+  # save before-cursor
+  old-before-cursor:address:duplex-list:character <- get *editor, before-cursor:offset
+  # initialze cursor-row/cursor-column/before-cursor to the top of the screen
+  # by default
+  *editor <- put *editor, cursor-row:offset, row
+  *editor <- put *editor, cursor-column:offset, column
+  top-of-screen:address:duplex-list:character <- get *editor, top-of-screen:offset
+  *editor <- put *editor, before-cursor:offset, top-of-screen
+  screen <- move-cursor screen, row, column
+  {
+    +next-character
+    break-unless curr
+    off-screen?:boolean <- greater-or-equal row, screen-height
+    break-if off-screen?
+    # if we find old-before-cursor still on the new resized screen, update
+    # editor-data.cursor-row and editor-data.cursor-column based on
+    # old-before-cursor
+    {
+      at-cursor?:boolean <- equal old-before-cursor, prev
+      break-unless at-cursor?
+      *editor <- put *editor, cursor-row:offset, row
+      *editor <- put *editor, cursor-column:offset, column
+      *editor <- put *editor, before-cursor:offset, old-before-cursor
+    }
+    c:character <- get *curr, value:offset
+    <character-c-received>
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      clear-line-until screen, right
+      # skip to next line
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      curr <- next curr
+      prev <- next prev
+      loop +next-character:label
+    }
+    {
+      # at right? wrap. even if there's only one more letter left; we need
+      # room for clicking on the cursor after it.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment curr
+      loop +next-character:label
+    }
+    print screen, c, color
+    curr <- next curr
+    prev <- next prev
+    column <- add column, 1
+    loop
+  }
+  # save first character off-screen
+  *editor <- put *editor, bottom-of-screen:offset, curr
+  *editor <- put *editor, bottom:offset, row
+  return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+]
+
 
 scenario point-at-multiple-editors [
   trace-until 100/app  # trace too long
