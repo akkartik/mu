@@ -57,6 +57,95 @@ def length l:address:list:_elem -> result:number [
   result <- add length-of-rest, 1
 ]
 
+# insert 'x' after 'in'
+def insert x:_elem, in:address:list:_elem -> in:address:list:_elem [
+  local-scope
+  load-ingredients
+  new-node:address:list:_elem <- new {(list _elem): type}
+  *new-node <- put *new-node, value:offset, x
+  next-node:address:list:_elem <- get *in, next:offset
+  *in <- put *in, next:offset, new-node
+  *new-node <- put *new-node, next:offset, next-node
+]
+
+scenario inserting-into-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    list2:address:list:character <- rest list  # inside list
+    list2 <- insert 6, list2
+    # check structure
+    list2 <- copy list
+    10:character/raw <- first list2
+    list2 <- rest list2
+    11:character/raw <- first list2
+    list2 <- rest list2
+    12:character/raw <- first list2
+    list2 <- rest list2
+    13:character/raw <- first list2
+  ]
+  memory-should-contain [
+    10 <- 5  # scanning next
+    11 <- 4
+    12 <- 6  # inserted element
+    13 <- 3
+  ]
+]
+
+scenario inserting-at-end-of-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    list2:address:list:character <- rest list  # inside list
+    list2 <- rest list2  # now at end of list
+    list2 <- insert 6, list2
+    # check structure like before
+    list2 <- copy list
+    10:character/raw <- first list2
+    list2 <- rest list2
+    11:character/raw <- first list2
+    list2 <- rest list2
+    12:character/raw <- first list2
+    list2 <- rest list2
+    13:character/raw <- first list2
+  ]
+  memory-should-contain [
+    10 <- 5  # scanning next
+    11 <- 4
+    12 <- 3
+    13 <- 6  # inserted element
+  ]
+]
+
+scenario inserting-after-start-of-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    list <- insert 6, list
+    # check structure like before
+    list2:address:list:character <- copy list
+    10:character/raw <- first list2
+    list2 <- rest list2
+    11:character/raw <- first list2
+    list2 <- rest list2
+    12:character/raw <- first list2
+    list2 <- rest list2
+    13:character/raw <- first list2
+  ]
+  memory-should-contain [
+    10 <- 5  # scanning next
+    11 <- 6  # inserted element
+    12 <- 4
+    13 <- 3
+  ]
+]
+
 def to-text in:address:list:_elem -> result:address:array:character [
   local-scope
   load-ingredients
