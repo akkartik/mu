@@ -325,7 +325,7 @@ scenario removing-from-end-of-duplex-list [
   ]
 ]
 
-scenario removing-from-singleton-list [
+scenario removing-from-singleton-duplex-list [
   run [
     local-scope
     list:address:duplex-list:character <- push 3, 0

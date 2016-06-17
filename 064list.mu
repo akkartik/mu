@@ -146,6 +146,118 @@ scenario inserting-after-start-of-list [
   ]
 ]
 
+# remove 'x' from its surrounding list 'in'
+#
+# Returns null if and only if list is empty. Beware: in that case any other
+# pointers to the head are now invalid.
+def remove x:address:list:_elem/contained-in:in, in:address:list:_elem -> in:address:list:_elem [
+  local-scope
+  load-ingredients
+  # if 'x' is null, return
+  return-unless x
+  next-node:address:list:_elem <- rest x
+  # clear next pointer of 'x'
+  *x <- put *x, next:offset, 0
+  # if 'x' is at the head of 'in', return the new head
+  at-head?:boolean <- equal x, in
+  return-if at-head?, next-node
+  # compute prev-node
+  prev-node:address:list:_elem <- copy in
+  curr:address:list:_elem <- rest prev-node
+  {
+    return-unless curr
+    found?:boolean <- equal curr, x
+    break-if found?
+    prev-node <- copy curr
+    curr <- rest curr
+  }
+  # set its next pointer to skip 'x'
+  *prev-node <- put *prev-node, next:offset, next-node
+]
+
+scenario removing-from-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    list2:address:list:character <- rest list  # second element
+    list <- remove list2, list
+    10:boolean/raw <- equal list2, 0
+    # check structure like before
+    list2 <- copy list
+    11:character/raw <- first list2
+    list2 <- rest list2
+    12:character/raw <- first list2
+    20:address:list:character/raw <- rest list2
+  ]
+  memory-should-contain [
+    10 <- 0  # remove returned non-null
+    11 <- 5  # scanning next, skipping deleted element
+    12 <- 3
+    20 <- 0  # no more elements
+  ]
+]
+
+scenario removing-from-start-of-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    list <- remove list, list
+    # check structure like before
+    list2:address:list:character <- copy list
+    10:character/raw <- first list2
+    list2 <- rest list2
+    11:character/raw <- first list2
+    20:address:list:character/raw <- rest list2
+  ]
+  memory-should-contain [
+    10 <- 4  # scanning next, skipping deleted element
+    11 <- 3
+    20 <- 0  # no more elements
+  ]
+]
+
+scenario removing-from-end-of-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- push 4, list
+    list <- push 5, list
+    # delete last element
+    list2:address:list:character <- rest list
+    list2 <- rest list2
+    list <- remove list2, list
+    10:boolean/raw <- equal list2, 0
+    # check structure like before
+    list2 <- copy list
+    11:character/raw <- first list2
+    list2 <- rest list2
+    12:character/raw <- first list2
+    20:address:list:character/raw <- rest list2
+  ]
+  memory-should-contain [
+    10 <- 0  # remove returned non-null
+    11 <- 5  # scanning next, skipping deleted element
+    12 <- 4
+    20 <- 0  # no more elements
+  ]
+]
+
+scenario removing-from-singleton-list [
+  run [
+    local-scope
+    list:address:list:character <- push 3, 0
+    list <- remove list, list
+    1:number/raw <- copy list
+  ]
+  memory-should-contain [
+    1 <- 0  # back to an empty list
+  ]
+]
+
 def to-text in:address:list:_elem -> result:address:array:character [
   local-scope
   load-ingredients
