@@ -128,7 +128,7 @@ container foo [
 :(before "End Load Container Element Definition")
 {
   const type_tree* type = info.elements.back().type;
-  if (type->name == "array") {
+  if (type && type->name == "array") {
     if (!type->right) {
       raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
       continue;
@@ -139,6 +139,16 @@ container foo [
     }
   }
 }
+
+:(scenario code_inside_container)
+container card [
+  rank:number <- next-ingredient
+]
+recipe foo [
+  1:card <- merge 3
+  2:number <- get 1:card rank:offset
+]
+# shouldn't die
 
 //:: To access elements of an array, use 'index'
 

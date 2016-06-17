@@ -588,6 +588,7 @@ bool is_mu_container(const reagent& r) {
   return is_mu_container(r.type);
 }
 bool is_mu_container(const type_tree* type) {
+  if (!type) return false;
   if (type->value == 0) return false;
   type_info& info = get(Type, type->value);
   return info.kind == CONTAINER;
@@ -597,6 +598,7 @@ bool is_mu_exclusive_container(const reagent& r) {
   return is_mu_exclusive_container(r.type);
 }
 bool is_mu_exclusive_container(const type_tree* type) {
+  if (!type) return false;
   if (type->value == 0) return false;
   type_info& info = get(Type, type->value);
   return info.kind == EXCLUSIVE_CONTAINER;
