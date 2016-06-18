@@ -141,6 +141,7 @@ container foo [
 }
 
 :(scenario code_inside_container)
+% Hide_errors = true;
 container card [
   rank:number <- next-ingredient
 ]

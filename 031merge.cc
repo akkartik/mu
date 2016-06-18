@@ -151,6 +151,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
       return;
     }
     reagent& container = state.data.top().container;
+    if (!container.type) return;  // error handled elsewhere
     type_info& container_info = get(Type, container.type->value);
     switch (container_info.kind) {
       case CONTAINER: {

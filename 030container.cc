@@ -327,6 +327,7 @@ const reagent element_type(const type_tree* type, int offset_value) {
   assert(!get(Type, type->value).name.empty());
   const type_info& info = get(Type, type->value);
   assert(info.kind == CONTAINER);
+  if (offset_value >= SIZE(info.elements)) return reagent();  // error handled elsewhere
   reagent/*copy*/ element = info.elements.at(offset_value);
   // End element_type Special-cases
   return element;
@@ -550,7 +551,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     put(Type_ordinal, name, Next_type_ordinal++);
   }
   trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
-  skip_bracket(in, "'container' must begin with '['");
+  skip_bracket(in, "'"+command+"' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   if (info.Num_calls_to_transform_all_at_first_definition == -1) {
     // initial definition of this container
@@ -567,6 +568,15 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
     if (element == "]") break;
+    if (in.peek() != '\n') {
+      raise << command << " '" << name << "' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.\n" << end();
+      // skip rest of container declaration
+      while (has_data(in)) {
+        skip_whitespace_and_comments(in);
+        if (next_word(in) == "]") break;
+      }
+      break;
+    }
     info.elements.push_back(reagent(element));
     replace_unknown_types_with_unique_ordinals(info.elements.back().type, info);
     trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
@@ -598,6 +608,13 @@ void skip_bracket(istream& in, string message) {
   if (in.get() != '[')
     raise << message << '\n' << end();
 }
+
+:(scenario multi_word_line_in_container_declaration)
+% Hide_errors = true;
+container foo [
+  x:number y:number
+]
++error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.
 
 //: ensure scenarios are consistent by always starting them at the same type
 //: number.
