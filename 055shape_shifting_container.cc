@@ -507,7 +507,7 @@ void test_replace_middle_type_ingredient_with_multiple3() {
 
 bool has_nth_type(const type_tree* base, int n) {
   assert(n >= 0);
-  if (base == NULL) return false;
+  if (!base) return false;
   if (n == 0) return true;
   return has_nth_type(base->right, n-1);
 }

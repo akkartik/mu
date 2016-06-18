@@ -292,18 +292,18 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*onl
 
 :(code)
 int size_of(const reagent& r) {
-  if (r.type == NULL) return 0;
+  if (!r.type) return 0;
   // End size_of(reagent r) Cases
   return size_of(r.type);
 }
 int size_of(const type_tree* type) {
-  if (type == NULL) return 0;
+  if (!type) return 0;
   // End size_of(type) Cases
   return 1;
 }
 
 bool size_mismatch(const reagent& x, const vector<double>& data) {
-  if (x.type == NULL) return true;
+  if (!x.type) return true;
   // End size_mismatch(x) Cases
 //?   if (size_of(x) != SIZE(data)) cerr << size_of(x) << " vs " << SIZE(data) << '\n';
   return size_of(x) != SIZE(data);
