@@ -11,7 +11,6 @@ using std::pair;
 
 #include<string>
 using std::string;
-const size_t NOT_FOUND = string::npos;
 
 #include<iostream>
 using std::istream;

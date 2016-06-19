@@ -133,8 +133,8 @@ vector<string> split(string s, string delim) {
   vector<string> result;
   string::size_type begin=0, end=s.find(delim);
   while (true) {
-    if (end == NOT_FOUND) {
-      result.push_back(string(s, begin, NOT_FOUND));
+    if (end == string::npos) {
+      result.push_back(string(s, begin, string::npos));
       break;
     }
     result.push_back(string(s, begin, end-begin));

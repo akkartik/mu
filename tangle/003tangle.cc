@@ -373,14 +373,14 @@ Line expected_not_in_trace(const Line& line) {
 
 list<Line>::iterator find_substr(list<Line>& in, const string& pat) {
   for (list<Line>::iterator p = in.begin(); p != in.end(); ++p)
-    if (p->contents.find(pat) != NOT_FOUND)
+    if (p->contents.find(pat) != string::npos)
       return p;
   return in.end();
 }
 
 list<Line>::iterator find_substr(list<Line>& in, list<Line>::iterator p, const string& pat) {
   for (; p != in.end(); ++p)
-    if (p->contents.find(pat) != NOT_FOUND)
+    if (p->contents.find(pat) != string::npos)
       return p;
   return in.end();
 }
@@ -400,7 +400,7 @@ string escape(string s) {
 }
 
 string replace_all(string s, const string& a, const string& b) {
-  for (size_t pos = s.find(a); pos != NOT_FOUND; pos = s.find(a, pos+b.size()))
+  for (size_t pos = s.find(a); pos != string::npos; pos = s.find(a, pos+b.size()))
     s = s.replace(pos, a.size(), b);
   return s;
 }
