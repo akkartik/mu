@@ -156,6 +156,10 @@ if (curr.name == "load-ingredients") {
     curr.clear();
   }
 }
+if (curr.name == "next-ingredient-without-typechecking") {
+  raise << maybe(result.name) << "never call 'next-ingredient-without-typechecking' directly\n" << end();
+  curr.clear();
+}
 
 //: internal version of next-ingredient; don't call this directly
 :(before "End Primitive Recipe Declarations")
