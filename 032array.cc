@@ -221,7 +221,7 @@ case INDEX: {
   // Update INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   type_tree* element_type = copy_array_element(base.type);
@@ -282,7 +282,7 @@ def main [
   7:number <- copy 16
   index 1:array:number:3, 4  # less than size of array in locations, but larger than its length in elements
 ]
-+error: main: invalid index 4
++error: main: invalid index 4 in 'index 1:array:number:3, 4'
 
 :(scenario index_out_of_bounds_2)
 % Hide_errors = true;
@@ -296,7 +296,7 @@ def main [
   7:number <- copy 16
   index 1:array:point, -1
 ]
-+error: main: invalid index -1
++error: main: invalid index -1 in 'index 1:array:point, -1'
 
 :(scenario index_product_type_mismatch)
 % Hide_errors = true;
