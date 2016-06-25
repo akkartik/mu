@@ -247,7 +247,7 @@ after <render-sandbox-results> [
     break-unless display-trace?
     sandbox-trace:address:array:character <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
-    row, screen <- render screen, sandbox-trace, left, right, 245/grey, row
+    row, screen <- render-text screen, sandbox-trace, left, right, 245/grey, row
   }
   <render-sandbox-trace-done>
 ]

@@ -188,11 +188,11 @@ after <render-sandbox-response> [
     response-is-expected?:boolean <- equal expected-response, sandbox-response
     {
       break-if response-is-expected?:boolean
-      row, screen <- render screen, sandbox-response, left, right, 1/red, row
+      row, screen <- render-text screen, sandbox-response, left, right, 1/red, row
     }
     {
       break-unless response-is-expected?:boolean
-      row, screen <- render screen, sandbox-response, left, right, 2/green, row
+      row, screen <- render-text screen, sandbox-response, left, right, 2/green, row
     }
     jump +render-sandbox-end:label
   }

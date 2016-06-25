@@ -116,9 +116,9 @@ after <render-sandbox-trace-done> [
     {
       break-unless env
       recipe-errors:address:array:character <- get *env, recipe-errors:offset
-      row, screen <- render screen, recipe-errors, left, right, 1/red, row
+      row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
     }
-    row, screen <- render screen, sandbox-errors, left, right, 1/red, row
+    row, screen <- render-text screen, sandbox-errors, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
   }

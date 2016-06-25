@@ -277,7 +277,7 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
     {
       break-unless empty-screen?
       <render-sandbox-response>
-      row, screen <- render screen, sandbox-response, left, right, 245/grey, row
+      row, screen <- render-text screen, sandbox-response, left, right, 245/grey, row
     }
     +render-sandbox-end
     at-bottom?:boolean <- greater-or-equal row, screen-height
@@ -338,6 +338,68 @@ def sandbox-menu-columns left:number, right:number -> edit-button-left:number, e
   copy-button-right:number <- subtract delete-button-left, 1
 ]
 
+# print a text 's' to 'editor' in 'color' starting at 'row'
+# clear rest of last line, move cursor to next line
+def render-text screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
+  local-scope
+  load-ingredients
+  return-unless s
+  column:number <- copy left
+  screen <- move-cursor screen, row, column
+  screen-height:number <- screen-height screen
+  i:number <- copy 0
+  len:number <- length *s
+  {
+    +next-character
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:character <- index *s, i
+    {
+      # at right? wrap.
+      at-right?:boolean <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:character <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      loop +next-character:label  # retry i
+    }
+    i <- add i, 1
+    {
+      # newline? move to left rather than 0
+      newline?:boolean <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      {
+        done?:boolean <- greater-than column, right
+        break-if done?
+        space:character <- copy 32/space
+        print screen, space
+        column <- add column, 1
+        loop
+      }
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      loop +next-character:label
+    }
+    print screen, c, color
+    column <- add column, 1
+    loop
+  }
+  was-at-left?:boolean <- equal column, left
+  clear-line-until screen, right
+  {
+    break-if was-at-left?
+    row <- add row, 1
+  }
+  move-cursor screen, row, left
+]
+
 # assumes programming environment has no sandboxes; restores them from previous session
 def! restore-sandboxes env:address:programming-environment-data -> env:address:programming-environment-data [
   local-scope
@@ -378,7 +440,7 @@ def render-screen screen:address:screen, sandbox-screen:address:screen, left:num
   load-ingredients
   return-unless sandbox-screen
   # print 'screen:'
-  row <- render screen, [screen:], left, right, 245/grey, row
+  row <- render-text screen, [screen:], left, right, 245/grey, row
   screen <- move-cursor screen, row, left
   # start printing sandbox-screen
   column:number <- copy left

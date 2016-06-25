@@ -36,7 +36,7 @@ before <render-recipe-components-end> [
   {
     recipe-errors:address:array:character <- get *env, recipe-errors:offset
     break-unless recipe-errors
-    row, screen <- render screen, recipe-errors, left, right, 1/red, row
+    row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
   }
 ]
 
@@ -108,7 +108,7 @@ after <render-sandbox-trace-done> [
     sandbox-errors:address:array:character <- get *sandbox, errors:offset
     break-unless sandbox-errors
     *sandbox <- put *sandbox, response-starting-row-on-screen:offset, 0  # no response
-    row, screen <- render screen, sandbox-errors, left, right, 1/red, row
+    row, screen <- render-text screen, sandbox-errors, left, right, 1/red, row
     # don't try to print anything more for this sandbox
     jump +render-sandbox-end:label
   }

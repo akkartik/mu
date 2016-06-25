@@ -539,68 +539,6 @@ def update-cursor screen:address:screen, recipes:address:editor-data, current-sa
   screen <- move-cursor screen, cursor-row, cursor-column
 ]
 
-# print a text 's' to 'editor' in 'color' starting at 'row'
-# clear rest of last line, move cursor to next line
-def render screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
-  local-scope
-  load-ingredients
-  return-unless s
-  column:number <- copy left
-  screen <- move-cursor screen, row, column
-  screen-height:number <- screen-height screen
-  i:number <- copy 0
-  len:number <- length *s
-  {
-    +next-character
-    done?:boolean <- greater-or-equal i, len
-    break-if done?
-    done? <- greater-or-equal row, screen-height
-    break-if done?
-    c:character <- index *s, i
-    {
-      # at right? wrap.
-      at-right?:boolean <- equal column, right
-      break-unless at-right?
-      # print wrap icon
-      wrap-icon:character <- copy 8617/loop-back-to-left
-      print screen, wrap-icon, 245/grey
-      column <- copy left
-      row <- add row, 1
-      screen <- move-cursor screen, row, column
-      loop +next-character:label  # retry i
-    }
-    i <- add i, 1
-    {
-      # newline? move to left rather than 0
-      newline?:boolean <- equal c, 10/newline
-      break-unless newline?
-      # clear rest of line in this window
-      {
-        done?:boolean <- greater-than column, right
-        break-if done?
-        space:character <- copy 32/space
-        print screen, space
-        column <- add column, 1
-        loop
-      }
-      row <- add row, 1
-      column <- copy left
-      screen <- move-cursor screen, row, column
-      loop +next-character:label
-    }
-    print screen, c, color
-    column <- add column, 1
-    loop
-  }
-  was-at-left?:boolean <- equal column, left
-  clear-line-until screen, right
-  {
-    break-if was-at-left?
-    row <- add row, 1
-  }
-  move-cursor screen, row, left
-]
-
 # like 'render' for texts, but with colorization for comments like in the editor
 def render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
