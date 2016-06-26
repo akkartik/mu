@@ -28,7 +28,7 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    text-mode chessboard program in Mu (delimiting the edge of the 'screen'
    with dots):
    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
-   <br>We're building up similarly *dependency-injected* interfaces to the
+   <br>I'm building up similarly *dependency-injected* interfaces to the
    keyboard, mouse, touch screen, disk, network, etc.
 
 1. Support for testing side-effects like performance, deadlock-freedom,
