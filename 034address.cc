@@ -116,9 +116,6 @@
 //:
 //: This layer implements creating addresses using 'new'. The next few layers
 //: will flesh out the rest of the life cycle.
-//:
-//: The tests in this layer use unsafe operations so as to stay decoupled from
-//: 'new'.
 
 //: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.
 
