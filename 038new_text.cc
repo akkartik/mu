@@ -86,6 +86,17 @@ def main [
 ]
 +app: abc foo
 
+:(scenario stash_string_as_array)
+def main [
+  1:address:array:character <- new [abc]
+  stash *1:address:array:character
+]
++app: 3 97 98 99
+
+//: fixes way more than just stash
+:(after "Begin is_mu_string(x)")
+if (!canonize_type(x)) return false;
+
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 2;
