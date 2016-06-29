@@ -67,25 +67,20 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
   put(Current_routine->free_list, payload_size, address);
 }
 
-:(before "ensure_space(size)" following "case ALLOCATE")
+:(after "Allocate Special-cases")
 if (get_or_insert(Current_routine->free_list, size)) {
   trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
   int result = get_or_insert(Current_routine->free_list, size);
   trace(9999, "mem") << "new alloc from free list: " << result << end();
   put(Current_routine->free_list, size, get_or_insert(Memory, result));
-  for (int curr = result+1; curr < result+size; ++curr) {
+  put(Memory, result, 0);
+  for (int curr = result; curr < result+size; ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal
     }
   }
-  if (SIZE(current_instruction().ingredients) > 1)
-    put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
-  else
-    put(Memory, result, 0);
-  products.resize(1);
-  products.at(0).push_back(result);
-  break;
+  return result;
 }
 
 :(scenario new_differing_size_no_reclaim)

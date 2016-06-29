@@ -275,33 +275,38 @@ case ALLOCATE: {
     trace(9999, "mem") << "array size is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
-  // include space for refcount
-  size++;
-  trace(9999, "mem") << "allocating size " << size << end();
-//?   Total_alloc += size;
-//?   Num_alloc++;
-  // compute the region of memory to return
-  // really crappy at the moment
-  ensure_space(size);
-  const int result = Current_routine->alloc;
-  trace(9999, "mem") << "new alloc: " << result << end();
-  // save result
-  products.resize(1);
-  products.at(0).push_back(result);
-  // initialize allocated space
-  for (int address = result; address < result+size; ++address) {
-    trace(9999, "mem") << "storing 0 in location " << address << end();
-    put(Memory, address, 0);
-  }
+  int result = allocate(size);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
     trace(9999, "mem") << "storing " << ingredients.at(1).at(0) << " in location " << result+/*skip refcount*/1 << end();
     put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
   }
+  products.resize(1);
+  products.at(0).push_back(result);
+  break;
+}
+:(code)
+int allocate(int size) {
+  // include space for refcount
+  size++;
+  trace(9999, "mem") << "allocating size " << size << end();
+//?   Total_alloc += size;
+//?   Num_alloc++;
+  // Allocate Special-cases
+  // compute the region of memory to return
+  // really crappy at the moment
+  ensure_space(size);
+  const int result = Current_routine->alloc;
+  trace(9999, "mem") << "new alloc: " << result << end();
+  // initialize allocated space
+  for (int address = result; address < result+size; ++address) {
+    trace(9999, "mem") << "storing 0 in location " << address << end();
+    put(Memory, address, 0);
+  }
   Current_routine->alloc += size;
   // no support yet for reclaiming memory between routines
   assert(Current_routine->alloc <= Current_routine->alloc_max);
-  break;
+  return result;
 }
 
 //: statistics for debugging
