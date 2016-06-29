@@ -53,6 +53,31 @@ def main [
 +mem: decrementing refcount of 202: 1 -> 0
 +abandon: saving 202 in free-list of size 2
 
+:(scenario deep_copy_array)
+% Memory_allocated_until = 200;
+def main [
+  # avoid all memory allocations except the implicit ones inside deep-copy, so
+  # that the result is deterministic
+  100:number <- copy 1  # pretend refcount
+  101:number <- copy 3  # pretend array length
+  1:address:array:number <- copy 100/unsafe  # pretend allocation
+  put-index *1:address:array:number, 0, 34
+  put-index *1:address:array:number, 1, 35
+  put-index *1:address:array:number, 2, 36
+  stash [old:], *1:address:array:number
+  2:address:array:number <- deep-copy 1:address:array:number
+  stash 2:address:array:number
+  stash [new:], *2:address:array:number
+  10:boolean <- equal 1:address:array:number, 2:address:array:number
+  11:boolean <- equal *1:address:array:number, *2:address:array:number
+]
++app: old: 3 34 35 36
++app: new: 3 34 35 36
+# the result of deep-copy is a new address
++mem: storing 0 in location 10
+# however, the contents are identical
++mem: storing 1 in location 11
+
 :(before "End Primitive Recipe Declarations")
 DEEP_COPY,
 :(before "End Primitive Recipe Numbers")
@@ -85,7 +110,6 @@ vector<double> deep_copy(reagent/*copy*/ in, reagent& tmp) {
   map<int, int> addresses_copied;
   if (is_mu_address(in))
     result.push_back(deep_copy_address(in, addresses_copied, tmp));
-  // TODO: handle arrays
   else
     deep_copy(in, addresses_copied, result);
   return result;
