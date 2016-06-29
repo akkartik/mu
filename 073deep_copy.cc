@@ -94,10 +94,12 @@ case DEEP_COPY: {
 case DEEP_COPY: {
   const reagent& input = current_instruction().ingredients.at(0);
   // allocate a tiny bit of temporary space for deep_copy()
+  trace(9991, "run") << "deep-copy: allocating space for temporary" << end();
   reagent tmp("tmp:address:number");
   tmp.value = allocate(1);
   products.push_back(deep_copy(input, tmp));
   // reclaim Mu memory allocated for tmp
+  trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
   abandon(tmp.value, tmp.type->right, payload_size(tmp));
   // reclaim host memory allocated for tmp.type when tmp goes out of scope
   break;
@@ -112,32 +114,38 @@ vector<double> deep_copy(reagent/*copy*/ in, reagent& tmp) {
     result.push_back(deep_copy_address(in, addresses_copied, tmp));
   else
     deep_copy(in, addresses_copied, result);
+  trace(9991, "run") << "deep-copy: done" << end();
   return result;
 }
 
 // deep-copy an address and return a new address
-int deep_copy_address(reagent/*copy*/ canonized_in, map<int, int>& addresses_copied, reagent& tmp) {
+int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copied, const reagent& tmp) {
   int in_address = canonized_in.value;
   if (in_address == 0) return 0;
+  trace(9991, "run") << "deep-copy: copying address " << in_address << end();
   if (contains_key(addresses_copied, in_address))
     return get(addresses_copied, in_address);
   // TODO: what about address:address:___? Should deep-copy be doing multiple
   // lookups? If the goal is to eliminate all common addresses, yes.
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-  canonize(payload);
   int out = allocate(size_of(payload));
-  const type_info& info = get(Type, payload.type->value);
+  reagent/*copy*/ payload_type = payload;
+  canonize_type(payload_type);
+  const type_info& info = get(Type, payload_type.type->value);
   switch (info.kind) {
     case PRIMITIVE: {
-      canonized_in.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-      vector<double> data = read_memory(canonized_in);
-      reagent/*copy*/ out_payload = canonized_in;
+      trace(9991, "run") << "deep-copy: reading ingredient " << payload.value << ' ' << to_string(payload) << end();
+      vector<double> data = read_memory(payload);
+      trace(9991, "run") << "deep-copy: writing result " << out << end();
+      reagent/*copy*/ out_payload = payload;
       // HACK: write_memory interface isn't ideal for this situation; we need
       // a temporary location to help copy the payload.
       put(Memory, tmp.value, out);
       out_payload.value = tmp.value;
+      trace(9991, "run") << "deep-copy: really writing to " << out_payload.value << ' ' << to_string(out_payload) << end();
       write_memory(out_payload, data, -1);
+      trace(9991, "run") << "deep-copy: output is " << to_string(data) << end();
       break;
     }
     case CONTAINER:
