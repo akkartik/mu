@@ -32,23 +32,26 @@ def main [
 +mem: storing 1 in location 10
 
 :(scenario deep_copy_address)
+% Memory_allocated_until = 200;
 def main [
-  local-scope
-  x:address:number <- new number:type
-  *x <- copy 34
-  y:address:number <- deep-copy x
-  10:boolean/raw <- equal x, y
-  11:boolean/raw <- equal *x, *y
-  y <- copy 0
+  # avoid all memory allocations except the implicit ones inside deep-copy, so
+  # that the result is deterministic
+  1:address:number <- copy 100/unsafe  # pretend allocation
+  *1:address:number <- copy 34
+  2:address:number <- deep-copy 1:address:number
+  10:boolean <- equal 1:address:number, 2:address:number
+  11:boolean <- equal *1:address:number, *2:address:number
+  2:address:number <- copy 0
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
 # however, the contents are identical
 +mem: storing 1 in location 11
 # the result of deep-copy gets a refcount of 1
-+run: {y: ("address" "number")} <- copy {0: "literal"}
-+mem: decrementing refcount of 1009: 1 -> 0
-+abandon: saving 1009 in free-list of size 2
+# (its address 202 = 200 base + 2 for temporary space inside deep-copy)
++run: {2: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 202: 1 -> 0
++abandon: saving 202 in free-list of size 2
 
 :(before "End Primitive Recipe Declarations")
 DEEP_COPY,
