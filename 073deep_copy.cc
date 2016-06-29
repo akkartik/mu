@@ -12,9 +12,23 @@ def main [
   local-scope
   x:number <- copy 34
   y:number <- deep-copy x
-  10:boolean/raw <- equal x y
+  10:boolean/raw <- equal x, y
 ]
-# non-addresses are identical
+# non-address primitives are identical
++mem: storing 1 in location 10
+
+:(scenario deep_copy_container_without_address)
+container foo [
+  x:number
+  y:number
+]
+def main [
+  local-scope
+  a:foo <- merge 34 35
+  b:foo <- deep-copy a
+  10:boolean/raw <- equal a, b
+]
+# containers are identical as long as they don't contain addresses
 +mem: storing 1 in location 10
 
 :(before "End Primitive Recipe Declarations")
@@ -69,6 +83,11 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, vec
     vector<double> result = read_memory(canonized_in);
     assert(scalar(result));
     out.push_back(result.at(0));
+    return;
+  }
+  if (get(Container_metadata, canonized_in.type).address.empty()) {
+    vector<double> result = read_memory(canonized_in);
+    out.insert(out.end(), result.begin(), result.end());
     return;
   }
 }
