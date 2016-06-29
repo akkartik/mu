@@ -31,6 +31,25 @@ def main [
 # containers are identical as long as they don't contain addresses
 +mem: storing 1 in location 10
 
+:(scenario deep_copy_address)
+def main [
+  local-scope
+  x:address:number <- new number:type
+  *x <- copy 34
+  y:address:number <- deep-copy x
+  10:boolean/raw <- equal x, y
+  11:boolean/raw <- equal *x, *y
+  y <- copy 0
+]
+# the result of deep-copy is a new address
++mem: storing 0 in location 10
+# however, the contents are identical
++mem: storing 1 in location 11
+# the result of deep-copy gets a refcount of 1
++run: {y: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1009: 1 -> 0
++abandon: saving 1009 in free-list of size 2
+
 :(before "End Primitive Recipe Declarations")
 DEEP_COPY,
 :(before "End Primitive Recipe Numbers")
@@ -46,17 +65,23 @@ case DEEP_COPY: {
 :(before "End Primitive Recipe Implementations")
 case DEEP_COPY: {
   const reagent& input = current_instruction().ingredients.at(0);
-  products.push_back(deep_copy(input));
+  // allocate a tiny bit of temporary space for deep_copy()
+  reagent tmp("tmp:address:number");
+  tmp.value = allocate(1);
+  products.push_back(deep_copy(input, tmp));
+  // reclaim Mu memory allocated for tmp
+  abandon(tmp.value, tmp.type->right, payload_size(tmp));
+  // reclaim host memory allocated for tmp.type when tmp goes out of scope
   break;
 }
 
 :(code)
-vector<double> deep_copy(reagent/*copy*/ in) {
+vector<double> deep_copy(reagent/*copy*/ in, reagent& tmp) {
   canonize(in);
   vector<double> result;
   map<int, int> addresses_copied;
   if (is_mu_address(in))
-    result.push_back(deep_copy_address(in.value, addresses_copied));
+    result.push_back(deep_copy_address(in, addresses_copied, tmp));
   // TODO: handle arrays
   else
     deep_copy(in, addresses_copied, result);
@@ -64,11 +89,35 @@ vector<double> deep_copy(reagent/*copy*/ in) {
 }
 
 // deep-copy an address and return a new address
-int deep_copy_address(int in_address, map<int, int>& addresses_copied) {
+int deep_copy_address(reagent/*copy*/ canonized_in, map<int, int>& addresses_copied, reagent& tmp) {
+  int in_address = canonized_in.value;
   if (in_address == 0) return 0;
-  if (contains_key(addresses_copied, in_address)) return get(addresses_copied, in_address);
-  int out = 0;
-  // HERE
+  if (contains_key(addresses_copied, in_address))
+    return get(addresses_copied, in_address);
+  // TODO: what about address:address:___? Should deep-copy be doing multiple
+  // lookups? If the goal is to eliminate all common addresses, yes.
+  reagent/*copy*/ payload = canonized_in;
+  payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
+  canonize(payload);
+  int out = allocate(size_of(payload));
+  const type_info& info = get(Type, payload.type->value);
+  switch (info.kind) {
+    case PRIMITIVE: {
+      canonized_in.properties.push_back(pair<string, string_tree*>("lookup", NULL));
+      vector<double> data = read_memory(canonized_in);
+      reagent/*copy*/ out_payload = canonized_in;
+      // HACK: write_memory interface isn't ideal for this situation; we need
+      // a temporary location to help copy the payload.
+      put(Memory, tmp.value, out);
+      out_payload.value = tmp.value;
+      write_memory(out_payload, data, -1);
+      break;
+    }
+    case CONTAINER:
+      break;
+    case EXCLUSIVE_CONTAINER:
+      break;
+  }
   put(addresses_copied, in_address, out);
   return out;
 }
