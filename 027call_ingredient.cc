@@ -173,7 +173,7 @@ case INGREDIENT: {
 //: a particularly common array type is the string, or address:array:character
 :(code)
 bool is_mu_string(reagent/*copy*/ x) {
-  // Begin is_mu_string(x)
+  // End Preprocess is_mu_string(reagent x)
   return x.type
     && x.type->value == get(Type_ordinal, "address")
     && x.type->right

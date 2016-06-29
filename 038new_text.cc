@@ -94,7 +94,7 @@ def main [
 +app: 3 97 98 99
 
 //: fixes way more than just stash
-:(after "Begin is_mu_string(x)")
+:(before "End Preprocess is_mu_string(reagent x)")
 if (!canonize_type(x)) return false;
 
 //: Allocate more to routine when initializing a literal string
