@@ -106,7 +106,7 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
 
 :(after "Parsing reagent(string s)")
 if (s.at(0) == '[') {
-  assert(*s.rbegin() == ']');
+  if (*s.rbegin() != ']') return;  // unbalanced bracket; handled elsewhere
   name = s;
   // delete [] delimiters
   name.erase(0, 1);
@@ -195,3 +195,9 @@ def main [
   copy []
 ]
 +parse:   ingredient: {"": "literal-string"}
+
+:(scenario multiple_unfinished_recipes)
+% Hide_errors = true;
+recipe f1 [
+recipe f2 [
++error: unbalanced '['
