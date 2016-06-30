@@ -130,6 +130,7 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   int out = allocate(size_of(payload));
+  put(addresses_copied, in_address, out);
   reagent/*copy*/ payload_type = payload;
   canonize_type(payload_type);
   const type_info& info = get(Type, payload_type.type->value);
@@ -153,7 +154,6 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
     case EXCLUSIVE_CONTAINER:
       break;
   }
-  put(addresses_copied, in_address, out);
   return out;
 }
 
