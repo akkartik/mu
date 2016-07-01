@@ -53,6 +53,26 @@ def main [
 +mem: decrementing refcount of 202: 1 -> 0
 +abandon: saving 202 in free-list of size 2
 
+:(scenario deep_copy_address_to_address)
+% Memory_allocated_until = 200;
+def main [
+  # avoid all memory allocations except the implicit ones inside deep-copy, so
+  # that the result is deterministic
+  1:address:address:number <- copy 100/unsafe  # pretend allocation
+  *1:address:address:number <- copy 150/unsafe
+  **1:address:address:number <- copy 34
+  2:address:address:number <- deep-copy 1:address:address:number
+  10:boolean <- equal 1:address:address:number, 2:address:address:number
+  11:boolean <- equal *1:address:address:number, *2:address:address:number
+  12:boolean <- equal **1:address:address:number, **2:address:address:number
+]
+# the result of deep-copy is a new address
++mem: storing 0 in location 10
+# any addresses in it or pointed to it are also new
++mem: storing 0 in location 11
+# however, the non-address contents are identical
++mem: storing 1 in location 12
+
 :(scenario deep_copy_array)
 % Memory_allocated_until = 200;
 def main [
@@ -125,8 +145,6 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   trace(9991, "run") << "deep-copy: copying address " << in_address << end();
   if (contains_key(addresses_copied, in_address))
     return get(addresses_copied, in_address);
-  // TODO: what about address:address:___? Should deep-copy be doing multiple
-  // lookups? If the goal is to eliminate all common addresses, yes.
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   int out = allocate(size_of(payload));
@@ -137,14 +155,27 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   switch (info.kind) {
     case PRIMITIVE: {
       trace(9991, "run") << "deep-copy: reading ingredient " << payload.value << ' ' << to_string(payload) << end();
-      vector<double> data = read_memory(payload);
-      trace(9991, "run") << "deep-copy: writing result " << out << end();
+      vector<double> data;
+      if (is_mu_address(payload_type)) {
+        trace(9991, "run") << "deep-copy: payload is an address; recursing" << end();
+        reagent/*copy*/ sub_payload = payload;
+        canonize(sub_payload);
+        data.push_back(deep_copy_address(sub_payload, addresses_copied, tmp));
+        trace(9991, "run") << "deep-copy: done recursing " << to_string(data) << end();
+      }
+      else {
+        data = read_memory(payload);
+        trace(9991, "run") << "deep-copy: done reading " << to_string(data) << end();
+      }
+      trace(9991, "run") << "deep-copy: writing result " << out << ": " << to_string(data) << end();
       reagent/*copy*/ out_payload = payload;
       // HACK: write_memory interface isn't ideal for this situation; we need
       // a temporary location to help copy the payload.
+      trace(9991, "run") << "deep-copy: writing temporary " << tmp.value << ": " << out << end();
       put(Memory, tmp.value, out);
       out_payload.value = tmp.value;
-      trace(9991, "run") << "deep-copy: really writing to " << out_payload.value << ' ' << to_string(out_payload) << end();
+      vector<double> old_data = read_memory(out_payload);
+      trace(9991, "run") << "deep-copy: really writing to " << out_payload.value << ' ' << to_string(out_payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
       write_memory(out_payload, data, -1);
       trace(9991, "run") << "deep-copy: output is " << to_string(data) << end();
       break;
