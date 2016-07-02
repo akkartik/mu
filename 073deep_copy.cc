@@ -24,7 +24,7 @@ container foo [
 ]
 def main [
   local-scope
-  a:foo <- merge 34 35
+  a:foo <- merge 34, 35
   b:foo <- deep-copy a
   10:boolean/raw <- equal a, b
 ]
@@ -98,6 +98,28 @@ def main [
 # however, the contents are identical
 +mem: storing 1 in location 11
 
+:(scenario deep_copy_container_with_address)
+container foo [
+  x:number
+  y:address:number
+]
+def main [
+  local-scope
+  y0:address:number <- new number:type
+  *y0 <- copy 35
+  a:foo <- merge 34, y0
+  b:foo <- deep-copy a
+  10:boolean/raw <- equal a, b
+  y1:address:number <- get b, y:offset
+  11:boolean/raw <- equal y0, y1
+  12:number/raw <- copy *y1
+]
+# containers containing addresses are not identical to their deep copies
++mem: storing 0 in location 10
+# the addresses the contain are not identical either
++mem: storing 0 in location 11
++mem: storing 35 in location 12
+
 :(before "End Primitive Recipe Declarations")
 DEEP_COPY,
 :(before "End Primitive Recipe Numbers")
@@ -126,14 +148,14 @@ case DEEP_COPY: {
 }
 
 :(code)
-vector<double> deep_copy(reagent/*copy*/ in, reagent& tmp) {
+vector<double> deep_copy(reagent/*copy*/ in, const reagent& tmp) {
   canonize(in);
   vector<double> result;
   map<int, int> addresses_copied;
   if (is_mu_address(in))
     result.push_back(deep_copy_address(in, addresses_copied, tmp));
   else
-    deep_copy(in, addresses_copied, result);
+    deep_copy(in, addresses_copied, tmp, result);
   trace(9991, "run") << "deep-copy: done" << end();
   return result;
 }
@@ -191,7 +213,7 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
 // deep-copy a container and return a container
 
 // deep-copy a container and return a vector of locations
-void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, vector<double>& out) {
+void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, const reagent& tmp, vector<double>& out) {
   assert(!is_mu_address(canonized_in));
   if (!contains_key(Container_metadata, canonized_in.type)) {
     assert(get(Type, canonized_in.type->value).kind == PRIMITIVE);  // not a container
@@ -200,9 +222,21 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, vec
     out.push_back(result.at(0));
     return;
   }
-  if (get(Container_metadata, canonized_in.type).address.empty()) {
-    vector<double> result = read_memory(canonized_in);
-    out.insert(out.end(), result.begin(), result.end());
-    return;
+  vector<double> data = read_memory(canonized_in);
+  out.insert(out.end(), data.begin(), data.end());
+  trace(9991, "run") << "deep-copy: scanning for addresses in " << to_string(data) << end();
+  const container_metadata& metadata = get(Container_metadata, canonized_in.type);
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+    if (!all_match(data, p->first)) continue;
+    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info) {
+      // construct a fake reagent that reads directly from the appropriate
+      // field of the container
+      reagent curr;
+      curr.type = new type_tree("address", new type_tree(*info->payload_type));
+      curr.set_value(canonized_in.value + info->offset);
+      curr.properties.push_back(pair<string, string_tree*>("raw", NULL));
+      trace(9991, "run") << "deep-copy: copying address " << curr.value << end();
+      out.at(info->offset) = deep_copy_address(curr, addresses_copied, tmp);
+    }
   }
 }
