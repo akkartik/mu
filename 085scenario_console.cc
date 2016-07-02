@@ -281,7 +281,7 @@ int size_of_event() {
   // memoize result if already computed
   static int result = 0;
   if (result) return result;
-  type_tree* type = new type_tree("event", get(Type_ordinal, "event"));
+  type_tree* type = new type_tree("event");
   result = size_of(type);
   delete type;
   return result;
@@ -292,7 +292,7 @@ int size_of_console() {
   static int result = 0;
   if (result) return result;
   assert(get(Type_ordinal, "console"));
-  type_tree* type = new type_tree("console", get(Type_ordinal, "console"));
+  type_tree* type = new type_tree("console");
   result = size_of(type)+/*refcount*/1;
   delete type;
   return result;

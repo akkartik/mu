@@ -77,9 +77,11 @@ struct type_tree {
   ~type_tree();
   type_tree(const type_tree& old);
   // simple: type ordinal
-  explicit type_tree(string name, type_ordinal v) :name(name), value(v), left(NULL), right(NULL) {}
+  explicit type_tree(string name);
+  type_tree(string name, type_ordinal v) :name(name), value(v), left(NULL), right(NULL) {}
   // intermediate: list of type ordinals
   type_tree(string name, type_ordinal v, type_tree* r) :name(name), value(v), left(NULL), right(r) {}
+  type_tree(string name, type_tree* r);
   // advanced: tree containing type ordinals
   type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
 };
@@ -99,6 +101,9 @@ struct string_tree {
 };
 
 // End type_tree Definition
+:(code)
+type_tree::type_tree(string name) :name(name), value(get(Type_ordinal, name)), left(NULL), right(NULL) {}
+type_tree::type_tree(string name, type_tree* r) :name(name), value(get(Type_ordinal, name)), left(NULL), right(r) {}
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
@@ -271,9 +276,9 @@ reagent::reagent(const string& s) :original_string(s), type(NULL), value(0), ini
   delete type_names;
   // special cases
   if (is_integer(name) && type == NULL)
-    type = new type_tree("literal", get(Type_ordinal, "literal"));
+    type = new type_tree("literal");
   if (name == "_" && type == NULL)
-    type = new type_tree("literal", get(Type_ordinal, "literal"));
+    type = new type_tree("literal");
   // other properties
   slurp_properties(in, properties);
   // End Parsing reagent
