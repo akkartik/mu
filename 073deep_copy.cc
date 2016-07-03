@@ -132,9 +132,58 @@ def main [
 ]
 # containers containing addresses are not identical to their deep copies
 +mem: storing 0 in location 10
-# the addresses the contain are not identical either
+# the addresses they contain are not identical either
 +mem: storing 0 in location 11
 +mem: storing 35 in location 12
+
+:(scenario deep_copy_exclusive_container_with_address)
+exclusive-container foo [
+  x:number
+  y:address:number
+]
+def main [
+  local-scope
+  y0:address:number <- new number:type
+  *y0 <- copy 34
+  a:foo <- merge 1/y, y0
+  b:foo <- deep-copy a
+  10:boolean/raw <- equal a, b
+  y1:address:number, z:boolean <- maybe-convert b, y:variant
+  11:boolean/raw <- equal y0, y1
+  12:number/raw <- copy *y1
+]
+# exclusive containers containing addresses are not identical to their deep copies
++mem: storing 0 in location 10
+# the addresses they contain are not identical either
++mem: storing 0 in location 11
++mem: storing 34 in location 12
+
+:(scenario deep_copy_exclusive_container_with_container_with_address)
+exclusive-container foo [
+  x:number
+  y:bar  # inline
+]
+container bar [
+  x:address:number
+]
+def main [
+  local-scope
+  y0:address:number <- new number:type
+  *y0 <- copy 34
+  a:bar <- merge y0
+  b:foo <- merge 1/y, a
+  c:foo <- deep-copy b
+  10:boolean/raw <- equal b, c
+  d:bar, z:boolean <- maybe-convert c, y:variant
+  y1:address:number <- get d, x:offset
+  11:boolean/raw <- equal y0, y1
+  12:number/raw <- copy *y1
+]
+# exclusive containers containing addresses are not identical to their deep copies
++mem: storing 0 in location 10
+# sub-containers containing addresses are not identical either
++mem: storing 0 in location 11
++mem: storing 34 in location 12
 
 :(before "End Primitive Recipe Declarations")
 DEEP_COPY,
