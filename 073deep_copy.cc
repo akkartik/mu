@@ -187,20 +187,8 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   put(addresses_copied, in_address, out);
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-  reagent/*copy*/ canonized_payload = payload;
-  canonize(canonized_payload);
-  trace(9991, "run") << "deep-copy: reading ingredient " << payload.value << ' ' << to_string(payload) << end();
-  vector<double> data;
-  if (is_mu_address(canonized_payload)) {
-    trace(9991, "run") << "deep-copy: payload is an address; recursing" << end();
-    data.push_back(deep_copy_address(canonized_payload, addresses_copied, tmp));
-    trace(9991, "run") << "deep-copy: done recursing (address) " << to_string(data) << end();
-  }
-  else {
-    trace(9991, "run") << "deep-copy: payload is a non-address; recursing" << end();
-    deep_copy(canonized_payload, addresses_copied, tmp, data);
-    trace(9991, "run") << "deep-copy: done recursing (non-address) " << to_string(data) << end();
-  }
+  trace(9991, "run") << "recursing on payload " << payload.value << ' ' << to_string(payload) << end();
+  vector<double> data = deep_copy(payload, tmp);
   trace(9991, "run") << "deep-copy: writing result " << out << ": " << to_string(data) << end();
   reagent/*copy*/ out_payload = payload;  // not canonized
   // HACK: write_memory interface isn't ideal for this situation; we need
