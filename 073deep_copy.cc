@@ -190,15 +190,14 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   trace(9991, "run") << "recursing on payload " << payload.value << ' ' << to_string(payload) << end();
   vector<double> data = deep_copy(payload, tmp);
   trace(9991, "run") << "deep-copy: writing result " << out << ": " << to_string(data) << end();
-  reagent/*copy*/ out_payload = payload;  // not canonized
   // HACK: write_memory interface isn't ideal for this situation; we need
   // a temporary location to help copy the payload.
   trace(9991, "run") << "deep-copy: writing temporary " << tmp.value << ": " << out << end();
   put(Memory, tmp.value, out);
-  out_payload.value = tmp.value;
-  vector<double> old_data = read_memory(out_payload);  // out_payload canonized here
-  trace(9991, "run") << "deep-copy: really writing to " << out_payload.value << ' ' << to_string(out_payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
-  write_memory(out_payload, data, -1);
+  payload.value = tmp.value;  // now modified for output
+  vector<double> old_data = read_memory(payload);
+  trace(9991, "run") << "deep-copy: really writing to " << payload.value << ' ' << to_string(payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
+  write_memory(payload, data, -1);
   trace(9991, "run") << "deep-copy: output is " << to_string(data) << end();
   return out;
 }
