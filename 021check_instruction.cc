@@ -22,7 +22,7 @@ void check_instruction(const recipe_ordinal r) {
       // Primitive Recipe Checks
       case COPY: {
         if (SIZE(inst.products) != SIZE(inst.ingredients)) {
-          raise << "ingredients and products should match in '" << to_original_string(inst) << "'\n" << end();
+          raise << maybe(get(Recipe, r).name) << "ingredients and products should match in '" << to_original_string(inst) << "'\n" << end();
           break;
         }
         for (int i = 0; i < SIZE(inst.ingredients); ++i) {
@@ -48,7 +48,7 @@ void check_instruction(const recipe_ordinal r) {
 def main [
   1:number <- copy 34, 35
 ]
-+error: ingredients and products should match in '1:number <- copy 34, 35'
++error: main: ingredients and products should match in '1:number <- copy 34, 35'
 
 :(scenario write_scalar_to_array_disallowed)
 % Hide_errors = true;
