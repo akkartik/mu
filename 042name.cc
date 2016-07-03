@@ -55,6 +55,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_integer(inst.ingredients.at(in).name)) continue;
       if (!already_transformed(inst.ingredients.at(in), names)) {
         raise << maybe(caller.name) << "use before set: '" << inst.ingredients.at(in).name << "'\n" << end();
+        return;
       }
       int v = lookup_name(inst.ingredients.at(in), r);
       if (v >= 0) {
