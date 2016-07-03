@@ -289,30 +289,18 @@ exclusive-container foo3 [
 ]
 def main [
   local-scope
-  x:address:number <- new number:type  # 1003 -> 1014 1015
+  x:address:number <- new number:type
   *x <- copy 34
-  a:address:foo1 <- new foo1:type  # 1004 -> 1016 1017
-  *a <- merge x  # refcount 1014: 1 -> 2
-  b:address:foo2 <- new foo2:type  # 1005 -> 1018 1019
-  *b <- merge a  # refcount 1016: 1 -> 2
-  c:foo3 <- merge 1/q, b  # 1006 1007; refcount 1018: 1 -> 2
-  d:foo3 <- deep-copy c  # 1008 1009
-    # temporary: 1020 1021
-    # c:foo3: 1/tag@1006 1018@1007
-      # alloc: 1022 1023
-      # foo2: refcount@1018 1016@1019
-        # alloc: 1024 1025
-        # foo1: refcount@1016 1014@1017
-          # alloc: 1026 1027
-          # number: 34@1015
-          # write: 34@1027
-        # write: 1026@1025
-      # write: 1024@1023
-    # write 1/tag@1008 1022@1009
-  e:address:foo2, z:boolean <- maybe-convert d, q:variant  # write: 1022@1010
-  f:address:foo1 <- get *e, p:offset  # write: 1024@1012
-  g:address:number <- get *f, p:offset  # write: 1026@1013
-  1:number/raw <- copy *g  # 1 -> 34
+  a:address:foo1 <- new foo1:type
+  *a <- merge x
+  b:address:foo2 <- new foo2:type
+  *b <- merge a
+  c:foo3 <- merge 1/q, b
+  d:foo3 <- deep-copy c
+  e:address:foo2, z:boolean <- maybe-convert d, q:variant
+  f:address:foo1 <- get *e, p:offset
+  g:address:number <- get *f, p:offset
+  1:number/raw <- copy *g
 ]
 +mem: storing 34 in location 1
 
@@ -333,35 +321,20 @@ container foo4 [
 ]
 def main [
   local-scope
-  x:address:number <- new number:type  # 1003 -> 1016 1017
+  x:address:number <- new number:type
   *x <- copy 34
-  a:address:foo1 <- new foo1:type  # 1004 -> 1018 1019
-  *a <- merge x  # refcount 1016: 1 -> 2
-  b:address:foo2 <- new foo2:type  # 1005 -> 1020 1021
-  *b <- merge a  # refcount 1018: 1 -> 2
-  c:address:foo3 <- new foo3:type  # 1006 -> 1022 1023 1024
-  *c <- merge 1/q, b  # refcount 1020: 1 -> 2
-  d:foo4 <- merge 35, c  # 1007 1008; refcount 1022: 1 -> 2
-  e:foo4 <- deep-copy d  # 1009 1010
-    # temporary: 1025 1026
-    # foo4: 35@1007 1022@1008
-      # alloc: 1027 1028
-      # foo3: 1/tag@1023 1020@1024
-        # alloc: 1029 1030  <<--- wrong
-        # foo2: 1018@1021
-          # alloc: 1031 1032
-          # foo1: 1016@1019
-            # alloc: 1033 1034
-            # number: 34@1017
-            # write 34@1034
-          # write 1033@1032 (refcount 1033: 0 -> 1)
-        # write 1031@1030 (refcount 1031: 0 -> 1)
-      # write should be 1/tag@1029 1029@1028 (refcount 1030: 0 -> 1)
-      # write is 1@1028 1029@1029
-  f:address:foo3 <- get e, q:offset  # write: 1027@1011
-  g:address:foo2, z:boolean <- maybe-convert *f, q:variant  # write: 1030@1012
-  h:address:foo1 <- get *g, p:offset  # write: 1@1014
-  y:address:number <- get *h, p:offset  # write: 0@1015
-  1:number/raw <- copy *y  # write: 0@1
+  a:address:foo1 <- new foo1:type
+  *a <- merge x
+  b:address:foo2 <- new foo2:type
+  *b <- merge a
+  c:address:foo3 <- new foo3:type
+  *c <- merge 1/q, b
+  d:foo4 <- merge 35, c
+  e:foo4 <- deep-copy d
+  f:address:foo3 <- get e, q:offset
+  g:address:foo2, z:boolean <- maybe-convert *f, q:variant
+  h:address:foo1 <- get *g, p:offset
+  y:address:number <- get *h, p:offset
+  1:number/raw <- copy *y
 ]
 +mem: storing 34 in location 1
