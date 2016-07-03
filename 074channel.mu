@@ -1,12 +1,17 @@
 # Mu synchronizes using channels rather than locks, like Erlang and Go.
 #
 # The two ends of a channel will usually belong to different routines, but
-# each end should only be used by a single one. Don't try to read from or
-# write to it from multiple routines at once.
+# each end should (currently) only be used by a single one. Don't try to read
+# from or write to it from multiple routines at once.
 #
-# The key property of channels is that writing to a full channel or reading
-# from an empty one will put the current routine in 'waiting' state until the
-# operation can be completed.
+# Key properties of channels:
+#
+# a) Writing to a full channel or reading from an empty one will put the
+# current routine in 'waiting' state until the operation can be completed.
+#
+# b) Writing to a channel implicitly performs a deep copy, to prevent
+# addresses from being shared between routines, thereby causing race
+# conditions.
 
 scenario channel [
   run [
@@ -71,10 +76,11 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
     full-address:location <- get-location *chan, first-full:offset
     wait-for-location full-address
   }
-  # store val
+  # store a deep copy of val
   circular-buffer:address:array:_elem <- get *chan, data:offset
   free:number <- get *chan, first-free:offset
-  *circular-buffer <- put-index *circular-buffer, free, val
+  val-copy:_elem <- deep-copy val  # on this instruction rests all Mu's concurrency-safety
+  *circular-buffer <- put-index *circular-buffer, free, val-copy
   # mark its slot as filled
   free <- add free, 1
   {

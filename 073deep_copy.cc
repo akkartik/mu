@@ -6,6 +6,9 @@
 // Implications: Refcounts of all data pointed to by the original ingredient
 // will remain unchanged. Refcounts of all data pointed to by the (newly
 // created) result will be 1, in the absence of cycles.
+//
+// We do handle cycles in the ingredient, however. All cycles are translated
+// to new cycles in the product.
 
 :(scenario deep_copy_number)
 def main [
