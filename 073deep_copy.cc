@@ -183,9 +183,9 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   trace(9991, "run") << "deep-copy: copying address " << in_address << end();
   if (contains_key(addresses_copied, in_address))
     return get(addresses_copied, in_address);
+  int out = allocate(payload_size(canonized_in));
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-  int out = allocate(payload_size(payload));
   put(addresses_copied, in_address, out);
   reagent/*copy*/ payload_type = payload;
   canonize_type(payload_type);
