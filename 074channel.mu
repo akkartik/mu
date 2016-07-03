@@ -278,7 +278,7 @@ container channel:_elem [
 ]
 
 # a channel can be closed from either the source or the sink
-# both threads can modify it, but they can only set it, so this is a benign race
+# both routines can modify the 'closed?' bit, but they can only ever set it, so this is a benign race
 def close x:address:source:_elem -> x:address:source:_elem [
   local-scope
   load-ingredients
