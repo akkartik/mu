@@ -213,31 +213,38 @@ case DEEP_COPY: {
 }
 
 :(code)
-vector<double> deep_copy(reagent/*copy*/ in, const reagent& tmp) {
+vector<double> deep_copy(const reagent& in, const reagent& tmp) {
+  map<int, int> addresses_copied;
+  return deep_copy(in, addresses_copied, tmp);
+}
+
+vector<double> deep_copy(reagent/*copy*/ in, map<int, int>& addresses_copied, const reagent& tmp) {
   canonize(in);
   vector<double> result;
-  map<int, int> addresses_copied;
   if (is_mu_address(in))
     result.push_back(deep_copy_address(in, addresses_copied, tmp));
   else
     deep_copy(in, addresses_copied, tmp, result);
-  trace(9991, "run") << "deep-copy: done" << end();
   return result;
 }
 
 // deep-copy an address and return a new address
 int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copied, const reagent& tmp) {
-  int in_address = canonized_in.value;
-  if (in_address == 0) return 0;
+  if (canonized_in.value == 0) return 0;
+  int in_address = payload_address(canonized_in);
   trace(9991, "run") << "deep-copy: copying address " << in_address << end();
-  if (contains_key(addresses_copied, in_address))
-    return get(addresses_copied, in_address);
+  if (contains_key(addresses_copied, in_address)) {
+    int out = get(addresses_copied, in_address);
+    trace(9991, "run") << "deep-copy: copy already exists: " << out << end();
+    return out;
+  }
   int out = allocate(payload_size(canonized_in));
+  trace(9991, "run") << "deep-copy: new address is " << out << end();
   put(addresses_copied, in_address, out);
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   trace(9991, "run") << "recursing on payload " << payload.value << ' ' << to_string(payload) << end();
-  vector<double> data = deep_copy(payload, tmp);
+  vector<double> data = deep_copy(payload, addresses_copied, tmp);
   trace(9991, "run") << "deep-copy: writing result " << out << ": " << to_string(data) << end();
   // HACK: write_memory interface isn't ideal for this situation; we need
   // a temporary location to help copy the payload.
@@ -272,6 +279,12 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
       out.at(info->offset) = deep_copy_address(curr, addresses_copied, tmp);
     }
   }
+}
+
+int payload_address(reagent/*copy*/ x) {
+  x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
+  canonize(x);
+  return x.value;
 }
 
 //: moar tests, just because I can't believe it all works
@@ -338,3 +351,26 @@ def main [
   1:number/raw <- copy *y
 ]
 +mem: storing 34 in location 1
+
+:(scenario deep_copy_cycles)
+container foo [
+  p:number
+  q:address:foo
+]
+def main [
+  local-scope
+  x:address:foo <- new foo:type
+  *x <- put *x, p:offset, 34
+  *x <- put *x, q:offset, x  # create a cycle
+  y:address:foo <- deep-copy x
+  1:number/raw <- get *y, p:offset
+  y2:address:foo <- get *y, q:offset
+  stash y [vs] y2
+  2:boolean/raw <- equal y, y2  # is it still a cycle?
+  3:boolean/raw <- equal x, y  # is it the same cycle?
+]
++mem: storing 34 in location 1
+# deep copy also contains a cycle
++mem: storing 1 in location 2
+# but it's a completely different (disjoint) cycle
++mem: storing 0 in location 3
