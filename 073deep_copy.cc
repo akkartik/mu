@@ -184,35 +184,31 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   if (contains_key(addresses_copied, in_address))
     return get(addresses_copied, in_address);
   int out = allocate(payload_size(canonized_in));
+  put(addresses_copied, in_address, out);
   reagent/*copy*/ payload = canonized_in;
   payload.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-  put(addresses_copied, in_address, out);
-  reagent/*copy*/ payload_type = payload;
-  canonize_type(payload_type);
+  reagent/*copy*/ canonized_payload = payload;
+  canonize(canonized_payload);
   trace(9991, "run") << "deep-copy: reading ingredient " << payload.value << ' ' << to_string(payload) << end();
   vector<double> data;
-  if (is_mu_address(payload_type)) {
+  if (is_mu_address(canonized_payload)) {
     trace(9991, "run") << "deep-copy: payload is an address; recursing" << end();
-    reagent/*copy*/ sub_payload = payload;
-    canonize(sub_payload);
-    data.push_back(deep_copy_address(sub_payload, addresses_copied, tmp));
-    trace(9991, "run") << "deep-copy: done recursing " << to_string(data) << end();
+    data.push_back(deep_copy_address(canonized_payload, addresses_copied, tmp));
+    trace(9991, "run") << "deep-copy: done recursing (address) " << to_string(data) << end();
   }
   else {
-    reagent/*copy*/ canonized_payload = payload;
-    canonize(canonized_payload);
+    trace(9991, "run") << "deep-copy: payload is a non-address; recursing" << end();
     deep_copy(canonized_payload, addresses_copied, tmp, data);
-//?     data = read_memory(payload);
-    trace(9991, "run") << "deep-copy: done reading " << to_string(data) << end();
+    trace(9991, "run") << "deep-copy: done recursing (non-address) " << to_string(data) << end();
   }
   trace(9991, "run") << "deep-copy: writing result " << out << ": " << to_string(data) << end();
-  reagent/*copy*/ out_payload = payload;
+  reagent/*copy*/ out_payload = payload;  // not canonized
   // HACK: write_memory interface isn't ideal for this situation; we need
   // a temporary location to help copy the payload.
   trace(9991, "run") << "deep-copy: writing temporary " << tmp.value << ": " << out << end();
   put(Memory, tmp.value, out);
   out_payload.value = tmp.value;
-  vector<double> old_data = read_memory(out_payload);
+  vector<double> old_data = read_memory(out_payload);  // out_payload canonized here
   trace(9991, "run") << "deep-copy: really writing to " << out_payload.value << ' ' << to_string(out_payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
   write_memory(out_payload, data, -1);
   trace(9991, "run") << "deep-copy: output is " << to_string(data) << end();
