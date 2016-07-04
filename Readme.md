@@ -73,7 +73,9 @@ continuations and lisp-like macros.
 High level languages today seem to provide three kinds of benefits:
 expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
 and automation (e.g. garbage collection). An idealized assembly language gives
-up some expressiveness, but doesn't seem to affect the other benefits.
+up some expressiveness, but doesn't seem to affect the other benefits. So far
+Mu provides strong memory safety, lexical scope, generics, higher-order
+functions and safe concurrency.
 
 *Taking Mu for a spin*
 
