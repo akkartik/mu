@@ -393,3 +393,4 @@ Mu builds on many ideas that have come before, especially:
 - BDD for challenging us all to write tests at a higher level;
 - JavaScript and CSS for demonstrating the power of a DOM for complex
   structured documents.
+- Rust for demonstrating that a system-programming language can be safe.
