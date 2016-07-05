@@ -685,8 +685,6 @@ $error: 0
 :(code)
 // this one needs a little more fine-grained control
 void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
-  Trace_file = "shape_shifting_new_ingredient_does_not_pollute_global_namespace";
-
   // if you specialize a shape-shifting recipe that allocates a type-ingredient..
   transform("def barz x:_elem [\n"
             "  local-scope\n"

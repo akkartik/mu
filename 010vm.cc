@@ -434,8 +434,7 @@ void dump_memory() {
 }
 
 //:: Helpers for converting various values to string
-//: Use to_string() in trace(), and try to avoid relying on unstable codes that
-//: will perturb .traces/ from commit to commit.
+//: Use to_string() in trace(), and try to keep it stable from run to run.
 //: Use debug_string() while debugging, and throw everything into it.
 //: Use inspect() only for emitting a canonical format that can be parsed back
 //: into the value.

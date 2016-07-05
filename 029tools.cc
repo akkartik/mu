@@ -179,8 +179,8 @@ case _SAVE_TRACE: {
 }
 :(before "End Primitive Recipe Implementations")
 case _SAVE_TRACE: {
-  if (!Trace_file.empty()) {
-    ofstream fout((Trace_dir+Trace_file).c_str());
+  if (Save_trace) {
+    ofstream fout("last_trace");
     fout << Trace_stream->readable_contents("");
     fout.close();
   }

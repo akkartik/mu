@@ -181,22 +181,19 @@ ostream& operator<<(ostream& os, unused end) {
 
 #define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
 
-// All scenarios save their traces in the repo, just like code. This gives
-// future readers more meat when they try to make sense of a new project.
-static string Trace_dir = ".traces/";
-string Trace_file;
+bool Save_trace = false;
 
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
 struct lease_tracer {
   lease_tracer() { Trace_stream = new trace_stream; }
   ~lease_tracer() {
     if (!Trace_stream) return;  // in case tests close Trace_stream
-    if (!Trace_file.empty()) {
-      ofstream fout((Trace_dir+Trace_file).c_str());
+    if (Save_trace) {
+      ofstream fout("last_trace");
       fout << Trace_stream->readable_contents("");
       fout.close();
     }
-    delete Trace_stream, Trace_stream = NULL, Trace_file = "";
+    delete Trace_stream, Trace_stream = NULL;
   }
 };
 

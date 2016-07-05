@@ -313,12 +313,6 @@ c) Try running the tests:
   $ ./mu test
   ```
 
-You might also want to peek in the `.traces` directory, which automatically
-includes logs for each test showing you just how it ran on my machine. If Mu
-eventually gets complex enough that you have trouble running examples, these
-logs might help figure out if my system is somehow different from yours or if
-I've just been insufficiently diligent and my documentation is out of date.
-
 d) Try out the programming environment:
 
   ```shell

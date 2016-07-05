@@ -170,7 +170,6 @@ void test_tangle_supports_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -182,7 +181,6 @@ void test_tangle_ignores_empty_lines_in_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -201,7 +199,6 @@ void test_tangle_supports_configurable_toplevel() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  foo(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -216,7 +213,6 @@ void test_tangle_can_hide_warnings_in_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  Hide_warnings = true;");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
@@ -229,7 +225,6 @@ void test_tangle_supports_strings_in_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc \\\"def\\\"\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"xyz\\\"\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -241,7 +236,6 @@ void test_tangle_supports_strings_in_scenarios2() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc \\\"\\\"\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"\\\"\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -253,7 +247,6 @@ void test_tangle_supports_multiline_input_in_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: \\\"\\\"\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -265,7 +258,6 @@ void test_tangle_supports_reset_in_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CLEAR_TRACE;");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"efg\\n\");");  lines.pop_front();
@@ -279,7 +271,6 @@ void test_tangle_can_check_for_absence_at_end_of_scenarios() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqr\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: xyz\");");  lines.pop_front();
@@ -292,7 +283,6 @@ void test_tangle_can_check_for_absence_at_end_of_scenarios2() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: pqr\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: xyz\");");  lines.pop_front();
@@ -305,7 +295,6 @@ void test_tangle_can_check_for_count_in_scenario() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n  efg\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_COUNT(\"layer1\", 2);");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
@@ -317,7 +306,6 @@ void test_tangle_can_handle_mu_comments_in_scenario() {
   list<Line> lines;
   tangle(in, lines);
   CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
-  CHECK_EQ(lines.front().contents, "  Trace_file = \"does_bar\";"); lines.pop_front();
   CHECK_EQ(lines.front().contents, "  run(\"abc def\\n# comment1\\n  efg\\n  # indented comment 2\\n\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer1: xyz\");");  lines.pop_front();
   CHECK_EQ(lines.front().contents, "  CHECK_TRACE_DOESNT_CONTAIN(\"layer1: z\");");  lines.pop_front();

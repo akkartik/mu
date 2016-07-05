@@ -336,7 +336,6 @@ def main [
 //: this test we can't represent with a scenario
 :(code)
 void test_parse_comment_terminated_by_eof() {
-  Trace_file = "parse_comment_terminated_by_eof";
   load("recipe main [\n"
        "  a:number <- copy 34\n"
        "]\n"

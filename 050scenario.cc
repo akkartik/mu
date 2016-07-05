@@ -145,7 +145,6 @@ void run_mu_scenario(const scenario& s) {
   bool not_already_inside_test = !Trace_stream;
 //?   cerr << s.name << '\n';
   if (not_already_inside_test) {
-    Trace_file = s.name;
     Trace_stream = new trace_stream;
     setup();
   }
@@ -161,12 +160,13 @@ void run_mu_scenario(const scenario& s) {
   // End Mu Test Teardown
   if (not_already_inside_test && Trace_stream) {
     teardown();
-    ofstream fout((Trace_dir+Trace_file).c_str());
-    fout << Trace_stream->readable_contents("");
-    fout.close();
+    if (Save_trace) {
+      ofstream fout("last_trace");
+      fout << Trace_stream->readable_contents("");
+      fout.close();
+    }
     delete Trace_stream;
     Trace_stream = NULL;
-    Trace_file = "";
   }
   Current_scenario = NULL;
 }

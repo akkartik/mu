@@ -123,8 +123,6 @@ void run_code_begin(bool should_stash_snapshots) {
   if (should_stash_snapshots)
     stash_snapshots();
   Save_trace_stream = Trace_stream;
-  Save_trace_file = Trace_file;
-  Trace_file = "";
   Trace_stream = new trace_stream;
   Trace_stream->collect_depth = App_depth;
 }
@@ -135,7 +133,6 @@ void run_code_end() {
   delete Trace_stream;
   Trace_stream = Save_trace_stream;
   Save_trace_stream = NULL;
-  Trace_file = Save_trace_file;
   Save_trace_file.clear();
   Recipe.erase(get(Recipe_ordinal, "interactive"));  // keep past sandboxes from inserting errors
   if (!Recipe_snapshot_stash.empty())

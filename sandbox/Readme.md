@@ -18,7 +18,3 @@ either side to run the sandbox.
 
 Known issues: you have to explicitly save inside your editor before hitting
 F4, unlike with 'mu edit'.
-
-One problem with a fork of the edit/ app is that many of the tests write to
-the same files under the .traces/ directory. I try to always commit the
-results of edit/ rather than the sandbox/ app, but I haven't been perfect.

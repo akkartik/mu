@@ -134,7 +134,7 @@ inline const vector<instruction>& routine::steps() const {
 //: Step 1: load all .mu files with numeric prefixes (in order)
 :(before "End Load Recipes")
 // Load .mu Core
-//? Trace_file = "interactive";
+//? Save_trace = true;
 //? START_TRACING_UNTIL_END_OF_SCOPE;
 load_file_or_directory("core.mu");
 //? DUMP("");
@@ -168,7 +168,7 @@ save_snapshots();
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   // Running Main
   setup();
-//?   Trace_file = "interactive";
+//?   Save_trace = true;
 //?   START_TRACING_UNTIL_END_OF_SCOPE;
   trace(9990, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
@@ -201,8 +201,8 @@ void dump_profile() {
 
 :(code)
 void cleanup_main() {
-  if (!Trace_file.empty() && Trace_stream) {
-    ofstream fout((Trace_dir+Trace_file).c_str());
+  if (Save_trace && Trace_stream) {
+    ofstream fout("interactive");
     fout << Trace_stream->readable_contents("");
     fout.close();
   }
