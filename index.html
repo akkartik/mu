@@ -65,7 +65,7 @@ harness, relying on a couple of one-liners in the makefile to autogenerate
 lists of tests to run.
 <br/><a href='html/003trace.cc.html'>003trace.cc</a>: support for logging
 facts about our program, and for <a href='http://akkartik.name/post/tracing-tests'>checking the facts logged in tests</a>.
-(<a href='html/003trace.test.cc.html'>tests for the test harness</a>)
+(<a href='html/003trace.test.cc.html'>tests for the tracing system</a>)
 
 <p><b>Part II</b>: the core Mu virtual machine, designed to compile easily to
 machine language.
@@ -113,12 +113,12 @@ or structs, homogeneous <a href='html/032array.cc.html'>arrays</a> of a single
 type of value, and <a href='html/033exclusive_container.cc.html'><em>exclusive containers</em></a>,
 akin to C unions but with a tag so each value knows its &lsquo;kind&rsquo;.
 Out of these primitive types, Mu builds the usual and growing menagerie of
-data structures: <a href='html/074list.mu.html'>linked lists</a> permitting
+data structures: <a href='html/064list.mu.html'>linked lists</a> permitting
 fast insertion and deletion and unidirectional scanning but slow search;
-<a href='html/076duplex_list.mu.html'><em>duplex lists</em></a> that permit
-bidirectional scanning; <a href='html/079table.mu.html'>associative arrays or <em>tables</em></a>
-for fast insertion, deletion and search using <a href='html/078hash.cc.html'>hash</a>
-tables; and <a href='html/077stream.mu.html'><em>streams</em></a> for
+<a href='html/066duplex_list.mu.html'><em>duplex lists</em></a> that permit
+bidirectional scanning; <a href='html/069table.mu.html'>associative arrays or <em>tables</em></a>
+for fast insertion, deletion and search using <a href='html/068hash.cc.html'>hash</a>
+tables; and <a href='html/067stream.mu.html'><em>streams</em></a> for
 gradually constructing long strings in a piecemeal fashion.
 
 <p/>Dynamic memory management: Mu supports <a href='html/034address.cc.html'>allocating</a>
@@ -137,12 +137,17 @@ additional runtime cost in exchange for C-like flexibility (you can copy
 addresses around all you like, and write from any copy of an address) and
 simpler implementation (no static analysis).
 
-<p/>Support for higher-order recipes that can pass <a href='html/060recipe.cc.html'>recipes</a>
+<p/>Support for higher-order recipes that can pass <a href='html/070recipe.cc.html'>recipes</a>
 around like any other value.
 
-<p/>Support for running multiple functions concurrently using <a href='html/061scheduler.cc.html'></a><em>routines</em></a>,
-for communicating between routines using <a href='html/072channel.mu.html'><em>channels</em></a>,
-and for <a href='html/062wait.cc.html'>synchronizing</a> between routines.
+<p/>Support for running multiple functions concurrently using <a href='html/071scheduler.cc.html'></a><em>routines</em></a>,
+for communicating between routines using <a href='html/074channel.mu.html'><em>channels</em></a>,
+and for <a href='html/072wait.cc.html'>synchronizing</a> between routines.
+Channels are Mu's only synchronization primitive, queues that can cause the
+routine reading or writing from them to stall without taking up CPU resources.
+Mu provides safe concurrency by forbidding routines from sharing addresses;
+writing to a channel always performs a <a href='html/073deep_copy.cc.html'>deep copy</a>
+that preserves all internal aliasing.
 
 <p><b>Part III</b>: transforms to make Mu a little more expressive, and give
 it some of the benefits of a high-level language.
@@ -188,34 +193,25 @@ matching those types.
 <br/><a href='html/057immutable.cc.html'>057immutable.cc</a>, a static analysis to
 ensure that functions never modify anything but their products.
 
-<p><b>Part IV</b>: beginnings of a standard library
+<p><b>Part IV</b>: Miscellaneous.
 
-<p/><a href='html/070text.mu.html'>070text.mu</a>: strings in Mu are
+<p/><a href='html/061text.mu.html'>061text.mu</a>: strings in Mu are
 bounds-checked rather than null-terminated. They're also unicode-aware (code
 points only; no control characters, no combining characters, no
 normalization). Mu recipes that take strings can take literal strings thanks
-to a <a href='html/063rewrite_literal_string.cc.html'>transform</a> that
+to a <a href='html/060rewrite_literal_string.cc.html'>transform</a> that
 allocates them on the heap.
-<br/><a href='html/071rewrite_stash.cc.html'>071rewrite_stash.cc</a>: a
+<br/><a href='html/062rewrite_stash.cc.html'>062rewrite_stash.cc</a>: a
 convenience when debugging is the ability to add variables to the trace using
 the <span style='font-family:courier,fixed'>stash</span> command. By default
 <span style='font-family:courier,fixed'>stash</span> just prints out the
 locations in memory, one by one. To extend its display format specific types,
 define a function called <span style='font-family:courier,fixed'>to-text</span>
 with the appropriate ingredient type, returning a Mu string.
+<br/><a href='html/065random.cc.html'>065random.cc</a>: a random-number
 <br/><a href='html/072channel.mu.html'>072channel.mu</a>: channels are Mu's
 only synchronization primitive, queues that can cause the routine reading or
 writing from them to stall without taking up CPU resources.
-<br/><a href='html/073array.mu.html'>073array.mu</a>: utilities for arrays.
-<br/><a href='html/074list.mu.html'>074list.mu</a>: linked lists where each
-node points to the next, permitting fast insertion/deletion but slow for
-search.
-<br/><a href='html/075random.cc.html'>075random.cc</a>: a random-number
-generator for introducing non-determinism into programs.
-<br/><a href='html/076duplex_list.mu.html'>076duplex_list.mu</a>: doubly
-linked lists that can be traversed both forwards and back.
-<br/><a href='html/077stream.mu.html'>077stream.mu</a>: data structure to
-efficiently append strings.
 
 <p><b>Part V</b>: Primitives for interfacing with hardware.
 
