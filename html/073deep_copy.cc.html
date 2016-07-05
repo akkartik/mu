@@ -1,0 +1,425 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 073deep_copy.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">// To recursively copy containers and any addresses they contain, use</span>
+<span class="Comment">// 'deep-copy'.</span>
+<span class="Comment">//</span>
+<span class="Comment">// Invariant: After a deep-copy its ingredient and result will point to no</span>
+<span class="Comment">// common addresses.</span>
+<span class="Comment">// Implications: Refcounts of all data pointed to by the original ingredient</span>
+<span class="Comment">// will remain unchanged. Refcounts of all data pointed to by the (newly</span>
+<span class="Comment">// created) result will be 1, in the absence of cycles.</span>
+<span class="Comment">//</span>
+<span class="Comment">// We do handle cycles in the ingredient, however. All cycles are translated</span>
+<span class="Comment">// to new cycles in the product.</span>
+
+<span class="Delimiter">:(scenario deep_copy_number)</span>
+def main [
+  local-scope
+  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>deep-copy x
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y
+]
+<span class="Comment"># non-address primitives are identical</span>
+<span class="traceContains">+mem: storing 1 in location 10</span>
+
+<span class="Delimiter">:(scenario deep_copy_container_without_address)</span>
+container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:number
+]
+def main [
+  local-scope
+  <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> b
+]
+<span class="Comment"># containers are identical as long as they don't contain addresses</span>
+<span class="traceContains">+mem: storing 1 in location 10</span>
+
+<span class="Delimiter">:(scenario deep_copy_address)</span>
+<span class="Special">% Memory_allocated_until = 200;</span>
+def main [
+  <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
+  <span class="Comment"># that the result is deterministic</span>
+  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>deep-copy <span class="Constant">1</span>:address:number
+  <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number
+  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal *<span class="Constant">1</span>:address:number<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:number
+  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="Comment"># the result of deep-copy is a new address</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># however, the contents are identical</span>
+<span class="traceContains">+mem: storing 1 in location 11</span>
+<span class="Comment"># the result of deep-copy gets a refcount of 1</span>
+<span class="Comment"># (its address 202 = 200 base + 2 for temporary space inside deep-copy)</span>
+<span class="traceContains">+run: {2: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 202: 1 -&gt; 0</span>
+<span class="traceContains">+abandon: saving 202 in free-list of size 2</span>
+
+<span class="Delimiter">:(scenario deep_copy_address_to_container)</span>
+<span class="Special">% Memory_allocated_until = 200;</span>
+def main [
+  <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
+  <span class="Comment"># that the result is deterministic</span>
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  *<span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  <span class="Constant">2</span>:address:point<span class="Special"> &lt;- </span>deep-copy <span class="Constant">1</span>:address:point
+  <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:point<span class="Delimiter">,</span> <span class="Constant">2</span>:address:point
+  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal *<span class="Constant">1</span>:address:point<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:point
+]
+<span class="Comment"># the result of deep-copy is a new address</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># however, the contents are identical</span>
+<span class="traceContains">+mem: storing 1 in location 11</span>
+
+<span class="Delimiter">:(scenario deep_copy_address_to_address)</span>
+<span class="Special">% Memory_allocated_until = 200;</span>
+def main [
+  <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
+  <span class="Comment"># that the result is deterministic</span>
+  <span class="Constant">1</span>:address:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  *<span class="Constant">1</span>:address:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">150</span>/unsafe
+  **<span class="Constant">1</span>:address:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:address:address:number<span class="Special"> &lt;- </span>deep-copy <span class="Constant">1</span>:address:address:number
+  <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:address:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:address:number
+  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal *<span class="Constant">1</span>:address:address:number<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:address:number
+  <span class="Constant">12</span>:boolean<span class="Special"> &lt;- </span>equal **<span class="Constant">1</span>:address:address:number<span class="Delimiter">,</span> **<span class="Constant">2</span>:address:address:number
+]
+<span class="Comment"># the result of deep-copy is a new address</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># any addresses in it or pointed to it are also new</span>
+<span class="traceContains">+mem: storing 0 in location 11</span>
+<span class="Comment"># however, the non-address contents are identical</span>
+<span class="traceContains">+mem: storing 1 in location 12</span>
+
+<span class="Delimiter">:(scenario deep_copy_array)</span>
+<span class="Special">% Memory_allocated_until = 200;</span>
+def main [
+  <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
+  <span class="Comment"># that the result is deterministic</span>
+  <span class="Constant">100</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># pretend refcount</span>
+  <span class="Constant">101</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># pretend array length</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  put-index *<span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+  put-index *<span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">35</span>
+  put-index *<span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">36</span>
+  stash [old:]<span class="Delimiter">,</span> *<span class="Constant">1</span>:address:array:number
+  <span class="Constant">2</span>:address:array:number<span class="Special"> &lt;- </span>deep-copy <span class="Constant">1</span>:address:array:number
+  stash <span class="Constant">2</span>:address:array:number
+  stash [<span class="Normal">new</span>:]<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:array:number
+  <span class="Constant">10</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:array:number
+  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal *<span class="Constant">1</span>:address:array:number<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:array:number
+]
+<span class="traceContains">+app: old: 3 34 35 36</span>
+<span class="traceContains">+app: new: 3 34 35 36</span>
+<span class="Comment"># the result of deep-copy is a new address</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># however, the contents are identical</span>
+<span class="traceContains">+mem: storing 1 in location 11</span>
+
+<span class="Delimiter">:(scenario deep_copy_container_with_address)</span>
+container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:address:number
+]
+def main [
+  local-scope
+  <span class="Normal">y0</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *y0<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> y0
+  <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> b
+  <span class="Normal">y1</span>:address:number<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> y:offset
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
+  <span class="Constant">12</span>:number/<span class="Special">raw &lt;- </span>copy *y1
+]
+<span class="Comment"># containers containing addresses are not identical to their deep copies</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># the addresses they contain are not identical either</span>
+<span class="traceContains">+mem: storing 0 in location 11</span>
+<span class="traceContains">+mem: storing 35 in location 12</span>
+
+<span class="Delimiter">:(scenario deep_copy_exclusive_container_with_address)</span>
+exclusive-container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:address:number
+]
+def main [
+  local-scope
+  <span class="Normal">y0</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *y0<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> y0
+  <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> b
+  <span class="Normal">y1</span>:address:number<span class="Delimiter">,</span> z:boolean<span class="Special"> &lt;- </span>maybe-convert b<span class="Delimiter">,</span> y:variant
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
+  <span class="Constant">12</span>:number/<span class="Special">raw &lt;- </span>copy *y1
+]
+<span class="Comment"># exclusive containers containing addresses are not identical to their deep copies</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># the addresses they contain are not identical either</span>
+<span class="traceContains">+mem: storing 0 in location 11</span>
+<span class="traceContains">+mem: storing 34 in location 12</span>
+
+<span class="Delimiter">:(scenario deep_copy_exclusive_container_with_container_with_address)</span>
+exclusive-container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:bar  <span class="Comment"># inline</span>
+]
+container bar [
+  <span class="Normal">x</span>:address:number
+]
+def main [
+  local-scope
+  <span class="Normal">y0</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *y0<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">a</span>:bar<span class="Special"> &lt;- </span>merge y0
+  <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> a
+  <span class="Normal">c</span>:foo<span class="Special"> &lt;- </span>deep-copy b
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal b<span class="Delimiter">,</span> c
+  <span class="Normal">d</span>:bar<span class="Delimiter">,</span> z:boolean<span class="Special"> &lt;- </span>maybe-convert c<span class="Delimiter">,</span> y:variant
+  <span class="Normal">y1</span>:address:number<span class="Special"> &lt;- </span>get d<span class="Delimiter">,</span> x:offset
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
+  <span class="Constant">12</span>:number/<span class="Special">raw &lt;- </span>copy *y1
+]
+<span class="Comment"># exclusive containers containing addresses are not identical to their deep copies</span>
+<span class="traceContains">+mem: storing 0 in location 10</span>
+<span class="Comment"># sub-containers containing addresses are not identical either</span>
+<span class="traceContains">+mem: storing 0 in location 11</span>
+<span class="traceContains">+mem: storing 34 in location 12</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+DEEP_COPY<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;deep-copy&quot;</span><span class="Delimiter">,</span> DEEP_COPY<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> DEEP_COPY: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'deep-copy' takes exactly one ingredient rather than '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'deep-copy' takes exactly one ingredient rather than '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'deep-copy' requires its ingredient and product to be the same type, but got '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> DEEP_COPY: <span class="Delimiter">{</span>
+  <span class="Normal">const</span> reagent&amp; input = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Comment">// allocate a tiny bit of temporary space for deep_copy()</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: allocating space for temporary&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  reagent tmp<span class="Delimiter">(</span><span class="Constant">&quot;tmp:address:number&quot;</span><span class="Delimiter">);</span>
+  tmp<span class="Delimiter">.</span>value = allocate<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deep_copy<span class="Delimiter">(</span>input<span class="Delimiter">,</span> tmp<span class="Delimiter">));</span>
+  <span class="Comment">// reclaim Mu memory allocated for tmp</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: reclaiming temporary&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  abandon<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> tmp<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> payload_size<span class="Delimiter">(</span>tmp<span class="Delimiter">));</span>
+  <span class="Comment">// reclaim host memory allocated for tmp.type when tmp goes out of scope</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+vector&lt;<span class="Normal">double</span>&gt; deep_copy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; in<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt; addresses_copied<span class="Delimiter">;</span>
+  <span class="Identifier">return</span> deep_copy<span class="Delimiter">(</span>in<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+vector&lt;<span class="Normal">double</span>&gt; deep_copy<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  canonize<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  vector&lt;<span class="Normal">double</span>&gt; result<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>in<span class="Delimiter">))</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deep_copy_address<span class="Delimiter">(</span>in<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">));</span>
+  <span class="Normal">else</span>
+    deep_copy<span class="Delimiter">(</span>in<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// deep-copy an address and return a new address</span>
+<span class="Normal">int</span> deep_copy_address<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>canonized_in<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> in_address = payload_address<span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying address &quot;</span> &lt;&lt; in_address &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">int</span> out = get<span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copy already exists: &quot;</span> &lt;&lt; out &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> out<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">int</span> out = allocate<span class="Delimiter">(</span>payload_size<span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: new address is &quot;</span> &lt;&lt; out &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> payload = canonized_in<span class="Delimiter">;</span>
+  payload<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recursing on payload &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; to_string<span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  vector&lt;<span class="Normal">double</span>&gt; data = deep_copy<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing result &quot;</span> &lt;&lt; out &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// HACK: write_memory interface isn't ideal for this situation; we need</span>
+  <span class="Comment">// a temporary location to help copy the payload.</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing temporary &quot;</span> &lt;&lt; tmp<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; out &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  payload<span class="Delimiter">.</span>value = tmp<span class="Delimiter">.</span>value<span class="Delimiter">;</span>  <span class="Comment">// now modified for output</span>
+  vector&lt;<span class="Normal">double</span>&gt; old_data = read_memory<span class="Delimiter">(</span>payload<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: really writing to &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; to_string<span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (old value &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>old_data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; new value &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  write_memory<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> data<span class="Delimiter">,</span> -<span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: output is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> out<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// deep-copy a non-address and return a vector of locations</span>
+<span class="Normal">void</span> deep_copy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">,</span> vector&lt;<span class="Normal">double</span>&gt;&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!is_mu_address<span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
+  vector&lt;<span class="Normal">double</span>&gt; data = read_memory<span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
+  out<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>out<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> data<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> data<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: scanning for addresses in &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">const</span> container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;set&lt;tag_condition_info&gt;<span class="Delimiter">,</span> set&lt;address_element_info&gt; &gt;::const_iterator p = metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!all_match<span class="Delimiter">(</span>data<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;address_element_info&gt;::const_iterator info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> info != p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Comment">// construct a fake reagent that reads directly from the appropriate</span>
+      <span class="Comment">// field of the container</span>
+      reagent curr<span class="Delimiter">;</span>
+      curr<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">,</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*info<span class="Delimiter">-&gt;</span>payload_type<span class="Delimiter">));</span>
+      curr<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>canonized_in<span class="Delimiter">.</span>value + info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">);</span>
+      curr<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying address &quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
+      out<span class="Delimiter">.</span>at<span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">)</span> = deep_copy_address<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">int</span> payload_address<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: moar tests, just because I can't believe it all works</span>
+
+<span class="Delimiter">:(scenario deep_copy_stress_test_1)</span>
+container foo1 [
+  <span class="Normal">p</span>:address:number
+]
+container foo2 [
+  <span class="Normal">p</span>:address:foo1
+]
+exclusive-container foo3 [
+  <span class="Normal">p</span>:address:foo1
+  <span class="Normal">q</span>:address:foo2
+]
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">a</span>:address:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> foo1:type
+  *a<span class="Special"> &lt;- </span>merge x
+  <span class="Normal">b</span>:address:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> foo2:type
+  *b<span class="Special"> &lt;- </span>merge a
+  <span class="Normal">c</span>:foo3<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
+  <span class="Normal">d</span>:foo3<span class="Special"> &lt;- </span>deep-copy c
+  <span class="Normal">e</span>:address:foo2<span class="Delimiter">,</span> z:boolean<span class="Special"> &lt;- </span>maybe-convert d<span class="Delimiter">,</span> q:variant
+  <span class="Normal">f</span>:address:foo1<span class="Special"> &lt;- </span>get *e<span class="Delimiter">,</span> p:offset
+  <span class="Normal">g</span>:address:number<span class="Special"> &lt;- </span>get *f<span class="Delimiter">,</span> p:offset
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy *g
+]
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Delimiter">:(scenario deep_copy_stress_test_2)</span>
+container foo1 [
+  <span class="Normal">p</span>:address:number
+]
+container foo2 [
+  <span class="Normal">p</span>:address:foo1
+]
+exclusive-container foo3 [
+  <span class="Normal">p</span>:address:foo1
+  <span class="Normal">q</span>:address:foo2
+]
+container foo4 [
+  <span class="Normal">p</span>:number
+  <span class="Normal">q</span>:address:foo3
+]
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">a</span>:address:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> foo1:type
+  *a<span class="Special"> &lt;- </span>merge x
+  <span class="Normal">b</span>:address:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> foo2:type
+  *b<span class="Special"> &lt;- </span>merge a
+  <span class="Normal">c</span>:address:foo3<span class="Special"> &lt;- </span><span class="Normal">new</span> foo3:type
+  *c<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
+  <span class="Normal">d</span>:foo4<span class="Special"> &lt;- </span>merge <span class="Constant">35</span><span class="Delimiter">,</span> c
+  <span class="Normal">e</span>:foo4<span class="Special"> &lt;- </span>deep-copy d
+  <span class="Normal">f</span>:address:foo3<span class="Special"> &lt;- </span>get e<span class="Delimiter">,</span> q:offset
+  <span class="Normal">g</span>:address:foo2<span class="Delimiter">,</span> z:boolean<span class="Special"> &lt;- </span>maybe-convert *f<span class="Delimiter">,</span> q:variant
+  <span class="Normal">h</span>:address:foo1<span class="Special"> &lt;- </span>get *g<span class="Delimiter">,</span> p:offset
+  <span class="Normal">y</span>:address:number<span class="Special"> &lt;- </span>get *h<span class="Delimiter">,</span> p:offset
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy *y
+]
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Delimiter">:(scenario deep_copy_cycles)</span>
+container foo [
+  <span class="Normal">p</span>:number
+  <span class="Normal">q</span>:address:foo
+]
+def main [
+  local-scope
+  <span class="Normal">x</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> p:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> q:offset<span class="Delimiter">,</span> x  <span class="Comment"># create a cycle</span>
+  <span class="Normal">y</span>:address:foo<span class="Special"> &lt;- </span>deep-copy x
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>get *y<span class="Delimiter">,</span> p:offset
+  <span class="Normal">y2</span>:address:foo<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> q:offset
+  stash y [vs] y2
+  <span class="Constant">2</span>:boolean/<span class="Special">raw &lt;- </span>equal y<span class="Delimiter">,</span> y2  <span class="Comment"># is it still a cycle?</span>
+  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y  <span class="Comment"># is it the same cycle?</span>
+]
+<span class="traceContains">+mem: storing 34 in location 1</span>
+<span class="Comment"># deep copy also contains a cycle</span>
+<span class="traceContains">+mem: storing 1 in location 2</span>
+<span class="Comment"># but it's a completely different (disjoint) cycle</span>
+<span class="traceContains">+mem: storing 0 in location 3</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

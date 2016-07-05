@@ -128,14 +128,12 @@ def main [
 ]
 <span class="traceContains">+mem: storing 0 in location 7</span>
 
-<span class="Comment">//: Global data structure for container metadata.</span>
 <span class="Comment">//: Can't put this in type_info because later layers will add support for more</span>
 <span class="Comment">//: complex type trees where metadata depends on *combinations* of types.</span>
-
 <span class="Delimiter">:(before &quot;struct reagent&quot;)</span>
 <span class="Normal">struct</span> container_metadata <span class="Delimiter">{</span>
   <span class="Normal">int</span> size<span class="Delimiter">;</span>
-  vector&lt;<span class="Normal">int</span>&gt; offset<span class="Delimiter">;</span>
+  vector&lt;<span class="Normal">int</span>&gt; offset<span class="Delimiter">;</span>  <span class="Comment">// not used by exclusive containers</span>
   <span class="Comment">// End container_metadata Fields</span>
   container_metadata<span class="Delimiter">()</span> :size<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// End container_metadata Constructor</span>
@@ -365,6 +363,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>offset_value &gt;= SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">))</span> <span class="Identifier">return</span> reagent<span class="Delimiter">();</span>  <span class="Comment">// error handled elsewhere</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>offset_value<span class="Delimiter">);</span>
   <span class="Comment">// End element_type Special-cases</span>
   <span class="Identifier">return</span> element<span class="Delimiter">;</span>
@@ -588,7 +587,7 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
     put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type number: &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  skip_bracket<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">&quot;'container' must begin with '['&quot;</span><span class="Delimiter">);</span>
+  skip_bracket<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">&quot;'&quot;</span>+command+<span class="Constant">&quot;' must begin with '['&quot;</span><span class="Delimiter">);</span>
   type_info&amp; info = get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>Num_calls_to_transform_all_at_first_definition == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// initial definition of this container</span>
@@ -605,6 +604,15 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string element = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>element == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; command &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Comment">// skip rest of container declaration</span>
+      <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+        skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">)</span> == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>element<span class="Delimiter">));</span>
     replace_unknown_types_with_unique_ordinals<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>type<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  element: &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">())</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -636,6 +644,13 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
   <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span>
     raise &lt;&lt; message &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario multi_word_line_in_container_declaration)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo [
+  <span class="Normal">x</span>:number y:number
+]
+<span class="traceContains">+error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.</span>
 
 <span class="Comment">//: ensure scenarios are consistent by always starting them at the same type</span>
 <span class="Comment">//: number.</span>

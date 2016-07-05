@@ -297,14 +297,18 @@ def main [
 <span class="traceContains">+mem: storing 15 in location 4</span>
 <span class="traceContains">+mem: storing 16 in location 5</span>
 
-<span class="Delimiter">:(before &quot;Update CREATE_ARRAY product in Check&quot;)</span>
-<span class="Comment">// 'create-array' does not support indirection. Static arrays are meant to be</span>
-<span class="Comment">// allocated on the 'stack'.</span>
-assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
-<span class="Delimiter">:(before &quot;Update CREATE_ARRAY product in Run&quot;)</span>
-<span class="Comment">// 'create-array' does not support indirection. Static arrays are meant to be</span>
-<span class="Comment">// allocated on the 'stack'.</span>
-assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
+<span class="Delimiter">:(scenario create_array_indirect)</span>
+def main [
+  <span class="Constant">1000</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># pretend refcount</span>
+  <span class="Constant">1</span>:address:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  <span class="Constant">1</span>:address:array:number:<span class="Constant">3</span>/lookup<span class="Special"> &lt;- </span>create-array
+]
+<span class="traceContains">+mem: storing 3 in location 1001</span>
+
+<span class="Delimiter">:(after &quot;Update CREATE_ARRAY product in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update CREATE_ARRAY product in Run&quot;)</span>
+canonize<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(scenario index_indirect)</span>
 def main [

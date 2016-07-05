@@ -214,22 +214,19 @@ ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter"
 
 <span class="PreProc">#define DUMP(label)  </span><span class="Normal">if</span><span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(label)</span><span class="Delimiter">;</span>
 
-<span class="Comment">// All scenarios save their traces in the repo, just like code. This gives</span>
-<span class="Comment">// future readers more meat when they try to make sense of a new project.</span>
-<span class="Normal">static</span> string Trace_dir = <span class="Constant">&quot;.traces/&quot;</span><span class="Delimiter">;</span>
-string Trace_file<span class="Delimiter">;</span>
+<span class="Normal">bool</span> Save_trace = <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
 <span class="Normal">struct</span> lease_tracer <span class="Delimiter">{</span>
   lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
   ~lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// in case tests close Trace_stream</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_file<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Save_trace<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      ofstream fout<span class="Delimiter">(</span><span class="Constant">&quot;last_trace&quot;</span><span class="Delimiter">);</span>
       fout &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>readable_contents<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
       fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">,</span> Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">,</span> Trace_file = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">,</span> Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 
@@ -251,12 +248,8 @@ START_TRACING_UNTIL_END_OF_SCOPE
   string label<span class="Delimiter">,</span> contents<span class="Delimiter">;</span>
   split_label_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-
-    <span class="Normal">if</span> <span class="Delimiter">(</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-
+    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>contents != trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     ++curr_expected_line<span class="Delimiter">;</span>
     <span class="Normal">while</span> <span class="Delimiter">(</span>curr_expected_line &lt; SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">)</span> &amp;&amp; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>empty<span class="Delimiter">())</span>
       ++curr_expected_line<span class="Delimiter">;</span>
@@ -265,8 +258,14 @@ START_TRACING_UNTIL_END_OF_SCOPE
   <span class="Delimiter">}</span>
 
   ++Num_failures<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>line_exists_anywhere<span class="Delimiter">(</span>label<span class="Delimiter">,</span> contents<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): line [&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] out of order in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): missing [&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+    DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -282,6 +281,14 @@ START_TRACING_UNTIL_END_OF_SCOPE
     *label = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pos<span class="Delimiter">));</span>
     *contents = trim<span class="Delimiter">(</span>s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>pos+SIZE<span class="Delimiter">(</span>delim<span class="Delimiter">)));</span>
   <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> line_exists_anywhere<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; label<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>label != p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>contents == trim<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>contents<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 ^L
@@ -373,27 +380,25 @@ string trim<span class="Delimiter">(</span><span class="Normal">const</span> str
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;vector&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;vector&gt;</span>
 <span class="Normal">using</span> std::vector<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;list&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;list&gt;</span>
 <span class="Normal">using</span> std::list<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;map&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;map&gt;</span>
 <span class="Normal">using</span> std::map<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;set&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;set&gt;</span>
 <span class="Normal">using</span> std::set<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;algorithm&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;algorithm&gt;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&lt;sstream&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;sstream&gt;</span>
 <span class="Normal">using</span> std::istringstream<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::ostringstream<span class="Delimiter">;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&lt;fstream&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;fstream&gt;</span>
 <span class="Normal">using</span> std::ifstream<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::ofstream<span class="Delimiter">;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&quot;termbox/termbox.h&quot;</span>
-
-<span class="PreProc">#define unused  __attribute__((unused))</span>
+<span class="PreProc">#include </span><span class="Constant">&quot;termbox/termbox.h&quot;</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">//: In future layers we'll use the depth field as follows:</span>

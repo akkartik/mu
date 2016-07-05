@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 072channel.mu</title>
+<title>Mu - 074channel.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
@@ -36,12 +36,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># Mu synchronizes using channels rather than locks, like Erlang and Go.</span>
 <span class="Comment">#</span>
 <span class="Comment"># The two ends of a channel will usually belong to different routines, but</span>
-<span class="Comment"># each end should only be used by a single one. Don't try to read from or</span>
-<span class="Comment"># write to it from multiple routines at once.</span>
+<span class="Comment"># each end should (currently) only be used by a single one. Don't try to read</span>
+<span class="Comment"># from or write to it from multiple routines at once.</span>
 <span class="Comment">#</span>
-<span class="Comment"># The key property of channels is that writing to a full channel or reading</span>
-<span class="Comment"># from an empty one will put the current routine in 'waiting' state until the</span>
-<span class="Comment"># operation can be completed.</span>
+<span class="Comment"># Key properties of channels:</span>
+<span class="Comment">#</span>
+<span class="Comment"># a) Writing to a full channel or reading from an empty one will put the</span>
+<span class="Comment"># current routine in 'waiting' state until the operation can be completed.</span>
+<span class="Comment">#</span>
+<span class="Comment"># b) Writing to a channel implicitly performs a deep copy, to prevent</span>
+<span class="Comment"># addresses from being shared between routines, thereby causing race</span>
+<span class="Comment"># conditions.</span>
 
 <span class="muScenario">scenario</span> channel [
   run [
@@ -106,10 +111,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     full-address:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">first-full:offset</span>
     wait-for-location full-address
   <span class="Delimiter">}</span>
-  <span class="Comment"># store val</span>
+  <span class="Comment"># store a deep copy of val</span>
   circular-buffer:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
   free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
-  *circular-buffer<span class="Special"> &lt;- </span>put-index *circular-buffer, free, val
+  val-copy:_elem<span class="Special"> &lt;- </span>deep-copy val  <span class="Comment"># on this instruction rests all Mu's concurrency-safety</span>
+  *circular-buffer<span class="Special"> &lt;- </span>put-index *circular-buffer, free, val-copy
   <span class="Comment"># mark its slot as filled</span>
   free<span class="Special"> &lt;- </span>add free, <span class="Constant">1</span>
   <span class="Delimiter">{</span>
@@ -307,7 +313,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># a channel can be closed from either the source or the sink</span>
-<span class="Comment"># both threads can modify it, but they can only set it, so this is a benign race</span>
+<span class="Comment"># both routines can modify the 'closed?' bit, but they can only ever set it, so this is a benign race</span>
 <span class="muRecipe">def</span> close x:address:source:_elem<span class="muRecipe"> -&gt; </span>x:address:source:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>

@@ -120,6 +120,17 @@ def main [
 ]
 <span class="traceContains">+app: abc foo</span>
 
+<span class="Delimiter">:(scenario stash_string_as_array)</span>
+def main [
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  stash *<span class="Constant">1</span>:address:array:character
+]
+<span class="traceContains">+app: 3 97 98 99</span>
+
+<span class="Comment">//: fixes way more than just stash</span>
+<span class="Delimiter">:(before &quot;End Preprocess is_mu_string(reagent x)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+
 <span class="Comment">//: Allocate more to routine when initializing a literal string</span>
 <span class="Delimiter">:(scenario new_string_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 2;</span>

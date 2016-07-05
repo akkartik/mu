@@ -172,7 +172,7 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
 <span class="Comment">//: Step 1: load all .mu files with numeric prefixes (in order)</span>
 <span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
 <span class="Comment">// Load .mu Core</span>
-<span class="CommentedCode">//? Trace_file = &quot;interactive&quot;;</span>
+<span class="CommentedCode">//? Save_trace = true;</span>
 <span class="CommentedCode">//? START_TRACING_UNTIL_END_OF_SCOPE;</span>
 load_file_or_directory<span class="Delimiter">(</span><span class="Constant">&quot;core.mu&quot;</span><span class="Delimiter">);</span>
 <span class="CommentedCode">//? DUMP(&quot;&quot;);</span>
@@ -196,6 +196,8 @@ load_file_or_directory<span class="Delimiter">(</span><span class="Constant">&qu
   <span class="Normal">if</span> <span class="Delimiter">(</span>Run_tests<span class="Delimiter">)</span> Recipe<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 transform_all<span class="Delimiter">();</span>
+<span class="CommentedCode">//? DUMP(&quot;&quot;);</span>
+<span class="CommentedCode">//? exit(0);</span>
 save_snapshots<span class="Delimiter">();</span>
 
 <span class="Comment">//: Step 3: if we aren't running tests, locate a recipe called 'main' and</span>
@@ -204,7 +206,7 @@ save_snapshots<span class="Delimiter">();</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>!Run_tests &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
   <span class="Comment">// Running Main</span>
   setup<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   Trace_file = &quot;interactive&quot;;</span>
+<span class="CommentedCode">//?   Save_trace = true;</span>
 <span class="CommentedCode">//?   START_TRACING_UNTIL_END_OF_SCOPE;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;=== Starting to run&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   assert<span class="Delimiter">(</span>Num_calls_to_transform_all == <span class="Constant">1</span><span class="Delimiter">);</span>
@@ -237,8 +239,8 @@ save_snapshots<span class="Delimiter">();</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> cleanup_main<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_file<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    ofstream fout<span class="Delimiter">((</span>Trace_dir+Trace_file<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Save_trace &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    ofstream fout<span class="Delimiter">(</span><span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">);</span>
     fout &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>readable_contents<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
     fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
@@ -281,8 +283,8 @@ atexit<span class="Delimiter">(</span>cleanup_main<span class="Delimiter">);</sp
   free<span class="Delimiter">(</span>files<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;dirent.h&gt;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;sys/stat.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;dirent.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;sys/stat.h&gt;</span>
 
 <span class="SalientComment">//:: Reading from memory, writing to memory.</span>
 
@@ -328,18 +330,18 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">int</span> size_of<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Comment">// End size_of(reagent r) Cases</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 <span class="Normal">int</span> size_of<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Comment">// End size_of(type) Cases</span>
   <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> size_mismatch<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Comment">// End size_mismatch(x) Cases</span>
 <span class="CommentedCode">//?   if (size_of(x) != SIZE(data)) cerr &lt;&lt; size_of(x) &lt;&lt; &quot; vs &quot; &lt;&lt; SIZE(data) &lt;&lt; '\n';</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>

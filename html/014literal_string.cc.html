@@ -140,7 +140,7 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
 
 <span class="Delimiter">:(after &quot;Parsing reagent(string s)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>*s<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">']'</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>*s<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// unbalanced bracket; handled elsewhere</span>
   name = s<span class="Delimiter">;</span>
   <span class="Comment">// delete [] delimiters</span>
   name<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
@@ -229,6 +229,12 @@ def main [
   copy []
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;&quot;: &quot;literal-string&quot;}</span>
+
+<span class="Delimiter">:(scenario multiple_unfinished_recipes)</span>
+<span class="Special">% Hide_errors = true;</span>
+recipe f1 [
+recipe f2 [
+<span class="traceContains">+error: unbalanced '['</span>
 </pre>
 </body>
 </html>

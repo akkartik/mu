@@ -156,6 +156,48 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
+<span class="muScenario">scenario</span> clicking-on-app-trace-does-nothing [
+  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Comment"># create and expand the trace</span>
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[stash 123456789]</span>
+  assume-console [
+    press F4
+    left-click <span class="Constant">4</span>, <span class="Constant">51</span>
+  ]
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊stash 123456789                                  .</span>
+   <span class="Constant"> .                                                  ┊123456789                                        .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+  <span class="Comment"># click on the stash under the edit-button region (or any of the other buttons, really)</span>
+  assume-console [
+    left-click <span class="Constant">5</span>, <span class="Constant">57</span>
+  ]
+  run [
+    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  ]
+  <span class="Comment"># no change; doesn't die</span>
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+<span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ┊stash 123456789                                  .</span>
+   <span class="Constant"> .                                                  ┊123456789                                        .</span>
+   <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
+   <span class="Constant"> .                                                  ┊                                                 .</span>
+  ]
+]
+
 <span class="muData">container</span> sandbox-data [
   trace:address:array:character
   display-trace?:boolean
@@ -194,7 +236,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     x<span class="Special"> &lt;- </span>not x
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">display-trace?:offset</span>, x
     hide-screen screen
-    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, <span class="Constant">1/clear</span>
+    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
     screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     <span class="Comment"># no change in cursor</span>
     show-screen screen
@@ -240,7 +282,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> display-trace?
     sandbox-trace:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">trace:offset</span>
     <span class="muControl">break-unless</span> sandbox-trace  <span class="Comment"># nothing to print; move on</span>
-    row, screen<span class="Special"> &lt;- </span>render screen, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
+    row, screen<span class="Special"> &lt;- </span>render-text screen, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
   <span class="Delimiter">}</span>
 <span class="Constant">  &lt;render-sandbox-trace-done&gt;</span>
 ]

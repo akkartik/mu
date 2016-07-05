@@ -726,12 +726,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;insert-character-special-case&gt;</span> [
   <span class="Comment"># if the line wraps at the cursor, move cursor to start of next row</span>
   <span class="Delimiter">{</span>
-    <span class="Comment"># if we're at the column just before the wrap indicator</span>
-    wrap-column:number<span class="Special"> &lt;- </span>subtract right, <span class="Constant">1</span>
+    <span class="Comment"># if either:</span>
+    <span class="Comment"># a) we're at the end of the line and at the column of the wrap indicator, or</span>
+    <span class="Comment"># b) we're not at end of line and just before the column of the wrap indicator</span>
+    wrap-column:number<span class="Special"> &lt;- </span>copy right
+    before-wrap-column:number<span class="Special"> &lt;- </span>subtract wrap-column, <span class="Constant">1</span>
     at-wrap?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-column, wrap-column
-    <span class="muControl">break-unless</span> at-wrap?
-    cursor-column<span class="Special"> &lt;- </span>subtract cursor-column, wrap-column
-    cursor-column<span class="Special"> &lt;- </span>add cursor-column, left
+    just-before-wrap?:boolean<span class="Special"> &lt;- </span>greater-or-equal cursor-column, before-wrap-column
+    next:address:duplex-list:character<span class="Special"> &lt;- </span>next before-cursor
+    <span class="Comment"># at end of line? next == 0 || next.value == 10/newline</span>
+    at-end-of-line?:boolean<span class="Special"> &lt;- </span>equal next, <span class="Constant">0</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-if</span> at-end-of-line?
+      next-character:character<span class="Special"> &lt;- </span>get *next, <span class="Constant">value:offset</span>
+      at-end-of-line?<span class="Special"> &lt;- </span>equal next-character, <span class="Constant">10/newline</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># break unless ((eol? and at-wrap?) or (~eol? and just-before-wrap?))</span>
+    move-cursor-to-next-line?:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-if</span> at-end-of-line?
+      move-cursor-to-next-line?<span class="Special"> &lt;- </span>copy just-before-wrap?
+      <span class="Comment"># if we're moving the cursor because it's in the middle of a wrapping</span>
+      <span class="Comment"># line, adjust it to left-most column</span>
+      potential-new-cursor-column:number<span class="Special"> &lt;- </span>copy left
+    <span class="Delimiter">}</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> at-end-of-line?
+      move-cursor-to-next-line?<span class="Special"> &lt;- </span>copy at-wrap?
+      <span class="Comment"># if we're moving the cursor because it's at the end of a wrapping line,</span>
+      <span class="Comment"># adjust it to one past the left-most column to make room for the</span>
+      <span class="Comment"># newly-inserted wrap-indicator</span>
+      potential-new-cursor-column:number<span class="Special"> &lt;- </span>add left, <span class="Constant">1/make-room-for-wrap-indicator</span>
+    <span class="Delimiter">}</span>
+    <span class="muControl">break-unless</span> move-cursor-to-next-line?
+    cursor-column<span class="Special"> &lt;- </span>copy potential-new-cursor-column
     *editor<span class="Special"> &lt;- </span>put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
     cursor-row<span class="Special"> &lt;- </span>add cursor-row, <span class="Constant">1</span>
     *editor<span class="Special"> &lt;- </span>put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
@@ -746,33 +774,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters [
-  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  assume-console [
-    left-click <span class="Constant">1</span>, <span class="Constant">4</span>  <span class="Comment"># line is full; no wrap icon yet</span>
-    type <span class="Constant">[f]</span>
-  ]
-  run [
-    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">2</span>:address:editor-data
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
-  ]
-  screen-should-contain [
-   <span class="Constant"> .          .</span>
-   <span class="Constant"> .abcd↩     .</span>
-   <span class="Constant"> .fe        .</span>
-   <span class="Constant"> .┈┈┈┈┈     .</span>
-   <span class="Constant"> .          .</span>
-  ]
-  memory-should-contain [
-    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># cursor row</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor column</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-2 [
+<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-in-middle-of-line [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
   <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
@@ -795,6 +797,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># cursor row</span>
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># cursor column</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-at-end-of-line [
+  <span class="Constant">local-scope</span>
+  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+  <span class="Comment"># create an editor containing two lines</span>
+  contents:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+<span class="Constant">xyz]</span>
+  <span class="Constant">1</span>:address:editor-data/<span class="Special">raw &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abc       .</span>
+   <span class="Constant"> .xyz       .</span>
+   <span class="Constant"> .          .</span>
+  ]
+  assume-console [
+    left-click <span class="Constant">1</span>, <span class="Constant">4</span>  <span class="Comment"># at end of first line</span>
+    type <span class="Constant">[de]</span>  <span class="Comment"># trigger wrap</span>
+  ]
+  run [
+    editor-event-loop screen:address:screen, console:address:console, <span class="Constant">1</span>:address:editor-data/<span class="Special">raw</span>
+  ]
+  screen-should-contain [
+   <span class="Constant"> .          .</span>
+   <span class="Constant"> .abcd↩     .</span>
+   <span class="Constant"> .e         .</span>
+   <span class="Constant"> .xyz       .</span>
+   <span class="Constant"> .┈┈┈┈┈     .</span>
   ]
 ]
 

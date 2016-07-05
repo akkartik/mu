@@ -111,9 +111,11 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   ~type_tree<span class="Delimiter">();</span>
   type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">);</span>
   <span class="Comment">// simple: type ordinal</span>
-  <span class="Normal">explicit</span> type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_ordinal v<span class="Delimiter">)</span> :name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  <span class="Normal">explicit</span> type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">);</span>
+  type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_ordinal v<span class="Delimiter">)</span> :name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   <span class="Comment">// intermediate: list of type ordinals</span>
   type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_ordinal v<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+  type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">);</span>
   <span class="Comment">// advanced: tree containing type ordinals</span>
   type_tree<span class="Delimiter">(</span>type_tree* l<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> left<span class="Delimiter">(</span>l<span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 <span class="Delimiter">};</span>
@@ -133,6 +135,9 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
 <span class="Delimiter">};</span>
 
 <span class="Comment">// End type_tree Definition</span>
+<span class="Delimiter">:(code)</span>
+type_tree::type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">)</span> :name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+type_tree::type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// Locations refer to a common 'memory'. Each location can store a number.</span>
@@ -305,9 +310,9 @@ reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span
   <span class="Normal">delete</span> type_names<span class="Delimiter">;</span>
   <span class="Comment">// special cases</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
-    type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">));</span>
+    type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
-    type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">,</span> get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">));</span>
+    type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
   <span class="Comment">// other properties</span>
   slurp_properties<span class="Delimiter">(</span>in<span class="Delimiter">,</span> properties<span class="Delimiter">);</span>
   <span class="Comment">// End Parsing reagent</span>
@@ -463,8 +468,7 @@ string_tree* property<span class="Delimiter">(</span><span class="Normal">const<
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Helpers for converting various values to string</span>
-<span class="Comment">//: Use to_string() in trace(), and try to avoid relying on unstable codes that</span>
-<span class="Comment">//: will perturb .traces/ from commit to commit.</span>
+<span class="Comment">//: Use to_string() in trace(), and try to keep it stable from run to run.</span>
 <span class="Comment">//: Use debug_string() while debugging, and throw everything into it.</span>
 <span class="Comment">//: Use inspect() only for emitting a canonical format that can be parsed back</span>
 <span class="Comment">//: into the value.</span>
@@ -705,9 +709,9 @@ string trim_floating_point<span class="Delimiter">(</span><span class="Normal">c
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;utility&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;utility&gt;</span>
 <span class="Normal">using</span> std::pair<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;math.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;math.h&gt;</span>
 </pre>
 </body>
 </html>

@@ -21,6 +21,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -129,10 +130,71 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: up in than integer overflow.</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define SIZE(X) (assert((X)</span><span class="Delimiter">.</span><span class="PreProc">size() &lt; (</span><span class="Constant">1LL</span><span class="PreProc">&lt;&lt;(</span><span class="Normal">sizeof</span><span class="PreProc">(</span><span class="Normal">int</span><span class="PreProc">)*</span><span class="Constant">8</span><span class="PreProc">-</span><span class="Constant">2</span><span class="PreProc">)))</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Normal">static_cast</span><span class="PreProc">&lt;</span><span class="Normal">int</span><span class="PreProc">&gt;((X)</span><span class="Delimiter">.</span><span class="PreProc">size()))</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: 5. Integer overflow is still impossible to guard against. Maybe after</span>
-<span class="Comment">//: reading <a href="http://www.cs.utah.edu/~regehr/papers/overflow12.pdf">http://www.cs.utah.edu/~regehr/papers/overflow12.pdf</a></span>
-<span class="Comment">//:</span>
+
+<span class="Comment">//: 5. Integer overflow is guarded against at runtime using the -ftrapv flag</span>
+<span class="Comment">//: to the compiler, supported by Clang (GCC version only works sometimes:</span>
+<span class="Comment">//: <a href="http://stackoverflow.com/questions/20851061/how-to-make-gcc-ftrapv-work).">http://stackoverflow.com/questions/20851061/how-to-make-gcc-ftrapv-work).</a></span>
+<span class="Delimiter">:(before &quot;atexit(teardown)&quot;)</span>
+initialize_signal_handlers<span class="Delimiter">();</span>  <span class="Comment">// not always necessary, but doesn't hurt</span>
+<span class="CommentedCode">//? cerr &lt;&lt; INT_MAX+1 &lt;&lt; '\n';  // test overflow</span>
+<span class="CommentedCode">//? assert(false);  // test SIGABRT</span>
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// based on <a href="https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c">https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c</a></span>
+<span class="Normal">void</span> initialize_signal_handlers<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">struct</span> sigaction action<span class="Delimiter">;</span>
+  bzero<span class="Delimiter">(</span>&amp;action<span class="Delimiter">,</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>action<span class="Delimiter">));</span>
+  action<span class="Delimiter">.</span>sa_sigaction = dump_and_exit<span class="Delimiter">;</span>
+  sigemptyset<span class="Delimiter">(</span>&amp;action<span class="Delimiter">.</span>sa_mask<span class="Delimiter">);</span>
+  sigaction<span class="Delimiter">(</span><span class="Constant">SIGABRT</span><span class="Delimiter">,</span> &amp;action<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>  <span class="Comment">// assert() failure or integer overflow on linux (with -ftrapv)</span>
+  sigaction<span class="Delimiter">(</span><span class="Constant">SIGILL</span><span class="Delimiter">,</span>  &amp;action<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>  <span class="Comment">// integer overflow on OS X (with -ftrapv)</span>
+<span class="Delimiter">}</span>
+<span class="Normal">void</span> dump_and_exit<span class="Delimiter">(</span><span class="Normal">int</span> sig<span class="Delimiter">,</span> unused siginfo_t* dummy1<span class="Delimiter">,</span> unused <span class="Normal">void</span>* dummy2<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">switch</span> <span class="Delimiter">(</span>sig<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">case</span> <span class="Constant">SIGABRT</span>:
+<span class="PreProc">      #ifndef __APPLE__</span>
+        cerr &lt;&lt; <span class="Constant">&quot;SIGABRT: might be an integer overflow if it wasn't an assert() failure</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+        _Exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="PreProc">      #endif</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">case</span> <span class="Constant">SIGILL</span>:
+<span class="PreProc">      #ifdef __APPLE__</span>
+        cerr &lt;&lt; <span class="Constant">&quot;SIGILL: most likely caused by integer overflow</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+        _Exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="PreProc">      #endif</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">default</span>:
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;signal.h&gt;</span>
+
+<span class="Comment">//: For good measure we'll also enable SIGFPE.</span>
+<span class="Delimiter">:(before &quot;atexit(teardown)&quot;)</span>
+feenableexcept<span class="Delimiter">(</span>FE_OVERFLOW | FE_UNDERFLOW<span class="Delimiter">);</span>
+<span class="CommentedCode">//? assert(sizeof(int) == 4 &amp;&amp; sizeof(float) == 4);</span>
+<span class="CommentedCode">//? //                          | exp   |  mantissa</span>
+<span class="CommentedCode">//? int smallest_subnormal = 0b00000000000000000000000000000001;</span>
+<span class="CommentedCode">//? float smallest_subnormal_f = *reinterpret_cast&lt;int*&gt;(&amp;smallest_subnormal);</span>
+<span class="CommentedCode">//? cerr &lt;&lt; &quot;ε/2: &quot; &lt;&lt; smallest_subnormal_f/2 &lt;&lt; &quot; (underflow)\n&quot;;  // test SIGFPE</span>
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;fenv.h&gt;</span>
+<span class="Delimiter">:(code)</span>
+<span class="PreProc">#ifdef __APPLE__</span>
+<span class="Comment">// Public domain polyfill for feenableexcept on OS X</span>
+<span class="Comment">// <a href="http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c">http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c</a></span>
+<span class="Normal">inline</span> <span class="Normal">int</span> feenableexcept <span class="Delimiter">(</span><span class="Normal">unsigned</span> <span class="Normal">int</span> excepts<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">static</span> fenv_t fenv<span class="Delimiter">;</span>
+  <span class="Normal">unsigned</span> <span class="Normal">int</span> new_excepts = excepts &amp; FE_ALL_EXCEPT<span class="Delimiter">;</span>
+  <span class="Normal">unsigned</span> <span class="Normal">int</span> old_excepts<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>fegetenv<span class="Delimiter">(</span>&amp;fenv<span class="Delimiter">))</span> <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
+  old_excepts = fenv<span class="Delimiter">.</span>__control &amp; FE_ALL_EXCEPT<span class="Delimiter">;</span>
+  fenv<span class="Delimiter">.</span>__control &amp;= ~new_excepts<span class="Delimiter">;</span>
+  fenv<span class="Delimiter">.</span>__mxcsr   &amp;= ~<span class="Delimiter">(</span>new_excepts &lt;&lt; <span class="Constant">7</span><span class="Delimiter">);</span>
+  <span class="Identifier">return</span> fesetenv<span class="Delimiter">(</span>&amp;fenv<span class="Delimiter">)</span> ? -<span class="Constant">1</span> : old_excepts<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="PreProc">#endif</span>
+
 <span class="Comment">//: 6. Map's operator[] being non-const is fucking evil.</span>
 <span class="Delimiter">:(before &quot;Globals&quot;)</span>  <span class="Comment">// can't generate prototypes for these</span>
 <span class="Comment">// from <a href="http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map">http://stackoverflow.com/questions/152643/idiomatic-c-for-reading-from-a-const-map</a></span>
@@ -158,29 +220,32 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">}</span>
 <span class="Comment">//: The contract: any container that relies on get_or_insert should never call</span>
 <span class="Comment">//: contains_key.</span>
-<span class="Comment">//:</span>
+
 <span class="Comment">//: 7. istreams are a royal pain in the arse. You have to be careful about</span>
 <span class="Comment">//: what subclass you try to putback into. You have to watch out for the pesky</span>
 <span class="Comment">//: failbit and badbit. Just avoid eof() and use this helper instead.</span>
+<span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> has_data<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> in &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;assert.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;assert.h&gt;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&lt;iostream&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;iostream&gt;</span>
 <span class="Normal">using</span> std::istream<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::ostream<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::iostream<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::cin<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::cout<span class="Delimiter">;</span>
 <span class="Normal">using</span> std::cerr<span class="Delimiter">;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;iomanip&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;iomanip&gt;</span>
 
-<span class="PreProc">#include</span><span class="Constant">&lt;cstring&gt;</span>
-<span class="PreProc">#include</span><span class="Constant">&lt;string&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;cstring&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;string&gt;</span>
 <span class="Normal">using</span> std::string<span class="Delimiter">;</span>
+
+<span class="PreProc">#define unused  __attribute__((unused))</span>
 </pre>
 </body>
 </html>

@@ -151,9 +151,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//:</span>
 <span class="Comment">//: This layer implements creating addresses using 'new'. The next few layers</span>
 <span class="Comment">//: will flesh out the rest of the life cycle.</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: The tests in this layer use unsafe operations so as to stay decoupled from</span>
-<span class="Comment">//: 'new'.</span>
 
 <span class="Comment">//: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.</span>
 
@@ -310,33 +307,38 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array size is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     size = <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + size*ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// include space for refcount</span>
-  size++<span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   Total_alloc += size;</span>
-<span class="CommentedCode">//?   Num_alloc++;</span>
-  <span class="Comment">// compute the region of memory to return</span>
-  <span class="Comment">// really crappy at the moment</span>
-  ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
-  <span class="Normal">const</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Comment">// save result</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Comment">// initialize allocated space</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> address = result<span class="Delimiter">;</span> address &lt; result+size<span class="Delimiter">;</span> ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0 in location &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
+  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// initialize array length</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span> &lt;&lt; end<span class="Delimiter">();</span>
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">int</span> allocate<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// include space for refcount</span>
+  size++<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   Total_alloc += size;</span>
+<span class="CommentedCode">//?   Num_alloc++;</span>
+  <span class="Comment">// Allocate Special-cases</span>
+  <span class="Comment">// compute the region of memory to return</span>
+  <span class="Comment">// really crappy at the moment</span>
+  ensure_space<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
+  <span class="Normal">const</span> <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// initialize allocated space</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> address = result<span class="Delimiter">;</span> address &lt; result+size<span class="Delimiter">;</span> ++address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0 in location &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>alloc += size<span class="Delimiter">;</span>
   <span class="Comment">// no support yet for reclaiming memory between routines</span>
   assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>alloc &lt;= Current_routine<span class="Delimiter">-&gt;</span>alloc_max<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: statistics for debugging</span>

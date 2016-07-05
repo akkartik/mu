@@ -163,7 +163,7 @@ container foo [
 <span class="Delimiter">:(before &quot;End Load Container Element Definition&quot;)</span>
 <span class="Delimiter">{</span>
   <span class="Normal">const</span> type_tree* type = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>type<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type &amp;&amp; type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; <span class="Constant">&quot;container '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' doesn't specify type of array elements for '&quot;</span> &lt;&lt; info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -174,6 +174,17 @@ container foo [
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario code_inside_container)</span>
+<span class="Special">% Hide_errors = true;</span>
+container card [
+  <span class="Normal">rank</span>:number<span class="Special"> &lt;- </span>next-ingredient
+]
+recipe foo [
+  <span class="Constant">1</span>:card<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:card rank:offset
+]
+<span class="Comment"># shouldn't die</span>
 
 <span class="SalientComment">//:: To access elements of an array, use 'index'</span>
 
@@ -245,7 +256,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Comment">// Update INDEX index in Run</span>
   vector&lt;<span class="Normal">double</span>&gt; index_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>index<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   type_tree* element_type = copy_array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
@@ -306,7 +317,7 @@ def main [
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
   index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># less than size of array in locations, but larger than its length in elements</span>
 ]
-<span class="traceContains">+error: main: invalid index 4</span>
+<span class="traceContains">+error: main: invalid index 4 in 'index 1:array:number:3, 4'</span>
 
 <span class="Delimiter">:(scenario index_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -320,7 +331,7 @@ def main [
   <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
   index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span>
 ]
-<span class="traceContains">+error: main: invalid index -1</span>
+<span class="traceContains">+error: main: invalid index -1 in 'index 1:array:point, -1'</span>
 
 <span class="Delimiter">:(scenario index_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>

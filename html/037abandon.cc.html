@@ -102,25 +102,20 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
   put<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> payload_size<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(before &quot;ensure_space(size)&quot; following &quot;case ALLOCATE&quot;)</span>
+<span class="Delimiter">:(after &quot;Allocate Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;abandon&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;picking up space from free-list of size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">int</span> result = get_or_insert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new alloc from free list: &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
   put<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>free_list<span class="Delimiter">,</span> size<span class="Delimiter">,</span> get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = result+<span class="Constant">1</span><span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = result<span class="Delimiter">;</span> curr &lt; result+size<span class="Delimiter">;</span> ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;memory in free list was not zeroed out: &quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">'/'</span> &lt;&lt; result &lt;&lt; <span class="Constant">&quot;; somebody wrote to us after free!!!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// always fatal</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">else</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario new_differing_size_no_reclaim)</span>

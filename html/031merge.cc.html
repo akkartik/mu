@@ -186,6 +186,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     reagent&amp; container = state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!container<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
     type_info&amp; container_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
     <span class="Normal">switch</span> <span class="Delimiter">(</span>container_info<span class="Delimiter">.</span>kind<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">case</span> CONTAINER: <span class="Delimiter">{</span>
@@ -215,7 +216,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
         <span class="Delimiter">}</span>
         <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      <span class="Comment">// End valid_merge Cases</span>
+      <span class="Comment">// End check_merge_call Cases</span>
       <span class="Normal">default</span>: <span class="Delimiter">{</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>container<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
           raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incorrect type of ingredient &quot;</span> &lt;&lt; ingredient_index &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>

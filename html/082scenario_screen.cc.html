@@ -184,7 +184,7 @@ Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="D
 <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new-fake-screen&quot;</span><span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:screen&quot;</span><span class="Delimiter">));</span>
+  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:screen/raw&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// only allowed in scenario blocks</span>
   curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -238,7 +238,6 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> check_screen<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; expected_contents<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">int</span> color<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
   <span class="Normal">int</span> screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Normal">int</span> data_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;data&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>data_offset &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
@@ -374,7 +373,6 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> dump_screen<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">);</span>  <span class="Comment">// not supported</span>
   <span class="Normal">int</span> screen_location = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> SCREEN<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Normal">int</span> width_offset = find_element_name<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;num-columns&quot;</span><span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">int</span> screen_width = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> screen_location+width_offset<span class="Delimiter">);</span>
