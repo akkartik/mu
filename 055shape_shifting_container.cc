@@ -72,6 +72,13 @@ container foo:_b [
 ]
 +error: headers of container 'foo' must use identical type ingredients
 
+:(scenario type_ingredient_must_start_with_underscore)
+% Hide_errors = true;
+container foo:t [
+  x:number
+]
++error: foo: type ingredient 't' must begin with an underscore
+
 :(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
 // For example, if we have a generic type called foo:_elem, the type
@@ -106,7 +113,7 @@ bool read_type_ingredients(string& name, const string& command) {
   istringstream in(save_name);
   name = slurp_until(in, ':');
   map<string, type_ordinal> type_ingredient_names;
-  if (!slurp_type_ingredients(in, type_ingredient_names)) {
+  if (!slurp_type_ingredients(in, type_ingredient_names, name)) {
     return false;
   }
   if (contains_key(Type_ordinal, name)
@@ -127,12 +134,20 @@ bool read_type_ingredients(string& name, const string& command) {
   return true;
 }
 
-bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out) {
+bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out, const string& container_name) {
   int next_type_ordinal = START_TYPE_INGREDIENTS;
   while (has_data(in)) {
     string curr = slurp_until(in, ':');
+    if (curr.empty()) {
+      raise << container_name << ": empty type ingredients not permitted\n" << end();
+      return false;
+    }
+    if (curr.at(0) != '_') {
+      raise << container_name << ": type ingredient '" << curr << "' must begin with an underscore\n" << end();
+      return false;
+    }
     if (out.find(curr) != out.end()) {
-      raise << "can't repeat type ingredient names in a single container definition: '" << curr << "'\n" << end();
+      raise << container_name << ": can't repeat type ingredient name'" << curr << "' in a single container definition\n" << end();
       return false;
     }
     put(out, curr, next_type_ordinal++);
