@@ -532,7 +532,6 @@ case LIMIT_TIME: {
   break;
 }
 
-
 :(before "End routine Fields")
 int ninstrs;
 :(before "End routine Constructor")
@@ -569,6 +568,7 @@ case NUMBER_OF_INSTRUCTIONS: {
   products.at(0).push_back(result);
   break;
 }
+
 //:: make sure that each routine gets a different alloc to start
 
 :(scenario new_concurrent)
@@ -591,16 +591,17 @@ def f2 [
 
 :(scenario number_of_instructions)
 def f1 [
-  1:number/child-id <- start-running f2
+  10:number/child-id <- start-running f2
   {
-    loop-unless 3:number/raw
+    loop-unless 20:number
   }
-  # Number of instructions returns visible number plus one due to the implicit reply added by
-  # Transform.push_back in the recipe header layer.
-  4:number <- number-of-instructions 1:number
+  11:number <- number-of-instructions 10:number
 ]
 def f2 [
-  2:address:number/raw <- new number:type
-  3:number <- copy 1
+  # 2 instructions worth of work
+  11:number <- copy 34
+  20:number <- copy 1
 ]
-+mem: storing 3 in location 4
+# f2 runs an extra instruction for the implicit return added by the
+# fill_in_reply_ingredients transform
++mem: storing 3 in location 11
