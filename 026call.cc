@@ -161,7 +161,7 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
     assert(Trace_stream->callstack_depth >= 0);
   }
   Current_routine->calls.pop_front();
-  if (Current_routine->calls.empty()) return;
+  if (Current_routine->calls.empty()) goto stop_running_current_routine;
   // Complete Call Fallthrough
   // todo: fail if no products returned
   ++current_step_index();
