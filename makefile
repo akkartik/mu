@@ -2,6 +2,8 @@ all: mu_bin core.mu
 
 CXX ?= c++
 CFLAGS ?= -g -O3
+# reduce memory usage for small servers
+CFLAGS := ${CFLAGS} --param ggc-min-expand=1 --param ggc-min-heapsize=32768
 
 mu_bin: makefile mu.cc termbox/libtermbox.a
 	${CXX} ${CFLAGS} -Wall -Wextra -ftrapv -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
