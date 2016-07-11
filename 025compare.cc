@@ -75,6 +75,60 @@ def main [
 +mem: storing 0 in location 1
 
 :(before "End Primitive Recipe Declarations")
+NOT_EQUAL,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "not-equal", NOT_EQUAL);
+:(before "End Primitive Recipe Checks")
+case NOT_EQUAL: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'equal' needs two ingredients to compare in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  const reagent& exemplar = inst.ingredients.at(0);
+  if (!types_match(inst.ingredients.at(1), exemplar) && !types_match(exemplar, inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "'equal' expects ingredients to be all of the same type, but got '" << to_original_string(inst) << "'\n" << end();
+    goto finish_checking_instruction;
+  }
+  if (SIZE(inst.products) > 1) {
+    raise << maybe(get(Recipe, r).name) << "'equal' yields exactly one product in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!inst.products.empty() && !is_dummy(inst.products.at(0)) && !is_mu_boolean(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'equal' should yield a boolean, but got '" << inst.products.at(0).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case NOT_EQUAL: {
+  vector<double>& exemplar = ingredients.at(0);
+  products.resize(1);
+  bool equal_ingredients = equal(ingredients.at(1).begin(), ingredients.at(1).end(), exemplar.begin());
+  products.at(0).push_back(!equal_ingredients);
+  break;
+}
+
+:(scenario not_equal)
+def main [
+  1:number <- copy 34
+  2:number <- copy 33
+  3:boolean <- not-equal 1:number, 2:number
+]
++mem: location 1 is 34
++mem: location 2 is 33
++mem: storing 1 in location 3
+
+:(scenario not_equal_2)
+def main [
+  1:number <- copy 34
+  2:number <- copy 34
+  3:boolean <- not-equal 1:number, 2:number
+]
++mem: location 1 is 34
++mem: location 2 is 34
++mem: storing 0 in location 3
+
+:(before "End Primitive Recipe Declarations")
 GREATER_THAN,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "greater-than", GREATER_THAN);
