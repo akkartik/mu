@@ -491,7 +491,6 @@ container foo [
   x:number
   y:bar
 ]
-
 container bar [
   x:number
   y:number
@@ -654,7 +653,6 @@ def main [
 def main [
   1:bar <- copy 0/unsafe
 ]
-
 container bar [
   x:number
 ]

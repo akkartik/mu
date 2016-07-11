@@ -422,7 +422,6 @@ def main [
   5:boolean <- copy 0/false
   6:boolean <- equal 4:boolean, 5:boolean
 ]
-
 # temporarily hardcode number equality to always fail
 def equal x:number, y:number -> z:boolean [
   local-scope

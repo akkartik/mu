@@ -5,7 +5,6 @@ container foo [
   x:number
   y:number
 ]
-
 def main [
   1:foo <- merge 3, 4
 ]

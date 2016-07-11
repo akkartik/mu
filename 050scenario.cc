@@ -32,6 +32,7 @@ scenario foo [
     2 <- 13
   ]
 ]
+# checks are inside scenario
 
 :(scenario scenario_check_memory_and_trace)
 scenario foo [
@@ -49,6 +50,7 @@ scenario foo [
     a: x y z
   ]
 ]
+# checks are inside scenario
 
 //:: Core data structure
 
@@ -220,7 +222,6 @@ void test_maybe_make_raw() {
 def scenario-foo [
   1:number <- copy 34
 ]
-
 def scenario-foo [
   1:number <- copy 35
 ]
@@ -659,6 +660,7 @@ def main [
   ]
   check-trace-count-for-label 1, [a]
 ]
+# checks are inside scenario
 
 :(before "End Primitive Recipe Declarations")
 CHECK_TRACE_COUNT_FOR_LABEL,

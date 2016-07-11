@@ -231,7 +231,6 @@ exclusive-container foo [
   x:number
   y:number
 ]
-
 def main [
   1:number <- copy 34
   2:foo <- merge 0/x, 1:number  # tag must be a literal when merging exclusive containers

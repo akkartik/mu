@@ -71,18 +71,23 @@ def main [
   x:number <- copy 1
   y:number <- add x, 1
 ]
+# x is in location 1, y in location 2
++mem: storing 2 in location 2
 
 :(scenario transform_fills_in_missing_types_in_product)
 def main [
   x:number <- copy 1
   x <- copy 2
 ]
+# x is in location 1
++mem: storing 2 in location 1
 
 :(scenario transform_fills_in_missing_types_in_product_and_ingredient)
 def main [
   x:number <- copy 1
   x <- add x, 1
 ]
+# x is in location 1
 +mem: storing 2 in location 1
 
 :(scenario transform_fails_on_missing_types_in_first_mention)

@@ -604,6 +604,7 @@ def foo x:c:_bar:_baz [
   local-scope
   load-ingredients
 ]
+# no errors
 
 :(scenario shape_shifting_recipe_type_deduction_ignores_offsets)
 def main [
@@ -1102,7 +1103,6 @@ $error: 0
 def add a:address:foo:_elem [
   assert 0, [should not get here]
 ]
-
 def main [
   # call primitive add with literal 0
   add 0, 0

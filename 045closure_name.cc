@@ -10,14 +10,12 @@ def main [
   2:number/raw <- increment-counter 1:address:array:location/names:new-counter
   3:number/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
-
 def new-counter [
   default-space:address:array:location <- new location:type, 30
   x:number <- copy 23
   y:number <- copy 3  # variable that will be incremented
   return default-space:address:array:location
 ]
-
 def increment-counter [
   default-space:address:array:location <- new location:type, 30
   0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
@@ -25,7 +23,6 @@ def increment-counter [
   y:number <- copy 234  # dummy
   return y:number/space:1
 ]
-
 +name: lexically surrounding space for recipe increment-counter comes from new-counter
 +mem: storing 5 in location 3
 

@@ -12,7 +12,6 @@ def main [
   <label1>
   3:number <- copy 0
 ]
-
 before <label1> [
   2:number <- copy 0
 ]

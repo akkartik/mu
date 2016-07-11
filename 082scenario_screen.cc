@@ -19,6 +19,7 @@ scenario screen-in-scenario [
     .     .
   ]
 ]
+# checks are inside scenario
 
 :(scenario screen_in_scenario_unicode)
 scenario screen-in-scenario-unicode-color [
@@ -36,6 +37,7 @@ scenario screen-in-scenario-unicode-color [
     .     .
   ]
 ]
+# checks are inside scenario
 
 :(scenario screen_in_scenario_color)
 # screen-should-contain can check unicode characters in the fake screen
@@ -70,6 +72,7 @@ scenario screen-in-scenario-color [
     .     .
   ]
 ]
+# checks are inside scenario
 
 :(scenario screen_in_scenario_error)
 % Scenario_testing_scenario = true;
