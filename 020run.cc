@@ -279,7 +279,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*onl
   // End Preprocess write_memory(x, data)
   if (x.value == 0) return;
   if (size_mismatch(x, data)) {
-    raise << maybe(current_recipe_name()) << "size mismatch in storing to '" << x.original_string << "' (" << size_of(x.type) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "size mismatch in storing to '" << x.original_string << "' (" << size_of(x) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
     return;
   }
   // End write_memory(x) Special-cases

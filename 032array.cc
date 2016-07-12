@@ -112,7 +112,7 @@ if (x.type && x.type->value == get(Type_ordinal, "array")) return false;
 //: arrays are disallowed inside containers unless their length is fixed in
 //: advance
 
-:(scenario container_contains_array)
+:(scenario container_permits_static_array_element)
 container foo [
   x:array:number:3
 ]
@@ -124,6 +124,25 @@ container foo [
   x:array:number
 ]
 +error: container 'foo' cannot determine size of element 'x'
+
+//: disable the size mismatch check for 'merge' instructions since containers
+//: can contain arrays, and since we already do plenty of checking for them
+:(before "End size_mismatch(x) Cases")
+if (current_call().running_step_index < SIZE(get(Recipe, current_call().running_recipe).steps)
+    && current_instruction().operation == MERGE) {
+  return false;
+}
+
+:(scenario merge_static_array_into_container)
+container foo [
+  x:number
+  y:array:number:3
+]
+def main [
+  1:array:number:3 <- create-array
+  10:foo <- merge 34, 1:array:number:3
+]
+# no errors
 
 :(before "End Load Container Element Definition")
 {
