@@ -684,8 +684,9 @@ reply b
     .a:number <- next-ingredient                       ┊0   edit          copy            delete         .
     .b:number <- next-ingredient                       ┊foo 4, 0                                         .
     .stash [dividing by], b                            ┊dividing by 0                                    .
-    ._, c:number <- divide-with-remainder a, b         ┊foo: divide by zero in '_, c:number <- divide-wi↩.
-    .reply b                                           ┊th-remainder a, b'                               .
-    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    ._, c:number <- divide-with-remainder a, b         ┊14 instructions run                              .
+    .reply b                                           ┊foo: divide by zero in '_, c:number <- divide-wi↩.
+    .]                                                 ┊th-remainder a, b'                               .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
   ]
 ]

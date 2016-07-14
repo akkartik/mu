@@ -166,10 +166,12 @@ load(string(
 "recipe sandbox [\n" +
   "local-scope\n" +
   "screen:address:screen <- new-fake-screen 30, 5\n" +
-  "r:number/routine_id <- start-running interactive, screen\n" +
-  "limit-time r, 100000/instructions\n" +
-  "wait-for-routine r\n" +
-  "sandbox-state:number <- routine-state r/routine_id\n" +
+  "routine-id:number <- start-running interactive, screen\n" +
+  "limit-time routine-id, 100000/instructions\n" +
+  "wait-for-routine routine-id\n" +
+  "instructions-run:number <- number-of-instructions routine-id\n" +
+  "stash instructions-run [instructions run]\n" +
+  "sandbox-state:number <- routine-state routine-id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
   "output:address:array:character <- $most-recent-products\n" +
   "errors:address:array:character <- save-errors\n" +
