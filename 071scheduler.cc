@@ -537,7 +537,7 @@ int ninstrs;
 :(before "End routine Constructor")
 ninstrs = 0;
 :(after "stop_running_current_routine:")
-Current_routine->ninstrs = ninstrs;
+Current_routine->ninstrs = Current_routine->ninstrs + ninstrs;
 :(before "End Primitive Recipe Declarations")
 NUMBER_OF_INSTRUCTIONS,
 :(before "End Primitive Recipe Numbers")
@@ -590,6 +590,7 @@ def f2 [
 +mem: storing 0 in location 3
 
 :(scenario number_of_instructions)
+% Scheduling_interval = 1;
 def f1 [
   10:number/child-id <- start-running f2
   {
@@ -598,10 +599,13 @@ def f1 [
   11:number <- number-of-instructions 10:number
 ]
 def f2 [
-  # 2 instructions worth of work
-  11:number <- copy 34
+  # 4 instructions worth of work
+  # Should take 2 scheduling intervals
+  1:number <- copy 34
+  2:number <- copy 1
+  2:number <- copy 3
   20:number <- copy 1
 ]
 # f2 runs an extra instruction for the implicit return added by the
 # fill_in_reply_ingredients transform
-+mem: storing 3 in location 11
++mem: storing 5 in location 11
