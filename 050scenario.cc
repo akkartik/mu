@@ -537,8 +537,14 @@ void check_trace(const string& expected) {
     if (curr_expected_line == SIZE(expected_lines)) return;
   }
 
-  raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
-              << "in trace with label " << expected_lines.at(curr_expected_line).label << '\n' << end();
+  if (Current_scenario && !Scenario_testing_scenario)
+    raise << "\nF - " << Current_scenario->name << ": missing [" << expected_lines.at(curr_expected_line).contents << "] "
+          << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
+  else
+    raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
+          << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
+  if (!Hide_errors)
+    DUMP(expected_lines.at(curr_expected_line).label);
   Passed = false;
 }
 
