@@ -504,7 +504,7 @@ def main [
     a: d
   ]
 ]
-+error: missing [b] in trace with label a
++error: missing [b] in trace with label 'a'
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
@@ -572,7 +572,7 @@ def main [
     a: d
   ]
 ]
-+error: missing [d] in trace with label a
++error: missing [d] in trace with label 'a'
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
@@ -584,7 +584,7 @@ def main [
     a: b
   ]
 ]
--error: missing [b] in trace with label a
+-error: missing [b] in trace with label 'a'
 $error: 0
 
 //: 'trace-should-not-contain' is like the '-' lines in our scenarios so far
@@ -602,7 +602,7 @@ def main [
     a: b
   ]
 ]
-+error: unexpected [b] in trace with label a
++error: unexpected [b] in trace with label 'a'
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
@@ -627,7 +627,7 @@ bool check_trace_missing(const string& in) {
   vector<trace_line> lines = parse_trace(in);
   for (int i = 0; i < SIZE(lines); ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
-      raise << "unexpected [" << lines.at(i).contents << "] in trace with label " << lines.at(i).label << '\n' << end();
+      raise << "unexpected [" << lines.at(i).contents << "] in trace with label '" << lines.at(i).label << "'\n" << end();
       Passed = false;
       return false;
     }
@@ -642,7 +642,7 @@ def main [
     a: b
   ]
 ]
--error: unexpected [b] in trace with label a
+-error: unexpected [b] in trace with label 'a'
 $error: 0
 
 :(scenario trace_negative_check_fails_on_any_unexpected_line)
@@ -657,7 +657,7 @@ def main [
     a: d
   ]
 ]
-+error: unexpected [d] in trace with label a
++error: unexpected [d] in trace with label 'a'
 
 :(scenario trace_count_check)
 def main [
@@ -697,12 +697,12 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
       // genuine test in a mu file
-      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace: " << end();
+      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
       DUMP(label);
     }
     else {
       // just testing scenario support
-      raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label " << label << " in trace\n" << end();
+      raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
     }
     if (!Scenario_testing_scenario) {
       Passed = false;
@@ -721,7 +721,7 @@ def main [
   ]
   check-trace-count-for-label 2, [a]
 ]
-+error: main: expected 2 lines in trace with label a in trace
++error: main: expected 2 lines in trace with label 'a' in trace
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
 //: with them is by definition impossible to test through mu.
