@@ -385,10 +385,12 @@ case PUT_INDEX: {
     raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
   }
-  if (!inst.products.empty() && inst.products.at(0).name != inst.ingredients.at(0).name) {
+  if (inst.products.empty()) break;  // no more checks necessary
+  if (inst.products.at(0).name != inst.ingredients.at(0).name) {
     raise << maybe(get(Recipe, r).name) << "product of 'put-index' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
     break;
   }
+  // End PUT_INDEX Product Checks
   break;
 }
 :(before "End Primitive Recipe Implementations")

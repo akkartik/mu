@@ -236,6 +236,27 @@ if (!canonize_type(offset)) break;
 :(after "Update PUT base in Run")
 canonize(base);
 
+:(scenario put_product_error_with_lookup)
+% Hide_errors = true;
+def main [
+  1:address:point <- copy 10/unsafe
+  # 10 reserved for refcount
+  11:number <- copy 34
+  12:number <- copy 35
+  1:address:point <- put 1:address:point/lookup, x:offset, 36
+]
++error: main: product of 'put' must be first ingredient '1:address:point/lookup', but got '1:address:point'
+
+:(before "End PUT Product Checks")
+reagent/*copy*/ p = inst.products.at(0);
+if (!canonize_type(p)) break;  // error raised elsewhere
+reagent/*copy*/ i = inst.ingredients.at(0);
+if (!canonize_type(i)) break;  // error raised elsewhere
+if (!types_strictly_match(p, i)) {
+  raise << maybe(get(Recipe, r).name) << "product of 'put' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
+  break;
+}
+
 :(scenario new_error)
 % Hide_errors = true;
 def main [
@@ -322,6 +343,29 @@ def main [
   1:array:number:3 <- put-index 1:array:number:3, 5:address:number/lookup, 34
 ]
 +mem: storing 34 in location 3
+
+:(scenario put_index_product_error_with_lookup)
+% Hide_errors = true;
+def main [
+  # 10 reserved for refcount
+  11:array:number:3 <- create-array
+  12:number <- copy 14
+  13:number <- copy 15
+  14:number <- copy 16
+  1:address:array:number <- copy 10/unsafe
+  1:address:array:number <- put-index 1:address:array:number/lookup, 1, 34
+]
++error: main: product of 'put-index' must be first ingredient '1:address:array:number/lookup', but got '1:address:array:number'
+
+:(before "End PUT_INDEX Product Checks")
+reagent/*copy*/ p = inst.products.at(0);
+if (!canonize_type(p)) break;  // error raised elsewhere
+reagent/*copy*/ i = inst.ingredients.at(0);
+if (!canonize_type(i)) break;  // error raised elsewhere
+if (!types_strictly_match(p, i)) {
+  raise << maybe(get(Recipe, r).name) << "product of 'put-index' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
+  break;
+}
 
 :(scenario dilated_reagent_in_static_array)
 def main [
