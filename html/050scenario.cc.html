@@ -69,6 +69,7 @@ scenario foo [
     <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">13</span>
   ]
 ]
+<span class="Comment"># checks are inside scenario</span>
 
 <span class="Delimiter">:(scenario scenario_check_memory_and_trace)</span>
 scenario foo [
@@ -86,6 +87,7 @@ scenario foo [
     <span class="Normal">a</span>: x y z
   ]
 ]
+<span class="Comment"># checks are inside scenario</span>
 
 <span class="SalientComment">//:: Core data structure</span>
 
@@ -257,7 +259,6 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
 def scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-
 def scenario-foo [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
@@ -540,7 +541,7 @@ def main [
     <span class="Normal">a</span>: d
   ]
 ]
-<span class="traceContains">+error: missing [b] in trace with label a</span>
+<span class="traceContains">+error: missing [b] in trace with label 'a'</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 TRACE_SHOULD_CONTAIN<span class="Delimiter">,</span>
@@ -573,8 +574,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
-  raise &lt;&lt; <span class="Constant">&quot;missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
-              &lt;&lt; <span class="Constant">&quot;in trace with label &quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
+    raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
+          &lt;&lt; <span class="Constant">&quot;in trace with label '&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">else</span>
+    raise &lt;&lt; <span class="Constant">&quot;missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
+          &lt;&lt; <span class="Constant">&quot;in trace with label '&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors<span class="Delimiter">)</span>
+    DUMP<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label<span class="Delimiter">);</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -602,7 +609,7 @@ def main [
     <span class="Normal">a</span>: d
   ]
 ]
-<span class="traceContains">+error: missing [d] in trace with label a</span>
+<span class="traceContains">+error: missing [d] in trace with label 'a'</span>
 
 <span class="Delimiter">:(scenario trace_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
@@ -614,7 +621,7 @@ def main [
     <span class="Normal">a</span>: b
   ]
 ]
-<span class="traceAbsent">-error: missing [b] in trace with label a</span>
+<span class="traceAbsent">-error: missing [b] in trace with label 'a'</span>
 $error: <span class="Constant">0</span>
 
 <span class="Comment">//: 'trace-should-not-contain' is like the '-' lines in our scenarios so far</span>
@@ -632,7 +639,7 @@ def main [
     <span class="Normal">a</span>: b
   ]
 ]
-<span class="traceContains">+error: unexpected [b] in trace with label a</span>
+<span class="traceContains">+error: unexpected [b] in trace with label 'a'</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 TRACE_SHOULD_NOT_CONTAIN<span class="Delimiter">,</span>
@@ -657,7 +664,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   vector&lt;trace_line&gt; lines = parse_trace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>lines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span>lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label<span class="Delimiter">,</span> lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents<span class="Delimiter">)</span> != <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; <span class="Constant">&quot;unexpected [&quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] in trace with label &quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;unexpected [&quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] in trace with label '&quot;</span> &lt;&lt; lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>label &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -672,7 +679,7 @@ def main [
     <span class="Normal">a</span>: b
   ]
 ]
-<span class="traceAbsent">-error: unexpected [b] in trace with label a</span>
+<span class="traceAbsent">-error: unexpected [b] in trace with label 'a'</span>
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario trace_negative_check_fails_on_any_unexpected_line)</span>
@@ -687,7 +694,7 @@ def main [
     <span class="Normal">a</span>: d
   ]
 ]
-<span class="traceContains">+error: unexpected [d] in trace with label a</span>
+<span class="traceContains">+error: unexpected [d] in trace with label 'a'</span>
 
 <span class="Delimiter">:(scenario trace_count_check)</span>
 def main [
@@ -696,6 +703,7 @@ def main [
   ]
   check-trace-count-<span class="Normal">for</span>-label <span class="Constant">1</span><span class="Delimiter">,</span> [a]
 ]
+<span class="Comment"># checks are inside scenario</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CHECK_TRACE_COUNT_FOR_LABEL<span class="Delimiter">,</span>
@@ -726,12 +734,12 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">if</span> <span class="Delimiter">(</span>count != expected_count<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// genuine test in a mu file</span>
-      raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label '&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;' in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Delimiter">{</span>
       <span class="Comment">// just testing scenario support</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label &quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot; in trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label '&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;' in trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -750,7 +758,7 @@ def main [
   ]
   check-trace-count-<span class="Normal">for</span>-label <span class="Constant">2</span><span class="Delimiter">,</span> [a]
 ]
-<span class="traceContains">+error: main: expected 2 lines in trace with label a in trace</span>
+<span class="traceContains">+error: main: expected 2 lines in trace with label 'a' in trace</span>
 
 <span class="Comment">//: Minor detail: ignore 'system' calls in scenarios, since anything we do</span>
 <span class="Comment">//: with them is by definition impossible to test through mu.</span>

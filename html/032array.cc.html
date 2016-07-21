@@ -147,7 +147,7 @@ def main [
 <span class="Comment">//: arrays are disallowed inside containers unless their length is fixed in</span>
 <span class="Comment">//: advance</span>
 
-<span class="Delimiter">:(scenario container_contains_array)</span>
+<span class="Delimiter">:(scenario container_permits_static_array_element)</span>
 container foo [
   <span class="Normal">x</span>:array:number:<span class="Constant">3</span>
 ]
@@ -159,6 +159,25 @@ container foo [
   <span class="Normal">x</span>:array:number
 ]
 <span class="traceContains">+error: container 'foo' cannot determine size of element 'x'</span>
+
+<span class="Comment">//: disable the size mismatch check for 'merge' instructions since containers</span>
+<span class="Comment">//: can contain arrays, and since we already do plenty of checking for them</span>
+<span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>running_step_index &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> current_call<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">)</span>
+    &amp;&amp; current_instruction<span class="Delimiter">().</span>operation == MERGE<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario merge_static_array_into_container)</span>
+container foo [
+  <span class="Normal">x</span>:number
+  <span class="Normal">y</span>:array:number:<span class="Constant">3</span>
+]
+def main [
+  <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">10</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">1</span>:array:number:<span class="Constant">3</span>
+]
+<span class="Comment"># no errors</span>
 
 <span class="Delimiter">:(before &quot;End Load Container Element Definition&quot;)</span>
 <span class="Delimiter">{</span>

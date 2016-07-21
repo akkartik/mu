@@ -107,6 +107,13 @@ container foo:_b [
 ]
 <span class="traceContains">+error: headers of container 'foo' must use identical type ingredients</span>
 
+<span class="Delimiter">:(scenario type_ingredient_must_start_with_underscore)</span>
+<span class="Special">% Hide_errors = true;</span>
+container foo:t [
+  <span class="Normal">x</span>:number
+]
+<span class="traceContains">+error: foo: type ingredient 't' must begin with an underscore</span>
+
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Comment">// We'll use large type ordinals to mean &quot;the following type of the variable&quot;.</span>
 <span class="Comment">// For example, if we have a generic type called foo:_elem, the type</span>
@@ -141,7 +148,7 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
   istringstream in<span class="Delimiter">(</span>save_name<span class="Delimiter">);</span>
   name = slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
   map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_names<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!slurp_type_ingredients<span class="Delimiter">(</span>in<span class="Delimiter">,</span> type_ingredient_names<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!slurp_type_ingredients<span class="Delimiter">(</span>in<span class="Delimiter">,</span> type_ingredient_names<span class="Delimiter">,</span> name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span>
@@ -162,12 +169,20 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> slurp_type_ingredients<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> type_ordinal&gt;&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> slurp_type_ingredients<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> type_ordinal&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; container_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">int</span> next_type_ordinal = START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     string curr = slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; container_name &lt;&lt; <span class="Constant">&quot;: empty type ingredients not permitted</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'_'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; container_name &lt;&lt; <span class="Constant">&quot;: type ingredient '&quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot;' must begin with an underscore</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>out<span class="Delimiter">.</span>find<span class="Delimiter">(</span>curr<span class="Delimiter">)</span> != out<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; <span class="Constant">&quot;can't repeat type ingredient names in a single container definition: '&quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; container_name &lt;&lt; <span class="Constant">&quot;: can't repeat type ingredient name'&quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot;' in a single container definition</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     put<span class="Delimiter">(</span>out<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> next_type_ordinal++<span class="Delimiter">);</span>
