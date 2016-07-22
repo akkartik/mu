@@ -119,19 +119,19 @@ void check_merge_calls(const recipe_ordinal r) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
     if (SIZE(inst.products) != 1) {
-      raise << maybe(caller.name) << "'merge' should yield a single product in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a single product in '" << inst.original_string << "'\n" << end();
       continue;
     }
     reagent/*copy*/ product = inst.products.at(0);
     // Update product While Type-checking Merge
     type_ordinal product_type = product.type->value;
     if (product_type == 0 || !contains_key(Type, product_type)) {
-      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << inst.original_string << "'\n" << end();
       continue;
     }
     const type_info& info = get(Type, product_type);
     if (info.kind != CONTAINER && info.kind != EXCLUSIVE_CONTAINER) {
-      raise << maybe(caller.name) << "'merge' should yield a container in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "'merge' should yield a container in '" << inst.original_string << "'\n" << end();
       continue;
     }
     check_merge_call(inst.ingredients, product, caller, inst);
@@ -146,7 +146,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     assert(!state.data.empty());
     trace(9999, "transform") << ingredient_index << " vs " << SIZE(ingredients) << end();
     if (ingredient_index >= SIZE(ingredients)) {
-      raise << maybe(caller.name) << "too few ingredients in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "too few ingredients in '" << inst.original_string << "'\n" << end();
       return;
     }
     reagent& container = state.data.top().container;
@@ -167,7 +167,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
             state.data.pop();
             if (state.data.empty()) {
               if (ingredient_index < SIZE(ingredients))
-                raise << maybe(caller.name) << "too many ingredients in '" << to_original_string(inst) << "'\n" << end();
+                raise << maybe(caller.name) << "too many ingredients in '" << inst.original_string << "'\n" << end();
               return;
             }
             ++state.data.top().container_element_index;
@@ -183,7 +183,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
       // End check_merge_call Cases
       default: {
         if (!types_coercible(container, ingredients.at(ingredient_index))) {
-          raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << to_original_string(inst) << "'\n" << end();
+          raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << inst.original_string << "'\n" << end();
           raise << "  (expected '" << debug_string(container) << "')\n" << end();
           raise << "  (got '" << debug_string(ingredients.at(ingredient_index)) << "')\n" << end();
           return;
@@ -194,7 +194,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
           state.data.pop();
           if (state.data.empty()) {
             if (ingredient_index < SIZE(ingredients))
-              raise << maybe(caller.name) << "too many ingredients in '" << to_original_string(inst) << "'\n" << end();
+              raise << maybe(caller.name) << "too many ingredients in '" << inst.original_string << "'\n" << end();
             return;
           }
           ++state.data.top().container_element_index;

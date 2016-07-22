@@ -263,7 +263,7 @@ put(Recipe_ordinal, "get", GET);
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);  // new copy for every invocation
@@ -401,7 +401,7 @@ put(Recipe_ordinal, "put", PUT);
 :(before "End Primitive Recipe Checks")
 case PUT: {
   if (SIZE(inst.ingredients) != 3) {
-    raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -672,9 +672,9 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
   for (int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
-      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+to_original_string(inst)+"'");
+      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+inst.original_string+"'");
     for (int i = 0; i < SIZE(inst.products); ++i)
-      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+to_original_string(inst)+"'");
+      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+inst.original_string+"'");
   }
   // End check_or_set_invalid_types
 }

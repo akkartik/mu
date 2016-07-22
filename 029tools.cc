@@ -13,7 +13,7 @@ put(Recipe_ordinal, "trace", TRACE);
 :(before "End Primitive Recipe Checks")
 case TRACE: {
   if (SIZE(inst.ingredients) < 3) {
-    raise << maybe(get(Recipe, r).name) << "'trace' takes three or more ingredients rather than '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'trace' takes three or more ingredients rather than '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -203,7 +203,7 @@ put(Recipe_ordinal, "assert", ASSERT);
 :(before "End Primitive Recipe Checks")
 case ASSERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {

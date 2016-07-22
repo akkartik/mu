@@ -156,6 +156,13 @@ if (curr.name == "assume-screen") {
   curr.products.at(0).set_value(SCREEN);
 }
 
+:(scenario assume_screen_shows_up_in_errors)
+% Hide_errors = true;
+scenario error-in-assume-screen [
+  assume-screen width, 5
+]
++error: scenario_error-in-assume-screen: missing type for 'width' in 'assume-screen width, 5'
+
 //: screen-should-contain is a regular instruction
 :(before "End Primitive Recipe Declarations")
 SCREEN_SHOULD_CONTAIN,

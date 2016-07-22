@@ -20,7 +20,7 @@ put(Recipe_ordinal, "create-array", CREATE_ARRAY);
 :(before "End Primitive Recipe Checks")
 case CREATE_ARRAY: {
   if (inst.products.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << to_original_string(inst) << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << inst.original_string << '\n' << end();
     break;
   }
   reagent/*copy*/ product = inst.products.at(0);
@@ -30,12 +30,12 @@ case CREATE_ARRAY: {
     break;
   }
   if (!product.type->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what? '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what? '" << inst.original_string << "'\n" << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   if (!product.type->right->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what size? '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what size? '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_integer(product.type->right->right->name)) {
@@ -200,7 +200,7 @@ put(Recipe_ordinal, "index", INDEX);
 :(before "End Primitive Recipe Checks")
 case INDEX: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -362,7 +362,7 @@ put(Recipe_ordinal, "put-index", PUT_INDEX);
 :(before "End Primitive Recipe Checks")
 case PUT_INDEX: {
   if (SIZE(inst.ingredients) != 3) {
-    raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -484,7 +484,7 @@ put(Recipe_ordinal, "length", LENGTH);
 :(before "End Primitive Recipe Checks")
 case LENGTH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ array = inst.ingredients.at(0);

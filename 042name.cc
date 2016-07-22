@@ -95,7 +95,7 @@ void transform_names(const recipe_ordinal r) {
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
     // End Null-type is_disqualified Exceptions
-    raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << inst.original_string << "'\n" << end();
     return true;
   }
   if (is_raw(x)) return true;
@@ -281,7 +281,7 @@ def main [
 // convert variant names of exclusive containers
 if (inst.name == "maybe-convert") {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << inst.original_string << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));
@@ -289,7 +289,7 @@ if (inst.name == "maybe-convert") {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
     if (base_type == -1)
-      raise << maybe(get(Recipe, r).name) << "expected an exclusive-container in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(get(Recipe, r).name) << "expected an exclusive-container in '" << inst.original_string << "'\n" << end();
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();

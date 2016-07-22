@@ -59,7 +59,7 @@ put(Recipe_ordinal, "wait-for-location", WAIT_FOR_LOCATION);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_LOCATION: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_location(inst.ingredients.at(0))) {
@@ -109,7 +109,7 @@ put(Recipe_ordinal, "get-location", GET_LOCATION);
 :(before "End Primitive Recipe Checks")
 case GET_LOCATION: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get-location' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get-location' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -260,7 +260,7 @@ put(Recipe_ordinal, "wait-for-routine", WAIT_FOR_ROUTINE);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_ROUTINE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

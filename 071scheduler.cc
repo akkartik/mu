@@ -342,7 +342,7 @@ put(Recipe_ordinal, "routine-state", ROUTINE_STATE);
 :(before "End Primitive Recipe Checks")
 case ROUTINE_STATE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'routine-state' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'routine-state' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -375,7 +375,7 @@ put(Recipe_ordinal, "restart", RESTART);
 :(before "End Primitive Recipe Checks")
 case RESTART: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -403,7 +403,7 @@ put(Recipe_ordinal, "stop", STOP);
 :(before "End Primitive Recipe Checks")
 case STOP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'stop' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'stop' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -507,7 +507,7 @@ put(Recipe_ordinal, "limit-time", LIMIT_TIME);
 :(before "End Primitive Recipe Checks")
 case LIMIT_TIME: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'limit-time' requires exactly two ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'limit-time' requires exactly two ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -545,7 +545,7 @@ put(Recipe_ordinal, "number-of-instructions", NUMBER_OF_INSTRUCTIONS);
 :(before "End Primitive Recipe Checks")
 case NUMBER_OF_INSTRUCTIONS: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'number-of-instructions' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'number-of-instructions' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

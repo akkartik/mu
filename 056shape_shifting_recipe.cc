@@ -276,9 +276,9 @@ void compute_type_names(recipe& variant) {
     instruction& inst = variant.steps.at(i);
     trace(9993, "transform") << "  instruction: " << to_string(inst) << end();
     for (int in = 0; in < SIZE(inst.ingredients); ++in)
-      save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant, " in '" + to_original_string(inst) + "'");
+      save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant, " in '" + inst.original_string + "'");
     for (int out = 0; out < SIZE(inst.products); ++out)
-      save_or_deduce_type_name(inst.products.at(out), type_names, variant, " in '" + to_original_string(inst) + "'");
+      save_or_deduce_type_name(inst.products.at(out), type_names, variant, " in '" + inst.original_string + "'");
   }
 }
 

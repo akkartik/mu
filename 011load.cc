@@ -71,12 +71,10 @@ void slurp_body(istream& in, recipe& result) {
   skip_whitespace_and_comments(in);  // permit trailing comment after '['
   instruction curr;
   while (next_instruction(in, &curr)) {
+    curr.original_string = to_original_string(curr);
     // End Rewrite Instruction(curr, recipe result)
     trace(9992, "load") << "after rewriting: " << to_string(curr) << end();
-    if (!curr.is_empty()) {
-      curr.original_string = to_string(curr);
-      result.steps.push_back(curr);
-    }
+    if (!curr.is_empty()) result.steps.push_back(curr);
   }
 }
 

@@ -16,7 +16,7 @@ put(Recipe_ordinal, "jump", JUMP);
 :(before "End Primitive Recipe Checks")
 case JUMP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(0))) {
@@ -55,7 +55,7 @@ put(Recipe_ordinal, "jump-if", JUMP_IF);
 :(before "End Primitive Recipe Checks")
 case JUMP_IF: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
@@ -108,7 +108,7 @@ put(Recipe_ordinal, "jump-unless", JUMP_UNLESS);
 :(before "End Primitive Recipe Checks")
 case JUMP_UNLESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {

@@ -95,7 +95,7 @@ put(Recipe_ordinal, "maybe-convert", MAYBE_CONVERT);
 case MAYBE_CONVERT: {
   const recipe& caller = get(Recipe, r);
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -110,7 +110,7 @@ case MAYBE_CONVERT: {
   }
   if (inst.products.empty()) break;
   if (SIZE(inst.products) != 2) {
-    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 products in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(caller.name) << "'maybe-convert' expects exactly 2 products in '" << inst.original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ product = inst.products.at(0);
@@ -118,7 +118,7 @@ case MAYBE_CONVERT: {
   reagent& offset = inst.ingredients.at(1);
   populate_value(offset);
   if (offset.value >= SIZE(get(Type, base.type->value).elements)) {
-    raise << maybe(caller.name) << "invalid tag " << offset.value << " in '" << to_original_string(inst) << '\n' << end();
+    raise << maybe(caller.name) << "invalid tag " << offset.value << " in '" << inst.original_string << '\n' << end();
     break;
   }
   const reagent& variant = variant_type(base, offset.value);
@@ -299,13 +299,13 @@ case EXCLUSIVE_CONTAINER: {
   if (types_strictly_match(container, inst.ingredients.at(ingredient_index)))
     return;
   if (!is_literal(ingredients.at(ingredient_index))) {
-    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "' in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(caller.name) << "ingredient " << ingredient_index << " of 'merge' should be a literal, for the tag of exclusive-container '" << container_info.name << "' in '" << inst.original_string << "'\n" << end();
     return;
   }
   reagent/*copy*/ ingredient = ingredients.at(ingredient_index);  // unnecessary copy just to keep this function from modifying caller
   populate_value(ingredient);
   if (ingredient.value >= SIZE(container_info.elements)) {
-    raise << maybe(caller.name) << "invalid tag at " << ingredient_index << " for '" << container_info.name << "' in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(caller.name) << "invalid tag at " << ingredient_index << " for '" << container_info.name << "' in '" << inst.original_string << "'\n" << end();
     return;
   }
   const reagent& variant = variant_type(container, ingredient.value);
