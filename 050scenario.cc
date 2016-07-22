@@ -692,10 +692,7 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
       // just testing scenario support
       raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
     }
-    if (!Scenario_testing_scenario) {
-      Passed = false;
-      ++Num_failures;
-    }
+    if (!Scenario_testing_scenario) Passed = false;
   }
   break;
 }

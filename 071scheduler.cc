@@ -477,13 +477,11 @@ if (Current_routine->limit >= 0) {
 if (Passed && any_routines_with_error()) {
   Passed = false;
   raise << "some routines died with errors\n" << end();
-  ++Num_failures;
 }
 :(before "End Mu Test Teardown")
 if (Passed && any_routines_with_error()) {
   Passed = false;
   raise << Current_scenario->name << ": some routines died with errors\n" << end();
-  ++Num_failures;
 }
 
 :(code)

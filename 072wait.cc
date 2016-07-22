@@ -33,13 +33,11 @@ waiting_on_location = old_value_of_waiting_location = 0;
 if (Passed && any_routines_waiting()) {
   Passed = false;
   raise << Current_scenario->name << ": deadlock!\n" << end();
-  ++Num_failures;
 }
 :(before "End Test Teardown")
 if (Passed && any_routines_with_error()) {
   Passed = false;
   raise << "some routines died with errors\n" << end();
-  ++Num_failures;
 }
 :(code)
 bool any_routines_waiting() {

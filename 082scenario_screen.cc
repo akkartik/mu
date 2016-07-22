@@ -249,10 +249,7 @@ void check_screen(const string& expected_contents, const int color) {
           // just testing check_screen
           raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << '\n' << end();
         }
-        if (!Scenario_testing_scenario) {
-          Passed = false;
-          ++Num_failures;
-        }
+        if (!Scenario_testing_scenario) Passed = false;
         return;
       }
 
@@ -280,10 +277,7 @@ void check_screen(const string& expected_contents, const int color) {
         // just testing check_screen
         raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
       }
-      if (!Scenario_testing_scenario) {
-        Passed = false;
-        ++Num_failures;
-      }
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     assert(cursor.get() == '.');
