@@ -35,7 +35,7 @@ def new-atom name:address:array:character -> result:address:cell [
   *result <- merge 0/tag:atom, name
 ]
 
-def new-cell a:address:cell, b:address:cell -> result:address:cell [
+def new-pair a:address:cell, b:address:cell -> result:address:cell [
   local-scope
   load-ingredients
   result <- new cell:type
@@ -49,19 +49,35 @@ def is-atom? x:address:cell -> result:boolean [
   _, result <- maybe-convert *x, atom:variant
 ]
 
-def is-cell? x:address:cell -> result:boolean [
+def is-pair? x:address:cell -> result:boolean [
   local-scope
   load-ingredients
   reply-unless x, 0/false
   _, result <- maybe-convert *x, pair:variant
 ]
 
-scenario atom-operations [
+scenario atom-is-not-pair [
   local-scope
   s:address:array:character <- new [a]
   x:address:cell <- new-atom s
   10:boolean/raw <- is-atom? x
+  11:boolean/raw <- is-pair? x
   memory-should-contain [
     10 <- 1
+    11 <- 0
+  ]
+]
+
+scenario pair-is-not-atom [
+  local-scope
+  # construct (a . nil)
+  s:address:array:character <- new [a]
+  x:address:cell <- new-atom s
+  y:address:cell <- new-pair x, 0/nil
+  10:boolean/raw <- is-atom? y
+  11:boolean/raw <- is-pair? y
+  memory-should-contain [
+    10 <- 0
+    11 <- 1
   ]
 ]
