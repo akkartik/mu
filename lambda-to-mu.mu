@@ -81,3 +81,46 @@ scenario pair-is-not-atom [
     11 <- 1
   ]
 ]
+
+def first x:address:cell -> result:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, pair?:boolean <- maybe-convert *x, pair:variant
+  reply-unless pair?, 0/nil
+  result <- get pair, first:offset
+]
+
+def rest x:address:cell -> result:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, pair?:boolean <- maybe-convert *x, pair:variant
+  reply-unless pair?, 0/nil
+  result <- get pair, rest:offset
+]
+
+scenario cell-operations-on-atom [
+  local-scope
+  s:address:array:character <- new [a]
+  x:address:cell <- new-atom s
+  10:address:cell/raw <- first x
+  11:address:cell/raw <- rest x
+  memory-should-contain [
+    10 <- 0  # first is nil
+    11 <- 0  # rest is nil
+  ]
+]
+
+scenario cell-operations-on-pair [
+  local-scope
+  # construct (a . nil)
+  s:address:array:character <- new [a]
+  x:address:cell <- new-atom s
+  y:address:cell <- new-pair x, 0/nil
+  x2:address:cell <- first y
+  10:boolean/raw <- equal x, x2
+  11:address:cell/raw <- rest y
+  memory-should-contain [
+    10 <- 1  # first is correct
+    11 <- 0  # rest is nil
+  ]
+]
