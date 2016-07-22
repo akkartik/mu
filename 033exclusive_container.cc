@@ -153,11 +153,13 @@ case MAYBE_CONVERT: {
     const reagent& variant = variant_type(base, tag);
     trace(9999, "mem") << "storing 1 in location " << status.value << end();
     put(Memory, status.value, 1);
-    // Write Memory in Successful MAYBE_CONVERT in Run
-    for (int i = 0; i < size_of(variant); ++i) {
-      double val = get_or_insert(Memory, base_address+/*skip tag*/1+i);
-      trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
-      put(Memory, product.value+i, val);
+    if (!is_dummy(product)) {
+      // Write Memory in Successful MAYBE_CONVERT in Run
+      for (int i = 0; i < size_of(variant); ++i) {
+        double val = get_or_insert(Memory, base_address+/*skip tag*/1+i);
+        trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
+        put(Memory, product.value+i, val);
+      }
     }
   }
   else {
@@ -192,6 +194,15 @@ def main [
   20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 +error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number
+
+:(scenario maybe_convert_dummy_product)
+def main [
+  12:number <- copy 1
+  13:number <- copy 35
+  14:number <- copy 36
+  _, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
+]
+$error: 0
 
 //:: Allow exclusive containers to be defined in mu code.
 
