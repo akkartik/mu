@@ -316,7 +316,6 @@ void compute_container_address_offsets(type_tree* type) {
 void append_addresses(int base_offset, const type_tree* type, map<set<tag_condition_info>, set<address_element_info> >& out, const set<tag_condition_info>& key) {
   const type_info& info = get(Type, type->value);
   if (type->name == "address") {
-    assert(type->right && type->right->name != "array");  // array types can't be handled without a full reagent and its value
     get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
     return;
   }
