@@ -343,10 +343,7 @@ void check_memory(const string& s) {
       else
         // just testing scenario support
         raise << "location '" << address << "' can't contain non-number " << rhs << '\n' << end();
-      if (!Scenario_testing_scenario) {
-        Passed = false;
-        ++Num_failures;
-      }
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     double value = to_double(rhs);
@@ -362,10 +359,7 @@ void check_memory(const string& s) {
         // just testing scenario support
         raise << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
       }
-      if (!Scenario_testing_scenario) {
-        Passed = false;
-        ++Num_failures;
-      }
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     locations_checked.insert(address);
@@ -401,10 +395,7 @@ void check_string(int address, const string& literal) {
       raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_string(address) << ")\n" << end();
     else
       raise << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
-    if (!Scenario_testing_scenario) {
-      Passed = false;
-      ++Num_failures;
-    }
+    if (!Scenario_testing_scenario) Passed = false;
     return;
   }
   ++address;  // now skip length
@@ -419,10 +410,7 @@ void check_string(int address, const string& literal) {
         // just testing scenario support
         raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << '\n' << end();
       }
-      if (!Scenario_testing_scenario) {
-        Passed = false;
-        ++Num_failures;
-      }
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
   }
