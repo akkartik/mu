@@ -23,6 +23,7 @@ exclusive-container cell [
   pair:pair
 ]
 
+# printed below as < first | rest >
 container pair [
   first:address:cell
   rest:address:cell
@@ -54,6 +55,24 @@ def is-pair? x:address:cell -> result:boolean [
   load-ingredients
   reply-unless x, 0/false
   _, result <- maybe-convert *x, pair:variant
+]
+
+def set-first base:address:cell, new-first:address:cell -> base:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
+  reply-unless is-pair?
+  pair <- put pair, first:offset, new-first
+  *base <- merge 1/pair, pair
+]
+
+def set-rest base:address:cell, new-rest:address:cell -> base:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
+  reply-unless is-pair?
+  pair <- put pair, rest:offset, new-rest
+  *base <- merge 1/pair, pair
 ]
 
 scenario atom-is-not-pair [
@@ -162,12 +181,31 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     break-unless pair?
     # pair
     read in  # skip the open-paren
-    first:address:cell, in <- parse in
-    rest:address:cell, in <- parse in
-    c <- read in
-    close-paren?:boolean <- equal c, 41/close-paren
-    assert close-paren?, [currently supports exactly two atoms in pairs]
-    out <- new-pair first, rest
+    out <- new cell:type  # start out with nil
+    # read in first element of pair
+    {
+      done?:boolean <- end-of-stream? in
+      break-if done?
+      c <- peek in
+      close-paren?:boolean <- equal c, 41/close-paren
+      break-if close-paren?
+      first:address:cell, in <- parse in
+      *out <- merge 1/pair, first, 0/nil
+    }
+    # read in any remaining elements
+    curr:address:cell <- copy out
+    {
+      done?:boolean <- end-of-stream? in
+      break-if done?
+      c <- peek in
+      close-paren?:boolean <- equal c, 41/close-paren
+      break-if close-paren?
+      first:address:cell, in <- parse in
+      new-curr:address:cell <- new-pair first, 0/nil
+      curr <- set-rest curr, new-curr
+      curr <- rest curr
+      loop
+    }
   }
 ]
 
@@ -195,22 +233,62 @@ scenario parse-atom [
   ]
 ]
 
-scenario parse-list [
+scenario parse-list-of-two-atoms [
   local-scope
   s:address:array:character <- new [(abc def)]
   x:address:cell <- parse s
-  p:pair, 10:boolean/raw <- maybe-convert *x, pair:variant
-  x1:address:cell <- get p, first:offset
-  x2:address:cell <- get p, rest:offset
+  10:boolean/raw <- is-pair? x
+  x1:address:cell <- first x
+  x2:address:cell <- rest x
   s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
-  s2:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  12:boolean/raw <- is-pair? x2
+  x3:address:cell <- first x2
+  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  14:address:cell/raw <- rest x2
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
   memory-should-contain [
+    # parses to < abc | < def | 0 > >
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
-    12 <- 1  # result.rest is an atom
+    12 <- 1  # result.rest is a pair
+    13 <- 1  # result.rest.first is an atom
+    14 <- 0  # result.rest.rest is nil
     20:array:character <- [abc]  # result.first
     30:array:character <- [def]  # result.rest
+  ]
+]
+
+scenario parse-list-of-more-than-two-atoms [
+  local-scope
+  s:address:array:character <- new [(abc def ghi)]
+  x:address:cell <- parse s
+  10:boolean/raw <- is-pair? x
+  x1:address:cell <- first x
+  x2:address:cell <- rest x
+  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  12:boolean/raw <- is-pair? x2
+  x3:address:cell <- first x2
+  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  x4:address:cell <- rest x2
+  14:boolean/raw <- is-pair? x4
+  x5:address:cell <- first x4
+  s3:address:array:character, 15:boolean/raw <- maybe-convert *x5, atom:variant
+  16:address:cell/raw <- rest x4
+  20:array:character/raw <- copy *s1
+  30:array:character/raw <- copy *s2
+  40:array:character/raw <- copy *s3
+  memory-should-contain [
+    # parses to < abc | < def | < ghi | 0 > > >
+    10 <- 1  # parse result is a pair
+    11 <- 1  # result.first is an atom
+    12 <- 1  # result.rest is a pair
+    13 <- 1  # result.rest.first is an atom
+    14 <- 1  # result.rest.rest is a pair
+    15 <- 1  # result.rest.rest.first is an atom
+    16 <- 0  # result.rest.rest.rest is nil
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
+    40:array:character <- [ghi]  # result.rest.rest
   ]
 ]
