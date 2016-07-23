@@ -144,21 +144,30 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     {
       done?:boolean <- end-of-stream? in
       break-if done?
-      c:character, in <- read in
+      # stop before close paren
+      c:character <- peek in
+      done? <- equal c, 41/close-paren
+      break-if done?
+      # stop at spaces after consuming them
+      c <- read in
+      done? <- equal c, 32/space
+      break-if done?
       b <- append b, c
       loop
     }
     s:address:array:character <- buffer-to-array b
     out <- new-atom s
-    reply
   }
   {
     break-unless pair?
     # pair
     read in  # skip the open-paren
-    {
-#?       done?:boolean <- 
-    }
+    first:address:cell, in <- parse in
+    rest:address:cell, in <- parse in
+    c <- read in
+    close-paren?:boolean <- equal c, 41/close-paren
+    assert close-paren?, [currently supports exactly two atoms in pairs]
+    out <- new-pair first, rest
   }
 ]
 
