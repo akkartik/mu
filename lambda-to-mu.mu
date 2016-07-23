@@ -188,8 +188,9 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     out <- new cell:type  # start out with nil
     # read in first element of pair
     {
-      done?:boolean <- end-of-stream? in
-      break-if done?
+      end?:boolean <- end-of-stream? in
+      not-end?:boolean <- not end?
+      assert not-end?, [unbalanced '(' in expression]
       c <- peek in
       close-paren?:boolean <- equal c, 41/close-paren
       break-if close-paren?
@@ -199,8 +200,9 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     # read in any remaining elements
     curr:address:cell <- copy out
     {
-      done?:boolean <- end-of-stream? in
-      break-if done?
+      end?:boolean <- end-of-stream? in
+      not-end?:boolean <- not end?
+      assert not-end?, [unbalanced '(' in expression]
       c <- peek in
       close-paren?:boolean <- equal c, 41/close-paren
       break-if close-paren?
@@ -296,3 +298,27 @@ scenario parse-list-of-more-than-two-atoms [
     40:array:character <- [ghi]  # result.rest.rest
   ]
 ]
+
+# todo: uncomment these tests after we figure out how to continue tests after
+# assertion failures
+#? scenario parse-error [
+#?   local-scope
+#?   s:address:array:character <- new [(]
+#? #?   hide-errors
+#?   x:address:cell <- parse s
+#? #?   show-errors
+#?   trace-should-contain [
+#?     error: unbalanced '(' in expression
+#?   ]
+#? ]
+#? 
+#? scenario parse-error-after-element [
+#?   local-scope
+#?   s:address:array:character <- new [(abc]
+#? #?   hide-errors
+#?   x:address:cell <- parse s
+#? #?   show-errors
+#?   trace-should-contain [
+#?     error: unbalanced '(' in expression
+#?   ]
+#? ]
