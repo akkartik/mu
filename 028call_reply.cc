@@ -36,7 +36,7 @@ case RETURN: {
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
   const instruction& caller_instruction = current_instruction();
-  for (int i = 0; i < SIZE(caller_instruction.products); ++i)
+  for (int i = 0; i < SIZE(ingredients); ++i)
     trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
 
   // make reply products available to caller
