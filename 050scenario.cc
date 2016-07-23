@@ -119,6 +119,7 @@ Num_core_mu_tests = SIZE(Scenarios);
 Hide_missing_default_space_errors = false;
 time_t mu_time; time(&mu_time);
 cerr << "\nMu tests: " << ctime(&mu_time);
+run_mu_scenarios:
 for (int i = 0; i < SIZE(Scenarios); ++i) {
 //?   cerr << i << ": " << Scenarios.at(i).name << '\n';
   if (i == Num_core_mu_tests) {
@@ -127,6 +128,14 @@ for (int i = 0; i < SIZE(Scenarios); ++i) {
   }
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
+}
+
+:(after "End Test Run Initialization")
+if (Test_only_app && Num_core_mu_tests < SIZE(Scenarios)) {
+  // we have app tests; skip core mu tests
+  Scenarios.erase(Scenarios.begin(), Scenarios.begin()+Num_core_mu_tests);
+  // skip C tests
+  goto run_mu_scenarios;
 }
 
 //: Convenience: run a single named scenario.

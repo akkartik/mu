@@ -152,8 +152,8 @@ if (argc > 1) {
   while (argc > 0) {
     if (string(*argv) == "--") break;
     load_file_or_directory(*argv);
-    argv++;
-    argc--;
+    --argc;
+    ++argv;
   }
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
 }

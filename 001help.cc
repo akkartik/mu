@@ -11,6 +11,10 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
        << "  mu test\n"
        << "To load files and then run all tests:\n"
        << "  mu test file1.mu file2.mu ...\n"
+       << "To load files and run only the tests in explicitly loaded files (for apps):\n"
+       << "  mu --test-only-app test file1.mu file2.mu ...\n"
+       << "'--test-only-app' must come before all other args\n"
+       << "'test' must come before all other args except '--test-only-app'\n"
        << "To load all files with a numeric prefix in a directory:\n"
        << "  mu directory1\n"
        << "You can test directories just like files.\n"
@@ -192,6 +196,14 @@ template<typename T> typename T::mapped_type& get_or_insert(T& map, typename T::
 :(code)
 bool has_data(istream& in) {
   return in && !in.eof();
+}
+
+////: A hack to support faster debugging.
+:(before "End Globals")
+bool Test_only_app = false;
+:(before "End Commandline Parsing")
+if (argc > 1 && is_equal(argv[1], "--test-only-app")) {
+  Test_only_app = true;  --argc;  ++argv;
 }
 
 :(before "End Includes")
