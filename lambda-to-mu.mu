@@ -136,13 +136,18 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
   local-scope
   load-ingredients
   b:address:buffer <- new-buffer 30
-  c:character, in <- read in
-  b <- append b, c
+  {
+    done?:boolean <- end-of-stream? in
+    break-if done?
+    c:character, in <- read in
+    b <- append b, c
+    loop
+  }
   s:address:array:character <- buffer-to-array b
   out <- new-atom s
 ]
 
-scenario parse-atom [
+scenario parse-single-letter-atom [
   local-scope
   s:address:array:character <- new [a]
   x:address:cell <- parse s
@@ -151,5 +156,17 @@ scenario parse-atom [
   memory-should-contain [
     10 <- 1  # parse result is an atom
     11:array:character <- [a]
+  ]
+]
+
+scenario parse-atom [
+  local-scope
+  s:address:array:character <- new [abc]
+  x:address:cell <- parse s
+  s2:address:array:character, 10:boolean/raw <- maybe-convert *x, atom:variant
+  11:array:character/raw <- copy *s2
+  memory-should-contain [
+    10 <- 1  # parse result is an atom
+    11:array:character <- [abc]
   ]
 ]
