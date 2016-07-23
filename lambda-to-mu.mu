@@ -135,16 +135,33 @@ def parse in:address:array:character -> out:address:cell [
 def parse in:address:stream -> out:address:cell, in:address:stream [
   local-scope
   load-ingredients
-  b:address:buffer <- new-buffer 30
   {
     done?:boolean <- end-of-stream? in
     break-if done?
+    c:character <- peek in
+    pair?:boolean <- equal c, 40/open-paren
+    {
+      break-if pair?
+      # atom
+      b:address:buffer <- new-buffer 30
+      {
+        done?:boolean <- end-of-stream? in
+        break-if done?
+        c:character, in <- read in
+        b <- append b, c
+        loop
+      }
+      s:address:array:character <- buffer-to-array b
+      out <- new-atom s
+    }
+    {
+      break-unless pair?
+      # pair
+      out <- new-pair 0, 0
+    }
     c:character, in <- read in
-    b <- append b, c
     loop
   }
-  s:address:array:character <- buffer-to-array b
-  out <- new-atom s
 ]
 
 scenario parse-single-letter-atom [
@@ -168,5 +185,25 @@ scenario parse-atom [
   memory-should-contain [
     10 <- 1  # parse result is an atom
     11:array:character <- [abc]
+  ]
+]
+
+scenario parse-list [
+  local-scope
+  s:address:array:character <- new [(abc def)]
+  x:address:cell <- parse s
+  p:pair, 10:boolean/raw <- maybe-convert *x, pair:variant
+  x1:address:cell <- get p, first:offset
+  x2:address:cell <- get p, rest:offset
+  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s2:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  20:array:character/raw <- copy *s1
+  30:array:character/raw <- copy *s2
+  memory-should-contain [
+    10 <- 1  # parse result is a pair
+    11 <- 1  # result.first is an atom
+    12 <- 1  # result.rest is an atom
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest
   ]
 ]
