@@ -135,32 +135,30 @@ def parse in:address:array:character -> out:address:cell [
 def parse in:address:stream -> out:address:cell, in:address:stream [
   local-scope
   load-ingredients
+  c:character <- peek in
+  pair?:boolean <- equal c, 40/open-paren
   {
-    done?:boolean <- end-of-stream? in
-    break-if done?
-    c:character <- peek in
-    pair?:boolean <- equal c, 40/open-paren
+    break-if pair?
+    # atom
+    b:address:buffer <- new-buffer 30
     {
-      break-if pair?
-      # atom
-      b:address:buffer <- new-buffer 30
-      {
-        done?:boolean <- end-of-stream? in
-        break-if done?
-        c:character, in <- read in
-        b <- append b, c
-        loop
-      }
-      s:address:array:character <- buffer-to-array b
-      out <- new-atom s
+      done?:boolean <- end-of-stream? in
+      break-if done?
+      c:character, in <- read in
+      b <- append b, c
+      loop
     }
+    s:address:array:character <- buffer-to-array b
+    out <- new-atom s
+    reply
+  }
+  {
+    break-unless pair?
+    # pair
+    read in  # skip the open-paren
     {
-      break-unless pair?
-      # pair
-      out <- new-pair 0, 0
+#?       done?:boolean <- 
     }
-    c:character, in <- read in
-    loop
   }
 ]
 
