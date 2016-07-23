@@ -12,7 +12,7 @@ def new-stream s:address:array:character -> result:address:stream [
   *result <- put *result, data:offset, s
 ]
 
-def rewind-stream in:address:stream -> in:address:stream [
+def rewind in:address:stream -> in:address:stream [
   local-scope
   load-ingredients
   *in <- put *in, index:offset, 0
