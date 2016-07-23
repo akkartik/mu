@@ -18,6 +18,16 @@ def rewind-stream in:address:stream -> in:address:stream [
   *in <- put *in, index:offset, 0
 ]
 
+def read in:address:stream -> result:character, in:address:stream [
+  local-scope
+  load-ingredients
+  idx:number <- get *in, index:offset
+  s:address:array:character <- get *in, data:offset
+  result <- index *s, idx
+  idx <- add idx, 1
+  *in <- put *in, index:offset, idx
+]
+
 def read-line in:address:stream -> result:address:array:character, in:address:stream [
   local-scope
   load-ingredients

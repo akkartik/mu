@@ -124,3 +124,32 @@ scenario cell-operations-on-pair [
     11 <- 0  # rest is nil
   ]
 ]
+
+def parse in:address:array:character -> out:address:cell [
+  local-scope
+  load-ingredients
+  s:address:stream <- new-stream in
+  out, s <- parse s
+]
+
+def parse in:address:stream -> out:address:cell, in:address:stream [
+  local-scope
+  load-ingredients
+  b:address:buffer <- new-buffer 30
+  c:character, in <- read in
+  b <- append b, c
+  s:address:array:character <- buffer-to-array b
+  out <- new-atom s
+]
+
+scenario parse-atom [
+  local-scope
+  s:address:array:character <- new [a]
+  x:address:cell <- parse s
+  s2:address:array:character, 10:boolean/raw <- maybe-convert *x, atom:variant
+  11:array:character/raw <- copy *s2
+  memory-should-contain [
+    10 <- 1  # parse result is an atom
+    11:array:character <- [a]
+  ]
+]
