@@ -1,4 +1,7 @@
-scenario convert-dataflow [
+## experimental compiler to translate programs of a generic
+## expression-oriented language 'lambda' into mu
+
+scenario convert-lambda [
   run [
     local-scope
     1:address:array:character/raw <- lambda-to-mu [(add a (multiply b c))]
@@ -18,6 +21,7 @@ def lambda-to-mu in:address:array:character -> out:address:array:character [
   out <- to-mu tmp
 ]
 
+# 'parse' will turn lambda expressions into trees made of cells
 exclusive-container cell [
   atom:address:array:character
   pair:pair
@@ -255,7 +259,7 @@ scenario parse-list-of-two-atoms [
     13 <- 1  # result.rest.first is an atom
     14 <- 0  # result.rest.rest is nil
     20:array:character <- [abc]  # result.first
-    30:array:character <- [def]  # result.rest
+    30:array:character <- [def]  # result.rest.first
   ]
 ]
 
