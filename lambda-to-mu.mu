@@ -222,6 +222,7 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
       end?:boolean <- end-of-stream? in
       not-end?:boolean <- not end?
       assert not-end?, [unbalanced '(' in expression]
+      # termination check: ')'
       in <- skip-whitespace in
       c <- peek in
       {
@@ -230,10 +231,29 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
         read in  # skip ')'
         break +end-pair:label
       }
+      # still here? read next element of pair
       next:address:cell, in <- parse in
-      next-curr:address:cell <- new-pair next, 0/nil
-      curr <- set-rest curr, next-curr
-      curr <- rest curr
+      is-dot?:boolean <- atom-match? next, [.]
+      {
+        break-if is-dot?
+        next-curr:address:cell <- new-pair next, 0/nil
+        curr <- set-rest curr, next-curr
+        curr <- rest curr
+      }
+      {
+        break-unless is-dot?
+        # deal with dotted pair
+        in <- skip-whitespace in
+        c <- peek in
+        not-close-paren?:boolean <- not-equal c, 41/close-paren
+        assert not-close-paren?, [')' cannot immediately follow '.']
+        final:address:cell <- parse in
+        curr <- set-rest curr, final
+        in <- skip-whitespace in
+        c <- peek in
+        close-paren?:boolean <- equal c, 41/close-paren
+        assert close-paren?, ['.' must be followed exactly one more expression]
+      }
       loop
     }
     +end-pair
@@ -483,3 +503,58 @@ scenario parse-nested-list-2 [
 #?     error: unbalanced '(' in expression
 #?   ]
 #? ]
+
+scenario parse-dotted-list-of-two-atoms [
+  local-scope
+  s:address:array:character <- new [(abc . def)]
+  x:address:cell <- parse s
+  trace-should-contain [
+    app/parse: < abc | def >
+  ]
+  10:boolean/raw <- is-pair? x
+  x1:address:cell <- first x
+  x2:address:cell <- rest x
+  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s2:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  20:array:character/raw <- copy *s1
+  30:array:character/raw <- copy *s2
+  memory-should-contain [
+    # parses to < abc | def >
+    10 <- 1  # parse result is a pair
+    11 <- 1  # result.first is an atom
+    12 <- 1  # result.rest is an atom
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest
+  ]
+]
+
+scenario parse-dotted-list-of-more-than-two-atoms [
+  local-scope
+  s:address:array:character <- new [(abc def . ghi)]
+  x:address:cell <- parse s
+  trace-should-contain [
+    app/parse: < abc | < def | ghi > >
+  ]
+  10:boolean/raw <- is-pair? x
+  x1:address:cell <- first x
+  x2:address:cell <- rest x
+  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  12:boolean/raw <- is-pair? x2
+  x3:address:cell <- first x2
+  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  x4:address:cell <- rest x2
+  s3:address:array:character, 14:boolean/raw <- maybe-convert *x4, atom:variant
+  20:array:character/raw <- copy *s1
+  30:array:character/raw <- copy *s2
+  40:array:character/raw <- copy *s3
+  memory-should-contain [
+    10 <- 1  # parse result is a pair
+    11 <- 1  # result.first is an atom
+    12 <- 1  # result.rest is a pair
+    13 <- 1  # result.rest.first is an atom
+    14 <- 1  # result.rest.rest is an atom
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
+    40:array:character <- [ghi]  # result.rest.rest
+  ]
+]
