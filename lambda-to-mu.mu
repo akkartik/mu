@@ -249,10 +249,12 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
         assert not-close-paren?, [')' cannot immediately follow '.']
         final:address:cell <- parse in
         curr <- set-rest curr, final
+        # we're not gonna update curr, so better make sure the next iteration
+        # is going to end the pair
         in <- skip-whitespace in
         c <- peek in
         close-paren?:boolean <- equal c, 41/close-paren
-        assert close-paren?, ['.' must be followed exactly one more expression]
+        assert close-paren?, ['.' must be followed by exactly one expression before ')']
       }
       loop
     }
