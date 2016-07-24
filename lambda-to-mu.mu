@@ -87,6 +87,23 @@ scenario pair-is-not-atom [
   ]
 ]
 
+def atom-match? x:address:cell, pat:address:array:character -> result:boolean [
+  local-scope
+  load-ingredients
+  s:address:array:character, is-atom?:boolean <- maybe-convert *x, atom:variant
+  reply-unless is-atom?, 0/false
+  result <- equal pat, s
+]
+
+scenario atom-match [
+  local-scope
+  x:address:cell <- new-atom [abc]
+  10:boolean/raw <- atom-match? x, [abc]
+  memory-should-contain [
+    10 <- 1
+  ]
+]
+
 def first x:address:cell -> result:address:cell [
   local-scope
   load-ingredients
