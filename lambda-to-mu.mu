@@ -17,8 +17,8 @@ def lambda-to-mu in:address:array:character -> out:address:array:character [
   local-scope
   load-ingredients
   out <- copy 0
-  tmp:address:cell <- parse in
-  out <- to-mu tmp
+  cells:address:cell <- parse in
+  out <- to-mu cells
 ]
 
 # 'parse' will turn lambda expressions into trees made of cells
@@ -153,6 +153,7 @@ def parse in:address:array:character -> out:address:cell [
   load-ingredients
   s:address:stream <- new-stream in
   out, s <- parse s
+  trace 2, [app/parse], out
 ]
 
 def parse in:address:stream -> out:address:cell, in:address:stream [
@@ -215,6 +216,40 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
   }
 ]
 
+def to-text x:address:cell -> out:address:array:character [
+  local-scope
+  load-ingredients
+  buf:address:buffer <- new-buffer 30
+  buf <- to-buffer x, buf
+  out <- buffer-to-array buf
+]
+
+def to-buffer x:address:cell, buf:address:buffer -> buf:address:buffer [
+  local-scope
+  load-ingredients
+  # base case: empty cell
+  {
+    break-if x
+    buf <- append buf, [<>]
+    reply
+  }
+  # base case: atom
+  {
+    s:address:array:character, atom?:boolean <- maybe-convert *x, atom:variant
+    break-unless atom?
+    buf <- append buf, s
+    reply
+  }
+  # recursive case: pair
+  buf <- append buf, [< ]
+  first:address:cell <- first x
+  buf <- to-buffer first, buf
+  buf <- append buf, [ | ]
+  rest:address:cell <- rest x
+  buf <- to-buffer rest, buf
+  buf <- append buf, [ >]
+]
+
 scenario parse-single-letter-atom [
   local-scope
   s:address:array:character <- new [a]
@@ -253,8 +288,10 @@ scenario parse-list-of-two-atoms [
   14:address:cell/raw <- rest x2
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
+  trace-should-contain [
+    app/parse: < abc | < def | <> > >
+  ]
   memory-should-contain [
-    # parses to < abc | < def | 0 > >
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is a pair
@@ -284,8 +321,10 @@ scenario parse-list-of-more-than-two-atoms [
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
   40:array:character/raw <- copy *s3
+  trace-should-contain [
+    app/parse: < abc | < def | < ghi | <> > > >
+  ]
   memory-should-contain [
-    # parses to < abc | < def | < ghi | 0 > > >
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is a pair

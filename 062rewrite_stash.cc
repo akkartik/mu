@@ -40,7 +40,21 @@ recipe main [
 ]
 +transform: stash {n: ("array" "number" "3")}
 
-:(before "End Instruction Inserting/Deleting Transforms")
+:(scenario rewrite_stashes_of_recipe_header_products)
+container foo [
+  x:number
+]
+recipe bar -> x:foo [
+  local-scope
+  load-ingredients
+  x <- merge 34
+  stash x
+]
++transform: stash {stash_2_0: ("address" "array" "character")}
+
+//: misplaced; should be in instruction inserting/deleting transforms, but has
+//: prerequisites: deduce_types_from_header and check_or_set_types_by_name
+:(after "Transform.push_back(deduce_types_from_header)")
 Transform.push_back(rewrite_stashes_to_text);
 
 :(code)
@@ -49,7 +63,6 @@ void rewrite_stashes_to_text(recipe_ordinal r) {
   trace(9991, "transform") << "--- rewrite 'stash' instructions in recipe " << caller.name << end();
   // in recipes without named locations, 'stash' is still not extensible
   if (contains_numeric_locations(caller)) return;
-  check_or_set_types_by_name(r);  // prerequisite
   rewrite_stashes_to_text(caller);
 }
 
