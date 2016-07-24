@@ -712,9 +712,9 @@ container foo [
 +parse: element: {x: "number"}
 +parse: element: {y: "number"}
 
-:(scenario container_with_compount_field_type)
+:(scenario container_with_compound_field_type)
 container foo [
-  {x: (table (address array character) number)}
+  {x: (address array (address array character))}
 ]
 $error: 0
 
