@@ -230,9 +230,9 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
         read in  # skip ')'
         break +end-pair:label
       }
-      first:address:cell, in <- parse in
-      new-curr:address:cell <- new-pair first, 0/nil
-      curr <- set-rest curr, new-curr
+      next:address:cell, in <- parse in
+      next-curr:address:cell <- new-pair next, 0/nil
+      curr <- set-rest curr, next-curr
       curr <- rest curr
       loop
     }
