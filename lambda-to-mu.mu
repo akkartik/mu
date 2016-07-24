@@ -61,24 +61,6 @@ def is-pair? x:address:cell -> result:boolean [
   _, result <- maybe-convert *x, pair:variant
 ]
 
-def set-first base:address:cell, new-first:address:cell -> base:address:cell [
-  local-scope
-  load-ingredients
-  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
-  reply-unless is-pair?
-  pair <- put pair, first:offset, new-first
-  *base <- merge 1/pair, pair
-]
-
-def set-rest base:address:cell, new-rest:address:cell -> base:address:cell [
-  local-scope
-  load-ingredients
-  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
-  reply-unless is-pair?
-  pair <- put pair, rest:offset, new-rest
-  *base <- merge 1/pair, pair
-]
-
 scenario atom-is-not-pair [
   local-scope
   s:address:array:character <- new [a]
@@ -119,6 +101,24 @@ def rest x:address:cell -> result:address:cell [
   pair:pair, pair?:boolean <- maybe-convert *x, pair:variant
   reply-unless pair?, 0/nil
   result <- get pair, rest:offset
+]
+
+def set-first base:address:cell, new-first:address:cell -> base:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
+  reply-unless is-pair?
+  pair <- put pair, first:offset, new-first
+  *base <- merge 1/pair, pair
+]
+
+def set-rest base:address:cell, new-rest:address:cell -> base:address:cell [
+  local-scope
+  load-ingredients
+  pair:pair, is-pair?:boolean <- maybe-convert *base, pair:variant
+  reply-unless is-pair?
+  pair <- put pair, rest:offset, new-rest
+  *base <- merge 1/pair, pair
 ]
 
 scenario cell-operations-on-atom [
