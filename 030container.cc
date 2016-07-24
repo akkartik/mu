@@ -712,6 +712,12 @@ container foo [
 +parse: element: {x: "number"}
 +parse: element: {y: "number"}
 
+:(scenario container_with_compount_field_type)
+container foo [
+  {x: (table (address array character) number)}
+]
+$error: 0
+
 :(before "End transform_all")
 check_container_field_types();
 
@@ -727,12 +733,10 @@ void check_container_field_types() {
 
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
-  if (type->value == 0) {
-    assert(!type->left && !type->right);
-    return;
+  if (type->value != 0) {  // value 0 = compound types (layer parse_tree) or type ingredients (layer shape_shifting_container)
+    if (!contains_key(Type, type->value))
+      raise << block << "unknown type in " << name << '\n' << end();
   }
-  if (!contains_key(Type, type->value))
-    raise << block << "unknown type in " << name << '\n' << end();
   check_invalid_types(type->left, block, name);
   check_invalid_types(type->right, block, name);
 }
