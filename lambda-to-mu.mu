@@ -159,6 +159,8 @@ def parse in:address:array:character -> out:address:cell [
 def parse in:address:stream -> out:address:cell, in:address:stream [
   local-scope
   load-ingredients
+  # skip whitespace
+  in <- skip-whitespace in
   c:character <- peek in
   pair?:boolean <- equal c, 40/open-paren
   {
@@ -168,14 +170,13 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     {
       done?:boolean <- end-of-stream? in
       break-if done?
-      # stop before close paren
+      # stop before close paren or space
       c:character <- peek in
       done? <- equal c, 41/close-paren
       break-if done?
-      # stop at spaces after consuming them
-      c <- read in
-      done? <- equal c, 32/space
+      done? <- space? c
       break-if done?
+      c <- read in
       b <- append b, c
       loop
     }
@@ -204,6 +205,7 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
       end?:boolean <- end-of-stream? in
       not-end?:boolean <- not end?
       assert not-end?, [unbalanced '(' in expression]
+      in <- skip-whitespace in
       c <- peek in
       close-paren?:boolean <- equal c, 41/close-paren
       break-if close-paren?
@@ -213,6 +215,20 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
       curr <- rest curr
       loop
     }
+  }
+]
+
+def skip-whitespace in:address:stream -> in:address:stream [
+  local-scope
+  load-ingredients
+  {
+    done?:boolean <- end-of-stream? in
+    reply-if done?, 0/null
+    c:character <- peek in
+    space?:boolean <- space? c
+    break-unless space?
+    read in  # skip
+    loop
   }
 ]
 
@@ -277,6 +293,34 @@ scenario parse-atom [
 scenario parse-list-of-two-atoms [
   local-scope
   s:address:array:character <- new [(abc def)]
+  x:address:cell <- parse s
+  10:boolean/raw <- is-pair? x
+  x1:address:cell <- first x
+  x2:address:cell <- rest x
+  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  12:boolean/raw <- is-pair? x2
+  x3:address:cell <- first x2
+  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  14:address:cell/raw <- rest x2
+  20:array:character/raw <- copy *s1
+  30:array:character/raw <- copy *s2
+  trace-should-contain [
+    app/parse: < abc | < def | <> > >
+  ]
+  memory-should-contain [
+    10 <- 1  # parse result is a pair
+    11 <- 1  # result.first is an atom
+    12 <- 1  # result.rest is a pair
+    13 <- 1  # result.rest.first is an atom
+    14 <- 0  # result.rest.rest is nil
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
+  ]
+]
+
+scenario parse-list-with-extra-spaces [
+  local-scope
+  s:address:array:character <- new [ ( abc  def ) ]  # extra spaces
   x:address:cell <- parse s
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
