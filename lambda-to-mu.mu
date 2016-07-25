@@ -1,5 +1,5 @@
-## experimental compiler to translate programs of a generic
-## expression-oriented language 'lambda' into mu
+## experimental compiler to translate programs written in a generic
+## expression-oriented language called 'lambda' into mu
 
 scenario convert-lambda [
   run [
@@ -164,6 +164,8 @@ scenario cell-operations-on-pair [
     11 <- 0  # rest is nil
   ]
 ]
+
+## convert lambda text to a tree of cells
 
 def parse in:address:array:character -> out:address:cell [
   local-scope
