@@ -535,7 +535,7 @@ int ninstrs;
 :(before "End routine Constructor")
 ninstrs = 0;
 :(after "stop_running_current_routine:")
-Current_routine->ninstrs = Current_routine->ninstrs + ninstrs;
+Current_routine->ninstrs += ninstrs;
 :(before "End Primitive Recipe Declarations")
 NUMBER_OF_INSTRUCTIONS,
 :(before "End Primitive Recipe Numbers")
@@ -567,6 +567,43 @@ case NUMBER_OF_INSTRUCTIONS: {
   break;
 }
 
+:(scenario number_of_instructions)
+def f1 [
+  10:number/child-id <- start-running f2
+  {
+    loop-unless 20:number
+  }
+  11:number <- number-of-instructions 10:number
+]
+def f2 [
+  # 2 instructions worth of work
+  1:number <- copy 34
+  20:number <- copy 1
+]
+# f2 runs an extra instruction for the implicit return added by the
+# fill_in_reply_ingredients transform
++mem: storing 3 in location 11
+
+:(scenario number_of_instructions_across_multiple_scheduling_intervals)
+% Scheduling_interval = 1;
+def f1 [
+  10:number/child-id <- start-running f2
+  {
+    loop-unless 20:number
+  }
+  11:number <- number-of-instructions 10:number
+]
+def f2 [
+  # 4 instructions worth of work
+  1:number <- copy 34
+  2:number <- copy 1
+  2:number <- copy 3
+  20:number <- copy 1
+]
+# f2 runs an extra instruction for the implicit return added by the
+# fill_in_reply_ingredients transform
++mem: storing 5 in location 11
+
 //:: make sure that each routine gets a different alloc to start
 
 :(scenario new_concurrent)
@@ -586,24 +623,3 @@ def f2 [
   4:number/raw <- copy 1
 ]
 +mem: storing 0 in location 3
-
-:(scenario number_of_instructions)
-% Scheduling_interval = 1;
-def f1 [
-  10:number/child-id <- start-running f2
-  {
-    loop-unless 20:number
-  }
-  11:number <- number-of-instructions 10:number
-]
-def f2 [
-  # 4 instructions worth of work
-  # Should take 2 scheduling intervals
-  1:number <- copy 34
-  2:number <- copy 1
-  2:number <- copy 3
-  20:number <- copy 1
-]
-# f2 runs an extra instruction for the implicit return added by the
-# fill_in_reply_ingredients transform
-+mem: storing 5 in location 11
