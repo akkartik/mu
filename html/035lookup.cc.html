@@ -272,6 +272,27 @@ def main [
 <span class="Delimiter">:(after &quot;Update PUT base in Run&quot;)</span>
 canonize<span class="Delimiter">(</span>base<span class="Delimiter">);</span>
 
+<span class="Delimiter">:(scenario put_product_error_with_lookup)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">1</span>:address:point<span class="Special"> &lt;- </span>put <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">36</span>
+]
+<span class="traceContains">+error: main: product of 'put' must be first ingredient '1:address:point/lookup', but got '1:address:point'</span>
+
+<span class="Delimiter">:(before &quot;End PUT Product Checks&quot;)</span>
+reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> p = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>p<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> i = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>p<span class="Delimiter">,</span> i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product of 'put' must be first ingredient '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(scenario new_error)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
@@ -358,6 +379,29 @@ def main [
   <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>:address:number/lookup<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
+
+<span class="Delimiter">:(scenario put_index_product_error_with_lookup)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  <span class="Comment"># 10 reserved for refcount</span>
+  <span class="Constant">11</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:address:array:number/lookup<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+]
+<span class="traceContains">+error: main: product of 'put-index' must be first ingredient '1:address:array:number/lookup', but got '1:address:array:number'</span>
+
+<span class="Delimiter">:(before &quot;End PUT_INDEX Product Checks&quot;)</span>
+reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> p = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>p<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> i = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>p<span class="Delimiter">,</span> i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;product of 'put-index' must be first ingredient '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario dilated_reagent_in_static_array)</span>
 def main [

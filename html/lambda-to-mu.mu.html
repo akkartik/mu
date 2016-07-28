@@ -1,0 +1,605 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - lambda-to-mu.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muScenario { color: #00af00; }
+.muData { color: #ffff00; }
+.Delimiter { color: #800080; }
+.muRecipe { color: #ff8700; }
+.Special { color: #c00000; }
+.Constant { color: #00a0a0; }
+.SalientComment { color: #00ffff; }
+.CommentedCode { color: #6c6c6c; }
+.Comment { color: #9090ff; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="SalientComment">## experimental compiler to translate programs written in a generic</span>
+<span class="SalientComment">## expression-oriented language called 'lambda' into mu</span>
+
+<span class="muScenario">scenario</span> convert-lambda [
+  run [
+    <span class="Constant">local-scope</span>
+    <span class="Constant">1</span>:address:array:character/<span class="Special">raw &lt;- </span>lambda-to-mu <span class="Constant">[(add a (multiply b c))]</span>
+    <span class="Constant">2</span>:array:character/<span class="Special">raw &lt;- </span>copy *<span class="Constant">1</span>:address:array:character/<span class="Special">raw</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">2</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[t1 &lt;- multiply b c</span>
+<span class="Constant">result &lt;- add a t1]</span>
+  ]
+]
+
+<span class="muRecipe">def</span> lambda-to-mu in:address:array:character<span class="muRecipe"> -&gt; </span>out:address:array:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  out<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  cells:address:cell<span class="Special"> &lt;- </span>parse in
+  out<span class="Special"> &lt;- </span>to-mu cells
+]
+
+<span class="Comment"># 'parse' will turn lambda expressions into trees made of cells</span>
+<span class="muData">exclusive-container</span> cell [
+  atom:address:array:character
+  pair:pair
+]
+
+<span class="Comment"># printed below as &lt; first | rest &gt;</span>
+<span class="muData">container</span> pair [
+  first:address:cell
+  rest:address:cell
+]
+
+<span class="muRecipe">def</span> new-atom name:address:array:character<span class="muRecipe"> -&gt; </span>result:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>new <span class="Constant">cell:type</span>
+  *result<span class="Special"> &lt;- </span>merge <span class="Constant">0/tag:atom</span>, name
+]
+
+<span class="muRecipe">def</span> new-pair a:address:cell, b:address:cell<span class="muRecipe"> -&gt; </span>result:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  result<span class="Special"> &lt;- </span>new <span class="Constant">cell:type</span>
+  *result<span class="Special"> &lt;- </span>merge <span class="Constant">1/tag:pair</span>, a/first, b/rest
+]
+
+<span class="muRecipe">def</span> is-atom? x:address:cell<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="muControl">reply-unless</span> x, <span class="Constant">0/false</span>
+  _, result<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">atom:variant</span>
+]
+
+<span class="muRecipe">def</span> is-pair? x:address:cell<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="muControl">reply-unless</span> x, <span class="Constant">0/false</span>
+  _, result<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">pair:variant</span>
+]
+
+<span class="muScenario">scenario</span> atom-is-not-pair [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+  x:address:cell<span class="Special"> &lt;- </span>new-atom s
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-atom? x
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> pair-is-not-atom [
+  <span class="Constant">local-scope</span>
+  <span class="Comment"># construct (a . nil)</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+  x:address:cell<span class="Special"> &lt;- </span>new-atom s
+  y:address:cell<span class="Special"> &lt;- </span>new-pair x, <span class="Constant">0/nil</span>
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-atom? y
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? y
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
+  ]
+]
+
+<span class="muRecipe">def</span> atom-match? x:address:cell, pat:address:array:character<span class="muRecipe"> -&gt; </span>result:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  s:address:array:character, is-atom?:boolean<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">atom:variant</span>
+  <span class="muControl">reply-unless</span> is-atom?, <span class="Constant">0/false</span>
+  result<span class="Special"> &lt;- </span>equal pat, s
+]
+
+<span class="muScenario">scenario</span> atom-match [
+  <span class="Constant">local-scope</span>
+  x:address:cell<span class="Special"> &lt;- </span>new-atom <span class="Constant">[abc]</span>
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>atom-match? x, <span class="Constant">[abc]</span>
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
+  ]
+]
+
+<span class="muRecipe">def</span> first x:address:cell<span class="muRecipe"> -&gt; </span>result:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  pair:pair, pair?:boolean<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">pair:variant</span>
+  <span class="muControl">reply-unless</span> pair?, <span class="Constant">0/nil</span>
+  result<span class="Special"> &lt;- </span>get pair, <span class="Constant">first:offset</span>
+]
+
+<span class="muRecipe">def</span> rest x:address:cell<span class="muRecipe"> -&gt; </span>result:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  pair:pair, pair?:boolean<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">pair:variant</span>
+  <span class="muControl">reply-unless</span> pair?, <span class="Constant">0/nil</span>
+  result<span class="Special"> &lt;- </span>get pair, <span class="Constant">rest:offset</span>
+]
+
+<span class="muRecipe">def</span> set-first base:address:cell, new-first:address:cell<span class="muRecipe"> -&gt; </span>base:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  pair:pair, is-pair?:boolean<span class="Special"> &lt;- </span>maybe-convert *base, <span class="Constant">pair:variant</span>
+  <span class="muControl">reply-unless</span> is-pair?
+  pair<span class="Special"> &lt;- </span>put pair, <span class="Constant">first:offset</span>, new-first
+  *base<span class="Special"> &lt;- </span>merge <span class="Constant">1/pair</span>, pair
+]
+
+<span class="muRecipe">def</span> set-rest base:address:cell, new-rest:address:cell<span class="muRecipe"> -&gt; </span>base:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  pair:pair, is-pair?:boolean<span class="Special"> &lt;- </span>maybe-convert *base, <span class="Constant">pair:variant</span>
+  <span class="muControl">reply-unless</span> is-pair?
+  pair<span class="Special"> &lt;- </span>put pair, <span class="Constant">rest:offset</span>, new-rest
+  *base<span class="Special"> &lt;- </span>merge <span class="Constant">1/pair</span>, pair
+]
+
+<span class="muScenario">scenario</span> cell-operations-on-atom [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+  x:address:cell<span class="Special"> &lt;- </span>new-atom s
+  <span class="Constant">10</span>:address:cell/<span class="Special">raw &lt;- </span>first x
+  <span class="Constant">11</span>:address:cell/<span class="Special">raw &lt;- </span>rest x
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># first is nil</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># rest is nil</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> cell-operations-on-pair [
+  <span class="Constant">local-scope</span>
+  <span class="Comment"># construct (a . nil)</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+  x:address:cell<span class="Special"> &lt;- </span>new-atom s
+  y:address:cell<span class="Special"> &lt;- </span>new-pair x, <span class="Constant">0/nil</span>
+  x2:address:cell<span class="Special"> &lt;- </span>first y
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal x, x2
+  <span class="Constant">11</span>:address:cell/<span class="Special">raw &lt;- </span>rest y
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># first is correct</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># rest is nil</span>
+  ]
+]
+
+<span class="SalientComment">## convert lambda text to a tree of cells</span>
+
+<span class="muRecipe">def</span> parse in:address:array:character<span class="muRecipe"> -&gt; </span>out:address:cell [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  s:address:stream:character<span class="Special"> &lt;- </span>new-stream in
+  out, s<span class="Special"> &lt;- </span>parse s
+  trace <span class="Constant">2</span>, <span class="Constant">[app/parse]</span>, out
+]
+
+<span class="muRecipe">def</span> parse in:address:stream:character<span class="muRecipe"> -&gt; </span>out:address:cell, in:address:stream:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># skip whitespace</span>
+  in<span class="Special"> &lt;- </span>skip-whitespace in
+  c:character, eof?:boolean<span class="Special"> &lt;- </span>peek in
+  <span class="muControl">reply-if</span> eof?, <span class="Constant">0/nil</span>
+  pair?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">40/open-paren</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> pair?
+    <span class="Comment"># atom</span>
+    b:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+    <span class="Delimiter">{</span>
+      done?:boolean<span class="Special"> &lt;- </span>end-of-stream? in
+      <span class="muControl">break-if</span> done?
+      <span class="Comment"># stop before close paren or space</span>
+      c:character<span class="Special"> &lt;- </span>peek in
+      done?<span class="Special"> &lt;- </span>equal c, <span class="Constant">41/close-paren</span>
+      <span class="muControl">break-if</span> done?
+      done?<span class="Special"> &lt;- </span>space? c
+      <span class="muControl">break-if</span> done?
+      c<span class="Special"> &lt;- </span>read in
+      b<span class="Special"> &lt;- </span>append b, c
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+    s:address:array:character<span class="Special"> &lt;- </span>buffer-to-array b
+    out<span class="Special"> &lt;- </span>new-atom s
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> pair?
+    <span class="Comment"># pair</span>
+    read in  <span class="Comment"># skip the open-paren</span>
+    out<span class="Special"> &lt;- </span>new <span class="Constant">cell:type</span>  <span class="Comment"># start out with nil</span>
+    <span class="Comment"># read in first element of pair</span>
+    <span class="Delimiter">{</span>
+      end?:boolean<span class="Special"> &lt;- </span>end-of-stream? in
+      not-end?:boolean<span class="Special"> &lt;- </span>not end?
+      assert not-end?, <span class="Constant">[unbalanced '(' in expression]</span>
+      c<span class="Special"> &lt;- </span>peek in
+      close-paren?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">41/close-paren</span>
+      <span class="muControl">break-if</span> close-paren?
+      first:address:cell, in<span class="Special"> &lt;- </span>parse in
+      *out<span class="Special"> &lt;- </span>merge <span class="Constant">1/pair</span>, first, <span class="Constant">0/nil</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment"># read in any remaining elements</span>
+    curr:address:cell<span class="Special"> &lt;- </span>copy out
+    <span class="Delimiter">{</span>
+      in<span class="Special"> &lt;- </span>skip-whitespace in
+      end?:boolean<span class="Special"> &lt;- </span>end-of-stream? in
+      not-end?:boolean<span class="Special"> &lt;- </span>not end?
+      assert not-end?, <span class="Constant">[unbalanced '(' in expression]</span>
+      <span class="Comment"># termination check: ')'</span>
+      c<span class="Special"> &lt;- </span>peek in
+      <span class="Delimiter">{</span>
+        close-paren?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">41/close-paren</span>
+        <span class="muControl">break-unless</span> close-paren?
+        read in  <span class="Comment"># skip ')'</span>
+        <span class="muControl">break</span> <span class="Constant">+end-pair:label</span>
+      <span class="Delimiter">}</span>
+      <span class="Comment"># still here? read next element of pair</span>
+      next:address:cell, in<span class="Special"> &lt;- </span>parse in
+      is-dot?:boolean<span class="Special"> &lt;- </span>atom-match? next, <span class="Constant">[.]</span>
+      <span class="Delimiter">{</span>
+        <span class="muControl">break-if</span> is-dot?
+        next-curr:address:cell<span class="Special"> &lt;- </span>new-pair next, <span class="Constant">0/nil</span>
+        curr<span class="Special"> &lt;- </span>set-rest curr, next-curr
+        curr<span class="Special"> &lt;- </span>rest curr
+      <span class="Delimiter">}</span>
+      <span class="Delimiter">{</span>
+        <span class="muControl">break-unless</span> is-dot?
+        <span class="Comment"># deal with dotted pair</span>
+        in<span class="Special"> &lt;- </span>skip-whitespace in
+        c<span class="Special"> &lt;- </span>peek in
+        not-close-paren?:boolean<span class="Special"> &lt;- </span>not-equal c, <span class="Constant">41/close-paren</span>
+        assert not-close-paren?, <span class="Constant">[')' cannot immediately follow '.']</span>
+        final:address:cell<span class="Special"> &lt;- </span>parse in
+        curr<span class="Special"> &lt;- </span>set-rest curr, final
+        <span class="Comment"># we're not gonna update curr, so better make sure the next iteration</span>
+        <span class="Comment"># is going to end the pair</span>
+        in<span class="Special"> &lt;- </span>skip-whitespace in
+        c<span class="Special"> &lt;- </span>peek in
+        close-paren?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">41/close-paren</span>
+        assert close-paren?, <span class="Constant">['.' must be followed by exactly one expression before ')']</span>
+      <span class="Delimiter">}</span>
+      <span class="muControl">loop</span>
+    <span class="Delimiter">}</span>
+<span class="Constant">    +end-pair</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">def</span> skip-whitespace in:address:stream:character<span class="muRecipe"> -&gt; </span>in:address:stream:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>end-of-stream? in
+    <span class="muControl">reply-if</span> done?, <span class="Constant">0/null</span>
+    c:character<span class="Special"> &lt;- </span>peek in
+    space?:boolean<span class="Special"> &lt;- </span>space? c
+    <span class="muControl">break-unless</span> space?
+    read in  <span class="Comment"># skip</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">def</span> to-text x:address:cell<span class="muRecipe"> -&gt; </span>out:address:array:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  buf<span class="Special"> &lt;- </span>to-buffer x, buf
+  out<span class="Special"> &lt;- </span>buffer-to-array buf
+]
+
+<span class="muRecipe">def</span> to-buffer x:address:cell, buf:address:buffer<span class="muRecipe"> -&gt; </span>buf:address:buffer [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># base case: empty cell</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> x
+    buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[&lt;&gt;]</span>
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># base case: atom</span>
+  <span class="Delimiter">{</span>
+    s:address:array:character, atom?:boolean<span class="Special"> &lt;- </span>maybe-convert *x, <span class="Constant">atom:variant</span>
+    <span class="muControl">break-unless</span> atom?
+    buf<span class="Special"> &lt;- </span>append buf, s
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># recursive case: pair</span>
+  buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[&lt; ]</span>
+  first:address:cell<span class="Special"> &lt;- </span>first x
+  buf<span class="Special"> &lt;- </span>to-buffer first, buf
+  buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ | ]</span>
+  rest:address:cell<span class="Special"> &lt;- </span>rest x
+  buf<span class="Special"> &lt;- </span>to-buffer rest, buf
+  buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ &gt;]</span>
+]
+
+<span class="muScenario">scenario</span> parse-single-letter-atom [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  s2:address:array:character, <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x, <span class="Constant">atom:variant</span>
+  <span class="Constant">11</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is an atom</span>
+    <span class="Constant">11</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[a]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-atom [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  s2:address:array:character, <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x, <span class="Constant">atom:variant</span>
+  <span class="Constant">11</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is an atom</span>
+    <span class="Constant">11</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-list-of-two-atoms [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def)]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; abc | &lt; <span class="muRecipe">def</span> | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  x2:address:cell<span class="Special"> &lt;- </span>rest x
+  s1:address:array:character, <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x1, <span class="Constant">atom:variant</span>
+  <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x2
+  x3:address:cell<span class="Special"> &lt;- </span>first x2
+  s2:address:array:character, <span class="Constant">13</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x3, <span class="Constant">atom:variant</span>
+  <span class="Constant">14</span>:address:cell/<span class="Special">raw &lt;- </span>rest x2
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is an atom</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest is a pair</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.first is an atom</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.rest.rest is nil</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest.first</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-list-with-extra-spaces [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ ( abc  def ) ]</span>  <span class="Comment"># extra spaces</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; abc | &lt; <span class="muRecipe">def</span> | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  x2:address:cell<span class="Special"> &lt;- </span>rest x
+  s1:address:array:character, <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x1, <span class="Constant">atom:variant</span>
+  <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x2
+  x3:address:cell<span class="Special"> &lt;- </span>first x2
+  s2:address:array:character, <span class="Constant">13</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x3, <span class="Constant">atom:variant</span>
+  <span class="Constant">14</span>:address:cell/<span class="Special">raw &lt;- </span>rest x2
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is an atom</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest is a pair</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.first is an atom</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.rest.rest is nil</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest.first</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-list-of-more-than-two-atoms [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def ghi)]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; abc | &lt; <span class="muRecipe">def</span> | &lt; ghi | <span class="Constant">&lt;&gt;</span> &gt; &gt; &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  x2:address:cell<span class="Special"> &lt;- </span>rest x
+  s1:address:array:character, <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x1, <span class="Constant">atom:variant</span>
+  <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x2
+  x3:address:cell<span class="Special"> &lt;- </span>first x2
+  s2:address:array:character, <span class="Constant">13</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x3, <span class="Constant">atom:variant</span>
+  x4:address:cell<span class="Special"> &lt;- </span>rest x2
+  <span class="Constant">14</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x4
+  x5:address:cell<span class="Special"> &lt;- </span>first x4
+  s3:address:array:character, <span class="Constant">15</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x5, <span class="Constant">atom:variant</span>
+  <span class="Constant">16</span>:address:cell/<span class="Special">raw &lt;- </span>rest x4
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  <span class="Constant">40</span>:array:character/<span class="Special">raw &lt;- </span>copy *s3
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is an atom</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest is a pair</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.first is an atom</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.rest is a pair</span>
+    <span class="Constant">15</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.rest.first is an atom</span>
+    <span class="Constant">16</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.rest.rest.rest is nil</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest.first</span>
+    <span class="Constant">40</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[ghi]</span>  <span class="Comment"># result.rest.rest</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-nested-list [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[((abc))]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; &lt; abc | <span class="Constant">&lt;&gt;</span> &gt; | <span class="Constant">&lt;&gt;</span> &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x2:address:cell<span class="Special"> &lt;- </span>first x1
+  s1:address:array:character, <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x2, <span class="Constant">atom:variant</span>
+  <span class="Constant">13</span>:address:cell/<span class="Special">raw &lt;- </span>rest x1
+  <span class="Constant">14</span>:address:cell/<span class="Special">raw &lt;- </span>rest x
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is a pair</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first.first is an atom</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.first.rest is nil</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.rest is nil</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first.first</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-nested-list-2 [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[((abc) def)]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; &lt; abc | <span class="Constant">&lt;&gt;</span> &gt; | &lt; <span class="muRecipe">def</span> | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x2:address:cell<span class="Special"> &lt;- </span>first x1
+  s1:address:array:character, <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x2, <span class="Constant">atom:variant</span>
+  <span class="Constant">13</span>:address:cell/<span class="Special">raw &lt;- </span>rest x1
+  x3:address:cell<span class="Special"> &lt;- </span>rest x
+  x4:address:cell<span class="Special"> &lt;- </span>first x3
+  s2:address:array:character, <span class="Constant">14</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x4, <span class="Constant">atom:variant</span>
+  <span class="Constant">15</span>:address:cell/<span class="Special">raw &lt;- </span>rest x3
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is a pair</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first.first is an atom</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.first.rest is nil</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.first is an atom</span>
+    <span class="Constant">15</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># result.rest.rest is nil</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest.first</span>
+  ]
+]
+
+<span class="Comment"># todo: uncomment these tests after we figure out how to continue tests after</span>
+<span class="Comment"># assertion failures</span>
+<span class="CommentedCode">#? scenario parse-error [</span>
+<span class="CommentedCode">#?   local-scope</span>
+<span class="CommentedCode">#?   s:address:array:character &lt;- new [(]</span>
+<span class="CommentedCode">#? #?   hide-errors</span>
+<span class="CommentedCode">#?   x:address:cell &lt;- parse s</span>
+<span class="CommentedCode">#? #?   show-errors</span>
+<span class="CommentedCode">#?   trace-should-contain [</span>
+<span class="CommentedCode">#?     error: unbalanced '(' in expression</span>
+<span class="CommentedCode">#?   ]</span>
+<span class="CommentedCode">#? ]</span>
+<span class="CommentedCode">#? </span>
+<span class="CommentedCode">#? scenario parse-error-after-element [</span>
+<span class="CommentedCode">#?   local-scope</span>
+<span class="CommentedCode">#?   s:address:array:character &lt;- new [(abc]</span>
+<span class="CommentedCode">#? #?   hide-errors</span>
+<span class="CommentedCode">#?   x:address:cell &lt;- parse s</span>
+<span class="CommentedCode">#? #?   show-errors</span>
+<span class="CommentedCode">#?   trace-should-contain [</span>
+<span class="CommentedCode">#?     error: unbalanced '(' in expression</span>
+<span class="CommentedCode">#?   ]</span>
+<span class="CommentedCode">#? ]</span>
+
+<span class="muScenario">scenario</span> parse-dotted-list-of-two-atoms [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[(abc . def)]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; abc | <span class="muRecipe">def</span> &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  x2:address:cell<span class="Special"> &lt;- </span>rest x
+  s1:address:array:character, <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x1, <span class="Constant">atom:variant</span>
+  s2:address:array:character, <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x2, <span class="Constant">atom:variant</span>
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  memory-should-contain [
+    <span class="Comment"># parses to &lt; abc | def &gt;</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is an atom</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest is an atom</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> parse-dotted-list-of-more-than-two-atoms [
+  <span class="Constant">local-scope</span>
+  s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def . ghi)]</span>
+  x:address:cell<span class="Special"> &lt;- </span>parse s
+  trace-should-contain [
+    app/parse: &lt; abc | &lt; <span class="muRecipe">def</span> | ghi &gt; &gt;
+  ]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x
+  x1:address:cell<span class="Special"> &lt;- </span>first x
+  x2:address:cell<span class="Special"> &lt;- </span>rest x
+  s1:address:array:character, <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x1, <span class="Constant">atom:variant</span>
+  <span class="Constant">12</span>:boolean/<span class="Special">raw &lt;- </span>is-pair? x2
+  x3:address:cell<span class="Special"> &lt;- </span>first x2
+  s2:address:array:character, <span class="Constant">13</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x3, <span class="Constant">atom:variant</span>
+  x4:address:cell<span class="Special"> &lt;- </span>rest x2
+  s3:address:array:character, <span class="Constant">14</span>:boolean/<span class="Special">raw &lt;- </span>maybe-convert *x4, <span class="Constant">atom:variant</span>
+  <span class="Constant">20</span>:array:character/<span class="Special">raw &lt;- </span>copy *s1
+  <span class="Constant">30</span>:array:character/<span class="Special">raw &lt;- </span>copy *s2
+  <span class="Constant">40</span>:array:character/<span class="Special">raw &lt;- </span>copy *s3
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># parse result is a pair</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.first is an atom</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest is a pair</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.first is an atom</span>
+    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># result.rest.rest is an atom</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[abc]</span>  <span class="Comment"># result.first</span>
+    <span class="Constant">30</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[def]</span>  <span class="Comment"># result.rest.first</span>
+    <span class="Constant">40</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[ghi]</span>  <span class="Comment"># result.rest.rest</span>
+  ]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

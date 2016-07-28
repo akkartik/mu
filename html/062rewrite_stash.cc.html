@@ -45,6 +45,15 @@ recipe main [
 <span class="traceContains">+transform: {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)} &lt;- to-text-line {n: &quot;number&quot;}</span>
 <span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
+<span class="Delimiter">:(scenario rewrite_traces_to_text)</span>
+recipe main [
+  local-scope
+  <span class="Normal">n</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  trace <span class="Constant">2</span><span class="Delimiter">,</span> [app]<span class="Delimiter">,</span> n
+]
+<span class="traceContains">+transform: {trace_2_2: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)} &lt;- to-text-line {n: &quot;number&quot;}</span>
+<span class="traceContains">+transform: trace {2: &quot;literal&quot;}, {&quot;app&quot;: &quot;literal-string&quot;}, {trace_2_2: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
+
 <span class="Comment">//: special case: rewrite attempts to stash contents of most arrays to avoid</span>
 <span class="Comment">//: passing addresses around</span>
 
@@ -65,7 +74,21 @@ recipe main [
 ]
 <span class="traceContains">+transform: stash {n: (&quot;array&quot; &quot;number&quot; &quot;3&quot;)}</span>
 
-<span class="Delimiter">:(before &quot;End Instruction Inserting/Deleting Transforms&quot;)</span>
+<span class="Delimiter">:(scenario rewrite_stashes_of_recipe_header_products)</span>
+container foo [
+  <span class="Normal">x</span>:number
+]
+recipe bar <span class="Delimiter">-&gt;</span> x:foo [
+  local-scope
+  load-ingredients
+  x<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
+  stash x
+]
+<span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
+
+<span class="Comment">//: misplaced; should be in instruction inserting/deleting transforms, but has</span>
+<span class="Comment">//: prerequisites: deduce_types_from_header and check_or_set_types_by_name</span>
+<span class="Delimiter">:(after &quot;Transform.push_back(deduce_types_from_header)&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_stashes_to_text<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
@@ -74,7 +97,6 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite 'stash' instructions in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// in recipes without named locations, 'stash' is still not extensible</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  check_or_set_types_by_name<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// prerequisite</span>
   rewrite_stashes_to_text<span class="Delimiter">(</span>caller<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -84,38 +106,48 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;stash&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-          <span class="Comment">// error; will be handled elsewhere</span>
-          <span class="Identifier">continue</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-        <span class="Comment">// don't try to extend static arrays</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>is_static_array<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-        instruction def<span class="Delimiter">;</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>is_lookup_of_address_of_array<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-          def<span class="Delimiter">.</span>name = <span class="Constant">&quot;array-to-text-line&quot;</span><span class="Delimiter">;</span>
-          reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> tmp = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
-          drop_one_lookup<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
-          def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
-        <span class="Delimiter">}</span>
-        <span class="Normal">else</span> <span class="Delimiter">{</span>
-          def<span class="Delimiter">.</span>name = <span class="Constant">&quot;to-text-line&quot;</span><span class="Delimiter">;</span>
-          def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
-        <span class="Delimiter">}</span>
         ostringstream ingredient_name<span class="Delimiter">;</span>
         ingredient_name &lt;&lt; <span class="Constant">&quot;stash_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
-        def<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">()));</span>
-        trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>def<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-        new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>def<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>clear<span class="Delimiter">();</span>  <span class="Comment">// reclaim old memory</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> = reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+        rewrite_stash_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        ostringstream ingredient_name<span class="Delimiter">;</span>
+        ingredient_name &lt;&lt; <span class="Constant">&quot;trace_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
+        rewrite_stash_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_instructions<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// add an instruction to convert reagent 'r' to text in list 'out', then</span>
+<span class="Comment">// replace r with converted text</span>
+<span class="Normal">void</span> rewrite_stash_to_text<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> vector&lt;instruction&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; tmp_var<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error; will be handled elsewhere</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Comment">// don't try to extend static arrays</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_static_array<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  instruction def<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_lookup_of_address_of_array<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    def<span class="Delimiter">.</span>name = <span class="Constant">&quot;array-to-text-line&quot;</span><span class="Delimiter">;</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> tmp = r<span class="Delimiter">;</span>
+    drop_one_lookup<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
+    def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>tmp<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    def<span class="Delimiter">.</span>name = <span class="Constant">&quot;to-text-line&quot;</span><span class="Delimiter">;</span>
+    def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  def<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>tmp_var<span class="Delimiter">));</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>def<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+  out<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>def<span class="Delimiter">);</span>
+  r<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>  <span class="Comment">// reclaim old memory</span>
+  r = reagent<span class="Delimiter">(</span>tmp_var<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> is_lookup_of_address_of_array<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -153,7 +185,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> TO_TEXT: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'to-text' requires a single ingredient, but got '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'to-text' requires a single ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// can handle any type</span>

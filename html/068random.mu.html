@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 068random.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
+.Delimiter { color: #800080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="muRecipe">def</span> random generator:address:stream:number<span class="muRecipe"> -&gt; </span>result:number, fail?:boolean, generator:address:stream:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> generator
+    <span class="Comment"># generator is 0? use real random-number generator</span>
+    result<span class="Special"> &lt;- </span>real-random
+    <span class="muControl">reply</span> result, <span class="Constant">0/false</span>
+  <span class="Delimiter">}</span>
+  result, fail?, generator<span class="Special"> &lt;- </span>read generator
+]
+
+<span class="Comment"># helper for tests</span>
+<span class="muRecipe">def</span> assume-random-numbers<span class="muRecipe"> -&gt; </span>result:address:stream:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># compute result-len, space to allocate in result</span>
+  result-len:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    _, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    <span class="muControl">break-unless</span> arg-received?
+    result-len<span class="Special"> &lt;- </span>add result-len, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Constant">rewind-ingredients</span>
+  result-data:address:array:number<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, result-len
+  idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    curr:number, arg-received?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    <span class="muControl">break-unless</span> arg-received?
+    *result-data<span class="Special"> &lt;- </span>put-index *result-data, idx, curr
+    idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>new-stream result-data
+]
+
+<span class="muScenario">scenario</span> random-numbers-in-scenario [
+  <span class="Constant">local-scope</span>
+  source:address:stream:number<span class="Special"> &lt;- </span>assume-random-numbers <span class="Constant">34</span>, <span class="Constant">35</span>, <span class="Constant">37</span>
+  <span class="Constant">1</span>:number/<span class="Special">raw</span>, <span class="Constant">2</span>:boolean/<span class="Special">raw &lt;- </span>random source
+  <span class="Constant">3</span>:number/<span class="Special">raw</span>, <span class="Constant">4</span>:boolean/<span class="Special">raw &lt;- </span>random source
+  <span class="Constant">5</span>:number/<span class="Special">raw</span>, <span class="Constant">6</span>:boolean/<span class="Special">raw &lt;- </span>random source
+  <span class="Constant">7</span>:number/<span class="Special">raw</span>, <span class="Constant">8</span>:boolean/<span class="Special">raw &lt;- </span>random source
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
+    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">35</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">37</span>
+    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
+    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty result</span>
+    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># end of stream</span>
+  ]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

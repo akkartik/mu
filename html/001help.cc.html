@@ -46,6 +46,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
        &lt;&lt; <span class="Constant">&quot;  mu test</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;To load files and then run all tests:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;  mu test file1.mu file2.mu ...</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;To load files and run only the tests in explicitly loaded files (for apps):</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;  mu --test-only-app test file1.mu file2.mu ...</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;'--test-only-app' must come before all other args</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+       &lt;&lt; <span class="Constant">&quot;'test' must come before all other args except '--test-only-app'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;To load all files with a numeric prefix in a directory:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;  mu directory1</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
        &lt;&lt; <span class="Constant">&quot;You can test directories just like files.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -227,6 +231,14 @@ feenableexcept<span class="Delimiter">(</span>FE_OVERFLOW | FE_UNDERFLOW<span cl
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> has_data<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> in &amp;&amp; !in<span class="Delimiter">.</span>eof<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">////: A hack to support faster debugging.</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Test_only_app = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Commandline Parsing&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>argc &gt; <span class="Constant">1</span> &amp;&amp; is_equal<span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;--test-only-app&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  Test_only_app = <span class="Constant">true</span><span class="Delimiter">;</span>  --argc<span class="Delimiter">;</span>  ++argv<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
