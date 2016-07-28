@@ -170,17 +170,18 @@ scenario cell-operations-on-pair [
 def parse in:address:array:character -> out:address:cell [
   local-scope
   load-ingredients
-  s:address:stream <- new-stream in
+  s:address:stream:character <- new-stream in
   out, s <- parse s
   trace 2, [app/parse], out
 ]
 
-def parse in:address:stream -> out:address:cell, in:address:stream [
+def parse in:address:stream:character -> out:address:cell, in:address:stream:character [
   local-scope
   load-ingredients
   # skip whitespace
   in <- skip-whitespace in
-  c:character <- peek in
+  c:character, eof?:boolean <- peek in
+  reply-if eof?, 0/nil
   pair?:boolean <- equal c, 40/open-paren
   {
     break-if pair?
@@ -221,11 +222,11 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
     # read in any remaining elements
     curr:address:cell <- copy out
     {
+      in <- skip-whitespace in
       end?:boolean <- end-of-stream? in
       not-end?:boolean <- not end?
       assert not-end?, [unbalanced '(' in expression]
       # termination check: ')'
-      in <- skip-whitespace in
       c <- peek in
       {
         close-paren?:boolean <- equal c, 41/close-paren
@@ -264,7 +265,7 @@ def parse in:address:stream -> out:address:cell, in:address:stream [
   }
 ]
 
-def skip-whitespace in:address:stream -> in:address:stream [
+def skip-whitespace in:address:stream:character -> in:address:stream:character [
   local-scope
   load-ingredients
   {
