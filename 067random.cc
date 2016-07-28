@@ -1,13 +1,13 @@
 :(before "End Primitive Recipe Declarations")
-RANDOM,
+REAL_RANDOM,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "random", RANDOM);
+put(Recipe_ordinal, "real-random", REAL_RANDOM);
 :(before "End Primitive Recipe Checks")
-case RANDOM: {
+case REAL_RANDOM: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case RANDOM: {
+case REAL_RANDOM: {
   // todo: limited range of numbers, might be imperfectly random
   // todo: thread state in extra ingredients and products
   products.resize(1);
