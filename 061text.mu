@@ -289,8 +289,8 @@ def append a:address:array:character, b:address:array:character -> result:addres
   local-scope
   load-ingredients
   # handle null addresses
-  reply-unless a, b
-  reply-unless b, a
+  return-unless a, b
+  return-unless b, a
   # result = new character[a.length + b.length]
   a-len:number <- length *a
   b-len:number <- length *b

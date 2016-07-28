@@ -25,7 +25,7 @@ def read in:address:stream -> result:character, in:address:stream [
   s:address:array:character <- get *in, data:offset
   len:number <- length *s
   at-end?:boolean <- greater-or-equal idx len
-  reply-if at-end?, 0/nul, in
+  return-if at-end?, 0/nul, in
   result <- index *s, idx
   idx <- add idx, 1
   *in <- put *in, index:offset, idx
@@ -38,7 +38,7 @@ def peek in:address:stream -> result:character [
   s:address:array:character <- get *in, data:offset
   len:number <- length *s
   at-end?:boolean <- greater-or-equal idx len
-  reply-if at-end?, 0/nul
+  return-if at-end?, 0/nul
   result <- index *s, idx
 ]
 
