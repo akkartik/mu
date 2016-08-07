@@ -563,3 +563,21 @@ scenario parse-dotted-list-of-more-than-two-atoms [
     40:array:character <- [ghi]  # result.rest.rest
   ]
 ]
+
+## convert tree of cells to mu text
+
+def to-mu in:address:cell -> out:address:array:character [
+  local-scope
+  load-ingredients
+  buf:address:buffer <- new-buffer 30
+  buf <- to-mu in, buf
+  out <- buffer-to-array buf
+]
+
+def to-mu in:address:cell, buf:address:buffer -> buf:address:buffer, result-name:address:array:character [
+  local-scope
+  load-ingredients
+  # null cell? no change.
+  # pair with all atoms? gensym a new variable
+  # pair containing other pairs? recurse
+]
