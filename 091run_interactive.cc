@@ -346,15 +346,7 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
     // string
     if (i < SIZE(instruction.products)) {
       if (is_mu_string(instruction.products.at(i))) {
-        if (!scalar(products.at(i))) {
-          tb_shutdown();
-          cerr << read_mu_string(trace_error_contents()) << '\n';
-          cerr << SIZE(products.at(i)) << ": ";
-          for (int j = 0; j < SIZE(products.at(i)); ++j)
-            cerr << no_scientific(products.at(i).at(j)) << ' ';
-          cerr << '\n';
-        }
-        assert(scalar(products.at(i)));
+        if (!scalar(products.at(i))) continue;  // error handled elsewhere
         out << read_mu_string(products.at(i).at(0)) << '\n';
         continue;
       }
