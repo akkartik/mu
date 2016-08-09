@@ -286,6 +286,19 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   break;
 }
 
+//: as a convenience, make $print mostly work in console mode
+:(before "End $print 10/newline Special-cases")
+else if (tb_is_active()) {
+  move_cursor_to_start_of_next_line_on_display();
+}
+:(code)
+void move_cursor_to_start_of_next_line_on_display() {
+  if (Display_row < tb_height()-1) Display_row++;
+  Display_column = 0;
+  tb_set_cursor(Display_column, Display_row);
+  if (Autodisplay) tb_present();
+}
+
 :(before "End Primitive Recipe Declarations")
 DISPLAY_WIDTH,
 :(before "End Primitive Recipe Numbers")

@@ -239,10 +239,14 @@ case _PRINT: {
   for (int i = 0; i < SIZE(ingredients); ++i) {
     if (is_literal(current_instruction().ingredients.at(i))) {
       trace(9998, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
-      if (has_property(current_instruction().ingredients.at(i), "newline"))
-        cout << '\n';
-      else
+      if (!has_property(current_instruction().ingredients.at(i), "newline")) {
         cout << current_instruction().ingredients.at(i).name;
+      }
+      // hack: '$print 10' prints '10', but '$print 10/newline' prints '\n'
+      // End $print 10/newline Special-cases
+      else {
+        cout << '\n';
+      }
     }
     else {
       for (int j = 0; j < SIZE(ingredients.at(i)); ++j) {
