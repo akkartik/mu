@@ -1,6 +1,6 @@
 //: A simple test harness. To create new tests define functions starting with
 //: 'test_'. To run all tests so defined, run:
-//:   $ wart test
+//:   $ mu test
 //:
 //: So far it seems tasteful for layers to never ever reach back to modify
 //: previously-defined tests. Every test is a contract once written, and should
