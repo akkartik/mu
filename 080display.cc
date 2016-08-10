@@ -294,6 +294,7 @@ else if (tb_is_active()) {
 :(code)
 void move_cursor_to_start_of_next_line_on_display() {
   if (Display_row < tb_height()-1) Display_row++;
+  else Display_row = 0;
   Display_column = 0;
   tb_set_cursor(Display_column, Display_row);
   if (Autodisplay) tb_present();
