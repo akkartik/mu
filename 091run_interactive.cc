@@ -141,11 +141,17 @@ void run_code_end() {
 
 // keep sync'd with save_snapshots and restore_snapshots
 void stash_snapshots() {
+  assert(Recipe_ordinal_snapshot_stash.empty());
   Recipe_ordinal_snapshot_stash = Recipe_ordinal_snapshot;
+  assert(Recipe_snapshot_stash.empty());
   Recipe_snapshot_stash = Recipe_snapshot;
+  assert(Type_ordinal_snapshot_stash.empty());
   Type_ordinal_snapshot_stash = Type_ordinal_snapshot;
+  assert(Type_snapshot_stash.empty());
   Type_snapshot_stash = Type_snapshot;
+  assert(Name_snapshot_stash.empty());
   Name_snapshot_stash = Name_snapshot;
+  assert(Recipe_variants_snapshot_stash.empty());
   Recipe_variants_snapshot_stash = Recipe_variants_snapshot;
   save_snapshots();
 }
