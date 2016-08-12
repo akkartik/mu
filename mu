@@ -5,8 +5,10 @@
 # show make output only if something needs doing
 make -q || make >&2 || exit 1
 
-# If I'm setting flags at the commandline I'm often disabling optimizations.
-# In that case don't run all tests if I load any app files.
+# Little bit of cleverness: If I'm setting flags at the commandline I'm often
+# disabling optimizations. In that case don't run all tests if I load any app
+# files.
+# Might be too clever..
 if [[ $CFLAGS && $# -gt 0 && $1 != '--help' ]]  # latter two conditions are to continue printing the help message
 then
   ./mu_bin --test-only-app "$@"

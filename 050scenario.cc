@@ -132,7 +132,14 @@ if (Num_core_mu_scenarios != SIZE(Scenarios)) {
   }
 }
 
-//: Support running tests for just the Mu app(s) we are loading.
+//: For faster debugging, support running tests for just the Mu app(s) we are
+//: loading.
+:(before "End Globals")
+bool Test_only_app = false;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--test-only-app")) {
+  Test_only_app = true;
+}
 :(after "End Test Run Initialization")
 if (Test_only_app && Num_core_mu_scenarios < SIZE(Scenarios)) {
   goto run_app_scenarios;
