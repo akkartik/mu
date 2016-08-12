@@ -108,30 +108,34 @@ scenario foo [
 //: Treat the text of the scenario as a regular series of instructions.
 
 :(before "End Globals")
-int Num_core_mu_tests = 0;
+int Num_core_mu_scenarios = 0;
 :(after "Check For .mu Files")
-Num_core_mu_tests = SIZE(Scenarios);
+Num_core_mu_scenarios = SIZE(Scenarios);
 :(before "End Tests")
 Hide_missing_default_space_errors = false;
-time_t mu_time; time(&mu_time);
-cerr << "\nMu tests: " << ctime(&mu_time);
-run_mu_scenarios:
-for (int i = 0; i < SIZE(Scenarios); ++i) {
+time(&t);
+cerr << "\nMu tests: " << ctime(&t);
+for (int i = 0; i < Num_core_mu_scenarios; ++i) {
 //?   cerr << i << ": " << Scenarios.at(i).name << '\n';
-  if (i == Num_core_mu_tests) {
-    time(&t);
-    cerr << "\nApp tests: " << ctime(&t);
-  }
   run_mu_scenario(Scenarios.at(i));
   if (Passed) cerr << ".";
 }
+cerr << "\n";
+run_app_scenarios:
+if (Num_core_mu_scenarios != SIZE(Scenarios)) {
+  time(&t);
+  cerr << "App tests: " << ctime(&t);
+  for (int i = Num_core_mu_scenarios; i < SIZE(Scenarios); ++i) {
+//?     cerr << i << ": " << Scenarios.at(i).name << '\n';
+    run_mu_scenario(Scenarios.at(i));
+    if (Passed) cerr << ".";
+  }
+}
 
+//: Support running tests for just the Mu app(s) we are loading.
 :(after "End Test Run Initialization")
-if (Test_only_app && Num_core_mu_tests < SIZE(Scenarios)) {
-  // we have app tests; skip core mu tests
-  Scenarios.erase(Scenarios.begin(), Scenarios.begin()+Num_core_mu_tests);
-  // skip C tests
-  goto run_mu_scenarios;
+if (Test_only_app && Num_core_mu_scenarios < SIZE(Scenarios)) {
+  goto run_app_scenarios;
 }
 
 //: Convenience: run a single named scenario.
