@@ -25,11 +25,13 @@ vector<recipe_ordinal> load(istream& in) {
     string command = next_word(in);
     // Command Handlers
     if (command == "recipe" || command == "def") {
-      result.push_back(slurp_recipe(in));
+      recipe_ordinal r = slurp_recipe(in);
+      if (r > 0) result.push_back(r);
     }
     else if (command == "recipe!" || command == "def!") {
       Disable_redefine_checks = true;
-      result.push_back(slurp_recipe(in));
+      recipe_ordinal r = slurp_recipe(in);
+      if (r > 0) result.push_back(r);
       Disable_redefine_checks = false;
     }
     // End Command Handlers
@@ -40,6 +42,8 @@ vector<recipe_ordinal> load(istream& in) {
   return result;
 }
 
+// return the recipe ordinal slurped, or -1 if it failed
+// (later layers will cause failures)
 int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);

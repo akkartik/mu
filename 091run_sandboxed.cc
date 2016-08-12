@@ -5,7 +5,7 @@
 def main [
   1:number/raw <- copy 0
   2:address:array:character <- new [1:number/raw <- copy 34]
-  run-interactive 2:address:array:character
+  run-sandboxed 2:address:array:character
   3:number/raw <- copy 1:number/raw
 ]
 +mem: storing 34 in location 3
@@ -13,10 +13,21 @@ def main [
 :(scenario run_interactive_empty)
 def main [
   1:address:array:character <- copy 0/unsafe
-  2:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character <- run-sandboxed 1:address:array:character
 ]
 # result is null
 +mem: storing 0 in location 2
+
+//: As the name suggests, 'run-sandboxed' will prevent certain operations that
+//: regular Mu code can perform.
+:(before "End Globals")
+bool Sandbox_mode = false;
+//: for starters, users can't override 'main' when the environment is running
+:(before "End Load Recipe Name")
+if (Sandbox_mode && result.name == "main") {
+  slurp_balanced_bracket(in);
+  return -1;
+}
 
 //: run code in 'interactive mode', i.e. with errors off and return:
 //:   stringified output in case we want to print it to screen
@@ -24,23 +35,23 @@ def main [
 //:   simulated screen any prints went to
 //:   any 'app' layer traces generated
 :(before "End Primitive Recipe Declarations")
-RUN_INTERACTIVE,
+RUN_SANDBOXED,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "run-interactive", RUN_INTERACTIVE);
+put(Recipe_ordinal, "run-sandboxed", RUN_SANDBOXED);
 :(before "End Primitive Recipe Checks")
-case RUN_INTERACTIVE: {
+case RUN_SANDBOXED: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'run-interactive' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'run-sandboxed' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'run-interactive' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'run-sandboxed' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case RUN_INTERACTIVE: {
+case RUN_SANDBOXED: {
   bool new_code_pushed_to_stack = run_interactive(ingredients.at(0).at(0));
   if (!new_code_pushed_to_stack) {
     products.resize(5);
@@ -99,7 +110,7 @@ bool run_interactive(int address) {
   // and wait for it
   if (Save_trace_stream) {
     ++Save_trace_stream->callstack_depth;
-    trace(9999, "trace") << "run-interactive: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
+    trace(9999, "trace") << "run-sandboxed: incrementing callstack depth to " << Save_trace_stream->callstack_depth << end();
     assert(Save_trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   Current_routine->calls.push_front(call(get(Recipe_ordinal, "sandbox")));
@@ -115,6 +126,7 @@ map<string, type_ordinal> Type_ordinal_snapshot_stash;
 map<type_ordinal, type_info> Type_snapshot_stash;
 map<recipe_ordinal, map<string, int> > Name_snapshot_stash;
 map<string, vector<recipe_ordinal> > Recipe_variants_snapshot_stash;
+
 :(code)
 void run_code_begin(bool should_stash_snapshots) {
   // stuff to undo later, in run_code_end()
@@ -182,7 +194,7 @@ load(string(
   "output:address:array:character <- $most-recent-products\n" +
   "errors:address:array:character <- save-errors\n" +
   "stashes:address:array:character <- save-app-trace\n" +
-  "$cleanup-run-interactive\n" +
+  "$cleanup-run-sandboxed\n" +
   "return output, errors, screen, stashes, completed?\n" +
 "]\n");
 
@@ -194,7 +206,7 @@ load(string(
 def main [
   1:address:array:character <- new [# ab
 add 2, 2]
-  2:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character <- run-sandboxed 1:address:array:character
   3:array:character <- copy *2:address:array:character
 ]
 +mem: storing 52 in location 4
@@ -273,15 +285,15 @@ case SAVE_APP_TRACE: {
 }
 
 :(before "End Primitive Recipe Declarations")
-_CLEANUP_RUN_INTERACTIVE,
+_CLEANUP_RUN_SANDBOXED,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "$cleanup-run-interactive", _CLEANUP_RUN_INTERACTIVE);
+put(Recipe_ordinal, "$cleanup-run-sandboxed", _CLEANUP_RUN_SANDBOXED);
 :(before "End Primitive Recipe Checks")
-case _CLEANUP_RUN_INTERACTIVE: {
+case _CLEANUP_RUN_SANDBOXED: {
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case _CLEANUP_RUN_INTERACTIVE: {
+case _CLEANUP_RUN_SANDBOXED: {
   run_code_end();
   break;
 }
@@ -290,7 +302,7 @@ case _CLEANUP_RUN_INTERACTIVE: {
 def main [
   # try to interactively add 2 and 2
   1:address:array:character <- new [add 2, 2]
-  2:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character <- run-sandboxed 1:address:array:character
   10:array:character <- copy 2:address:array:character/lookup
 ]
 # first letter in the output should be '4' in unicode
@@ -304,7 +316,7 @@ def main [
     y:address:array:character <- new [b]
     z:address:array:character <- append x:address:array:character, y:address:array:character
   ]
-  2:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character <- run-sandboxed 1:address:array:character
   10:array:character <- copy 2:address:array:character/lookup
 ]
 # output contains "ab"
@@ -316,7 +328,7 @@ def main [
   # run a command that generates an error
   1:address:array:character <- new [x:number <- copy 34
 get x:number, foo:offset]
-  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character, 3:address:array:character <- run-sandboxed 1:address:array:character
   10:array:character <- copy 3:address:array:character/lookup
 ]
 # error should be "unknown element foo in container number"
@@ -332,7 +344,7 @@ def main [
   1:address:array:number <- new [a:number <- copy 0  # abc
 b:number <- copy 0
 ]
-  2:address:array:character, 3:address:array:character <- run-interactive 1:address:array:character
+  2:address:array:character, 3:address:array:character <- run-sandboxed 1:address:array:character
 ]
 # no errors
 +mem: storing 0 in location 3
@@ -424,7 +436,7 @@ void truncate(string& x) {
   }
 }
 
-//: simpler version of run-interactive: doesn't do any running, just loads
+//: simpler version of run-sandboxed: doesn't do any running, just loads
 //: recipes and reports errors.
 
 :(before "End Primitive Recipe Declarations")
@@ -460,9 +472,11 @@ case RELOAD: {
   run_code_begin(/*should_stash_snapshots*/false);
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;
+  Sandbox_mode = true;
   vector<recipe_ordinal> recipes_reloaded = load(code);
   transform_all();
   Trace_stream->newline();  // flush trace
+  Sandbox_mode = false;
   Current_routine = save_current_routine;
   products.resize(1);
   products.at(0).push_back(trace_error_contents());

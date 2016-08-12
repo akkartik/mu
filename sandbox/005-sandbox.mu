@@ -186,7 +186,7 @@ def! update-sandbox sandbox:address:sandbox-data, env:address:programming-enviro
   local-scope
   load-ingredients
   data:address:array:character <- get *sandbox, data:offset
-  response:address:array:character, _, fake-screen:address:screen <- run-interactive data
+  response:address:array:character, _, fake-screen:address:screen <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, screen:offset, fake-screen
 ]
