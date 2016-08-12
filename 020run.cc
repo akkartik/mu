@@ -169,17 +169,26 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   // Running Main
   setup();
 //?   Save_trace = true;
-//?   START_TRACING_UNTIL_END_OF_SCOPE;
+  if (Trace_main) Trace_stream = new trace_stream;
   trace(9990, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
+  if (Trace_main) delete Trace_stream, Trace_stream = NULL;
   teardown();
 }
-
 :(code)
 void run_main(int argc, char* argv[]) {
   recipe_ordinal r = get(Recipe_ordinal, "main");
   if (r) run(r);
+}
+
+//: By default we don't maintain the trace while running main because its
+//: overheads can grow rapidly. However, it's useful when debugging.
+:(before "End Globals")
+bool Trace_main = false;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--trace")) {
+  Trace_main = true;
 }
 
 :(code)
