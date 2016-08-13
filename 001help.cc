@@ -65,6 +65,10 @@ bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;
 }
 
+bool starts_with(const string& s, const string& pat) {
+  return s.substr(0, pat.size()) == pat;
+}
+
 //: I'll throw some style conventions here for want of a better place for them.
 //: As a rule I hate style guides. Do what you want, that's my motto. But since
 //: we're dealing with C/C++, the one big thing we want to avoid is undefined

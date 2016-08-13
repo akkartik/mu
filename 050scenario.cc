@@ -767,7 +767,3 @@ void run_mu_scenario(const string& form) {
   scenario s = parse_scenario(in);
   run_mu_scenario(s);
 }
-
-bool starts_with(const string& s, const string& pat) {
-  return s.substr(0, pat.size()) == pat;
-}
