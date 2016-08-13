@@ -60,11 +60,13 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
     string command = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Comment">// Command Handlers</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span> || command == <span class="Constant">&quot;def&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      recipe_ordinal r = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>r &gt; <span class="Constant">0</span><span class="Delimiter">)</span> result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe!&quot;</span> || command == <span class="Constant">&quot;def!&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       Disable_redefine_checks = <span class="Constant">true</span><span class="Delimiter">;</span>
-      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      recipe_ordinal r = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>r &gt; <span class="Constant">0</span><span class="Delimiter">)</span> result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
       Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Comment">// End Command Handlers</span>
@@ -75,6 +77,8 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">// return the recipe ordinal slurped, or -1 if it failed</span>
+<span class="Comment">// (later layers will cause failures)</span>
 <span class="Normal">int</span> slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>

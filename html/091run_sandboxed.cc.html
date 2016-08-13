@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 091run_interactive.cc</title>
+<title>Mu - 091run_sandboxed.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -39,7 +39,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 def main [
   <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">34</span>]
-  run-interactive <span class="Constant">2</span>:address:array:character
+  run-sandboxed <span class="Constant">2</span>:address:array:character
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
@@ -47,10 +47,21 @@ def main [
 <span class="Delimiter">:(scenario run_interactive_empty)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
 ]
 <span class="Comment"># result is null</span>
 <span class="traceContains">+mem: storing 0 in location 2</span>
+
+<span class="Comment">//: As the name suggests, 'run-sandboxed' will prevent certain operations that</span>
+<span class="Comment">//: regular Mu code can perform.</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Sandbox_mode = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Comment">//: for starters, users can't override 'main' when the environment is running</span>
+<span class="Delimiter">:(before &quot;End Load Recipe Name&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Sandbox_mode &amp;&amp; result<span class="Delimiter">.</span>name == <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  slurp_balanced_bracket<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Comment">//: run code in 'interactive mode', i.e. with errors off and return:</span>
 <span class="Comment">//:   stringified output in case we want to print it to screen</span>
@@ -58,23 +69,23 @@ def main [
 <span class="Comment">//:   simulated screen any prints went to</span>
 <span class="Comment">//:   any 'app' layer traces generated</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-RUN_INTERACTIVE<span class="Delimiter">,</span>
+RUN_SANDBOXED<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;run-interactive&quot;</span><span class="Delimiter">,</span> RUN_INTERACTIVE<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;run-sandboxed&quot;</span><span class="Delimiter">,</span> RUN_SANDBOXED<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> RUN_INTERACTIVE: <span class="Delimiter">{</span>
+<span class="Normal">case</span> RUN_SANDBOXED: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-interactive' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'run-sandboxed' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'run-interactive' should be a string, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'run-sandboxed' should be a string, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> RUN_INTERACTIVE: <span class="Delimiter">{</span>
+<span class="Normal">case</span> RUN_SANDBOXED: <span class="Delimiter">{</span>
   <span class="Normal">bool</span> new_code_pushed_to_stack = run_interactive<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!new_code_pushed_to_stack<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">5</span><span class="Delimiter">);</span>
@@ -133,7 +144,7 @@ Track_most_recent_products = <span class="Constant">false</span><span class="Del
   <span class="Comment">// and wait for it</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Save_trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     ++Save_trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;run-interactive: incrementing callstack depth to &quot;</span> &lt;&lt; Save_trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;run-sandboxed: incrementing callstack depth to &quot;</span> &lt;&lt; Save_trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
     assert<span class="Delimiter">(</span>Save_trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
   <span class="Delimiter">}</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;sandbox&quot;</span><span class="Delimiter">)));</span>
@@ -149,6 +160,7 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal_snap
 map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type_snapshot_stash<span class="Delimiter">;</span>
 map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; &gt; Name_snapshot_stash<span class="Delimiter">;</span>
 map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; Recipe_variants_snapshot_stash<span class="Delimiter">;</span>
+
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> run_code_begin<span class="Delimiter">(</span><span class="Normal">bool</span> should_stash_snapshots<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// stuff to undo later, in run_code_end()</span>
@@ -175,11 +187,17 @@ map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; 
 
 <span class="Comment">// keep sync'd with save_snapshots and restore_snapshots</span>
 <span class="Normal">void</span> stash_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>Recipe_ordinal_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Recipe_ordinal_snapshot_stash = Recipe_ordinal_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Recipe_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Recipe_snapshot_stash = Recipe_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Type_ordinal_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Type_ordinal_snapshot_stash = Type_ordinal_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Type_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Type_snapshot_stash = Type_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Name_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Name_snapshot_stash = Name_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Recipe_variants_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Recipe_variants_snapshot_stash = Recipe_variants_snapshot<span class="Delimiter">;</span>
   save_snapshots<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
@@ -210,7 +228,7 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
   <span class="Constant">&quot;output:address:array:character &lt;- $most-recent-products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;errors:address:array:character &lt;- save-errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;stashes:address:array:character &lt;- save-app-trace</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
-  <span class="Constant">&quot;$cleanup-run-interactive</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
+  <span class="Constant">&quot;$cleanup-run-sandboxed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
   <span class="Constant">&quot;return output, errors, screen, stashes, completed?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> +
 <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
 
@@ -222,7 +240,7 @@ load<span class="Delimiter">(</span>string<span class="Delimiter">(</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Comment"># ab</span>
 add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
   <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:array:character
 ]
 <span class="traceContains">+mem: storing 52 in location 4</span>
@@ -301,15 +319,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_CLEANUP_RUN_INTERACTIVE<span class="Delimiter">,</span>
+_CLEANUP_RUN_SANDBOXED<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$cleanup-run-interactive&quot;</span><span class="Delimiter">,</span> _CLEANUP_RUN_INTERACTIVE<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$cleanup-run-sandboxed&quot;</span><span class="Delimiter">,</span> _CLEANUP_RUN_SANDBOXED<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _CLEANUP_RUN_SANDBOXED: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> _CLEANUP_RUN_INTERACTIVE: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _CLEANUP_RUN_SANDBOXED: <span class="Delimiter">{</span>
   run_code_end<span class="Delimiter">();</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -318,7 +336,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 def main [
   <span class="Comment"># try to interactively add 2 and 2</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
 ]
 <span class="Comment"># first letter in the output should be '4' in unicode</span>
@@ -332,7 +350,7 @@ def main [
     <span class="Normal">y</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [b]
     <span class="Normal">z</span>:address:array:character<span class="Special"> &lt;- </span>append x:address:array:character<span class="Delimiter">,</span> y:address:array:character
   ]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>:address:array:character/lookup
 ]
 <span class="Comment"># output contains &quot;ab&quot;</span>
@@ -344,7 +362,7 @@ def main [
   <span class="Comment"># run a command that generates an error</span>
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [x:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 get x:number<span class="Delimiter">,</span> foo:offset]
-  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
   <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:character/lookup
 ]
 <span class="Comment"># error should be &quot;unknown element foo in container number&quot;</span>
@@ -360,7 +378,7 @@ def main [
   <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> [a:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abc</span>
 <span class="Normal">b</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-interactive <span class="Constant">1</span>:address:array:character
+  <span class="Constant">2</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span>run-sandboxed <span class="Constant">1</span>:address:array:character
 ]
 <span class="Comment"># no errors</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
@@ -380,15 +398,7 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
     <span class="Comment">// string</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-          tb_shutdown<span class="Delimiter">();</span>
-          cerr &lt;&lt; read_mu_string<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">())</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-          cerr &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;: &quot;</span><span class="Delimiter">;</span>
-          <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
-            cerr &lt;&lt; no_scientific<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
-          cerr &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-        <span class="Delimiter">}</span>
-        assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
         out &lt;&lt; read_mu_string<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
@@ -460,7 +470,7 @@ string strip_comments<span class="Delimiter">(</span>string in<span class="Delim
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">//: simpler version of run-interactive: doesn't do any running, just loads</span>
+<span class="Comment">//: simpler version of run-sandboxed: doesn't do any running, just loads</span>
 <span class="Comment">//: recipes and reports errors.</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
@@ -496,9 +506,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">should_stash_snapshots</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
   routine* save_current_routine = Current_routine<span class="Delimiter">;</span>
   Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  Sandbox_mode = <span class="Constant">true</span><span class="Delimiter">;</span>
   vector&lt;recipe_ordinal&gt; recipes_reloaded = load<span class="Delimiter">(</span>code<span class="Delimiter">);</span>
   transform_all<span class="Delimiter">();</span>
   Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>  <span class="Comment">// flush trace</span>
+  Sandbox_mode = <span class="Constant">false</span><span class="Delimiter">;</span>
   Current_routine = save_current_routine<span class="Delimiter">;</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>trace_error_contents<span class="Delimiter">());</span>

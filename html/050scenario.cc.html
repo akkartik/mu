@@ -99,7 +99,6 @@ scenario foo [
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
-set&lt;string&gt; Scenario_names<span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: Parse the 'scenario' form.</span>
 <span class="Comment">//: Simply store the text of the scenario.</span>
@@ -113,9 +112,6 @@ set&lt;string&gt; Scenario_names<span class="Delimiter">;</span>
 scenario parse_scenario<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   scenario result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Scenario_names<span class="Delimiter">,</span> result<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
-    raise &lt;&lt; <span class="Constant">&quot;duplicate scenario name: '&quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  Scenario_names<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">);</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;Expected '[' after scenario '&quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -149,30 +145,41 @@ scenario foo [
 <span class="Comment">//: Treat the text of the scenario as a regular series of instructions.</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">int</span> Num_core_mu_tests = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> Num_core_mu_scenarios = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;Check For .mu Files&quot;)</span>
-Num_core_mu_tests = SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span>
+Num_core_mu_scenarios = SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Tests&quot;)</span>
 Hide_missing_default_space_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Normal">time_t</span> mu_time<span class="Delimiter">;</span> time<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
-cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">Mu tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;mu_time<span class="Delimiter">);</span>
-<span class="Normal">run_mu_scenarios</span>:
-<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
+cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">Mu tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
+<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; Num_core_mu_scenarios<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; Scenarios.at(i).name &lt;&lt; '\n';</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>i == Num_core_mu_tests<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
-    cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">App tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
   run_mu_scenario<span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span class="Normal">run_app_scenarios</span>:
+<span class="Normal">if</span> <span class="Delimiter">(</span>Num_core_mu_scenarios != SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  time<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
+  cerr &lt;&lt; <span class="Constant">&quot;App tests: &quot;</span> &lt;&lt; ctime<span class="Delimiter">(</span>&amp;t<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = Num_core_mu_scenarios<span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; Scenarios.at(i).name &lt;&lt; '\n';</span>
+    run_mu_scenario<span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
 
+<span class="Comment">//: For faster debugging, support running tests for just the Mu app(s) we are</span>
+<span class="Comment">//: loading.</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Test_only_app = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Commandline Options(*arg)&quot;)</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_equal<span class="Delimiter">(</span>*arg<span class="Delimiter">,</span> <span class="Constant">&quot;--test-only-app&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  Test_only_app = <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 <span class="Delimiter">:(after &quot;End Test Run Initialization&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Test_only_app &amp;&amp; Num_core_mu_tests &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-  <span class="Comment">// we have app tests; skip core mu tests</span>
-  Scenarios<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>Scenarios<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> Scenarios<span class="Delimiter">.</span>begin<span class="Delimiter">()</span>+Num_core_mu_tests<span class="Delimiter">);</span>
-  <span class="Comment">// skip C tests</span>
-  <span class="Identifier">goto</span> run_mu_scenarios<span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Test_only_app &amp;&amp; Num_core_mu_scenarios &lt; SIZE<span class="Delimiter">(</span>Scenarios<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Identifier">goto</span> run_app_scenarios<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Convenience: run a single named scenario.</span>
@@ -789,7 +796,6 @@ is_autogenerated = <span class="Constant">false</span><span class="Delimiter">;<
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// just for the scenarios running scenarios in C++ layers</span>
 <span class="Normal">void</span> run_mu_scenario<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  Scenario_names<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   istringstream in<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -797,10 +803,6 @@ is_autogenerated = <span class="Constant">false</span><span class="Delimiter">;<
   assert<span class="Delimiter">(</span>_scenario == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">);</span>
   scenario s = parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   run_mu_scenario<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> starts_with<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; pat<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> s<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> pat<span class="Delimiter">.</span>size<span class="Delimiter">())</span> == pat<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>

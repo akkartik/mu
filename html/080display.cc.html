@@ -31,7 +31,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Take charge of the text-mode display and console.</span>
+<span class="Comment">//: Take raw control of the text-mode display and console, putting it in</span>
+<span class="Comment">//: 'console' mode rather than the usual automatically-scrolling 'typewriter'</span>
+<span class="Comment">//: mode.</span>
 
 <span class="SalientComment">//:: Display management</span>
 
@@ -55,9 +57,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">int</span> height = tb_height<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>width &gt; <span class="Constant">222</span> || height &gt; <span class="Constant">222</span><span class="Delimiter">)</span> tb_shutdown<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>width &gt; <span class="Constant">222</span><span class="Delimiter">)</span>
-    raise &lt;&lt; <span class="Constant">&quot;sorry, mu doesn't support windows wider than 222 characters. Please resize your window.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;sorry, mu doesn't support windows wider than 222 characters in console mode. Please resize your window.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>height &gt; <span class="Constant">222</span><span class="Delimiter">)</span>
-    raise &lt;&lt; <span class="Constant">&quot;sorry, mu doesn't support windows taller than 222 characters. Please resize your window.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;sorry, mu doesn't support windows taller than 222 characters in console mode. Please resize your window.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -315,6 +317,20 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>Autodisplay<span class="Delimiter">)</span> tb_present<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: as a convenience, make $print mostly work in console mode</span>
+<span class="Delimiter">:(before &quot;End $print 10/newline Special-cases&quot;)</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>tb_is_active<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+  move_cursor_to_start_of_next_line_on_display<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> move_cursor_to_start_of_next_line_on_display<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Display_row &lt; tb_height<span class="Delimiter">()</span>-<span class="Constant">1</span><span class="Delimiter">)</span> Display_row++<span class="Delimiter">;</span>
+  <span class="Normal">else</span> Display_row = <span class="Constant">0</span><span class="Delimiter">;</span>
+  Display_column = <span class="Constant">0</span><span class="Delimiter">;</span>
+  tb_set_cursor<span class="Delimiter">(</span>Display_column<span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Autodisplay<span class="Delimiter">)</span> tb_present<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
