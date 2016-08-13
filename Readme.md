@@ -66,16 +66,15 @@ comprehend than programs as trees of expressions. Second, I've found that
 Literate Programming using layers makes assembly much more ergonomic. Third,
 labels for gotos turn out to be great waypoints to insert code at from future
 layers; when I tried to divide C programs into layers, I sometimes had to
-split statements in two so I could insert code between them. Labels also seem
-a promising representation for providing advanced mechanisms like
-continuations and lisp-like macros.
+split statements in two so I could insert code between them.
 
 High level languages today seem to provide three kinds of benefits:
 expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
-and automation (e.g. garbage collection). An idealized assembly language gives
-up some expressiveness, but doesn't seem to affect the other benefits. So far
-Mu provides strong memory safety, lexical scope, generics, higher-order
-functions and safe concurrency.
+and automation (e.g. garbage collection). Mu gives up some expressiveness by
+not providing recursive expressions, but still supports lexical scope, generic
+types, and higher-order functions. It provides strong memory safety in spite
+of having manual memory management and supporting full-scale pointer
+operations (albeit at the cost of some runtime checks).
 
 *Taking Mu for a spin*
 
@@ -105,9 +104,10 @@ instruction operates on some *ingredients* and returns some *products*.
   [products] <- instruction [ingredients]
   ```
 
-Result and ingredient *reagents* have to be variables. But you can have any
-number of them. In particular you can have any number of products. For example,
-you can perform integer division as follows:
+Result and ingredient *reagents* cannot contain instructions or infix
+expressions. On the other hand, you can have any number of them. In
+particular, you can have any number of products. For example, you can perform
+integer division as follows:
 
   ```
   quotient:number, remainder:number <- divide-with-remainder 11, 3
@@ -207,7 +207,7 @@ Similarly you can fake the keyboard to pretend someone typed something:
   ```
 
 As we add a file system, graphics, audio, network support and so on, we'll
-augment scenarios with corresponding abilities to use them inside tests.
+augment scenarios with corresponding abilities.
 
 ---
 
@@ -217,7 +217,7 @@ separate them with slashes.
   ```nim
   x:array:number:3/uninitialized
   y:string/tainted:yes
-  z:list:number/assign-once:true/assigned:false
+  z:number/assign-once:true/assigned:false
   ```
 
 Most properties are meaningless to Mu, and it'll silently skip them when
@@ -233,8 +233,8 @@ within a row separated by colons. So the last example above would become
 something like this:
 
   ```
-  z           : list   : integer  /
-  assign-once : true              /
+  z           : integer  /
+  assign-once : true     /
   assigned    : false
   ```
 
@@ -252,7 +252,7 @@ can jump to, and surround in '<>' global label names for inserting code at.
 
 ---
 
-Another example, this time with concurrency.
+Another example, this time with concurrency:
 
 <img alt='forking concurrent routines' src='html/fork.png'>
 
@@ -263,7 +263,8 @@ Another example, this time with concurrency.
 Notice that it repeatedly prints either '34' or '35' at random. Hit ctrl-c to
 stop.
 
-Yet another example forks two 'routines' that communicate over a channel:
+[Yet another example](http://akkartik.github.io/mu/html/channel.mu.html) forks
+two 'routines' that communicate over a channel:
 
   ```shell
   $ ./mu channel.mu
@@ -282,16 +283,15 @@ Yet another example forks two 'routines' that communicate over a channel:
   # consumed before it's produced.
   ```
 
-Channels are the unit of synchronization in Mu. Blocking on channels are the
-only way tasks can sleep waiting for results. The plan is to do all I/O over
-channels that wait for data to return.
+Channels are the unit of synchronization in Mu. Blocking on a channel is the
+only way for the OS to put a task to sleep. The plan is to do all I/O over
+channels.
 
 Routines are expected to communicate purely by message passing, though nothing
 stops them from sharing memory since all routines share a common address
 space. However, idiomatic Mu will make it hard to accidentally read or clobber
 random memory locations. Bounds checking is baked deeply into the semantics,
-and pointer arithmetic will be mostly forbidden (except inside the memory
-allocator and a few other places).
+and pointers can never be invalidated.
 
 ---
 
@@ -316,7 +316,7 @@ c) Try running the tests:
 d) Try out the programming environment:
 
   ```shell
-  $ ./mu test edit  # takes about 30s; shouldn't show any failures
+  $ ./mu test edit
   $ ./mu edit
   ```
 
@@ -329,7 +329,7 @@ Hit F4 to rerun all sandboxes with the latest version of the code. More
 details: http://akkartik.name/post/mu. Beware, it won't save your edits by
 default. But if you create a sub-directory called `lesson/` under `mu/` it
 will. If you turn that directory into a git repo with `git init`, it will also
-back up each version you try out.
+back up your changes each time you hit F4.
 
 Once you have a sandbox you can click on its result to mark it as expected:
 
