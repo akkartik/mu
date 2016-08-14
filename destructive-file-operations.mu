@@ -1,16 +1,18 @@
 # example program: read a character from one file and write it to another
+# BEWARE: this will modify your file system
 # before running it, put a character into /tmp/mu-x
+# after running it, check /tmp/mu-y
 
 def main [
   local-scope
-  f:number/file <- real-open-file-for-reading [/tmp/mu-x]
+  f:number/file <- $open-file-for-reading [/tmp/mu-x]
   $print [file to read from: ], f, 10/newline
-  c:character <- real-read-from-file f
+  c:character <- $read-from-file f
   $print [copying ], c, 10/newline
-  f <- real-close-file f
+  f <- $close-file f
   $print [file after closing: ], f, 10/newline
-  f <- real-open-file-for-writing [/tmp/mu-y]
+  f <- $open-file-for-writing [/tmp/mu-y]
   $print [file to write to: ], f, 10/newline
-  real-write-to-file f, c
-  f <- real-close-file f
+  $write-to-file f, c
+  f <- $close-file f
 ]

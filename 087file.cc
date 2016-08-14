@@ -1,30 +1,30 @@
 //: Interacting with the file system.
-//:   'real-open-file-for-reading' returns a FILE* as a number (ugh)
-//:   'real-read-from-file' accepts a number, interprets it as a FILE* (double ugh) and reads a character from it
+//:   '$open-file-for-reading' returns a FILE* as a number (ugh)
+//:   '$read-from-file' accepts a number, interprets it as a FILE* (double ugh) and reads a character from it
 //: Similarly for writing files.
 //:
 //: Clearly we don't care about performance or any of that so far.
 //: todo: reading/writing binary files
 
 :(before "End Primitive Recipe Declarations")
-REAL_OPEN_FILE_FOR_READING,
+_OPEN_FILE_FOR_READING,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "real-open-file-for-reading", REAL_OPEN_FILE_FOR_READING);
+put(Recipe_ordinal, "$open-file-for-reading", _OPEN_FILE_FOR_READING);
 :(before "End Primitive Recipe Checks")
-case REAL_OPEN_FILE_FOR_READING: {
+case _OPEN_FILE_FOR_READING: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'real-open-file-for-reading' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   string filename;
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'real-open-file-for-reading' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-reading' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case REAL_OPEN_FILE_FOR_READING: {
+case _OPEN_FILE_FOR_READING: {
   string filename = read_mu_string(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   FILE* f = fopen(filename.c_str(), "r");
@@ -35,24 +35,24 @@ case REAL_OPEN_FILE_FOR_READING: {
 }
 
 :(before "End Primitive Recipe Declarations")
-REAL_OPEN_FILE_FOR_WRITING,
+_OPEN_FILE_FOR_WRITING,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "real-open-file-for-writing", REAL_OPEN_FILE_FOR_WRITING);
+put(Recipe_ordinal, "$open-file-for-writing", _OPEN_FILE_FOR_WRITING);
 :(before "End Primitive Recipe Checks")
-case REAL_OPEN_FILE_FOR_WRITING: {
+case _OPEN_FILE_FOR_WRITING: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'real-open-file-for-writing' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   string filename;
   if (!is_mu_string(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'real-open-file-for-writing' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-writing' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case REAL_OPEN_FILE_FOR_WRITING: {
+case _OPEN_FILE_FOR_WRITING: {
   string filename = read_mu_string(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   long long int result = reinterpret_cast<long long int>(fopen(filename.c_str(), "w"));
@@ -62,24 +62,24 @@ case REAL_OPEN_FILE_FOR_WRITING: {
 }
 
 :(before "End Primitive Recipe Declarations")
-REAL_READ_FROM_FILE,
+_READ_FROM_FILE,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "real-read-from-file", REAL_READ_FROM_FILE);
+put(Recipe_ordinal, "$read-from-file", _READ_FROM_FILE);
 :(before "End Primitive Recipe Checks")
-case REAL_READ_FROM_FILE: {
+case _READ_FROM_FILE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'real-read-from-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'real-read-from-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case REAL_READ_FROM_FILE: {
+case _READ_FROM_FILE: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   FILE* f = reinterpret_cast<FILE*>(x);
   if (f == NULL) {
@@ -106,28 +106,28 @@ case REAL_READ_FROM_FILE: {
 }
 
 :(before "End Primitive Recipe Declarations")
-REAL_WRITE_TO_FILE,
+_WRITE_TO_FILE,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "real-write-to-file", REAL_WRITE_TO_FILE);
+put(Recipe_ordinal, "$write-to-file", _WRITE_TO_FILE);
 :(before "End Primitive Recipe Checks")
-case REAL_WRITE_TO_FILE: {
+case _WRITE_TO_FILE: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'real-write-to-file' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$write-to-file' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'real-write-to-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$write-to-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'real-write-to-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of '$write-to-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case REAL_WRITE_TO_FILE: {
+case _WRITE_TO_FILE: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   FILE* f = reinterpret_cast<FILE*>(x);
   if (f == NULL) {
@@ -151,24 +151,24 @@ case REAL_WRITE_TO_FILE: {
 }
 
 :(before "End Primitive Recipe Declarations")
-REAL_CLOSE_FILE,
+_CLOSE_FILE,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "real-close-file", REAL_CLOSE_FILE);
+put(Recipe_ordinal, "$close-file", _CLOSE_FILE);
 :(before "End Primitive Recipe Checks")
-case REAL_CLOSE_FILE: {
+case _CLOSE_FILE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'real-close-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'real-close-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case REAL_CLOSE_FILE: {
+case _CLOSE_FILE: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   FILE* f = reinterpret_cast<FILE*>(x);
   fclose(f);
