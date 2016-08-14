@@ -684,3 +684,35 @@ def main [
   1:number <- flip-bits 12
 ]
 +mem: storing -13 in location 1
+
+:(before "End Primitive Recipe Declarations")
+ROUND,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "round", ROUND);
+:(before "End Primitive Recipe Checks")
+case ROUND: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'round' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'round' should be a number, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case ROUND: {
+  products.resize(1);
+  products.at(0).push_back(rint(ingredients.at(0).at(0)));
+  break;
+}
+
+:(scenario round_to_nearest_integer)
+def main [
+  1:number <- round 12.2
+]
++mem: storing 12 in location 1
+
+:(before "End Includes")
+#include <math.h>
