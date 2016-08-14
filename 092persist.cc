@@ -50,18 +50,13 @@ case RESTORE: {
 }
 
 :(code)
+// http://cpp.indi.frih.net/blog/2014/09/how-to-read-an-entire-file-into-memory-in-cpp
 string slurp(const string& filename) {
-  ostringstream result;
   ifstream fin(filename.c_str());
   fin.peek();
-  if (!fin) return result.str();  // don't bother checking errno
-  const int N = 1024;
-  char buf[N];
-  while (has_data(fin)) {
-    bzero(buf, N);
-    fin.read(buf, N-1);  // leave at least one null
-    result << buf;
-  }
+  if (!fin) return "";  // don't bother checking errno
+  ostringstream result;
+  result << fin.rdbuf();
   fin.close();
   return result.str();
 }
