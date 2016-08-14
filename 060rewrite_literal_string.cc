@@ -27,13 +27,11 @@ void initialize_transform_rewrite_literal_string_to_text() {
   recipes_taking_literal_strings.insert("assert");
   recipes_taking_literal_strings.insert("new");
   recipes_taking_literal_strings.insert("run");
-  recipes_taking_literal_strings.insert("assume-console");
   recipes_taking_literal_strings.insert("memory-should-contain");
   recipes_taking_literal_strings.insert("trace-should-contain");
   recipes_taking_literal_strings.insert("trace-should-not-contain");
   recipes_taking_literal_strings.insert("check-trace-count-for-label");
-  recipes_taking_literal_strings.insert("screen-should-contain");
-  recipes_taking_literal_strings.insert("screen-should-contain-in-color");
+  // End initialize_transform_rewrite_literal_string_to_text()
 }
 
 void rewrite_literal_string_to_text(recipe_ordinal r) {

@@ -4,6 +4,10 @@
 //: scenario. Like with the fake screen, 'assume-console' transparently
 //: supports unicode.
 
+//: first make sure we don't mangle these functions in other transforms
+:(before "End initialize_transform_rewrite_literal_string_to_text()")
+recipes_taking_literal_strings.insert("assume-console");
+
 :(scenarios run_mu_scenario)
 :(scenario keyboard_in_scenario)
 scenario keyboard-in-scenario [

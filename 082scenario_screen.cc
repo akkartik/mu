@@ -4,6 +4,11 @@
 //: instructions in the scenario. 'screen-should-contain' can check unicode
 //: characters in the fake screen
 
+//: first make sure we don't mangle these functions in other transforms
+:(before "End initialize_transform_rewrite_literal_string_to_text()")
+recipes_taking_literal_strings.insert("screen-should-contain");
+recipes_taking_literal_strings.insert("screen-should-contain-in-color");
+
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
