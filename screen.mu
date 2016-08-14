@@ -1,8 +1,7 @@
 # example program: managing the display using 'screen' objects
-#
+
 # The zero screen below means 'use the real screen'. Tests can also use fake
 # screens.
-
 def main [
   open-console
   10:character <- copy 97/a
