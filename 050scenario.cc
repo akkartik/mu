@@ -115,7 +115,7 @@ Num_core_mu_scenarios = SIZE(Scenarios);
 Hide_missing_default_space_errors = false;
 if (Num_core_mu_scenarios) {
   time(&t);
-  cerr << "\nMu tests: " << ctime(&t);
+  cerr << "Mu tests: " << ctime(&t);
   for (int i = 0; i < Num_core_mu_scenarios; ++i) {
 //?     cerr << i << ": " << Scenarios.at(i).name << '\n';
     run_mu_scenario(Scenarios.at(i));
@@ -132,6 +132,7 @@ if (Num_core_mu_scenarios != SIZE(Scenarios)) {
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".";
   }
+  cerr << "\n";
 }
 
 //: For faster debugging, support running tests for just the Mu app(s) we are
