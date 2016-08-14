@@ -493,7 +493,6 @@ def main [
 -error: location 1 can't contain non-number 34  # comment
 # but there'll be an error signalled by memory-should-contain
 
-:(code)
 //: 'trace-should-contain' is like the '+' lines in our scenarios so far
 // Like runs of contiguous '+' lines, order is important. The trace checks
 // that the lines are present *and* in the specified sequence. (There can be
