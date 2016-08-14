@@ -40,8 +40,8 @@ string slurp_quoted(istream& in) {
   return out.str();
 }
 
-// A string is a code string if it contains a newline before any non-whitespace
-// todo: support comments before the newline. But that gets messy.
+// A string is a code string (ignores comments when scanning for matching
+// brackets) if it contains a newline at the start before any non-whitespace.
 bool is_code_string(istream& in, ostream& out) {
   while (has_data(in)) {
     char c = in.get();
