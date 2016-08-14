@@ -97,7 +97,7 @@ case _READ_FROM_FILE: {
   }
   char c = getc(f);  // todo: unicode
   if (ferror(f)) {
-    raise << maybe(current_recipe_name()) << "couldn't read to file in '" << to_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "couldn't read from file in '" << to_string(current_instruction()) << "'\n" << end();
     raise << "  errno: " << errno << '\n' << end();
     break;
   }
