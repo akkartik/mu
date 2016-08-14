@@ -122,6 +122,11 @@ def new-buffer capacity:number -> result:address:buffer [
   load-ingredients
   result <- new buffer:type
   *result <- put *result, length:offset, 0
+  {
+    break-if capacity
+    # capacity not provided
+    capacity <- copy 10
+  }
   data:address:array:character <- new character:type, capacity
   *result <- put *result, data:offset, data
   return result
@@ -239,6 +244,15 @@ scenario buffer-append-works [
     34 <- 100
     35 <- 0
     36 <- 0
+  ]
+]
+
+scenario buffer-append-to-empty [
+  run [
+    local-scope
+    x:address:buffer <- new-buffer
+    c:character <- copy 97/a
+    x <- append x, c
   ]
 ]
 
