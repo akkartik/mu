@@ -113,14 +113,16 @@ int Num_core_mu_scenarios = 0;
 Num_core_mu_scenarios = SIZE(Scenarios);
 :(before "End Tests")
 Hide_missing_default_space_errors = false;
-time(&t);
-cerr << "\nMu tests: " << ctime(&t);
-for (int i = 0; i < Num_core_mu_scenarios; ++i) {
-//?   cerr << i << ": " << Scenarios.at(i).name << '\n';
-  run_mu_scenario(Scenarios.at(i));
-  if (Passed) cerr << ".";
+if (Num_core_mu_scenarios) {
+  time(&t);
+  cerr << "\nMu tests: " << ctime(&t);
+  for (int i = 0; i < Num_core_mu_scenarios; ++i) {
+//?     cerr << i << ": " << Scenarios.at(i).name << '\n';
+    run_mu_scenario(Scenarios.at(i));
+    if (Passed) cerr << ".";
+  }
+  cerr << "\n";
 }
-cerr << "\n";
 run_app_scenarios:
 if (Num_core_mu_scenarios != SIZE(Scenarios)) {
   time(&t);
