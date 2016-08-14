@@ -104,6 +104,8 @@ case _READ_FROM_FILE: {
   products.at(0).push_back(c);
   break;
 }
+:(before "End Includes")
+#include <cerrno>
 
 :(before "End Primitive Recipe Declarations")
 _WRITE_TO_FILE,
