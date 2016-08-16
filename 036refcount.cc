@@ -53,8 +53,13 @@ void update_refcounts(int old_address, int new_address, const type_tree* payload
     put(Memory, old_address, old_refcount);
     if (old_refcount < 0) {
       tb_shutdown();
-      DUMP("");
-      cerr << "Negative refcount: " << old_address << ' ' << old_refcount << '\n';
+      cerr << "Negative refcount!!! " << old_address << ' ' << old_refcount << '\n';
+      if (Trace_stream) {
+        cerr << "Saving trace to last_trace.\n";
+        ofstream fout("last_trace");
+        fout << Trace_stream->readable_contents("");
+        fout.close();
+      }
       exit(0);
     }
     // End Decrement Reference Count(old_address, payload_type, payload_size)
