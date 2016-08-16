@@ -269,7 +269,7 @@ bool should_update_refcounts_in_write_memory(int product_index) {
   if (!contains_key(Recipe, inst.operation)) return true;
   const recipe& caller = get(Recipe, inst.operation);
   if (caller.steps.empty()) return true;
-  // if the recipe deosn't begin with 'local-scope', always update refcounts
+  // if the recipe doesn't begin with 'local-scope', always update refcounts
   return caller.steps.at(0).old_name != "local-scope";
 }
 

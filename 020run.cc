@@ -57,7 +57,7 @@ void run(recipe_ordinal r) {
 }
 
 void run_current_routine()
-{  // curly on a separate line, because later layers will modify header
+{  // curly on a separate line, because later layers will modify function header
   while (!Current_routine->completed())  // later layers will modify condition
   {
     // Running One Instruction
