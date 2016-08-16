@@ -328,6 +328,8 @@ int some_other_running_routine() {
   return 0;
 }
 
+//: helper for restarting blocking routines in tests
+
 :(before "End Primitive Recipe Declarations")
 RESTART,
 :(before "End Primitive Recipe Numbers")
@@ -349,9 +351,25 @@ case RESTART: {
   int id = ingredients.at(0).at(0);
   for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
-      Routines.at(i)->state = RUNNING;
+      if (Routines.at(i)->state == WAITING)
+        Routines.at(i)->state = RUNNING;
       break;
     }
   }
   break;
 }
+
+:(scenario cannot_restart_completed_routine)
+% Scheduling_interval = 1;
+def main [
+  local-scope
+  r:number/routine-id <- start-running f
+  x:number <- copy 0  # wait for f to be scheduled
+  # r is COMPLETED by this point
+  restart r  # should have no effect
+  x:number <- copy 0  # give f time to be scheduled (though it shouldn't be)
+]
+def f [
+  1:number/raw <- copy 1
+]
+# shouldn't crash
