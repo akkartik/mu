@@ -304,6 +304,7 @@ def f1 [
 for (int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
+  // structured concurrency: http://250bpm.com/blog:71
   if (has_completed_parent(i)) {
     Routines.at(i)->state = COMPLETED;
   }

@@ -336,7 +336,7 @@ inline bool scalar(const vector<double>& x) {
 }
 
 // helper for tests
-void run(string form) {
+void run(const string& form) {
   vector<recipe_ordinal> tmp = load(form);
   transform_all();
   if (tmp.empty()) return;
