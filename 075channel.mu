@@ -94,10 +94,10 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   *chan <- put *chan, first-free:offset, free
 ]
 
-def read in:address:source:_elem -> result:_elem, fail?:boolean, in:address:source:_elem [
+def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:source:_elem [
   local-scope
   load-ingredients
-  fail? <- copy 0/false  # default status
+  eof? <- copy 0/false  # default result
   chan:address:channel:_elem <- get *in, chan:offset
   {
     # block if chan is empty
