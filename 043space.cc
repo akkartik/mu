@@ -256,6 +256,22 @@ void try_reclaim_locals() {
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
+:(code)
+// is this reagent one of the values returned by the current (reply) instruction?
+// is the corresponding ingredient saved in the caller?
+bool escaping(const reagent& r) {
+  assert(Current_routine);  // run-time only
+  // nothing escapes when you fall through past end of recipe
+  if (current_step_index() >= SIZE(Current_routine->steps())) return false;
+  for (long long i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+    if (r == current_instruction().ingredients.at(i)) {
+    if (caller_uses_product(i))
+      return true;
+    }
+  }
+  return false;
+}
+
 //: since we don't decrement refcounts for escaping values above, make sure we
 //: don't increment them when the caller saves them either
 
@@ -273,21 +289,6 @@ bool should_update_refcounts_in_write_memory(bool conditional_update) {
 }
 
 :(code)
-// is this reagent one of the values returned by the current (reply) instruction?
-// is the corresponding ingredient saved in the caller?
-bool escaping(const reagent& r) {
-  assert(Current_routine);  // run-time only
-  // nothing escapes when you fall through past end of recipe
-  if (current_step_index() >= SIZE(Current_routine->steps())) return false;
-  for (long long i = 0; i < SIZE(current_instruction().ingredients); ++i) {
-    if (r == current_instruction().ingredients.at(i)) {
-    if (caller_uses_product(i))
-      return true;
-    }
-  }
-  return false;
-}
-
 bool caller_uses_product(int product_index) {
   assert(Current_routine);  // run-time only
   assert(!Current_routine->calls.empty());
