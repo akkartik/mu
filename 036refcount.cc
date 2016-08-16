@@ -18,7 +18,7 @@ def main [
 +mem: decrementing refcount of 1000: 1 -> 0
 
 :(before "End write_memory(x) Special-cases")
-if (should_update_refcounts_in_write_memory(product_index)) {
+if (should_update_refcounts_in_write_memory(saving_instruction_products)) {
   if (is_mu_address(x)) {
     assert(scalar(data));
     assert(x.value);
@@ -30,7 +30,7 @@ if (should_update_refcounts_in_write_memory(product_index)) {
 
 :(code)
 //: hook for a later layer
-bool should_update_refcounts_in_write_memory(int product_index) {
+bool should_update_refcounts_in_write_memory(bool conditional_update) {
   return true;
 }
 

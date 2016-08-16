@@ -91,7 +91,7 @@ void run_current_routine()
     }
     else {
       for (int i = 0; i < SIZE(current_instruction().products); ++i)
-        write_memory(current_instruction().products.at(i), products.at(i), i);
+        write_memory(current_instruction().products.at(i), products.at(i), /*saving instruction products rather than some other internal uses*/true);
     }
     // End of Instruction
     finish_instruction:;
@@ -277,7 +277,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
   return result;
 }
 
-void write_memory(reagent/*copy*/ x, const vector<double>& data, const int /*only when called in the run loop above to save results; -1 otherwise*/ product_index) {
+void write_memory(reagent/*copy*/ x, const vector<double>& data, const bool saving_instruction_products) {
   // Begin Preprocess write_memory(x, data)
   if (!x.type) {
     raise << "can't write to '" << to_string(x) << "'; no type\n" << end();

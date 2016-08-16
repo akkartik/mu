@@ -247,7 +247,7 @@ void try_reclaim_locals() {
       if (escaping(inst.products.at(i))) continue;
       trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
       zeros.resize(size_of(inst.products.at(i)));
-      write_memory(inst.products.at(i), zeros, /*always update refcounts*/-1);
+      write_memory(inst.products.at(i), zeros, /*always update refcounts*/false);
     }
   }
   trace(9999, "mem") << "automatically abandoning " << current_call().default_space << end();
@@ -259,11 +259,10 @@ void try_reclaim_locals() {
 //: since we don't decrement refcounts for escaping values above, make sure we
 //: don't increment them when the caller saves them either
 
-:(replace{} "bool should_update_refcounts_in_write_memory(int product_index)")
-bool should_update_refcounts_in_write_memory(int product_index) {
+:(replace{} "bool should_update_refcounts_in_write_memory(bool conditional_update)")
+bool should_update_refcounts_in_write_memory(bool conditional_update) {
   assert(Current_routine);  // run-time only
-  if (product_index == -1) return true;
-  assert(product_index >= 0);
+  if (!conditional_update) return true;
   const instruction& inst = current_instruction();
   if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
   if (!contains_key(Recipe, inst.operation)) return true;
