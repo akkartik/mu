@@ -2,6 +2,9 @@
 //:   '$open-file-for-reading' returns a FILE* as a number (ugh)
 //:   '$read-from-file' accepts a number, interprets it as a FILE* (double ugh) and reads a character from it
 //: Similarly for writing files.
+//: These interfaces are ugly and tied to the current (Linux) host Mu happens
+//: to be implemented atop. Later layers will wrap them with better, more
+//: testable interfaces.
 //:
 //: Clearly we don't care about performance or any of that so far.
 //: todo: reading/writing binary files
