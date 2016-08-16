@@ -264,7 +264,7 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   payload.value = tmp.value;  // now modified for output
   vector<double> old_data = read_memory(payload);
   trace(9991, "run") << "deep-copy: really writing to " << payload.value << ' ' << to_string(payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
-  write_memory(payload, data, /*always update refcounts*/false);
+  write_memory(payload, data);
   trace(9991, "run") << "deep-copy: output is " << to_string(data) << end();
   return out;
 }

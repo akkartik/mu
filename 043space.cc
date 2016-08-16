@@ -247,7 +247,7 @@ void try_reclaim_locals() {
       if (escaping(inst.products.at(i))) continue;
       trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
       zeros.resize(size_of(inst.products.at(i)));
-      write_memory(inst.products.at(i), zeros, /*always update refcounts*/false);
+      write_memory(inst.products.at(i), zeros);
     }
   }
   trace(9999, "mem") << "automatically abandoning " << current_call().default_space << end();
@@ -275,10 +275,12 @@ bool escaping(const reagent& r) {
 //: since we don't decrement refcounts for escaping values above, make sure we
 //: don't increment them when the caller saves them either
 
-:(replace{} "bool should_update_refcounts_in_write_memory(bool conditional_update)")
-bool should_update_refcounts_in_write_memory(bool conditional_update) {
-  assert(Current_routine);  // run-time only
-  if (!conditional_update) return true;
+:(after "Write Products of Instruction")
+Update_refcounts_in_write_memory = should_update_refcounts_in_write_memory();
+:(before "End Write Products of Instruction")
+Update_refcounts_in_write_memory = true;
+:(code)
+bool should_update_refcounts_in_write_memory() {
   const instruction& inst = current_instruction();
   if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
   if (!contains_key(Recipe, inst.operation)) return true;
@@ -288,7 +290,6 @@ bool should_update_refcounts_in_write_memory(bool conditional_update) {
   return caller.steps.at(0).old_name != "local-scope";
 }
 
-:(code)
 bool caller_uses_product(int product_index) {
   assert(Current_routine);  // run-time only
   assert(!Current_routine->calls.empty());

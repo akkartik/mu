@@ -86,13 +86,15 @@ void run_current_routine()
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
+    // Write Products of Instruction
     if (SIZE(products) < SIZE(current_instruction().products)) {
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_original_string(current_instruction()) << '\n' << end();
     }
     else {
       for (int i = 0; i < SIZE(current_instruction().products); ++i)
-        write_memory(current_instruction().products.at(i), products.at(i), /*saving instruction products rather than some other internal uses*/true);
+        write_memory(current_instruction().products.at(i), products.at(i));
     }
+    // End Write Products of Instruction
     // End of Instruction
     finish_instruction:;
     ++current_step_index();
@@ -277,7 +279,8 @@ vector<double> read_memory(reagent/*copy*/ x) {
   return result;
 }
 
-void write_memory(reagent/*copy*/ x, const vector<double>& data, const bool saving_instruction_products) {
+void write_memory(reagent/*copy*/ x, const vector<double>& data) {
+  assert(Current_routine);  // run-time only
   // Begin Preprocess write_memory(x, data)
   if (!x.type) {
     raise << "can't write to '" << to_string(x) << "'; no type\n" << end();

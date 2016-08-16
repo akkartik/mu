@@ -17,8 +17,11 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
+:(before "End Globals")
+//: escape hatch for a later layer
+bool Update_refcounts_in_write_memory = true;
 :(before "End write_memory(x) Special-cases")
-if (should_update_refcounts_in_write_memory(saving_instruction_products)) {
+if (Update_refcounts_in_write_memory) {
   if (is_mu_address(x)) {
     assert(scalar(data));
     assert(x.value);
@@ -29,11 +32,6 @@ if (should_update_refcounts_in_write_memory(saving_instruction_products)) {
 }
 
 :(code)
-//: hook for a later layer
-bool should_update_refcounts_in_write_memory(bool conditional_update) {
-  return true;
-}
-
 void update_refcounts(const reagent& old, int new_address) {
   assert(is_mu_address(old));
   update_refcounts(get_or_insert(Memory, old.value), new_address, old.type->right, payload_size(old));
