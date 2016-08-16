@@ -353,7 +353,7 @@ b:number <- copy 0
 string Most_recent_products;
 :(before "End Setup")
 Most_recent_products = "";
-:(before "End of Instruction")
+:(before "End Running One Instruction")
 if (Track_most_recent_products) {
   track_most_recent_products(current_instruction(), products);
 }

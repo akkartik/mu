@@ -95,7 +95,7 @@ void run_current_routine()
         write_memory(current_instruction().products.at(i), products.at(i));
     }
     // End Write Products of Instruction
-    // End of Instruction
+    // End Running One Instruction
     finish_instruction:;
     ++current_step_index();
   }
