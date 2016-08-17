@@ -591,6 +591,23 @@ def main [
 +run: {20: "foo"} <- copy {10: "foo"}
 +mem: incrementing refcount of 1000: 2 -> 3
 
+:(scenario refcounts_copy_array_within_container)
+container foo [
+  x:address:array:number
+]
+def main [
+  1:address:array:number <- new number:type, 3
+  2:foo <- merge 1:address:array:number
+  3:address:array:number <- new number:type, 5
+  2:foo <- merge 3:address:array:number
+]
++run: {1: ("address" "array" "number")} <- new {number: "type"}, {3: "literal"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "foo"} <- merge {1: ("address" "array" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {2: "foo"} <- merge {3: ("address" "array" "number")}
++mem: decrementing refcount of 1000: 2 -> 1
+
 :(code)
 bool is_mu_container(const reagent& r) {
   return is_mu_container(r.type);
