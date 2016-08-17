@@ -56,7 +56,7 @@ size_t hash_mu_scalar(size_t h, const reagent& r) {
 size_t hash_mu_address(size_t h, reagent& r) {
   if (r.value == 0) return 0;
   trace(9999, "mem") << "location " << r.value << " is " << no_scientific(get_or_insert(Memory, r.value)) << end();
-  r.value = get_or_insert(Memory, r.value);
+  r.set_value(get_or_insert(Memory, r.value));
   if (r.value != 0) {
     trace(9999, "mem") << "skipping refcount at " << r.value << end();
     r.set_value(r.value+1);  // skip refcount
@@ -81,7 +81,7 @@ size_t hash_mu_array(size_t h, const reagent& r) {
   elem.type = copy_array_element(r.type);
   for (int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
     reagent/*copy*/ tmp = elem;
-    tmp.value = address;
+    tmp.set_value(address);
     h = hash(h, tmp);
 //?     cerr << i << " (" << address << "): " << h << '\n';
   }

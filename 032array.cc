@@ -412,7 +412,7 @@ case PUT_INDEX: {
   reagent element;
   element.type = copy_array_element(base.type);
   int address = base_address + 1 + index_val.at(0)*size_of(element.type);
-  element.value = address;
+  element.set_value(address);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array

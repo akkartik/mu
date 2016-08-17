@@ -37,7 +37,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
     int array_length = get_or_insert(Memory, address+/*skip refcount*/1);
     assert(element.type->name != "array");
     if (is_mu_address(element)) {
-      for (element.value = address+/*skip refcount*/1+/*skip length*/1; element.value < address+/*skip refcount*/1+/*skip length*/1+array_length; ++element.value)
+      for (element.set_value(address+/*skip refcount*/1+/*skip length*/1); element.value < address+/*skip refcount*/1+/*skip length*/1+array_length; ++element.value)
         update_refcounts(element, 0);
     }
     else if (is_mu_container(element) || is_mu_exclusive_container(element)) {
@@ -45,14 +45,14 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
       vector<double> zeros;
       zeros.resize(element_size);
       for (int i = 0; i < array_length; ++i) {
-        element.value = address + /*skip refcount*/1 + /*skip array length*/1 + i*element_size;
+        element.set_value(address + /*skip refcount*/1 + /*skip array length*/1 + i*element_size);
         update_container_refcounts(element, zeros);
       }
     }
   }
   else if (is_mu_container(payload_type) || is_mu_exclusive_container(payload_type)) {
     reagent tmp;
-    tmp.value = address + /*skip refcount*/1;
+    tmp.set_value(address + /*skip refcount*/1);
     tmp.type = new type_tree(*payload_type);
     vector<double> zeros;
     zeros.resize(size_of(payload_type));

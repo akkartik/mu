@@ -135,7 +135,7 @@ def main [
 :(after "Write Memory in PUT in Run")
 reagent/*copy*/ element = element_type(base.type, offset);
 assert(!has_property(element, "lookup"));
-element.value = address;
+element.set_value(address);
 update_any_refcounts(element, ingredients.at(2));
 
 :(scenario refcounts_put_index)

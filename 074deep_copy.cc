@@ -214,7 +214,7 @@ case DEEP_COPY: {
   // allocate a tiny bit of temporary space for deep_copy()
   trace(9991, "run") << "deep-copy: allocating space for temporary" << end();
   reagent tmp("tmp:address:number");
-  tmp.value = allocate(1);
+  tmp.set_value(allocate(1));
   products.push_back(deep_copy(input, tmp));
   // reclaim Mu memory allocated for tmp
   trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
@@ -261,7 +261,7 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   // a temporary location to help copy the payload.
   trace(9991, "run") << "deep-copy: writing temporary " << tmp.value << ": " << out << end();
   put(Memory, tmp.value, out);
-  payload.value = tmp.value;  // now modified for output
+  payload.set_value(tmp.value);  // now modified for output
   vector<double> old_data = read_memory(payload);
   trace(9991, "run") << "deep-copy: really writing to " << payload.value << ' ' << to_string(payload) << " (old value " << to_string(old_data) << " new value " << to_string(data) << ")" << end();
   write_memory(payload, data);
