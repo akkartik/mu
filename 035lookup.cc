@@ -136,6 +136,8 @@ if (!canonize_type(r)) return false;
 if (!canonize_type(r)) return false;
 :(before "End Preprocess is_mu_boolean(reagent r)")
 if (!canonize_type(r)) return false;
+:(before "End Preprocess is_mu_character(reagent r)")
+if (!canonize_type(r)) return false;
 
 :(after "Update product While Type-checking Merge")
 if (!canonize_type(product)) continue;

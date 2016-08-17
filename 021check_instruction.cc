@@ -203,6 +203,13 @@ bool is_mu_number(reagent/*copy*/ r) {
   return r.type->value == get(Type_ordinal, "number");
 }
 
+bool is_mu_character(reagent/*copy*/ r) {
+  // End Preprocess is_mu_character(reagent r)
+  if (!r.type) return false;
+  if (is_literal(r)) return false;
+  return r.type->value == get(Type_ordinal, "character");
+}
+
 bool is_mu_scalar(reagent/*copy*/ r) {
   if (!r.type) return false;
   if (is_literal(r))

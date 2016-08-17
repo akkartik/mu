@@ -714,5 +714,40 @@ def main [
 ]
 +mem: storing 12 in location 1
 
+:(before "End Primitive Recipe Declarations")
+CHARACTER_TO_CODE,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "character-to-code", CHARACTER_TO_CODE);
+:(before "End Primitive Recipe Checks")
+case CHARACTER_TO_CODE: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'character-to-code' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_character(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'character-to-code' should be a character, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'character-to-code' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of 'character-to-code' should be a number, but got '" << inst.products.at(0).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CHARACTER_TO_CODE: {
+  double result = 0;
+  for (int i = 0; i < SIZE(ingredients); ++i) {
+    result += ingredients.at(i).at(0);
+  }
+  products.resize(1);
+  products.at(0).push_back(result);
+  break;
+}
+
 :(before "End Includes")
 #include <math.h>
