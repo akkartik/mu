@@ -17,23 +17,23 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
-:(before "End write_memory(x) Special-cases")
-update_any_refcounts(x, data);
-
 :(before "End Globals")
 //: escape hatch for a later layer
 bool Update_refcounts_in_write_memory = true;
 
+:(before "End write_memory(x) Special-cases")
+if (Update_refcounts_in_write_memory)
+  update_any_refcounts(x, data);
+
 :(code)
 void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
-  if (!Update_refcounts_in_write_memory) return;
   if (is_mu_address(canonized_x)) {
     assert(scalar(data));
     assert(canonized_x.value);
     assert(!canonized_x.metadata.size);
     update_refcounts(canonized_x, data.at(0));
   }
-  // End Update Refcounts in write_memory(canonized_x)
+  // End Update Refcounts(canonized_x)
 }
 
 void update_refcounts(const reagent& old, int new_address) {
@@ -136,9 +136,7 @@ def main [
 reagent/*copy*/ element = element_type(base.type, offset);
 assert(!has_property(element, "lookup"));
 element.value = address;
-if (is_mu_address(element))
-  update_refcounts(element, ingredients.at(2).at(0));
-// End Update Refcounts in PUT
+update_any_refcounts(element, ingredients.at(2));
 
 :(scenario refcounts_put_index)
 def main [
@@ -155,9 +153,7 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 
 :(after "Write Memory in PUT_INDEX in Run")
-if (is_mu_address(element))
-  update_refcounts(element, value.at(0));
-// End Update Refcounts in PUT_INDEX
+update_any_refcounts(element, value);
 
 :(scenario refcounts_maybe_convert)
 exclusive-container foo [
@@ -179,9 +175,10 @@ def main [
 +mem: incrementing refcount of 1000: 2 -> 3
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
-if (is_mu_address(product))
-  update_refcounts(product, get_or_insert(Memory, base_address+/*skip tag*/1));
-// End Update Refcounts in Successful MAYBE_CONVERT
+vector<double> data;
+for (int i = 0; i < size_of(product); ++i)
+  data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
+update_any_refcounts(product, data);
 
 //:: manage refcounts in instructions that copy multiple locations at a time
 
@@ -377,22 +374,9 @@ int payload_size(const type_tree* type) {
 //: use metadata.address to update refcounts within containers, arrays and
 //: exclusive containers
 
-:(before "End Update Refcounts in write_memory(canonized_x)")
+:(before "End Update Refcounts(canonized_x)")
 if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x))
   update_container_refcounts(canonized_x, data);
-:(before "End Update Refcounts in PUT")
-if (is_mu_container(element) || is_mu_exclusive_container(element))
-  update_container_refcounts(element, ingredients.at(2));
-:(before "End Update Refcounts in PUT_INDEX")
-if (is_mu_container(element) || is_mu_exclusive_container(element))
-  update_container_refcounts(element, value);
-:(before "End Update Refcounts in Successful MAYBE_CONVERT")
-if (is_mu_container(product) || is_mu_exclusive_container(product)) {
-  vector<double> data;
-  for (int i = 0; i < size_of(product); ++i)
-    data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
-  update_container_refcounts(product, data);
-}
 
 :(code)
 void update_container_refcounts(const reagent& canonized_x, const vector<double>& data) {
