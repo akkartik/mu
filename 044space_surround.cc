@@ -28,6 +28,9 @@ def dummy [  # just for the /names: property above
 # store to chained space: /*contents of location 12*/20 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1
 +mem: storing 33 in location 23
 
+:(before "End Checks For Reclaiming Locals")
+if (space_index(inst.products.at(i)) > 0) continue;
+
 //: If you think of a space as a collection of variables with a common
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
 //: one.

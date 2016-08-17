@@ -240,10 +240,10 @@ void try_reclaim_locals() {
     const instruction& inst = exiting_recipe.steps.at(i);
     for (int i = 0; i < SIZE(inst.products); ++i) {
       // local variables only
-      if (has_property(inst.products.at(i), "space")) continue;
       if (has_property(inst.products.at(i), "lookup")) continue;
       if (has_property(inst.products.at(i), "raw")) continue;  // tests often want to check such locations after they run
       if (escaping(inst.products.at(i))) continue;
+      // End Checks For Reclaiming Locals
       trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
       zeros.resize(size_of(inst.products.at(i)));
       write_memory(inst.products.at(i), zeros);
