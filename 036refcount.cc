@@ -434,7 +434,7 @@ def main [
 # put increments refcount inside container
 +mem: incrementing refcount of 1000: 2 -> 3
 
-:(scenario refcounts_put_index_container)
+:(scenario refcounts_put_index_array)
 container bar [
   x:address:number
 ]
