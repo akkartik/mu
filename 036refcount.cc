@@ -25,15 +25,15 @@ update_any_refcounts(x, data);
 bool Update_refcounts_in_write_memory = true;
 
 :(code)
-void update_any_refcounts(const reagent& x, const vector<double>& data) {
+void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
   if (!Update_refcounts_in_write_memory) return;
-  if (is_mu_address(x)) {
+  if (is_mu_address(canonized_x)) {
     assert(scalar(data));
-    assert(x.value);
-    assert(!x.metadata.size);
-    update_refcounts(x, data.at(0));
+    assert(canonized_x.value);
+    assert(!canonized_x.metadata.size);
+    update_refcounts(canonized_x, data.at(0));
   }
-  // End Update Refcounts in write_memory(x)
+  // End Update Refcounts in write_memory(canonized_x)
 }
 
 void update_refcounts(const reagent& old, int new_address) {
@@ -377,9 +377,9 @@ int payload_size(const type_tree* type) {
 //: use metadata.address to update refcounts within containers, arrays and
 //: exclusive containers
 
-:(before "End Update Refcounts in write_memory(x)")
-if (is_mu_container(x) || is_mu_exclusive_container(x))
-  update_container_refcounts(x, data);
+:(before "End Update Refcounts in write_memory(canonized_x)")
+if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x))
+  update_container_refcounts(canonized_x, data);
 :(before "End Update Refcounts in PUT")
 if (is_mu_container(element) || is_mu_exclusive_container(element))
   update_container_refcounts(element, ingredients.at(2));
@@ -395,13 +395,13 @@ if (is_mu_container(product) || is_mu_exclusive_container(product)) {
 }
 
 :(code)
-void update_container_refcounts(const reagent& x, const vector<double>& data) {
-  assert(is_mu_container(x) || is_mu_exclusive_container(x));
-  const container_metadata& metadata = get(Container_metadata, x.type);
+void update_container_refcounts(const reagent& canonized_x, const vector<double>& data) {
+  assert(is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x));
+  const container_metadata& metadata = get(Container_metadata, canonized_x.type);
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
     if (!all_match(data, p->first)) continue;
     for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
-      update_refcounts(get_or_insert(Memory, x.value + info->offset), data.at(info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
+      update_refcounts(get_or_insert(Memory, canonized_x.value + info->offset), data.at(info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
   }
 }
 
