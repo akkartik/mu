@@ -55,9 +55,8 @@ absolutize(x);
 void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
   if (x.name == "default-space") return;
-  if (!x.initialized) {
+  if (!x.initialized)
     raise << to_original_string(current_instruction()) << ": reagent not initialized: '" << x.original_string << "'\n" << end();
-  }
   x.set_value(address(x.value, space_base(x)));
   x.properties.push_back(pair<string, string_tree*>("raw", NULL));
   assert(is_raw(x));
