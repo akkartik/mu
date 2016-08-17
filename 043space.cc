@@ -284,9 +284,9 @@ bool should_update_refcounts_in_write_memory() {
   // End should_update_refcounts_in_write_memory Special-cases For Primitives
   if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
   if (!contains_key(Recipe, inst.operation)) return true;
-  const recipe& caller = get(Recipe, inst.operation);
-  if (caller.steps.empty()) return true;
-  return caller.steps.at(0).old_name != "local-scope";  // callees that call local-scope are already dealt with before return
+  const recipe& callee = get(Recipe, inst.operation);
+  if (callee.steps.empty()) return true;
+  return callee.steps.at(0).old_name != "local-scope";  // callees that call local-scope are already dealt with before return
 }
 
 bool caller_uses_product(int product_index) {
