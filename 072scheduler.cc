@@ -229,10 +229,13 @@ def f2 [
 //: more complex: refcounting management when starting up new routines
 
 :(scenario start_running_immediately_updates_refcounts_of_ingredients)
+% Scheduling_interval = 1;
 def main [
   local-scope
   create-new-routine
-  switch  # make sure we run new routine before returning
+  # padding to make sure we run new-routine before returning
+  dummy:number <- copy 0
+  dummy:number <- copy 0
 ]
 def create-new-routine [
   local-scope
