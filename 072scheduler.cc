@@ -260,8 +260,38 @@ increment_any_refcounts(ingredient, ingredients.at(i));
 :(before "End Populate start-running Ingredient")
 increment_any_refcounts(ingredient, ingredients.at(i));
 :(before "End should_update_refcounts_in_write_memory Special-cases For Primitives")
-if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING)
+if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING) {
+  if (space_index(inst.products.at(0)) > 0) return true;
+  if (has_property(inst.products.at(0), "raw")) return true;
   return false;
+}
+
+:(scenario next_ingredient_never_leaks_refcounts)
+def create-scope n:address:number -> default-space:address:array:location [
+  default-space <- new location:type, 2
+  load-ingredients
+]
+def use-scope [
+  local-scope
+  0:address:array:location/names:create-scope <- next-ingredient
+  n:address:number/space:1 <- next-ingredient  # should decrement refcount
+  *n/space:1 <- copy 34
+  n2:number <- add *n/space:1, 1
+  reply n2
+]
+def main [
+  local-scope
+  n:address:number <- copy 12000/unsafe  # pretend allocation with a known address
+  *n <- copy 23
+  scope:address:array:location <- create-scope n
+  n2:address:number <- copy 13000/unsafe
+  n3:number <- use-scope scope, n2
+]
++run: {n: ("address" "number"), "space": "1"} <- next-ingredient
++mem: decrementing refcount of 12000: 2 -> 1
++run: {n: ("address" "number"), "space": "1", "lookup": ()} <- copy {34: "literal"}
+
+//: back to testing 'start-running'
 
 :(scenario start_running_returns_routine_id)
 def f1 [
