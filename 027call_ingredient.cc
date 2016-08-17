@@ -33,6 +33,7 @@ for (int i = 0; i < SIZE(ingredients); ++i) {
   reagent/*copy*/ ingredient = call_instruction.ingredients.at(i);
   // End Compute Call Ingredient
   current_call().ingredients.push_back(ingredient);
+  // End Populate Call Ingredient
 }
 
 :(before "End Primitive Recipe Declarations")

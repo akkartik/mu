@@ -133,7 +133,9 @@ def foo [
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: {2: ("address" "number")} <- next-ingredient
++run: foo {1: ("address" "number")}
+# leave ambiguous precisely when the next increment happens; a later layer
+# will mess with that
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 2 -> 1

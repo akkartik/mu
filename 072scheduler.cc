@@ -171,6 +171,7 @@ case START_RUNNING: {
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize_type(ingredient);
     new_routine->calls.front().ingredients.push_back(ingredient);
+    // End Populate start-running Ingredient
   }
   Routines.push_back(new_routine);
   products.resize(1);
@@ -224,6 +225,64 @@ def f2 [
   2:number <- add 1:number, 1
 ]
 +mem: storing 4 in location 2
+
+//: more complex: refcounting management when starting up new routines
+
+:(scenario start_running_immediately_updates_refcounts_of_ingredients)
+def main [
+  local-scope
+  create-new-routine
+  switch  # make sure we run new routine before returning
+]
+def create-new-routine [
+  local-scope
+  n:address:number <- new number:type
+  *n <- copy 34
+  start-running new-routine, n
+  # refcount of n decremented
+]
+def new-routine n:address:number [
+  local-scope
+  load-ingredients
+  1:number/raw <- copy *n
+]
+# check that n wasn't reclaimed when create-new-routine returned
++mem: storing 34 in location 1
+
+//: to support the previous scenario we'll increment refcounts for all call
+//: ingredients right at call time, and stop incrementing refcounts inside
+//: next-ingredient
+:(before "End Populate Call Ingredient")
+increment_any_refcounts(ingredient, ingredients.at(i));
+:(before "End Populate start-running Ingredient")
+increment_any_refcounts(ingredient, ingredients.at(i));
+:(before "End should_update_refcounts_in_write_memory Special-cases For Primitives")
+if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING)
+  return false;
+:(code)
+void increment_any_refcounts(const reagent& x, const vector<double>& data) {
+  if (is_mu_address(x)) {
+    assert(scalar(data));
+    assert(x.value);
+    assert(!x.metadata.size);
+    increment_refcount(data.at(0));
+  }
+  if (is_mu_container(x) || is_mu_exclusive_container(x)) {
+    const container_metadata& metadata = get(Container_metadata, x.type);
+    for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+      if (!all_match(data, p->first)) continue;
+      for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
+        increment_refcount(data.at(info->offset));
+    }
+  }
+}
+
+void increment_refcount(int address) {
+  if (address == 0) return;
+  int refcount = get_or_insert(Memory, address);
+  trace(9999, "mem") << "incrementing refcount of " << address << ": " << refcount << " -> " << refcount+1 << end();
+  put(Memory, address, refcount+1);
+}
 
 :(scenario start_running_returns_routine_id)
 def f1 [

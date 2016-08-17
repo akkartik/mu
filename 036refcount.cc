@@ -17,11 +17,16 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
+:(before "End write_memory(x) Special-cases")
+update_any_refcounts(x, data);
+
 :(before "End Globals")
 //: escape hatch for a later layer
 bool Update_refcounts_in_write_memory = true;
-:(before "End write_memory(x) Special-cases")
-if (Update_refcounts_in_write_memory) {
+
+:(code)
+void update_any_refcounts(const reagent& x, const vector<double>& data) {
+  if (!Update_refcounts_in_write_memory) return;
   if (is_mu_address(x)) {
     assert(scalar(data));
     assert(x.value);
@@ -31,7 +36,6 @@ if (Update_refcounts_in_write_memory) {
   // End Update Refcounts in write_memory(x)
 }
 
-:(code)
 void update_refcounts(const reagent& old, int new_address) {
   assert(is_mu_address(old));
   update_refcounts(get_or_insert(Memory, old.value), new_address, old.type->right, payload_size(old));
@@ -101,7 +105,9 @@ def foo [
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
-+run: {2: ("address" "number")} <- next-ingredient
++run: foo {1: ("address" "number")}
+# leave ambiguous precisely when the next increment happens; a later layer
+# will mess with that
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: decrementing refcount of 1000: 2 -> 1
