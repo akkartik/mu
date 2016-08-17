@@ -262,30 +262,6 @@ increment_any_refcounts(ingredient, ingredients.at(i));
 :(before "End should_update_refcounts_in_write_memory Special-cases For Primitives")
 if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING)
   return false;
-:(code)
-void increment_any_refcounts(const reagent& x, const vector<double>& data) {
-  if (is_mu_address(x)) {
-    assert(scalar(data));
-    assert(x.value);
-    assert(!x.metadata.size);
-    increment_refcount(data.at(0));
-  }
-  if (is_mu_container(x) || is_mu_exclusive_container(x)) {
-    const container_metadata& metadata = get(Container_metadata, x.type);
-    for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
-      if (!all_match(data, p->first)) continue;
-      for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
-        increment_refcount(data.at(info->offset));
-    }
-  }
-}
-
-void increment_refcount(int address) {
-  if (address == 0) return;
-  int refcount = get_or_insert(Memory, address);
-  trace(9999, "mem") << "incrementing refcount of " << address << ": " << refcount << " -> " << refcount+1 << end();
-  put(Memory, address, refcount+1);
-}
 
 :(scenario start_running_returns_routine_id)
 def f1 [

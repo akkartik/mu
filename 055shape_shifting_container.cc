@@ -189,14 +189,19 @@ def main [
   3:foo:point <- merge 0/x, 15, 16
   6:foo:point <- merge 1/y, 23
 ]
++run: {1: ("foo" "number")} <- merge {0: "literal", "x": ()}, {34: "literal"}
 +mem: storing 0 in location 1
 +mem: storing 34 in location 2
++run: {3: ("foo" "point")} <- merge {0: "literal", "x": ()}, {15: "literal"}, {16: "literal"}
 +mem: storing 0 in location 3
 +mem: storing 15 in location 4
 +mem: storing 16 in location 5
++run: {6: ("foo" "point")} <- merge {1: "literal", "y": ()}, {23: "literal"}
 +mem: storing 1 in location 6
 +mem: storing 23 in location 7
-$mem: 7
++run: reply
+# no other stores
+% CHECK(trace_count_prefix("mem", "storing") == 7);
 
 :(scenario get_on_shape_shifting_container)
 container foo:_t [

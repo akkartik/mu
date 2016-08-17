@@ -27,30 +27,41 @@ if (Update_refcounts_in_write_memory)
 
 :(code)
 void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
+  increment_any_refcounts(canonized_x, data);  // increment first so we don't reclaim on x <- copy x
+  decrement_any_refcounts(canonized_x);
+}
+
+void increment_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
   if (is_mu_address(canonized_x)) {
     assert(scalar(data));
+    assert(!canonized_x.metadata.size);
+    increment_refcount(data.at(0));
+  }
+  // End Increment Refcounts(canonized_x)
+}
+
+void increment_refcount(int new_address) {
+  assert(new_address >= 0);
+  if (new_address == 0) return;
+  int new_refcount = get_or_insert(Memory, new_address);
+  trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << new_refcount+1 << end();
+  put(Memory, new_address, new_refcount+1);
+}
+
+void decrement_any_refcounts(const reagent& canonized_x) {
+  if (is_mu_address(canonized_x)) {
     assert(canonized_x.value);
     assert(!canonized_x.metadata.size);
-    update_refcounts(canonized_x, data.at(0));
+    decrement_refcount(get_or_insert(Memory, canonized_x.value), canonized_x.type->right, payload_size(canonized_x));
   }
-  // End Update Refcounts(canonized_x)
+  // End Decrement Refcounts(canonized_x)
 }
 
-void update_refcounts(const reagent& old, int new_address) {
-  assert(is_mu_address(old));
-  update_refcounts(get_or_insert(Memory, old.value), new_address, old.type->right, payload_size(old));
-}
-
-void update_refcounts(int old_address, int new_address, const type_tree* payload_type, int /*just in case it's an array*/payload_size) {
-  if (old_address == new_address) {
-    trace(9999, "mem") << "copying address to itself; refcount unchanged" << end();
-    return;
-  }
-  // decrement refcount of old address
+void decrement_refcount(int old_address, const type_tree* payload_type, int payload_size) {
   assert(old_address >= 0);
   if (old_address) {
     int old_refcount = get_or_insert(Memory, old_address);
-    trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << (old_refcount-1) << end();
+    trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
     --old_refcount;
     put(Memory, old_address, old_refcount);
     if (old_refcount < 0) {
@@ -65,13 +76,6 @@ void update_refcounts(int old_address, int new_address, const type_tree* payload
       exit(0);
     }
     // End Decrement Refcount(old_address, payload_type, payload_size)
-  }
-  // increment refcount of new address
-  if (new_address) {
-    int new_refcount = get_or_insert(Memory, new_address);
-    assert(new_refcount >= 0);  // == 0 only when new_address == old_address
-    trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << (new_refcount+1) << end();
-    put(Memory, new_address, new_refcount+1);
   }
 }
 
@@ -90,7 +94,8 @@ def main [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: {1: ("address" "number")} <- copy {1: ("address" "number")}
-+mem: copying address to itself; refcount unchanged
++mem: incrementing refcount of 1000: 1 -> 2
++mem: decrementing refcount of 1000: 2 -> 1
 
 :(scenario refcounts_call)
 def main [
@@ -175,6 +180,7 @@ def main [
 +mem: incrementing refcount of 1000: 2 -> 3
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
+// TODO: double-check data here as well
 vector<double> data;
 for (int i = 0; i < size_of(product); ++i)
   data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
@@ -374,21 +380,33 @@ int payload_size(const type_tree* type) {
 //: use metadata.address to update refcounts within containers, arrays and
 //: exclusive containers
 
-:(before "End Update Refcounts(canonized_x)")
-if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x))
-  update_container_refcounts(canonized_x, data);
-
-:(code)
-void update_container_refcounts(const reagent& canonized_x, const vector<double>& data) {
-  assert(is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x));
+:(before "End Increment Refcounts(canonized_x)")
+if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
     if (!all_match(data, p->first)) continue;
     for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
-      update_refcounts(get_or_insert(Memory, canonized_x.value + info->offset), data.at(info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
+      increment_refcount(data.at(info->offset));
   }
 }
 
+:(before "End Decrement Refcounts(canonized_x)")
+if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
+  trace(9999, "mem") << "need to read old value to figure out what refcounts to decrement" << end();
+  // read from canonized_x but without canonizing again
+  // todo: inline without running canonize all over again
+  reagent/*copy*/ tmp = canonized_x;
+  tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
+  vector<double> data = read_memory(tmp);
+  const container_metadata& metadata = get(Container_metadata, canonized_x.type);
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+    if (!all_match(data, p->first)) continue;
+    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
+      decrement_refcount(get_or_insert(Memory, canonized_x.value + info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
+  }
+}
+
+:(code)
 bool all_match(const vector<double>& data, const set<tag_condition_info>& conditions) {
   for (set<tag_condition_info>::const_iterator p = conditions.begin(); p != conditions.end(); ++p) {
     if (data.at(p->offset) != p->tag)
@@ -591,6 +609,36 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {2: "foo"} <- merge {3: ("address" "array" "number")}
 +mem: decrementing refcount of 1000: 2 -> 1
+
+:(scenario refcounts_handle_exclusive_containers_with_different_tags)
+container foo1 [
+  x:address:number
+  y:number
+]
+container foo2 [
+  x:number
+  y:address:number
+]
+exclusive-container bar [
+  a:foo1
+  b:foo2
+]
+def main [
+  1:address:number <- copy 12000/unsafe  # pretend allocation
+  *1:address:number <- copy 34
+  2:bar <- merge 0/foo1, 1:address:number, 97
+  5:address:number <- copy 13000/unsafe  # pretend allocation
+  *5:address:number <- copy 35
+  6:bar <- merge 1/foo2, 98, 5:address:number
+  2:bar <- copy 6:bar
+]
++run: {2: "bar"} <- merge {0: "literal", "foo1": ()}, {1: ("address" "number")}, {97: "literal"}
++mem: incrementing refcount of 12000: 1 -> 2
++run: {6: "bar"} <- merge {1: "literal", "foo2": ()}, {98: "literal"}, {5: ("address" "number")}
++mem: incrementing refcount of 13000: 1 -> 2
++run: {2: "bar"} <- copy {6: "bar"}
++mem: incrementing refcount of 13000: 2 -> 3
++mem: decrementing refcount of 12000: 2 -> 1
 
 :(code)
 bool is_mu_container(const reagent& r) {

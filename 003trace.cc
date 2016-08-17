@@ -276,6 +276,18 @@ int trace_count(string label, string line) {
   return result;
 }
 
+int trace_count_prefix(string label, string prefix) {
+  if (!Trace_stream) return 0;
+  long result = 0;
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+    if (label == p->label) {
+      if (starts_with(trim(p->contents), trim(prefix)))
+        ++result;
+    }
+  }
+  return result;
+}
+
 #define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
 #define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
   if (trace_count("error") > 0) { \
