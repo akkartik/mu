@@ -220,6 +220,18 @@ void test_tangle_can_hide_warnings_in_scenarios() {
   CHECK(lines.empty());
 }
 
+void test_tangle_can_include_c_code_at_end_of_scenario() {
+  istringstream in(":(scenario does_bar)\nabc def\n+layer1: pqr\n+layer2: xyz\n% int x = 1;");
+  list<Line> lines;
+  tangle(in, lines);
+  CHECK_EQ(lines.front().contents, "void test_does_bar() {");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  run(\"abc def\\n\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  CHECK_TRACE_CONTENTS(\"layer1: pqrlayer2: xyz\");");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "  int x = 1;");  lines.pop_front();
+  CHECK_EQ(lines.front().contents, "}");  lines.pop_front();
+  CHECK(lines.empty());
+}
+
 void test_tangle_supports_strings_in_scenarios() {
   istringstream in(":(scenario does_bar)\nabc \"def\"\n+layer1: pqr\n+layer2: \"xyz\"");
   list<Line> lines;

@@ -305,6 +305,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
       lines.pop_front();
     }
+    if (lines.empty()) break;
     result.push_back(input_lines(lines));
     if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '+')
       result.push_back(expected_in_trace(lines));
@@ -338,6 +339,7 @@ bool is_input(const string& line) {
 }
 
 Line input_lines(list<Line>& hunk) {
+  assert(!hunk.empty());
   Line result;
   result.line_number = hunk.front().line_number;
   result.filename = hunk.front().filename;
