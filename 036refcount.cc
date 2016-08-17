@@ -64,7 +64,7 @@ void update_refcounts(int old_address, int new_address, const type_tree* payload
       }
       exit(0);
     }
-    // End Decrement Reference Count(old_address, payload_type, payload_size)
+    // End Decrement Refcount(old_address, payload_type, payload_size)
   }
   // increment refcount of new address
   if (new_address) {
