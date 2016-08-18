@@ -56,10 +56,6 @@ def main [
 
 :(before "End Preprocess write_memory(x, data)")
 canonize(x);
-if (x.value == 0) {
-  raise << "can't write to location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
-  return;
-}
 
 //: writes to address 0 always loudly fail
 :(scenario store_to_0_fails)
