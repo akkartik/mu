@@ -12,6 +12,10 @@
 #include <termios.h>
 #include <unistd.h>
 #include <wchar.h>
+/* hack: we can't define _XOPEN_SOURCE because that causes OpenBSD to not
+ * include SIGWINCH. But then this prototype is not included on Linux,
+ * triggering a warning. */
+extern int wcwidth (wchar_t);
 
 #include "termbox.h"
 
