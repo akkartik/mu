@@ -95,7 +95,7 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> run_current_routine<span class="Delimiter">()</span>
-<span class="Delimiter">{</span>  <span class="Comment">// curly on a separate line, because later layers will modify header</span>
+<span class="Delimiter">{</span>  <span class="Comment">// curly on a separate line, because later layers will modify function header</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>  <span class="Comment">// later layers will modify condition</span>
   <span class="Delimiter">{</span>
     <span class="Comment">// Running One Instruction</span>
@@ -124,14 +124,16 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
         cout &lt;&lt; <span class="Constant">&quot;not a primitive op: &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>operation &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
+    <span class="Comment">// Write Products of Instruction</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>products<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; vs &quot;</span> &lt;&lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;: failed to write to all products! &quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Delimiter">{</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
-        write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> i<span class="Delimiter">);</span>
+        write_memory<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     <span class="Delimiter">}</span>
-    <span class="Comment">// End of Instruction</span>
+    <span class="Comment">// End Write Products of Instruction</span>
+    <span class="Comment">// End Running One Instruction</span>
     <span class="Normal">finish_instruction</span>:<span class="Delimiter">;</span>
     ++current_step_index<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
@@ -315,7 +317,8 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> write_memory<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">int</span> <span class="Comment">/*</span><span class="Comment">only when called in the run loop above to save results; -1 otherwise</span><span class="Comment">*/</span> product_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> write_memory<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>  <span class="Comment">// run-time only</span>
   <span class="Comment">// Begin Preprocess write_memory(x, data)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;can't write to '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'; no type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -371,7 +374,7 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
 <span class="Delimiter">}</span>
 
 <span class="Comment">// helper for tests</span>
-<span class="Normal">void</span> run<span class="Delimiter">(</span>string form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> run<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; form<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;recipe_ordinal&gt; tmp = load<span class="Delimiter">(</span>form<span class="Delimiter">);</span>
   transform_all<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>

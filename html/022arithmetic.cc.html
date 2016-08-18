@@ -21,6 +21,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .cSpecial { color: #008000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
 -->
 </style>
 
@@ -718,6 +719,73 @@ def main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>flip-bits <span class="Constant">12</span>
 ]
 <span class="traceContains">+mem: storing -13 in location 1</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+ROUND<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;round&quot;</span><span class="Delimiter">,</span> ROUND<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> ROUND: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'round' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'round' should be a number, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> ROUND: <span class="Delimiter">{</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>rint<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario round_to_nearest_integer)</span>
+def main [
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>round <span class="Constant">12.2</span>
+]
+<span class="traceContains">+mem: storing 12 in location 1</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+CHARACTER_TO_CODE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;character-to-code&quot;</span><span class="Delimiter">,</span> CHARACTER_TO_CODE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> CHARACTER_TO_CODE: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'character-to-code' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_character<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'character-to-code' should be a character, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'character-to-code' requires exactly one product, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first product of 'character-to-code' should be a number, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> CHARACTER_TO_CODE: <span class="Delimiter">{</span>
+  <span class="Normal">double</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    result += ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;math.h&gt;</span>
 </pre>
 </body>
 </html>

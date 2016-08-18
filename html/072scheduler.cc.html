@@ -207,6 +207,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> ingredient = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
     new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
+    <span class="Comment">// End Populate start-running Ingredient</span>
   <span class="Delimiter">}</span>
   Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
@@ -260,6 +261,73 @@ def f2 [
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 2</span>
+
+<span class="Comment">//: more complex: refcounting management when starting up new routines</span>
+
+<span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients)</span>
+<span class="Special">% Scheduling_interval = 1;</span>
+def main [
+  local-scope
+  create-<span class="Normal">new</span>-routine
+  <span class="Comment"># padding to make sure we run new-routine before returning</span>
+  <span class="Normal">dummy</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">dummy</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+def create-<span class="Normal">new</span>-routine [
+  local-scope
+  <span class="Normal">n</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  start-running <span class="Normal">new</span>-routine<span class="Delimiter">,</span> n
+  <span class="Comment"># refcount of n decremented</span>
+]
+def <span class="Normal">new</span>-routine n:address:number [
+  local-scope
+  load-ingredients
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy *n
+]
+<span class="Comment"># check that n wasn't reclaimed when create-new-routine returned</span>
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
+<span class="Comment">//: to support the previous scenario we'll increment refcounts for all call</span>
+<span class="Comment">//: ingredients right at call time, and stop incrementing refcounts inside</span>
+<span class="Comment">//: next-ingredient</span>
+<span class="Delimiter">:(before &quot;End Populate Call Ingredient&quot;)</span>
+increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;End Populate start-running Ingredient&quot;)</span>
+increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;End should_update_refcounts_in_write_memory Special-cases For Primitives&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT || inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>space_index<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario next_ingredient_never_leaks_refcounts)</span>
+def create-scope n:address:number <span class="Delimiter">-&gt;</span> <span class="Normal">default</span>-space:address:array:location [
+  <span class="Normal">default</span>-space<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">2</span>
+  load-ingredients
+]
+def use-scope [
+  local-scope
+  <span class="Constant">0</span>:address:array:location/names:create-scope<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Normal">n</span>:address:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># should decrement refcount</span>
+  *n/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">n2</span>:number<span class="Special"> &lt;- </span>add *n/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
+  reply n2
+]
+def main [
+  local-scope
+  <span class="Normal">n</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">12000</span>/unsafe  <span class="Comment"># pretend allocation with a known address</span>
+  *n<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Normal">scope</span>:address:array:location<span class="Special"> &lt;- </span>create-scope n
+  <span class="Normal">n2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">13000</span>/unsafe
+  <span class="Normal">n3</span>:number<span class="Special"> &lt;- </span>use-scope scope<span class="Delimiter">,</span> n2
+]
+<span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;} &lt;- next-ingredient</span>
+<span class="traceContains">+mem: decrementing refcount of 12000: 2 -&gt; 1</span>
+<span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;, &quot;lookup&quot;: ()} &lt;- copy {34: &quot;literal&quot;}</span>
+
+<span class="Comment">//: back to testing 'start-running'</span>
 
 <span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
 def f1 [
@@ -340,6 +408,7 @@ def f1 [
 <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// root thread</span>
+  <span class="Comment">// structured concurrency: <a href="http://250bpm.com/blog:71">http://250bpm.com/blog:71</a></span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>has_completed_parent<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -403,34 +472,6 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: miscellaneous helpers</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-RESTART<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;restart&quot;</span><span class="Delimiter">,</span> RESTART<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> RESTART: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'restart' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'restart' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> RESTART: <span class="Delimiter">{</span>
-  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = RUNNING<span class="Delimiter">;</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 STOP<span class="Delimiter">,</span>

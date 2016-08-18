@@ -14,10 +14,12 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
+.Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.SalientComment { color: #00ffff; }
+.cSpecial { color: #008000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
 -->
 </style>
 
@@ -29,31 +31,187 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="SalientComment">//:: Interacting with the file-system</span>
+<span class="Comment">//: Interacting with the file system.</span>
+<span class="Comment">//:   '$open-file-for-reading' returns a FILE* as a number (ugh)</span>
+<span class="Comment">//:   '$read-from-file' accepts a number, interprets it as a FILE* (double ugh) and reads a character from it</span>
+<span class="Comment">//: Similarly for writing files.</span>
+<span class="Comment">//: These interfaces are ugly and tied to the current (Linux) host Mu happens</span>
+<span class="Comment">//: to be implemented atop. Later layers will wrap them with better, more</span>
+<span class="Comment">//: testable interfaces.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: Clearly we don't care about performance or any of that so far.</span>
+<span class="Comment">//: todo: reading/writing binary files</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-OPEN_FILE_FOR_READING<span class="Delimiter">,</span>
+_OPEN_FILE_FOR_READING<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;open-file-for-reading&quot;</span><span class="Delimiter">,</span> OPEN_FILE_FOR_READING<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$open-file-for-reading&quot;</span><span class="Delimiter">,</span> _OPEN_FILE_FOR_READING<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> OPEN_FILE_FOR_READING: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _OPEN_FILE_FOR_READING: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$open-file-for-reading' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string filename<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$open-file-for-reading' should be a string, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> OPEN_FILE_FOR_READING: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _OPEN_FILE_FOR_READING: <span class="Delimiter">{</span>
+  string filename = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span><span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">)</span> &gt;= <span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Normal">FILE</span>*<span class="Delimiter">));</span>
+  <span class="Normal">FILE</span>* f = fopen<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> <span class="Constant">&quot;r&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>f<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">double</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-OPEN_FILE_FOR_WRITING<span class="Delimiter">,</span>
+_OPEN_FILE_FOR_WRITING<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;open-file-for-reading&quot;</span><span class="Delimiter">,</span> OPEN_FILE_FOR_WRITING<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$open-file-for-writing&quot;</span><span class="Delimiter">,</span> _OPEN_FILE_FOR_WRITING<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> OPEN_FILE_FOR_WRITING: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _OPEN_FILE_FOR_WRITING: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$open-file-for-writing' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string filename<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$open-file-for-writing' should be a string, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> OPEN_FILE_FOR_WRITING: <span class="Delimiter">{</span>
+<span class="Normal">case</span> _OPEN_FILE_FOR_WRITING: <span class="Delimiter">{</span>
+  string filename = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span><span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span><span class="Delimiter">)</span> &gt;= <span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Normal">FILE</span>*<span class="Delimiter">));</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>fopen<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> <span class="Constant">&quot;w&quot;</span><span class="Delimiter">));</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">double</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_READ_FROM_FILE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$read-from-file&quot;</span><span class="Delimiter">,</span> _READ_FROM_FILE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _READ_FROM_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$read-from-file' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string filename<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$read-from-file' should be a number, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _READ_FROM_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">FILE</span>* f = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">FILE</span>*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>f == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;can't read from null file in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>feof<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>ferror<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;file in invalid state in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">char</span> c = getc<span class="Delimiter">(</span>f<span class="Delimiter">);</span>  <span class="Comment">// todo: unicode</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>ferror<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;couldn't read from file in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;  errno: &quot;</span> &lt;&lt; errno &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;cerrno&gt;</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_WRITE_TO_FILE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$write-to-file&quot;</span><span class="Delimiter">,</span> _WRITE_TO_FILE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _WRITE_TO_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$write-to-file' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string filename<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$write-to-file' should be a number, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of '$write-to-file' should be a number, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _WRITE_TO_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">FILE</span>* f = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">FILE</span>*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>f == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;can't write to null file in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>feof<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>ferror<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;file in invalid state in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> y = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">char</span> c = <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>y<span class="Delimiter">);</span>
+  putc<span class="Delimiter">(</span>c<span class="Delimiter">,</span> f<span class="Delimiter">);</span>  <span class="Comment">// todo: unicode</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>ferror<span class="Delimiter">(</span>f<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;couldn't write to file in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;  errno: &quot;</span> &lt;&lt; errno &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_CLOSE_FILE<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$close-file&quot;</span><span class="Delimiter">,</span> _CLOSE_FILE<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _CLOSE_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$close-file' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  string filename<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$close-file' should be a number, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _CLOSE_FILE: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">FILE</span>* f = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">FILE</span>*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  fclose<span class="Delimiter">(</span>f<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>  <span class="Comment">// todo: ensure that caller always resets the ingredient</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 </pre>

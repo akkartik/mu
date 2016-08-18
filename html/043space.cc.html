@@ -91,9 +91,8 @@ absolutize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Normal">void</span> absolutize<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span>
     raise &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;: reagent not initialized: '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>address<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">,</span> space_base<span class="Delimiter">(</span>x<span class="Delimiter">)));</span>
   x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
   assert<span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
@@ -277,36 +276,19 @@ try_reclaim_locals<span class="Delimiter">();</span>
     <span class="Normal">const</span> instruction&amp; inst = exiting_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// local variables only</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// tests often want to check such locations after they run</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>escaping<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Comment">// End Checks For Reclaiming Locals</span>
       trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;clearing &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
       zeros<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
-      write_memory<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> zeros<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">always update refcounts</span><span class="Comment">*/</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
+      write_memory<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> zeros<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;automatically abandoning &quot;</span> &lt;&lt; current_call<span class="Delimiter">().</span>default_space &lt;&lt; end<span class="Delimiter">();</span>
   abandon<span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space<span class="Delimiter">,</span>
           inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span>
           <span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span> + <span class="Comment">/*</span><span class="Comment">number-of-locals</span><span class="Comment">*/</span>Name[r][<span class="Constant">&quot;&quot;</span>]<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: since we don't decrement refcounts for escaping values above, make sure we</span>
-<span class="Comment">//: don't increment them when the caller saves them either</span>
-
-<span class="Delimiter">:(replace{} &quot;bool should_update_refcounts_in_write_memory(int product_index)&quot;)</span>
-<span class="Normal">bool</span> should_update_refcounts_in_write_memory<span class="Delimiter">(</span><span class="Normal">int</span> product_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>  <span class="Comment">// run-time only</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>product_index == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>product_index &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">const</span> instruction&amp; inst = current_instruction<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation &lt; MAX_PRIMITIVE_RECIPES<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Comment">// if the recipe deosn't begin with 'local-scope', always update refcounts</span>
-  <span class="Identifier">return</span> caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>old_name != <span class="Constant">&quot;local-scope&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
@@ -323,6 +305,24 @@ try_reclaim_locals<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: since we don't decrement refcounts for escaping values above, make sure we</span>
+<span class="Comment">//: don't increment them when the caller saves them either</span>
+
+<span class="Delimiter">:(after &quot;Write Products of Instruction&quot;)</span>
+Update_refcounts_in_write_memory = should_update_refcounts_in_write_memory<span class="Delimiter">();</span>
+<span class="Delimiter">:(before &quot;End Write Products of Instruction&quot;)</span>
+Update_refcounts_in_write_memory = <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> should_update_refcounts_in_write_memory<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> instruction&amp; inst = current_instruction<span class="Delimiter">();</span>
+  <span class="Comment">// End should_update_refcounts_in_write_memory Special-cases For Primitives</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation &lt; MAX_PRIMITIVE_RECIPES<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Normal">const</span> recipe&amp; callee = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>callee<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> callee<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>old_name != <span class="Constant">&quot;local-scope&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// callees that call local-scope are already dealt with before return</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> caller_uses_product<span class="Delimiter">(</span><span class="Normal">int</span> product_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>

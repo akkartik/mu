@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - real-files.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># example program: read a character from one file and write it to another</span>
+<span class="Comment"># BEWARE: this will modify your file system</span>
+<span class="Comment"># before running it, put a character into /tmp/mu-x</span>
+<span class="Comment"># after running it, check /tmp/mu-y</span>
+
+<span class="muRecipe">def</span> main [
+  <span class="Constant">local-scope</span>
+  f:number/file<span class="Special"> &lt;- </span>$open-file-for-reading <span class="Constant">[/tmp/mu-x]</span>
+  $print <span class="Constant">[file to read from: ]</span>, f, <span class="Constant">10/newline</span>
+  c:character<span class="Special"> &lt;- </span>$read-from-file f
+  $print <span class="Constant">[copying ]</span>, c, <span class="Constant">10/newline</span>
+  f<span class="Special"> &lt;- </span>$close-file f
+  $print <span class="Constant">[file after closing: ]</span>, f, <span class="Constant">10/newline</span>
+  f<span class="Special"> &lt;- </span>$open-file-for-writing <span class="Constant">[/tmp/mu-y]</span>
+  $print <span class="Constant">[file to write to: ]</span>, f, <span class="Constant">10/newline</span>
+  $write-to-file f, c
+  f<span class="Special"> &lt;- </span>$close-file f
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

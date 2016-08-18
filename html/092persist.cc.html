@@ -82,18 +82,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
+<span class="Comment">// <a href="http://cpp.indi.frih.net/blog/2014/09/how-to-read-an-entire-file-into-memory-in-cpp">http://cpp.indi.frih.net/blog/2014/09/how-to-read-an-entire-file-into-memory-in-cpp</a></span>
 string slurp<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  ostringstream result<span class="Delimiter">;</span>
   ifstream fin<span class="Delimiter">(</span>filename<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
   fin<span class="Delimiter">.</span>peek<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!fin<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>  <span class="Comment">// don't bother checking errno</span>
-  <span class="Normal">const</span> <span class="Normal">int</span> N = <span class="Constant">1024</span><span class="Delimiter">;</span>
-  <span class="Normal">char</span> buf[N]<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>fin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    bzero<span class="Delimiter">(</span>buf<span class="Delimiter">,</span> N<span class="Delimiter">);</span>
-    fin<span class="Delimiter">.</span>read<span class="Delimiter">(</span>buf<span class="Delimiter">,</span> N-<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// leave at least one null</span>
-    result &lt;&lt; buf<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!fin<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// don't bother checking errno</span>
+  ostringstream result<span class="Delimiter">;</span>
+  result &lt;&lt; fin<span class="Delimiter">.</span>rdbuf<span class="Delimiter">();</span>
   fin<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>

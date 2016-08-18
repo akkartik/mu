@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 088file.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.Special { color: #c00000; }
+.Constant { color: #00a0a0; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Wrappers around file-system primitives that take a 'filesystem' object and</span>
+<span class="Comment"># are thus easier to test.</span>
+
+<span class="muData">container</span> filesystem [
+  <span class="Delimiter">{</span>data: (address table (address array character) (address array character))<span class="Delimiter">}</span>
+]
+
+<span class="muRecipe">def</span> start-reading fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>contents:address:source:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  x:number/file<span class="Special"> &lt;- </span>$open-file-for-reading filename
+  contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
+  $print <span class="Constant">[sink: ]</span>, sink, <span class="Constant">10/newline</span>
+  chan:address:channel:character<span class="Special"> &lt;- </span>get *sink, <span class="Constant">chan:offset</span>
+  $print <span class="Constant">[chan in start-reading: ]</span>, chan, <span class="Constant">10/newline</span>
+  start-running transmit x, sink
+]
+
+<span class="muRecipe">def</span> transmit file:number, sink:address:sink:character<span class="muRecipe"> -&gt; </span>file:number, sink:address:sink:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Delimiter">{</span>
+    c:character<span class="Special"> &lt;- </span>$read-from-file file
+    <span class="muControl">break-unless</span> c
+    sink<span class="Special"> &lt;- </span>write sink, c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  $print <span class="Constant">[closing chan after reading file]</span>, <span class="Constant">10/newline</span>
+  sink<span class="Special"> &lt;- </span>close sink
+  $print <span class="Constant">[returning from 'transmit']</span>, <span class="Constant">10/newline</span>
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
