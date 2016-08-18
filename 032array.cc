@@ -406,7 +406,7 @@ case PUT_INDEX: {
   // Update PUT_INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent element;
@@ -438,7 +438,7 @@ def main [
   8:point <- merge 34, 35
   1:array:point <- put-index 1:array:point, 4, 8:point  # '4' is less than size of array in locations, but larger than its length in elements
 ]
-+error: main: invalid index 4
++error: main: invalid index 4 in '1:array:point <- put-index 1:array:point, 4, 8:point'
 
 :(scenario put_index_out_of_bounds_2)
 % Hide_errors = true;
@@ -453,7 +453,7 @@ def main [
   8:point <- merge 34, 35
   1:array:point <- put-index 1:array:point, -1, 8:point
 ]
-+error: main: invalid index -1
++error: main: invalid index -1 in '1:array:point <- put-index 1:array:point, -1, 8:point'
 
 :(scenario put_index_product_error)
 % Hide_errors = true;
