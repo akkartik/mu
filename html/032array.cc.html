@@ -441,7 +441,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Comment">// Update PUT_INDEX index in Run</span>
   vector&lt;<span class="Normal">double</span>&gt; index_val<span class="Delimiter">(</span>read_memory<span class="Delimiter">(</span>index<span class="Delimiter">));</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span> || index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &gt;= get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;invalid index &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   reagent element<span class="Delimiter">;</span>
@@ -473,7 +473,7 @@ def main [
   <span class="Constant">8</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Constant">1</span>:array:point<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">8</span>:point  <span class="Comment"># '4' is less than size of array in locations, but larger than its length in elements</span>
 ]
-<span class="traceContains">+error: main: invalid index 4</span>
+<span class="traceContains">+error: main: invalid index 4 in '1:array:point &lt;- put-index 1:array:point, 4, 8:point'</span>
 
 <span class="Delimiter">:(scenario put_index_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
@@ -488,7 +488,7 @@ def main [
   <span class="Constant">8</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Constant">1</span>:array:point<span class="Special"> &lt;- </span>put-index <span class="Constant">1</span>:array:point<span class="Delimiter">,</span> -<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">8</span>:point
 ]
-<span class="traceContains">+error: main: invalid index -1</span>
+<span class="traceContains">+error: main: invalid index -1 in '1:array:point &lt;- put-index 1:array:point, -1, 8:point'</span>
 
 <span class="Delimiter">:(scenario put_index_product_error)</span>
 <span class="Special">% Hide_errors = true;</span>

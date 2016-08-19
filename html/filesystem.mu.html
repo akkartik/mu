@@ -30,21 +30,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
+<span class="Comment"># example program: copy one file into another, character by character</span>
+<span class="Comment"># BEWARE: this will modify your file system</span>
+<span class="Comment"># before running it, put some text into /tmp/mu-x</span>
+<span class="Comment"># after running it, check /tmp/mu-y</span>
+
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
-  $print <span class="Constant">[file to read from: ]</span>, <span class="Constant">[/tmp/mu-fs]</span>
-  <span class="Comment"># initialize filesystem</span>
-  fs:address:filesystem<span class="Special"> &lt;- </span>copy <span class="Constant">0/real-filesystem</span>
-  content-source:address:source:character<span class="Special"> &lt;- </span>start-reading fs, <span class="Constant">[/tmp/mu-fs]</span>
-  <span class="Comment"># read from channel until exhausted and print out characters</span>
+  source-file:address:source:character<span class="Special"> &lt;- </span>start-reading <span class="Constant">0/real-filesystem</span>, <span class="Constant">[/tmp/mu-x]</span>
+  sink-file:address:sink:character, write-routine:number<span class="Special"> &lt;- </span>start-writing <span class="Constant">0/real-filesystem</span>, <span class="Constant">[/tmp/mu-y]</span>
   <span class="Delimiter">{</span>
-    c:character, done?:boolean, content-source<span class="Special"> &lt;- </span>read content-source
+    c:character, done?:boolean, source-file<span class="Special"> &lt;- </span>read source-file
     <span class="muControl">break-if</span> done?
-    $print <span class="Constant">[Next: ]</span>, c, <span class="Constant">10/newline</span>
+    eof?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">-1</span>
+    <span class="muControl">break-if</span> eof?
+    sink-file<span class="Special"> &lt;- </span>write sink-file, c
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  $print <span class="Constant">[Done reading]</span>, <span class="Constant">10/newline</span>
-  <span class="Comment"># TODO: writing to file</span>
+  close sink-file
+  <span class="Comment"># make sure to wait for the file to be actually written to disk</span>
+  <span class="Comment"># (Mu practices structured concurrency: <a href="http://250bpm.com/blog:71)">http://250bpm.com/blog:71)</a></span>
+  wait-for-routine write-routine
 ]
 </pre>
 </body>

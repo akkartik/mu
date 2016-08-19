@@ -41,15 +41,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> start-reading fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>contents:address:source:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  x:number/file<span class="Special"> &lt;- </span>$open-file-for-reading filename
+  file:number<span class="Special"> &lt;- </span>$open-file-for-reading filename
   contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-  $print <span class="Constant">[sink: ]</span>, sink, <span class="Constant">10/newline</span>
-  chan:address:channel:character<span class="Special"> &lt;- </span>get *sink, <span class="Constant">chan:offset</span>
-  $print <span class="Constant">[chan in start-reading: ]</span>, chan, <span class="Constant">10/newline</span>
-  start-running transmit x, sink
+  start-running transmit-from-file file, sink
 ]
 
-<span class="muRecipe">def</span> transmit file:number, sink:address:sink:character<span class="muRecipe"> -&gt; </span>file:number, sink:address:sink:character [
+<span class="muRecipe">def</span> transmit-from-file file:number, sink:address:sink:character<span class="muRecipe"> -&gt; </span>file:number, sink:address:sink:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -58,9 +55,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     sink<span class="Special"> &lt;- </span>write sink, c
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  $print <span class="Constant">[closing chan after reading file]</span>, <span class="Constant">10/newline</span>
   sink<span class="Special"> &lt;- </span>close sink
-  $print <span class="Constant">[returning from 'transmit']</span>, <span class="Constant">10/newline</span>
+  $close-file file
+]
+
+<span class="muRecipe">def</span> start-writing fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character, routine-id:number [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  file:number<span class="Special"> &lt;- </span>$open-file-for-writing filename
+  source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
+  routine-id<span class="Special"> &lt;- </span>start-running transmit-to-file file, source
+]
+
+<span class="muRecipe">def</span> transmit-to-file file:number, source:address:source:character<span class="muRecipe"> -&gt; </span>file:number, source:address:source:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Delimiter">{</span>
+    c:character, done?:boolean, source<span class="Special"> &lt;- </span>read source
+    <span class="muControl">break-if</span> done?
+    $write-to-file file, c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  $close-file file
 ]
 </pre>
 </body>
