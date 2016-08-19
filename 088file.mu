@@ -10,9 +10,6 @@ def start-reading fs:address:filesystem, filename:address:array:character -> con
   load-ingredients
   x:number/file <- $open-file-for-reading filename
   contents:address:source:character, sink:address:sink:character <- new-channel 30
-  $print [sink: ], sink, 10/newline
-  chan:address:channel:character <- get *sink, chan:offset
-  $print [chan in start-reading: ], chan, 10/newline
   start-running transmit x, sink
 ]
 
@@ -25,7 +22,5 @@ def transmit file:number, sink:address:sink:character -> file:number, sink:addre
     sink <- write sink, c
     loop
   }
-  $print [closing chan after reading file], 10/newline
   sink <- close sink
-  $print [returning from 'transmit'], 10/newline
 ]
