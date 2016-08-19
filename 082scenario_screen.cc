@@ -1,8 +1,8 @@
 //: Clean syntax to manipulate and check the screen in scenarios.
 //: Instructions 'assume-screen' and 'screen-should-contain' implicitly create
-//: a variable called 'screen' that is accessible inside other 'run'
-//: instructions in the scenario. 'screen-should-contain' can check unicode
-//: characters in the fake screen
+//: a variable called 'screen' that is accessible to later instructions in the
+//: scenario. 'screen-should-contain' can check unicode characters in the fake
+//: screen
 
 //: first make sure we don't mangle these functions in other transforms
 :(before "End initialize_transform_rewrite_literal_string_to_text()")
