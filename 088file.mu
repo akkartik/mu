@@ -8,12 +8,12 @@ container filesystem [
 def start-reading fs:address:filesystem, filename:address:array:character -> contents:address:source:character [
   local-scope
   load-ingredients
-  x:number/file <- $open-file-for-reading filename
+  file:number <- $open-file-for-reading filename
   contents:address:source:character, sink:address:sink:character <- new-channel 30
-  start-running transmit x, sink
+  start-running transmit-from-file file, sink
 ]
 
-def transmit file:number, sink:address:sink:character -> file:number, sink:address:sink:character [
+def transmit-from-file file:number, sink:address:sink:character -> file:number, sink:address:sink:character [
   local-scope
   load-ingredients
   {
@@ -23,4 +23,25 @@ def transmit file:number, sink:address:sink:character -> file:number, sink:addre
     loop
   }
   sink <- close sink
+  $close-file file
+]
+
+def start-writing fs:address:filesystem, filename:address:array:character -> sink:address:sink:character, routine-id:number [
+  local-scope
+  load-ingredients
+  file:number <- $open-file-for-writing filename
+  source:address:source:character, sink:address:sink:character <- new-channel 30
+  routine-id <- start-running transmit-to-file file, source
+]
+
+def transmit-to-file file:number, source:address:source:character -> file:number, source:address:source:character [
+  local-scope
+  load-ingredients
+  {
+    c:character, done?:boolean, source <- read source
+    break-if done?
+    $write-to-file file, c
+    loop
+  }
+  $close-file file
 ]

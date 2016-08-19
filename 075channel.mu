@@ -302,7 +302,6 @@ after <channel-write-initial> [
   closed?:boolean <- get *chan, closed?:offset
   return-if closed?
 ]
-
 after <channel-read-empty> [
   closed?:boolean <- get *chan, closed?:offset
   {
