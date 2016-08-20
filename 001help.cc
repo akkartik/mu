@@ -238,7 +238,7 @@ using std::cout;
 using std::cerr;
 #include <iomanip>
 
-#include <cstring>
+#include <string.h>
 #include <string>
 using std::string;
 
