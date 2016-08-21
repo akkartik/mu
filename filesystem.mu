@@ -10,8 +10,6 @@ def main [
   {
     c:character, done?:boolean, source-file <- read source-file
     break-if done?
-    eof?:boolean <- equal c, -1
-    break-if eof?
     sink-file <- write sink-file, c
     loop
   }

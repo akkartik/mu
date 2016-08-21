@@ -45,8 +45,8 @@ def transmit-from-file file:number, sink:address:sink:character -> sink:address:
   local-scope
   load-ingredients
   {
-    c:character <- $read-from-file file
-    break-unless c
+    c:character, eof?:boolean <- $read-from-file file
+    break-if eof?
     sink <- write sink, c
     loop
   }

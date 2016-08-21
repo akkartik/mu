@@ -92,12 +92,16 @@ case _READ_FROM_FILE: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
-  if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+  if (SIZE(inst.products) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly two products, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_character(inst.products.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first product of '$read-from-file' should be a character, but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+    break;
+  }
+  if (!is_mu_boolean(inst.products.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-file' should be a boolean, but got '" << to_string(inst.products.at(1)) << "'\n" << end();
     break;
   }
   break;
@@ -110,9 +114,10 @@ case _READ_FROM_FILE: {
     raise << maybe(current_recipe_name()) << "can't read from null file in '" << to_string(current_instruction()) << "'\n" << end();
     break;
   }
-  products.resize(1);
+  products.resize(2);
   if (feof(f)) {
     products.at(0).push_back(0);
+    products.at(1).push_back(1);  // eof
     break;
   }
   if (ferror(f)) {
@@ -120,12 +125,18 @@ case _READ_FROM_FILE: {
     break;
   }
   char c = getc(f);  // todo: unicode
+  if (c == EOF) {
+    products.at(0).push_back(0);
+    products.at(1).push_back(1);  // eof
+    break;
+  }
   if (ferror(f)) {
     raise << maybe(current_recipe_name()) << "couldn't read from file in '" << to_string(current_instruction()) << "'\n" << end();
     raise << "  errno: " << errno << '\n' << end();
     break;
   }
   products.at(0).push_back(c);
+  products.at(1).push_back(0);  // not eof
   break;
 }
 :(before "End Includes")
