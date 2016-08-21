@@ -98,7 +98,7 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Normal">char</span> c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      out &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
+      slurp_one_past_backslashes<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     out &lt;&lt; c<span class="Delimiter">;</span>
@@ -117,7 +117,7 @@ string slurp_quoted<span class="Delimiter">(</span>istream&amp; in<span class="D
   <span class="Normal">char</span> c<span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      out &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>in<span class="Delimiter">.</span>get<span class="Delimiter">());</span>
+      slurp_one_past_backslashes<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'#'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -179,6 +179,28 @@ string emit_literal_string<span class="Delimiter">(</span>string name<span class
   <span class="Normal">if</span> <span class="Delimiter">(</span>!s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> s<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>s<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Normal">void</span> slurp_one_past_backslashes<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// When you encounter a backslash, strip it out and pass through any</span>
+  <span class="Comment">// following run of backslashes. If we 'escaped' a single following</span>
+  <span class="Comment">// character, then the character '\' would be:</span>
+  <span class="Comment">//   '\\' escaped once</span>
+  <span class="Comment">//   '\\\\' escaped twice</span>
+  <span class="Comment">//   '\\\\\\\\' escaped thrice (8 backslashes)</span>
+  <span class="Comment">// ..and so on. With our approach it'll be:</span>
+  <span class="Comment">//   '\\' escaped once</span>
+  <span class="Comment">//   '\\\' escaped twice</span>
+  <span class="Comment">//   '\\\\' escaped thrice</span>
+  <span class="Comment">// This only works as long as backslashes aren't also overloaded to create</span>
+  <span class="Comment">// special characters. So Mu doesn't follow C's approach of overloading</span>
+  <span class="Comment">// backslashes both to escape quote characters and also as a notation for</span>
+  <span class="Comment">// unprintable characters like '\n'.</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">char</span> c = in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    out &lt;&lt; c<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>c != <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(scenario string_literal_nested)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
@@ -191,10 +213,10 @@ def main [
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc [def&quot;: &quot;literal-string&quot;}</span>
 
-<span class="Delimiter">:(scenario string_literal_escaped_comment_aware)</span>
+<span class="Delimiter">:(scenario string_literal_escaped_twice)</span>
 def main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [
-abc \\\[def]
+abc \\[def]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;\nabc \[def&quot;: &quot;literal-string&quot;}</span>
 

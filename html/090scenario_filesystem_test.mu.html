@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 090scenario_filesystem_test.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muScenario { color: #00af00; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Check our support for fake file systems in scenarios.</span>
+
+<span class="muScenario">scenario</span> read-from-fake-file [
+  <span class="Constant">local-scope</span>
+  assume-filesystem [
+    <span class="Constant">[a]</span><span class="Special"> &lt;- </span>[
+<span class="Constant">      |xyz|</span>
+    ]
+  ]
+  contents:address:source:character<span class="Special"> &lt;- </span>start-reading filesystem:address:filesystem, <span class="Constant">[a]</span>
+  <span class="Constant">1</span>:character/<span class="Special">raw &lt;- </span>read contents
+  <span class="Constant">2</span>:character/<span class="Special">raw &lt;- </span>read contents
+  <span class="Constant">3</span>:character/<span class="Special">raw &lt;- </span>read contents
+  <span class="Constant">4</span>:character/<span class="Special">raw &lt;- </span>read contents
+  _, <span class="Constant">5</span>:boolean/<span class="Special">raw &lt;- </span>read contents
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">120</span>  <span class="Comment"># x</span>
+    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">121</span>  <span class="Comment"># y</span>
+    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">122</span>  <span class="Comment"># z</span>
+    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">10</span>  <span class="Comment"># newline</span>
+    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># eof</span>
+  ]
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

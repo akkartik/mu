@@ -15,10 +15,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
-.Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.Special { color: #c00000; }
+.Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
+.Special { color: #c00000; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -35,18 +35,46 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># are thus easier to test.</span>
 
 <span class="muData">container</span> filesystem [
-  <span class="Delimiter">{</span>data: (address table (address array character) (address array character))<span class="Delimiter">}</span>
+  data:address:array:file-mapping
+]
+
+<span class="muData">container</span> file-mapping [
+  name:address:array:character
+  contents:address:array:character
 ]
 
 <span class="muRecipe">def</span> start-reading fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>contents:address:source:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  file:number<span class="Special"> &lt;- </span>$open-file-for-reading filename
-  contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-  start-running transmit-from-file file, sink
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> fs
+    <span class="Comment"># real file-system</span>
+    file:number<span class="Special"> &lt;- </span>$open-file-for-reading filename
+    assert file, <span class="Constant">[file not found]</span>
+    contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
+    start-running transmit-from-file file, sink
+    <span class="muControl">return</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># fake file system</span>
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  data:address:array:file-mapping<span class="Special"> &lt;- </span>get *fs, <span class="Constant">data:offset</span>
+  len:number<span class="Special"> &lt;- </span>length *data
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    tmp:file-mapping<span class="Special"> &lt;- </span>index *data, i
+    curr-filename:address:array:character<span class="Special"> &lt;- </span>get tmp, <span class="Constant">name:offset</span>
+    found?:boolean<span class="Special"> &lt;- </span>equal filename, curr-filename
+    <span class="muControl">loop-unless</span> found?
+    contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
+    curr-contents:address:array:character<span class="Special"> &lt;- </span>get tmp, <span class="Constant">contents:offset</span>
+    start-running transmit-from-text curr-contents, sink
+    <span class="muControl">return</span>
+  <span class="Delimiter">}</span>
+  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
 ]
 
-<span class="muRecipe">def</span> transmit-from-file file:number, sink:address:sink:character<span class="muRecipe"> -&gt; </span>file:number, sink:address:sink:character [
+<span class="muRecipe">def</span> transmit-from-file file:number, sink:address:sink:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -57,6 +85,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   sink<span class="Special"> &lt;- </span>close sink
   $close-file file
+]
+
+<span class="muRecipe">def</span> transmit-from-text contents:address:array:character, sink:address:sink:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  len:number<span class="Special"> &lt;- </span>length *contents
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    c:character<span class="Special"> &lt;- </span>index *contents, i
+    sink<span class="Special"> &lt;- </span>write sink, c
+    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  sink<span class="Special"> &lt;- </span>close sink
 ]
 
 <span class="muRecipe">def</span> start-writing fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character, routine-id:number [
