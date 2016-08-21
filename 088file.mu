@@ -51,7 +51,7 @@ def transmit-from-file file:number, sink:address:sink:character -> sink:address:
     loop
   }
   sink <- close sink
-  $close-file file
+  file <- $close-file file
 ]
 
 def transmit-from-text contents:address:array:character, sink:address:sink:character -> sink:address:sink:character [
@@ -87,5 +87,5 @@ def transmit-to-file file:number, source:address:source:character -> file:number
     $write-to-file file, c
     loop
   }
-  $close-file file
+  file <- $close-file file
 ]

@@ -23,6 +23,14 @@ case _OPEN_FILE_FOR_READING: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-reading' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of '$open-file-for-reading' should be a number (file handle), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -50,6 +58,14 @@ case _OPEN_FILE_FOR_WRITING: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-writing' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of '$open-file-for-writing' should be a number (file handle), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -74,6 +90,14 @@ case _READ_FROM_FILE: {
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    break;
+  }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_character(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of '$read-from-file' should be a character, but got '" << to_string(inst.products.at(0)) << "'\n" << end();
     break;
   }
   break;
@@ -125,6 +149,10 @@ case _WRITE_TO_FILE: {
     raise << maybe(get(Recipe, r).name) << "second ingredient of '$write-to-file' should be a character, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
+  if (!inst.products.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'$write-to-file' writes to no products, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -163,6 +191,14 @@ case _CLOSE_FILE: {
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    break;
+  }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (inst.products.at(0).name != inst.ingredients.at(0).name) {
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires its product to be the same as its ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   break;
