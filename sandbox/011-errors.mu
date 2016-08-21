@@ -622,6 +622,7 @@ return b
     .0   edit           copy           delete          .
     .foo 4, 0                                          .
     .dividing by 0                                     .
+    .14 instructions run                               .
     .foo: divide by zero in '_, c:number <- divide-wit↩.
     .h-remainder a, b'                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.

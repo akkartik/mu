@@ -36,6 +36,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .0   edit           copy           delete          .
     .stash [abc]                                       .
     .abc                                               .
+    .6 instructions run                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -46,6 +47,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .                                                  .
     .                                                  .
     .abc                                               .
+    .6 instructions run                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -107,9 +109,9 @@ add 2, 2]
     .stash [abc]                                       .
     .add 2, 2                                          .
     .abc                                               .
+    .7 instructions run                                .
     .4                                                 .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
 ]
 
@@ -131,6 +133,7 @@ scenario clicking-on-app-trace-does-nothing [
     .0   edit           copy           delete          .
     .stash 123456789                                   .
     .123456789                                         .
+    .6 instructions run                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -149,6 +152,7 @@ scenario clicking-on-app-trace-does-nothing [
     .0   edit           copy           delete          .
     .stash 123456789                                   .
     .123456789                                         .
+    .6 instructions run                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
