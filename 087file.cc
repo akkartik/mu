@@ -19,7 +19,6 @@ case _OPEN_FILE_FOR_READING: {
     raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  string filename;
   if (!is_mu_string(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-reading' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
@@ -47,7 +46,6 @@ case _OPEN_FILE_FOR_WRITING: {
     raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  string filename;
   if (!is_mu_string(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-writing' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
@@ -74,7 +72,6 @@ case _READ_FROM_FILE: {
     raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
@@ -120,7 +117,6 @@ case _WRITE_TO_FILE: {
     raise << maybe(get(Recipe, r).name) << "'$write-to-file' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$write-to-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
@@ -165,7 +161,6 @@ case _CLOSE_FILE: {
     raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  string filename;
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-file' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
