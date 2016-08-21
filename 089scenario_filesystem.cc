@@ -49,6 +49,33 @@ de f
   ]
 ]
 
+:(scenario escaping_file_contents)
+scenario assume-filesystem [
+  local-scope
+  assume-filesystem [
+    # file 'a' containing a '|'
+    # ugly as hell that this requires 8 (!) backslashes for 3 '[' block escapes
+    # todo: use Sam Putman's idea to change the delimitors for the '[' blocks
+    # to:
+    #   [''[ ... ['[ ... [ ... ] ... ]'] ... ]'']
+    # That way we'd need just a single backslash -- to escape the |...| environment.
+    [a] <- [
+      |x\\\\\\\\|yz|
+    ]
+  ]
+  data:address:array:file-mapping <- get *filesystem:address:filesystem, data:offset
+  file1:file-mapping <- index *data, 0
+  file1-name:address:array:character <- get file1, name:offset
+  10:array:character/raw <- copy *file1-name
+  file1-contents:address:array:character <- get file1, contents:offset
+  20:array:character/raw <- copy *file1-contents
+  memory-should-contain [
+    10:array:character <- [a]
+    20:array:character <- [x|yz
+]
+  ]
+]
+
 :(before "End Globals")
 const int FILESYSTEM = Next_predefined_global_for_scenarios++;
 //: give 'filesystem' a fixed location in scenarios
@@ -148,8 +175,14 @@ string munge_filesystem_contents(const string& data, const string& filename, con
     string line;
     getline(in, line);
     for (int i = 0; i < SIZE(line); ++i) {
-      // todo: handle escaped '|'
       if (line.at(i) == '|') break;
+      if (line.at(i) == '\\') {
+        ++i;  // skip
+        if (i == SIZE(line)) {
+          raise << caller << ": assume-filesystem: file contents can't end a line with '\\'\n" << end();
+          break;
+        }
+      }
       out << line.at(i);
     }
     // todo: some way to represent a file without a final newline
