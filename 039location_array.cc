@@ -24,7 +24,7 @@ bool is_address_of_array_of_numbers(reagent/*copy*/ product) {
 :(before "End Primitive Recipe Implementations")
 case TO_LOCATION_ARRAY: {
   int array_size = SIZE(ingredients.at(0));
-  int allocation_size = array_size + /*refcount*/1 + /*length*/1;
+  int allocation_size = array_size + /*refcount and length*/2;
   ensure_space(allocation_size);
   const int result = Current_routine->alloc;
   products.resize(1);

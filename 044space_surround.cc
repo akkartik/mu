@@ -21,11 +21,11 @@ def main [
 ]
 def dummy [  # just for the /names: property above
 ]
-# chain space: 10 + /*skip refcount*/1 + /*skip length*/1
+# chain space: 10 + (refcount and length) 2
 +mem: storing 20 in location 12
-# store to default space: 10 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1
+# store to default space: 10 + (skip refcount and length) 2 + (index) 1
 +mem: storing 32 in location 13
-# store to chained space: /*contents of location 12*/20 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1
+# store to chained space: (contents of location 12) 20 + (refcount and length) 2 + (index) 1
 +mem: storing 33 in location 23
 
 :(before "End Checks For Reclaiming Locals")

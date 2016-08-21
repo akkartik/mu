@@ -38,7 +38,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
     assert(element.type->name != "array");
     int element_size = size_of(element);
     for (int i = 0; i < array_length; ++i) {
-      element.set_value(address + /*skip refcount*/1 + /*skip array length*/1 + i*element_size);
+      element.set_value(address + /*skip refcount and length*/2 + i*element_size);
       decrement_any_refcounts(element);
     }
   }

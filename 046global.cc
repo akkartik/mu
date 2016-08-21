@@ -23,9 +23,9 @@ def main [
   1:number <- copy 23
   1:number/space:global <- copy 24
 ]
-# store to default space: 10 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1
+# store to default space: 10 + (skip refcount and length) 2 + (index) 1
 +mem: storing 23 in location 13
-# store to chained space: /*contents of location 12*/20 + /*skip refcount*/1 + /*skip length*/1 + /*index*/1
+# store to chained space: (contents of location 12) 20 + (refcount and length) 2 + (index) 1
 +mem: storing 24 in location 23
 
 //: to support it, create another special variable called global space

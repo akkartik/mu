@@ -58,7 +58,7 @@ case ASSUME_CONSOLE: {
   slurp_body(in, r);
   int num_events = count_events(r);
   // initialize the events like in new-fake-console
-  int size = /*space for refcount*/1 + /*space for length*/1 + num_events*size_of_event();
+  int size = /*space for refcount and length*/2 + num_events*size_of_event();
   ensure_space(size);
   int event_data_address = Current_routine->alloc;
   // store length
@@ -69,9 +69,9 @@ case ASSUME_CONSOLE: {
     if (curr.name == "left-click") {
       trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
       put(Memory, Current_routine->alloc, /*tag for 'touch-event' variant of 'event' exclusive-container*/2);
-      put(Memory, Current_routine->alloc+1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
-      put(Memory, Current_routine->alloc+1+/*offset of 'row' in 'mouse-event'*/1, to_integer(curr.ingredients.at(0).name));
-      put(Memory, Current_routine->alloc+1+/*offset of 'column' in 'mouse-event'*/2, to_integer(curr.ingredients.at(1).name));
+      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
+      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(curr.ingredients.at(0).name));
+      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'column' in 'mouse-event'*/2, to_integer(curr.ingredients.at(1).name));
       Current_routine->alloc += size_of_event();
     }
     else if (curr.name == "press") {

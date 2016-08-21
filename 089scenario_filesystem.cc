@@ -189,7 +189,7 @@ string munge_filesystem_contents(const string& data, const string& filename, con
 
 void construct_filesystem_object(const map<string, string>& contents) {
   int filesystem_data_address = allocate(SIZE(contents)*2 + /*array length*/1);
-  int curr = filesystem_data_address + /*skip refcount*/1 + /*skip array length*/1;
+  int curr = filesystem_data_address + /*skip refcount and length*/2;
   for (map<string, string>::const_iterator p = contents.begin(); p != contents.end(); ++p) {
     put(Memory, curr, new_mu_string(p->first));
     curr++;
