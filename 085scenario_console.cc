@@ -65,18 +65,18 @@ case ASSUME_CONSOLE: {
   put(Memory, Current_routine->alloc+/*skip refcount*/1, num_events);
   Current_routine->alloc += /*skip refcount and length*/2;
   for (int i = 0; i < SIZE(r.steps); ++i) {
-    const instruction& curr = r.steps.at(i);
-    if (curr.name == "left-click") {
+    const instruction& inst = r.steps.at(i);
+    if (inst.name == "left-click") {
       trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
       put(Memory, Current_routine->alloc, /*tag for 'touch-event' variant of 'event' exclusive-container*/2);
       put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
-      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(curr.ingredients.at(0).name));
-      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'column' in 'mouse-event'*/2, to_integer(curr.ingredients.at(1).name));
+      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(inst.ingredients.at(0).name));
+      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'column' in 'mouse-event'*/2, to_integer(inst.ingredients.at(1).name));
       Current_routine->alloc += size_of_event();
     }
-    else if (curr.name == "press") {
+    else if (inst.name == "press") {
       trace(9999, "mem") << "storing 'press' event starting at " << Current_routine->alloc << end();
-      string key = curr.ingredients.at(0).name;
+      string key = inst.ingredients.at(0).name;
       if (is_integer(key))
         put(Memory, Current_routine->alloc+1, to_integer(key));
       else if (contains_key(Key, key))
@@ -95,9 +95,9 @@ case ASSUME_CONSOLE: {
     // End Event Handlers
     else {
       // keyboard input
-      assert(curr.name == "type");
+      assert(inst.name == "type");
       trace(9999, "mem") << "storing 'type' event starting at " << Current_routine->alloc << end();
-      const string& contents = curr.ingredients.at(0).name;
+      const string& contents = inst.ingredients.at(0).name;
       const char* raw_contents = contents.c_str();
       int num_keyboard_events = unicode_length(contents);
       int curr = 0;
