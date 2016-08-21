@@ -35,10 +35,10 @@ scenario keyboard-in-scenario [
 
 :(before "End Scenario Globals")
 const int CONSOLE = Next_predefined_global_for_scenarios++;
+//: give 'console' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["console"] = CONSOLE;
-
-//: allow naming just for 'console'
+//: make 'console' always a raw location in scenarios
 :(before "End is_special_name Cases")
 if (s == "console") return true;
 

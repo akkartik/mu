@@ -116,10 +116,6 @@ scenario screen-in-scenario-color [
 ]
 +error: expected screen location (0, 0) to be in color 2 instead of 1
 
-//: allow naming just for 'screen'
-:(before "End is_special_name Cases")
-if (s == "screen") return true;
-
 :(scenarios run)
 :(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
 % Scenario_testing_scenario = true;
@@ -148,8 +144,13 @@ assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 // Scenario Globals.
 const int SCREEN = Next_predefined_global_for_scenarios++;
 // End Scenario Globals.
+
+//: give 'screen' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["screen"] = SCREEN;
+//: make 'screen' always a raw location in scenarios
+:(before "End is_special_name Cases")
+if (s == "screen") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `assume-screen width, height` to

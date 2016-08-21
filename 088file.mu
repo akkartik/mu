@@ -2,7 +2,12 @@
 # are thus easier to test.
 
 container filesystem [
-  {data: (address table (address array character) (address array character))}
+  data:address:array:file-mapping
+]
+
+container file-mapping [
+  name:address:array:character
+  contents:address:array:character
 ]
 
 def start-reading fs:address:filesystem, filename:address:array:character -> contents:address:source:character [
