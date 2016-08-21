@@ -64,7 +64,7 @@ void slurp_quoted_comment_oblivious(istream& in, ostream& out) {
   while (has_data(in)) {
     char c = in.get();
     if (c == '\\') {
-      out << static_cast<char>(in.get());
+      slurp_one_past_backslashes(in, out);
       continue;
     }
     out << c;
@@ -83,7 +83,7 @@ void slurp_quoted_comment_aware(istream& in, ostream& out) {
   char c;
   while (in >> c) {
     if (c == '\\') {
-      out << static_cast<char>(in.get());
+      slurp_one_past_backslashes(in, out);
       continue;
     }
     if (c == '#') {
@@ -145,6 +145,28 @@ void strip_last(string& s) {
   if (!s.empty()) s.erase(SIZE(s)-1);
 }
 
+void slurp_one_past_backslashes(istream& in, ostream& out) {
+  // When you encounter a backslash, strip it out and pass through any
+  // following run of backslashes. If we 'escaped' a single following
+  // character, then the character '\' would be:
+  //   '\\' escaped once
+  //   '\\\\' escaped twice
+  //   '\\\\\\\\' escaped thrice (8 backslashes)
+  // ..and so on. With our approach it'll be:
+  //   '\\' escaped once
+  //   '\\\' escaped twice
+  //   '\\\\' escaped thrice
+  // This only works as long as backslashes aren't also overloaded to create
+  // special characters. So Mu doesn't follow C's approach of overloading
+  // backslashes both to escape quote characters and also as a notation for
+  // unprintable characters like '\n'.
+  while (has_data(in)) {
+    char c = in.get();
+    out << c;
+    if (c != '\\') break;
+  }
+}
+
 :(scenario string_literal_nested)
 def main [
   1:address:array:character <- copy [abc [def]]
@@ -157,10 +179,10 @@ def main [
 ]
 +parse:   ingredient: {"abc [def": "literal-string"}
 
-:(scenario string_literal_escaped_comment_aware)
+:(scenario string_literal_escaped_twice)
 def main [
   1:address:array:character <- copy [
-abc \\\[def]
+abc \\[def]
 ]
 +parse:   ingredient: {"\nabc \[def": "literal-string"}
 

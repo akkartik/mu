@@ -54,13 +54,9 @@ scenario assume-filesystem [
   local-scope
   assume-filesystem [
     # file 'a' containing a '|'
-    # ugly as hell that this requires 8 (!) backslashes for 3 '[' block escapes
-    # todo: use Sam Putman's idea to change the delimitors for the '[' blocks
-    # to:
-    #   [''[ ... ['[ ... [ ... ] ... ]'] ... ]'']
-    # That way we'd need just a single backslash -- to escape the |...| environment.
+    # need to escape '\' once for each block
     [a] <- [
-      |x\\\\\\\\|yz|
+      |x\\\\|yz|
     ]
   ]
   data:address:array:file-mapping <- get *filesystem:address:filesystem, data:offset

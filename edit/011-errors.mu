@@ -377,10 +377,9 @@ scenario run-shows-unbalanced-bracket-errors [
   assume-screen 100/width, 15/height
   # recipe is incomplete (unbalanced '[')
   1:address:array:character <- new [ 
-recipe foo «
+recipe foo \\[
   x <- copy 0
 ]
-  replace 1:address:array:character, 171/«, 91  # '['
   2:address:array:character <- new [foo]
   3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
   assume-console [
@@ -392,10 +391,10 @@ recipe foo «
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
-    .recipe foo \\\[                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .recipe foo \\[                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .  x <- copy 0                                     ┊                                                 .
     .                                                  ┊                                                 .
-    .9: unbalanced '\\\[' for recipe                      ┊                                                 .
+    .9: unbalanced '\\[' for recipe                      ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
