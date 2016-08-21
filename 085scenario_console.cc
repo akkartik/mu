@@ -59,69 +59,66 @@ case ASSUME_CONSOLE: {
   int num_events = count_events(r);
   // initialize the events like in new-fake-console
   int size = /*space for refcount and length*/2 + num_events*size_of_event();
-  ensure_space(size);
-  int event_data_address = Current_routine->alloc;
+  int event_data_address = allocate(size);
   // store length
-  put(Memory, Current_routine->alloc+/*skip refcount*/1, num_events);
-  Current_routine->alloc += /*skip refcount and length*/2;
+  put(Memory, event_data_address+/*skip refcount*/1, num_events);
+  int curr_address = event_data_address + /*skip refcount and length*/2;
   for (int i = 0; i < SIZE(r.steps); ++i) {
     const instruction& inst = r.steps.at(i);
     if (inst.name == "left-click") {
       trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
-      put(Memory, Current_routine->alloc, /*tag for 'touch-event' variant of 'event' exclusive-container*/2);
-      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
-      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(inst.ingredients.at(0).name));
-      put(Memory, Current_routine->alloc+/*skip tag*/1+/*offset of 'column' in 'mouse-event'*/2, to_integer(inst.ingredients.at(1).name));
-      Current_routine->alloc += size_of_event();
+      put(Memory, curr_address, /*tag for 'touch-event' variant of 'event' exclusive-container*/2);
+      put(Memory, curr_address+/*skip tag*/1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
+      put(Memory, curr_address+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(inst.ingredients.at(0).name));
+      put(Memory, curr_address+/*skip tag*/1+/*offset of 'column' in 'mouse-event'*/2, to_integer(inst.ingredients.at(1).name));
+      curr_address += size_of_event();
     }
     else if (inst.name == "press") {
-      trace(9999, "mem") << "storing 'press' event starting at " << Current_routine->alloc << end();
+      trace(9999, "mem") << "storing 'press' event starting at " << curr_address << end();
       string key = inst.ingredients.at(0).name;
       if (is_integer(key))
-        put(Memory, Current_routine->alloc+1, to_integer(key));
+        put(Memory, curr_address+1, to_integer(key));
       else if (contains_key(Key, key))
-        put(Memory, Current_routine->alloc+1, Key[key]);
+        put(Memory, curr_address+1, Key[key]);
       else
         raise << "assume-console: can't press '" << key << "'\n" << end();
-      if (get_or_insert(Memory, Current_routine->alloc+1) < 256)
+      if (get_or_insert(Memory, curr_address+1) < 256)
         // these keys are in ascii
-        put(Memory, Current_routine->alloc, /*tag for 'text' variant of 'event' exclusive-container*/0);
+        put(Memory, curr_address, /*tag for 'text' variant of 'event' exclusive-container*/0);
       else {
         // distinguish from unicode
-        put(Memory, Current_routine->alloc, /*tag for 'keycode' variant of 'event' exclusive-container*/1);
+        put(Memory, curr_address, /*tag for 'keycode' variant of 'event' exclusive-container*/1);
       }
-      Current_routine->alloc += size_of_event();
+      curr_address += size_of_event();
     }
     // End Event Handlers
     else {
       // keyboard input
       assert(inst.name == "type");
-      trace(9999, "mem") << "storing 'type' event starting at " << Current_routine->alloc << end();
+      trace(9999, "mem") << "storing 'type' event starting at " << curr_address << end();
       const string& contents = inst.ingredients.at(0).name;
       const char* raw_contents = contents.c_str();
       int num_keyboard_events = unicode_length(contents);
       int curr = 0;
       for (int i = 0; i < num_keyboard_events; ++i) {
-        trace(9999, "mem") << "storing 'text' tag at " << Current_routine->alloc << end();
-        put(Memory, Current_routine->alloc, /*tag for 'text' variant of 'event' exclusive-container*/0);
+        trace(9999, "mem") << "storing 'text' tag at " << curr_address << end();
+        put(Memory, curr_address, /*tag for 'text' variant of 'event' exclusive-container*/0);
         uint32_t curr_character;
         assert(curr < SIZE(contents));
         tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-        trace(9999, "mem") << "storing character " << curr_character << " at " << Current_routine->alloc+1 << end();
-        put(Memory, Current_routine->alloc+/*skip exclusive container tag*/1, curr_character);
+        trace(9999, "mem") << "storing character " << curr_character << " at " << curr_address+/*skip exclusive container tag*/1 << end();
+        put(Memory, curr_address+/*skip exclusive container tag*/1, curr_character);
         curr += tb_utf8_char_length(raw_contents[curr]);
-        Current_routine->alloc += size_of_event();
+        curr_address += size_of_event();
       }
     }
   }
-  assert(Current_routine->alloc == event_data_address+size);
+  assert(curr_address == event_data_address+size);
   // wrap the array of events in a console object
-  ensure_space(size_of_console());
-  put(Memory, CONSOLE, Current_routine->alloc);
-  trace(9999, "mem") << "storing console in " << Current_routine->alloc << end();
-  Current_routine->alloc += size_of_console();
-  int console_address = get_or_insert(Memory, CONSOLE);
-  trace(9999, "mem") << "storing console data in " << console_address+2 << end();
+  int console_address = allocate(size_of_console());
+  trace(9999, "mem") << "storing console in " << console_address << end();
+  put(Memory, CONSOLE, console_address);
+  trace(9999, "mem") << "storing console data in " << console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1 << end();
   put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
   // increment refcount for event data
   put(Memory, event_data_address, 1);
