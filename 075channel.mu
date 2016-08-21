@@ -67,6 +67,7 @@ def new-channel capacity:number -> in:address:source:_elem, out:address:sink:_el
 def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   local-scope
   load-ingredients
+  assert out, [write to null channel]
   chan:address:channel:_elem <- get *out, chan:offset
   <channel-write-initial>
   {
@@ -97,6 +98,7 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
 def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:source:_elem [
   local-scope
   load-ingredients
+  assert in, [read on null channel]
   eof? <- copy 0/false  # default result
   chan:address:channel:_elem <- get *in, chan:offset
   {
