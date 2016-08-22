@@ -152,12 +152,13 @@ struct trace_stream {
 
 
 trace_stream* Trace_stream = NULL;
+int Trace_errors = 0;  // used only when Trace_stream is NULL
 
 // Top-level helper. IMPORTANT: can't nest
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 
 // Errors are a special layer.
-#define raise  (!Trace_stream ? (tb_shutdown(),cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define raise  (!Trace_stream ? (tb_shutdown(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.
 :(before "End Test Teardown")

@@ -162,6 +162,7 @@ if (argc > 1) {
 transform_all();
 //? DUMP("");
 //? exit(0);
+if (Trace_errors) return 1;
 save_snapshots();
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
