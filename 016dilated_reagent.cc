@@ -53,19 +53,12 @@ bool start_of_dilated_reagent(istream& in) {
 
 // Assume the first letter is an open bracket, and read everything until the
 // matching close bracket.
-// We balance {} () and []. And we skip one character after '\'.
+// We balance {} () and [].
 string slurp_balanced_bracket(istream& in) {
   ostringstream result;
   char c;
   list<char> open_brackets;
   while (in >> c) {
-    if (c == '\\') {
-      // always silently skip the next character
-      result << c;
-      if (!(in >> c)) break;
-      result << c;
-      continue;
-    }
     if (c == '(') open_brackets.push_back(c);
     if (c == ')') {
       assert(open_brackets.back() == '(');
