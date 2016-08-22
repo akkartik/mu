@@ -61,17 +61,27 @@ string slurp_balanced_bracket(istream& in) {
   while (in >> c) {
     if (c == '(') open_brackets.push_back(c);
     if (c == ')') {
+      if (open_brackets.empty() || open_brackets.back() != '(') {
+        raise << "unbalanced ')'\n" << end();
+        continue;
+      }
       assert(open_brackets.back() == '(');
       open_brackets.pop_back();
     }
     if (c == '[') open_brackets.push_back(c);
     if (c == ']') {
-      assert(open_brackets.back() == '[');
+      if (open_brackets.empty() || open_brackets.back() != '[') {
+        raise << "unbalanced ']'\n" << end();
+        continue;
+      }
       open_brackets.pop_back();
     }
     if (c == '{') open_brackets.push_back(c);
     if (c == '}') {
-      assert(open_brackets.back() == '{');
+      if (open_brackets.empty() || open_brackets.back() != '{') {
+        raise << "unbalanced '}'\n" << end();
+        continue;
+      }
       open_brackets.pop_back();
     }
     result << c;
