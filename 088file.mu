@@ -1,4 +1,4 @@
-# Wrappers around file-system primitives that take a 'filesystem' object and
+# Wrappers around file system primitives that take a 'filesystem' object and
 # are thus easier to test.
 
 container filesystem [
@@ -15,7 +15,7 @@ def start-reading fs:address:filesystem, filename:address:array:character -> con
   load-ingredients
   {
     break-if fs
-    # real file-system
+    # real file system
     file:number <- $open-file-for-reading filename
     assert file, [file not found]
     contents:address:source:character, sink:address:sink:character <- new-channel 30
