@@ -176,9 +176,9 @@ void run_mu_scenario(const scenario& s) {
   run(tmp.front());
   if (!Hide_errors && trace_count("error") > 0)
     Passed = false;
+  // End Mu Test Teardown
   if (!Passed)
     ++Num_failures;
-  // End Mu Test Teardown
   if (not_already_inside_test && Trace_stream) {
     teardown();
     if (Save_trace) {
