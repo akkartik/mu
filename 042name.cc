@@ -49,41 +49,43 @@ void transform_names(const recipe_ordinal r) {
     // End transform_names(inst) Special-cases
     // map names to addresses
     for (int in = 0; in < SIZE(inst.ingredients); ++in) {
-      if (is_disqualified(inst.ingredients.at(in), inst, caller.name)) continue;
-      if (is_numeric_location(inst.ingredients.at(in))) numeric_locations_used = true;
-      if (is_named_location(inst.ingredients.at(in))) names_used = true;
-      if (is_integer(inst.ingredients.at(in).name)) continue;
-      if (!already_transformed(inst.ingredients.at(in), names)) {
-        raise << maybe(caller.name) << "use before set: '" << inst.ingredients.at(in).name << "'\n" << end();
+      reagent& ingredient = inst.ingredients.at(in);
+      if (is_disqualified(ingredient, inst, caller.name)) continue;
+      if (is_numeric_location(ingredient)) numeric_locations_used = true;
+      if (is_named_location(ingredient)) names_used = true;
+      if (is_integer(ingredient.name)) continue;
+      if (!already_transformed(ingredient, names)) {
+        raise << maybe(caller.name) << "use before set: '" << ingredient.name << "'\n" << end();
         return;
       }
-      int v = lookup_name(inst.ingredients.at(in), r);
+      int v = lookup_name(ingredient, r);
       if (v >= 0) {
-        inst.ingredients.at(in).set_value(v);
-        // Done Placing Ingredient(inst, in, caller)
+        ingredient.set_value(v);
+        // Done Placing Ingredient(ingredient, inst, caller)
       }
       else {
-        raise << maybe(caller.name) << "can't find a place to store '" << inst.ingredients.at(in).name << "'\n" << end();
+        raise << maybe(caller.name) << "can't find a place to store '" << ingredient.name << "'\n" << end();
         return;
       }
     }
     for (int out = 0; out < SIZE(inst.products); ++out) {
-      if (is_disqualified(inst.products.at(out), inst, caller.name)) continue;
-      if (is_numeric_location(inst.products.at(out))) numeric_locations_used = true;
-      if (is_named_location(inst.products.at(out))) names_used = true;
-      if (is_integer(inst.products.at(out).name)) continue;
-      if (names.find(inst.products.at(out).name) == names.end()) {
-        trace(9993, "name") << "assign " << inst.products.at(out).name << " " << curr_idx << end();
-        names[inst.products.at(out).name] = curr_idx;
-        curr_idx += size_of(inst.products.at(out));
+      reagent& product = inst.products.at(out);
+      if (is_disqualified(product, inst, caller.name)) continue;
+      if (is_numeric_location(product)) numeric_locations_used = true;
+      if (is_named_location(product)) names_used = true;
+      if (is_integer(product.name)) continue;
+      if (names.find(product.name) == names.end()) {
+        trace(9993, "name") << "assign " << product.name << " " << curr_idx << end();
+        names[product.name] = curr_idx;
+        curr_idx += size_of(product);
       }
-      int v = lookup_name(inst.products.at(out), r);
+      int v = lookup_name(product, r);
       if (v >= 0) {
-        inst.products.at(out).set_value(v);
-        // Done Placing Product(inst, out, caller)
+        product.set_value(v);
+        // Done Placing Product(product, inst, caller)
       }
       else {
-        raise << maybe(caller.name) << "can't find a place to store '" << inst.products.at(out).name << "'\n" << end();
+        raise << maybe(caller.name) << "can't find a place to store '" << product.name << "'\n" << end();
         return;
       }
     }

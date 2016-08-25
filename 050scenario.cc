@@ -199,10 +199,10 @@ void bind_special_scenario_names(recipe_ordinal r) {
   // Special Scenario Variable Names(r)
   // End Special Scenario Variable Names(r)
 }
-:(before "Done Placing Ingredient(inst, in, caller)")
-maybe_make_raw(inst.ingredients.at(in), caller);
-:(before "Done Placing Product(inst, out, caller)")
-maybe_make_raw(inst.products.at(out), caller);
+:(before "Done Placing Ingredient(ingredient, inst, caller)")
+maybe_make_raw(ingredient, caller);
+:(before "Done Placing Product(product, inst, caller)")
+maybe_make_raw(product, caller);
 :(code)
 void maybe_make_raw(reagent& r, const recipe& caller) {
   if (!is_special_name(r.name)) return;
