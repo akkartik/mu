@@ -230,7 +230,7 @@ void load_file_or_directory(string filename) {
   }
   ifstream fin(filename.c_str());
   if (!fin) {
-    raise << "no such file '" << filename << "'\n" << end();
+    cerr << "no such file '" << filename << "'\n" << end();  // don't raise, just warn. just in case it's just a name for a scenario to run.
     return;
   }
   trace(9990, "load") << "=== " << filename << end();
