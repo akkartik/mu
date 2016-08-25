@@ -126,10 +126,13 @@ def main [
 $error: 0
 :(scenarios run_mu_scenario)
 
+//: It's easier to implement assume-screen and other similar scenario-only
+//: primitives if they always write to a fixed location. So we'll assign a
+//: single fixed location for the per-scenario screen, keyboard, file system,
+//: etc. Carve space for these fixed locations out of the reserved-for-test
+//: locations.
+
 :(before "End Globals")
-// Scenarios may not define default-space, so they should fit within the
-// initial area of memory reserved for tests. We'll put the predefined
-// variables available to them at the end of that region.
 const int Max_variables_in_scenarios = Reserved_for_tests-100;
 int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
