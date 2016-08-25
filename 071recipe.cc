@@ -34,25 +34,57 @@ type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
 get_or_insert(Type, recipe).name = "recipe";
 
 :(after "Begin transform_names Ingredient Special-cases(ingredient, inst, caller)")
-if (is_recipe_literal(ingredient)) {
+if (is_recipe_literal(ingredient, caller)) {
   initialize_recipe_literal(ingredient);
   continue;
 }
 :(after "Begin transform_names Product Special-cases(product, inst, caller)")
-if (is_recipe_literal(product)) {
+if (is_recipe_literal(product, caller)) {
   initialize_recipe_literal(product);
   continue;
 }
 :(code)
-bool is_recipe_literal(const reagent& x) {
+bool is_recipe_literal(const reagent& x, const recipe& caller) {
   if (x.type) return false;
   if (!contains_key(Recipe_ordinal, x.name)) return false;
+  if (contains_reagent_with_type(caller, x.name)) {
+    raise << maybe(caller.name) << "you can't use '" << x.name << "' as a recipe literal when it's also a variable\n" << end();
+    return false;
+  }
   return true;
 }
 void initialize_recipe_literal(reagent& x) {
   x.type = new type_tree("recipe-literal");
   x.set_value(get(Recipe_ordinal, x.name));
 }
+bool contains_reagent_with_type(const recipe& caller, const string& name) {
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& inst = caller.steps.at(i);
+    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+      if (is_matching_non_recipe_literal(inst.ingredients.at(i), name)) return true;
+    for (int i = 0; i < SIZE(inst.products); ++i)
+      if (is_matching_non_recipe_literal(inst.products.at(i), name)) return true;
+  }
+  return false;
+}
+bool is_matching_non_recipe_literal(const reagent& x, const string& name) {
+  if (x.name != name) return false;
+  if (!x.type) return false;
+  if (x.type->value == get(Type_ordinal, "recipe-literal")) return false;
+  return true;
+}
+
+//: It's confusing to use variable names that are also recipe names. Always
+//: assume variable types override recipe literals.
+:(scenario error_on_recipe_literal_used_as_a_variable)
+% Hide_errors = true;
+def main [
+  local-scope
+  a:boolean <- equal break 0
+  break:boolean <- copy 0
+]
++error: main: you can't use 'break' as a recipe literal when it's also a variable
++error: main: missing type for 'break' in 'a:boolean <- equal break, 0'
 
 :(before "End Primitive Recipe Declarations")
 CALL,
