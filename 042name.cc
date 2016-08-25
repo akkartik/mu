@@ -50,6 +50,7 @@ void transform_names(const recipe_ordinal r) {
     // map names to addresses
     for (int in = 0; in < SIZE(inst.ingredients); ++in) {
       reagent& ingredient = inst.ingredients.at(in);
+      // Begin transform_names Ingredient Special-cases(ingredient, inst, caller)
       if (is_disqualified(ingredient, inst, caller.name)) continue;
       if (is_numeric_location(ingredient)) numeric_locations_used = true;
       if (is_named_location(ingredient)) names_used = true;
@@ -70,6 +71,7 @@ void transform_names(const recipe_ordinal r) {
     }
     for (int out = 0; out < SIZE(inst.products); ++out) {
       reagent& product = inst.products.at(out);
+      // Begin transform_names Product Special-cases(product, inst, caller)
       if (is_disqualified(product, inst, caller.name)) continue;
       if (is_numeric_location(product)) numeric_locations_used = true;
       if (is_named_location(product)) names_used = true;
@@ -96,7 +98,6 @@ void transform_names(const recipe_ordinal r) {
 
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
-    // End Null-type is_disqualified Exceptions
     raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << inst.original_string << "'\n" << end();
     return true;
   }

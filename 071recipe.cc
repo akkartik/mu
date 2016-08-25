@@ -33,11 +33,25 @@ put(Type_ordinal, "recipe-literal", 0);
 type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
 get_or_insert(Type, recipe).name = "recipe";
 
-:(before "End Null-type is_disqualified Exceptions")
-if (!x.type && contains_key(Recipe_ordinal, x.name)) {
+:(after "Begin transform_names Ingredient Special-cases(ingredient, inst, caller)")
+if (is_recipe_literal(ingredient)) {
+  initialize_recipe_literal(ingredient);
+  continue;
+}
+:(after "Begin transform_names Product Special-cases(product, inst, caller)")
+if (is_recipe_literal(product)) {
+  initialize_recipe_literal(product);
+  continue;
+}
+:(code)
+bool is_recipe_literal(const reagent& x) {
+  if (x.type) return false;
+  if (!contains_key(Recipe_ordinal, x.name)) return false;
+  return true;
+}
+void initialize_recipe_literal(reagent& x) {
   x.type = new type_tree("recipe-literal");
   x.set_value(get(Recipe_ordinal, x.name));
-  return true;
 }
 
 :(before "End Primitive Recipe Declarations")
