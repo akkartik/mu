@@ -160,9 +160,17 @@ if (s == "screen") return true;
 // `screen:address:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {
   curr.name = "new-fake-screen";
-  assert(curr.products.empty());
-  curr.products.push_back(reagent("screen:address:screen/raw"));  // only allowed in scenario blocks
-  curr.products.at(0).set_value(SCREEN);
+  if (!curr.products.empty()) {
+    raise << result.name << ": 'assume-screen' has no products\n" << end();
+  }
+  else if (!starts_with(result.name, "scenario_")) {
+    raise << result.name << ": 'assume-screen' can't be called here, only in scenarios\n" << end();
+  }
+  else {
+    assert(curr.products.empty());
+    curr.products.push_back(reagent("screen:address:screen/raw"));
+    curr.products.at(0).set_value(SCREEN);
+  }
 }
 
 :(scenario assume_screen_shows_up_in_errors)
@@ -179,6 +187,14 @@ SCREEN_SHOULD_CONTAIN,
 put(Recipe_ordinal, "screen-should-contain", SCREEN_SHOULD_CONTAIN);
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'screen-should-contain' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_literal_string(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'screen-should-contain' should be a literal string, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -195,6 +211,18 @@ SCREEN_SHOULD_CONTAIN_IN_COLOR,
 put(Recipe_ordinal, "screen-should-contain-in-color", SCREEN_SHOULD_CONTAIN_IN_COLOR);
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'screen-should-contain-in-color' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'screen-should-contain-in-color' should be a number (color code), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  if (!is_literal_string(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'screen-should-contain-in-color' should be a literal string, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -237,7 +265,11 @@ void check_screen(const string& expected_contents, const int color) {
   for (int row = 0; row < screen_height; ++row) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
-    assert(cursor.get() == '.');
+    if (cursor.get() != '.') {
+      raise << Current_scenario->name << ": each row of the expected screen should start with a '.'\n" << end();
+      Passed = false;
+      return;
+    }
     for (int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
@@ -289,10 +321,17 @@ void check_screen(const string& expected_contents, const int color) {
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
-    assert(cursor.get() == '.');
+    if (cursor.get() != '.') {
+      raise << Current_scenario->name << ": row " << row << " of the expected screen is too long\n" << end();
+      Passed = false;
+      return;
+    }
   }
   cursor.skip_whitespace_and_comments();
-  assert(cursor.at_end());
+  if (!cursor.at_end()) {
+    raise << Current_scenario->name << ": expected screen has too many rows\n" << end();
+    Passed = false;
+  }
 }
 
 raw_string_stream::raw_string_stream(const string& backing) :index(0), max(SIZE(backing)), buf(backing.c_str()) {}
