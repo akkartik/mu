@@ -162,7 +162,7 @@ def main [
   y:number <- copy 3
 ]
 # allocate space for x and y, as well as the chaining slot at 0
-+mem: array size is 3
++mem: array length is 3
 
 :(before "End is_disqualified Cases")
 if (x.name == "number-of-locals")

@@ -36,7 +36,7 @@ int new_mu_string(const string& contents) {
   int string_length = unicode_length(contents);
 //?   Total_alloc += string_length+1;
 //?   ++Num_alloc;
-  int result = allocate(string_length+/*array size*/1);
+  int result = allocate(string_length+/*array length*/1);
   trace(9999, "mem") << "storing string refcount 0 in location " << result << end();
   put(Memory, result, 0);
   int curr_address = result+/*skip refcount*/1;
@@ -103,7 +103,7 @@ if (!canonize_type(x)) return false;
 % Initial_memory_per_routine = 3;
 def main [
   1:address:number/raw <- new number:type
-  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the refcount and array size into account
+  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the refcount and array length into account
 ]
 +new: routine allocated memory from 1000 to 1003
 +new: routine allocated memory from 1003 to 1006

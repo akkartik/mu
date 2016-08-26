@@ -50,7 +50,7 @@ case CREATE_ARRAY: {
   // Update CREATE_ARRAY product in Run
   int base_address = product.value;
   int array_length = to_integer(product.type->right->right->name);
-  // initialize array size, so that size_of will work
+  // initialize array length, so that size_of will work
   trace(9999, "mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations

@@ -269,7 +269,7 @@ case ALLOCATE: {
   int size = ingredients.at(0).at(0);
   if (SIZE(ingredients) > 1) {
     // array allocation
-    trace(9999, "mem") << "array size is " << ingredients.at(1).at(0) << end();
+    trace(9999, "mem") << "array length is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
   int result = allocate(size);
@@ -350,8 +350,8 @@ def main [
   3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
-+mem: array size is 5
-# don't forget the extra location for array size, and the second extra location for the refcount
++mem: array length is 5
+# don't forget the extra location for array length, and the second extra location for the refcount
 +mem: storing 7 in location 3
 
 :(scenario new_empty_array)
@@ -361,8 +361,8 @@ def main [
   3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
-+mem: array size is 0
-# one location for array size, and one for the refcount
++mem: array length is 0
+# one location for array length, and one for the refcount
 +mem: storing 2 in location 3
 
 //: If a routine runs out of its initial allocation, it should allocate more.

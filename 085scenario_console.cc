@@ -255,8 +255,8 @@ case REPLACE_IN_CONSOLE: {
   }
   int console_address = get_or_insert(Memory, CONSOLE);
   int console_data = get_or_insert(Memory, console_address+1);
-  int size = get_or_insert(Memory, console_data);  // array size
-  for (int i = 0, curr = console_data+1; i < size; ++i, curr+=size_of_event()) {
+  int length = get_or_insert(Memory, console_data);  // array length
+  for (int i = 0, curr = console_data+1; i < length; ++i, curr+=size_of_event()) {
     if (get_or_insert(Memory, curr) != /*text*/0) continue;
     if (get_or_insert(Memory, curr+1) != ingredients.at(0).at(0)) continue;
     for (int n = 0; n < size_of_event(); ++n)

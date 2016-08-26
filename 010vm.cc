@@ -650,13 +650,13 @@ ostream& operator<<(ostream& os, no_scientific x) {
 
 string trim_floating_point(const string& in) {
   if (in.empty()) return "";
-  int len = SIZE(in);
-  while (len > 1) {
-    if (in.at(len-1) != '0') break;
-    --len;
+  int length = SIZE(in);
+  while (length > 1) {
+    if (in.at(length-1) != '0') break;
+    --length;
   }
-  if (in.at(len-1) == '.') --len;
-  return in.substr(0, len);
+  if (in.at(length-1) == '.') --length;
+  return in.substr(0, length);
 }
 
 void test_trim_floating_point() {
