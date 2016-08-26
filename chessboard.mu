@@ -368,7 +368,7 @@ scenario read-move-blocking [
     source:address:source:character, sink:address:sink:character <- new-channel 2/capacity
     read-move-routine:number/routine <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
     waiting?:boolean <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -377,7 +377,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     sink <- write sink, 97/a
     restart read-move-routine
     # 'read-move' still waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -386,7 +386,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     sink <- write sink, 50/'2'
     restart read-move-routine
     # 'read-move' still waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -395,7 +395,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     sink <- write sink, 45/'-'
     restart read-move-routine
     # 'read-move' still waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -404,7 +404,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     sink <- write sink, 97/a
     restart read-move-routine
     # 'read-move' still waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -413,7 +413,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     sink <- write sink, 52/'4'
     restart read-move-routine
     # 'read-move' still waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -422,7 +422,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     sink <- write sink, 10  # newline
     restart read-move-routine
     # 'read-move' now completes
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     completed?:boolean <- equal read-move-state, 1/completed
     assert completed?, [ 
@@ -441,7 +441,7 @@ scenario read-move-quit [
     source:address:source:character, sink:address:sink:character <- new-channel 2/capacity
     read-move-routine:number <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
     waiting?:boolean <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -450,7 +450,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
     sink <- write sink, 113/q
     restart read-move-routine
     # 'read-move' completes
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     completed?:boolean <- equal read-move-state, 1/completed
     assert completed?, [ 
@@ -469,14 +469,14 @@ scenario read-move-illegal-file [
     source:address:source:character, sink:address:sink:character <- new-channel 2/capacity
     read-move-routine:number <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
     waiting?:boolean <- equal read-move-state, 3/waiting
     assert waiting?, [ 
 F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 50/'2'
     restart read-move-routine
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
   ]
   screen-should-contain [
     .file too low: 2     .
@@ -491,7 +491,7 @@ scenario read-move-illegal-rank [
     source:address:source:character, sink:address:sink:character <- new-channel 2/capacity
     read-move-routine:number <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
     waiting?:boolean <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -499,7 +499,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     sink <- write sink, 97/a
     sink <- write sink, 97/a
     restart read-move-routine
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
   ]
   screen-should-contain [
     .rank too high: a    .
@@ -514,7 +514,7 @@ scenario read-move-empty [
     source:address:source:character, sink:address:sink:character <- new-channel 2/capacity
     read-move-routine:number <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
     waiting?:boolean <- equal read-move-state, 3/waiting
     assert waiting?, [ 
@@ -522,7 +522,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
     sink <- write sink, 10/newline
     sink <- write sink, 97/a
     restart read-move-routine
-    wait-for-routine read-move-routine
+    wait-for-routine-to-block read-move-routine
   ]
   screen-should-contain [
     .that's not enough   .
