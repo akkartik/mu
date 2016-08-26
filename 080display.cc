@@ -223,7 +223,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   int h=tb_height();
   int height = (h >= 0) ? h : 0;
   if (Display_row < height-1) {
-    Display_row++;
+    ++Display_row;
     tb_set_cursor(Display_column, Display_row);
     if (Autodisplay) tb_present();
   }
@@ -241,7 +241,7 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_UP_ON_DISPLAY: {
   if (Display_row > 0) {
-    Display_row--;
+    --Display_row;
     tb_set_cursor(Display_column, Display_row);
     if (Autodisplay) tb_present();
   }
@@ -261,7 +261,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   int w=tb_width();
   int width = (w >= 0) ? w : 0;
   if (Display_column < width-1) {
-    Display_column++;
+    ++Display_column;
     tb_set_cursor(Display_column, Display_row);
     if (Autodisplay) tb_present();
   }
@@ -279,7 +279,7 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   if (Display_column > 0) {
-    Display_column--;
+    --Display_column;
     tb_set_cursor(Display_column, Display_row);
     if (Autodisplay) tb_present();
   }
@@ -293,7 +293,7 @@ else if (tb_is_active()) {
 }
 :(code)
 void move_cursor_to_start_of_next_line_on_display() {
-  if (Display_row < tb_height()-1) Display_row++;
+  if (Display_row < tb_height()-1) ++Display_row;
   else Display_row = 0;
   Display_column = 0;
   tb_set_cursor(Display_column, Display_row);

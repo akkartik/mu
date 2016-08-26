@@ -127,7 +127,7 @@ bool next_instruction(istream& in, instruction* curr) {
     raise << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
-  curr->old_name = curr->name = *p;  p++;
+  curr->old_name = curr->name = *p;  ++p;
   // curr->operation will be set in a later layer
 
   for (; p != words.end(); ++p)

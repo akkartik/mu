@@ -195,12 +195,12 @@ void construct_filesystem_object(const map<string, string>& contents) {
     trace(9999, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
     trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
-    curr++;
+    ++curr;
     put(Memory, curr, new_mu_string(p->second));
     trace(9999, "mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
     trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
-    curr++;
+    ++curr;
   }
   curr = filesystem_data_address+/*skip refcount*/1;
   put(Memory, curr, SIZE(contents));  // size of array

@@ -28,7 +28,7 @@ map<int, int> free_list;
 void abandon(int address, const type_tree* payload_type, int payload_size) {
   trace(9999, "abandon") << "updating refcounts inside " << address << ": " << to_string(payload_type) << end();
 //?   Total_free += size;
-//?   Num_free++;
+//?   ++Num_free;
 //?   cerr << "abandon: " << size << '\n';
   // decrement any contained refcounts
   if (payload_type->name == "array") {

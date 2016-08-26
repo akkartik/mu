@@ -273,7 +273,7 @@ int count_events(const recipe& r) {
     if (curr.name == "type")
       result += unicode_length(curr.ingredients.at(0).name);
     else
-      result++;
+      ++result;
   }
   return result;
 }

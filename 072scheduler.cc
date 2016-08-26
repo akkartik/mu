@@ -137,7 +137,7 @@ int Next_routine_id = 1;
 Next_routine_id = 1;
 :(before "End routine Constructor")
 id = Next_routine_id;
-Next_routine_id++;
+++Next_routine_id;
 
 //: routines save the routine that spawned them
 :(before "End routine Fields")

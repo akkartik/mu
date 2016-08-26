@@ -285,10 +285,10 @@ case ALLOCATE: {
 :(code)
 int allocate(int size) {
   // include space for refcount
-  size++;
+  ++size;
   trace(9999, "mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
-//?   Num_alloc++;
+//?   ++Num_alloc;
   // Allocate Special-cases
   // compute the region of memory to return
   // really crappy at the moment

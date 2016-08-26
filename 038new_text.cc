@@ -35,7 +35,7 @@ int new_mu_string(const string& contents) {
   // allocate an array just large enough for it
   int string_length = unicode_length(contents);
 //?   Total_alloc += string_length+1;
-//?   Num_alloc++;
+//?   ++Num_alloc;
   int result = allocate(string_length+/*array size*/1);
   trace(9999, "mem") << "storing string refcount 0 in location " << result << end();
   put(Memory, result, 0);
@@ -124,7 +124,7 @@ int unicode_length(const string& s) {
 
 string read_mu_string(int address) {
   if (address == 0) return "";
-  address++;  // skip refcount
+  ++address;  // skip refcount
   int size = get_or_insert(Memory, address);
   if (size == 0) return "";
   ostringstream tmp;

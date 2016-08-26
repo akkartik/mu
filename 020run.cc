@@ -148,8 +148,8 @@ load_file_or_directory("core.mu");
 //? START_TRACING_UNTIL_END_OF_SCOPE
 if (argc > 1) {
   // skip argv[0]
-  argv++;
-  argc--;
+  ++argv;
+  --argc;
   // ignore argv past '--'; that's commandline args for 'main'
   while (argc > 0) {
     if (string(*argv) == "--") break;

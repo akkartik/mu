@@ -194,7 +194,7 @@ int number_of_concrete_type_names(const type_tree* type) {
   if (!type) return 0;
   int result = 0;
   if (!type->name.empty() && !is_type_ingredient_name(type->name))
-    result++;
+    ++result;
   result += number_of_concrete_type_names(type->left);
   result += number_of_concrete_type_names(type->right);
   return result;
