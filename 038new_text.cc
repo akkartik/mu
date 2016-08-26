@@ -36,25 +36,23 @@ int new_mu_string(const string& contents) {
   int string_length = unicode_length(contents);
 //?   Total_alloc += string_length+1;
 //?   Num_alloc++;
-  ensure_space(string_length+1);  // don't forget the extra location for array size
-  // initialize string
-  int result = Current_routine->alloc;
-  // initialize refcount
-  trace(9999, "mem") << "storing string refcount 0 in location " << Current_routine->alloc << end();
-  put(Memory, Current_routine->alloc++, 0);
-  // store length
-  trace(9999, "mem") << "storing string length " << string_length << " in location " << Current_routine->alloc << end();
-  put(Memory, Current_routine->alloc++, string_length);
+  int result = allocate(string_length+/*array size*/1);
+  trace(9999, "mem") << "storing string refcount 0 in location " << result << end();
+  put(Memory, result, 0);
+  int curr_address = result+/*skip refcount*/1;
+  trace(9999, "mem") << "storing string length " << string_length << " in location " << curr_address << end();
+  put(Memory, curr_address, string_length);
+  ++curr_address;  // skip length
   int curr = 0;
   const char* raw_contents = contents.c_str();
   for (int i = 0; i < string_length; ++i) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-    trace(9999, "mem") << "storing string character " << curr_character << " in location " << Current_routine->alloc << end();
-    put(Memory, Current_routine->alloc, curr_character);
+    trace(9999, "mem") << "storing string character " << curr_character << " in location " << curr_address << end();
+    put(Memory, curr_address, curr_character);
     curr += tb_utf8_char_length(raw_contents[curr]);
-    ++Current_routine->alloc;
+    ++curr_address;
   }
   // mu strings are not null-terminated in memory
   return result;
@@ -102,13 +100,13 @@ if (!canonize_type(x)) return false;
 
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
-% Initial_memory_per_routine = 2;
+% Initial_memory_per_routine = 3;
 def main [
   1:address:number/raw <- new number:type
-  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the array size into account
+  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the refcount and array size into account
 ]
-+new: routine allocated memory from 1000 to 1002
-+new: routine allocated memory from 1002 to 1004
++new: routine allocated memory from 1000 to 1003
++new: routine allocated memory from 1003 to 1006
 
 //: helpers
 :(code)
