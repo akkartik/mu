@@ -239,14 +239,15 @@ void try_reclaim_locals() {
   for (int i = /*leave default space for last*/1; i < SIZE(exiting_recipe.steps); ++i) {
     const instruction& inst = exiting_recipe.steps.at(i);
     for (int i = 0; i < SIZE(inst.products); ++i) {
+      const reagent& product = inst.products.at(i);
       // local variables only
-      if (has_property(inst.products.at(i), "lookup")) continue;
-      if (has_property(inst.products.at(i), "raw")) continue;  // tests often want to check such locations after they run
-      if (escaping(inst.products.at(i))) continue;
+      if (has_property(product, "lookup")) continue;
+      if (has_property(product, "raw")) continue;  // tests often want to check such locations after they run
+      if (escaping(product)) continue;
       // End Checks For Reclaiming Locals
-      trace(9999, "mem") << "clearing " << inst.products.at(i).original_string << end();
-      zeros.resize(size_of(inst.products.at(i)));
-      write_memory(inst.products.at(i), zeros);
+      trace(9999, "mem") << "clearing " << product.original_string << end();
+      zeros.resize(size_of(product));
+      write_memory(product, zeros);
     }
   }
   trace(9999, "mem") << "automatically abandoning " << current_call().default_space << end();
@@ -264,8 +265,8 @@ bool escaping(const reagent& r) {
   if (current_step_index() >= SIZE(Current_routine->steps())) return false;
   for (long long i = 0; i < SIZE(current_instruction().ingredients); ++i) {
     if (r == current_instruction().ingredients.at(i)) {
-    if (caller_uses_product(i))
-      return true;
+      if (caller_uses_product(i))
+        return true;
     }
   }
   return false;
