@@ -30,6 +30,7 @@ def start-reading fs:address:filesystem, filename:address:array:character -> con
     done?:boolean <- greater-or-equal i, len
     break-if done?
     tmp:file-mapping <- index *data, i
+    i <- add i, 1
     curr-filename:address:array:character <- get tmp, name:offset
     found?:boolean <- equal filename, curr-filename
     loop-unless found?

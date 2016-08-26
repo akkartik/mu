@@ -25,7 +25,23 @@ scenario read-from-fake-file [
 scenario write-to-fake-file [
   local-scope
   assume-filesystem [
-    #[a] <- []
+  ]
+  sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink <- write sink, 120/x
+  sink <- write sink, 121/y
+  close sink
+  wait-for-routine writer
+  contents-read-back:address:array:character <- slurp filesystem, [a]
+  10:boolean/raw <- equal contents-read-back, [xy]
+  memory-should-contain [
+    10 <- 1  # file contents read back exactly match what was written
+  ]
+]
+
+scenario write-to-fake-file-that-exists [
+  local-scope
+  assume-filesystem [
+    [a] <- []
   ]
   sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
