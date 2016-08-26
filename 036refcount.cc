@@ -392,12 +392,13 @@ if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
 
 :(before "End Decrement Refcounts(canonized_x)")
 if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
-  trace(9999, "mem") << "need to read old value to figure out what refcounts to decrement" << end();
+  trace(9999, "mem") << "need to read old value of '" << to_string(canonized_x) << "' to figure out what refcounts to decrement" << end();
   // read from canonized_x but without canonizing again
   // todo: inline without running canonize all over again
   reagent/*copy*/ tmp = canonized_x;
   tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
   vector<double> data = read_memory(tmp);
+  trace(9999, "mem") << "done reading old value of '" << to_string(canonized_x) << "'" << end();
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
     if (!all_match(data, p->first)) continue;

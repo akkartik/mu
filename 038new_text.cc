@@ -40,8 +40,10 @@ int new_mu_string(const string& contents) {
   // initialize string
   int result = Current_routine->alloc;
   // initialize refcount
+  trace(9999, "mem") << "storing string refcount 0 in location " << Current_routine->alloc << end();
   put(Memory, Current_routine->alloc++, 0);
   // store length
+  trace(9999, "mem") << "storing string length " << string_length << " in location " << Current_routine->alloc << end();
   put(Memory, Current_routine->alloc++, string_length);
   int curr = 0;
   const char* raw_contents = contents.c_str();
@@ -49,6 +51,7 @@ int new_mu_string(const string& contents) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
+    trace(9999, "mem") << "storing string character " << curr_character << " in location " << Current_routine->alloc << end();
     put(Memory, Current_routine->alloc, curr_character);
     curr += tb_utf8_char_length(raw_contents[curr]);
     ++Current_routine->alloc;

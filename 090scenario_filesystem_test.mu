@@ -55,6 +55,30 @@ scenario write-to-fake-file-that-exists [
   ]
 ]
 
+scenario write-to-existing-file-preserves-other-files [
+  local-scope
+  assume-filesystem [
+    [a] <- []
+    [b] <- [
+      |bcd|
+    ]
+  ]
+  sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink <- write sink, 120/x
+  sink <- write sink, 121/y
+  close sink
+  wait-for-routine writer
+  contents-read-back:address:array:character <- slurp filesystem, [a]
+  10:boolean/raw <- equal contents-read-back, [xy]
+  other-file-contents:address:array:character <- slurp filesystem, [b]
+  11:boolean/raw <- equal other-file-contents, [bcd
+]
+  memory-should-contain [
+    10 <- 1  # file contents read back exactly match what was written
+    11 <- 1  # other files also continue to persist unchanged
+  ]
+]
+
 def slurp fs:address:filesystem, filename:address:array:character -> contents:address:array:character [
   local-scope
   load-ingredients

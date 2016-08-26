@@ -192,18 +192,31 @@ void construct_filesystem_object(const map<string, string>& contents) {
   int curr = filesystem_data_address + /*skip refcount and length*/2;
   for (map<string, string>::const_iterator p = contents.begin(); p != contents.end(); ++p) {
     put(Memory, curr, new_mu_string(p->first));
+    trace(9999, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
+    put(Memory, get(Memory, curr), 1);
+    trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
     curr++;
     put(Memory, curr, new_mu_string(p->second));
+    trace(9999, "mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
+    put(Memory, get(Memory, curr), 1);
+    trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
     curr++;
   }
-  put(Memory, filesystem_data_address+/*skip refcount*/1, SIZE(contents));  // size of array
+  curr = filesystem_data_address+/*skip refcount*/1;
+  put(Memory, curr, SIZE(contents));  // size of array
+  trace(9999, "mem") << "storing filesystem size " << get(Memory, curr) << " in location " << curr << end();
   put(Memory, filesystem_data_address, 1);  // initialize refcount
+  trace(9999, "mem") << "storing refcount 1 in location " << filesystem_data_address << end();
   // wrap the filesystem data in a filesystem object
   int filesystem_address = allocate(size_of_filesystem());
-  put(Memory, filesystem_address+/*skip refcount*/1, filesystem_data_address);
+  curr = filesystem_address+/*skip refcount*/1;
+  put(Memory, curr, filesystem_data_address);
+  trace(9999, "mem") << "storing filesystem data address " << filesystem_data_address << " in location " << curr << end();
   put(Memory, filesystem_address, 1);  // initialize refcount
+  trace(9999, "mem") << "storing refcount 1 in location " << filesystem_address << end();
   // save in product
   put(Memory, FILESYSTEM, filesystem_address);
+  trace(9999, "mem") << "storing filesystem address " << filesystem_address << " in location " << FILESYSTEM << end();
 }
 
 int size_of_filesystem() {

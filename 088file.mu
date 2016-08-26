@@ -117,7 +117,19 @@ def transmit-to-fake-file fs:address:filesystem, filename:address:array:characte
   curr-filename:address:array:character <- copy 0
   data:address:array:file-mapping <- get *fs, data:offset
   # replace file contents if it already exists
+  i:number <- copy 0
   len:number <- length *data
+  {
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    tmp:file-mapping <- index *data, i
+    curr-filename <- get tmp, name:offset
+    found?:boolean <- equal filename, curr-filename
+    loop-unless found?
+    put-index *data, i, new-file-mapping
+    reply
+  }
+  # if file didn't already exist, make room for it
   new-len:number <- add len, 1
   new-data:address:array:file-mapping <- new file-mapping:type, new-len
   put *fs, data:offset, new-data
