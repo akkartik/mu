@@ -419,28 +419,28 @@ scenario buffer-lines-blocks-until-newline [
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
     buffer-routine:number <- start-running buffer-lines, source, buffered-stdin
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
     assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
     sink <- write sink, 97/a
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
     assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
     sink <- write sink, 98/b
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
     assert empty?:boolean, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
     sink <- write sink, 10/newline
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
     data-emitted?:boolean <- not empty?
     assert data-emitted?, [ 
