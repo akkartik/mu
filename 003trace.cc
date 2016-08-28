@@ -77,9 +77,6 @@
 //:   programmers form a mental model, rather than as production of a program."
 //:   -- Peter Naur (http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)
 
-:(before "int main")
-// End Tracing  // hack to ensure most code in this layer comes before anything else
-
 :(before "End Types")
 struct trace_line {
   int depth;  // optional field just to help browse traces later
@@ -90,15 +87,16 @@ struct trace_line {
 };
 
 :(before "End Globals")
-const int Max_depth = 9999;
-const int Error_depth = 0;  // definitely always print errors
-const int App_depth = 2;  // temporarily where all mu code will trace to
-:(before "End Tracing")
 bool Hide_errors = false;
 :(before "End Setup")
 Hide_errors = false;
 
-:(before "End Tracing")
+:(before "End Types")
+// pre-define some globals that trace_stream needs to know about
+const int Max_depth = 9999;
+const int Error_depth = 0;  // definitely always print errors
+const int App_depth = 2;  // temporarily where all mu code will trace to
+
 struct trace_stream {
   vector<trace_line> past_lines;
   // accumulator for current line
@@ -124,31 +122,36 @@ struct trace_stream {
   }
 
   // be sure to call this before messing with curr_stream or curr_label
-  void newline() {
-    if (!curr_stream) return;
-    string curr_contents = curr_stream->str();
-    if (curr_contents.empty()) return;
-    past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if (!Hide_errors && curr_label == "error")
-      cerr << curr_label << ": " << curr_contents << '\n';
-    delete curr_stream;
-    curr_stream = NULL;
-    curr_label.clear();
-    curr_depth = Max_depth;
-  }
-
+  void newline();
   // useful for debugging
-  string readable_contents(string label) {  // empty label = show everything
-    ostringstream output;
-    label = trim(label);
-    for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
-      if (label.empty() || label == p->label) {
-        output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
-      }
-    return output.str();
-  }
+  string readable_contents(string label);  // empty label = show everything
 };
 
+:(code)
+void trace_stream::newline() {
+  if (!curr_stream) return;
+  string curr_contents = curr_stream->str();
+  if (curr_contents.empty()) return;
+  past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
+  if (!Hide_errors && curr_label == "error")
+    cerr << curr_label << ": " << curr_contents << '\n';
+  delete curr_stream;
+  curr_stream = NULL;
+  curr_label.clear();
+  curr_depth = Max_depth;
+}
+
+string trace_stream::readable_contents(string label) {
+  ostringstream output;
+  label = trim(label);
+  for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
+    if (label.empty() || label == p->label) {
+      output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
+    }
+  return output.str();
+}
+
+:(before "End Globals")
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
@@ -170,12 +173,13 @@ if (Passed && !Hide_errors && trace_count("error") > 0) {
 
 :(before "End Types")
 struct end {};
-:(before "End Tracing")
+:(code)
 ostream& operator<<(ostream& os, unused end) {
   if (Trace_stream) Trace_stream->newline();
   return os;
 }
 
+:(before "End Globals")
 #define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
 
 #define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
@@ -203,7 +207,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 :(before "End Includes")
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
-:(before "End Tracing")
+:(code)
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
   if (!Trace_stream) return false;
   vector<string> expected_lines = split(expected, "");

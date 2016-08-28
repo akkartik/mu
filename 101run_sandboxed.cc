@@ -70,7 +70,6 @@ case RUN_SANDBOXED: {
 
 :(before "End Globals")
 bool Track_most_recent_products = false;
-:(before "End Tracing")
 trace_stream* Save_trace_stream = NULL;
 string Save_trace_file;
 :(before "End Setup")
