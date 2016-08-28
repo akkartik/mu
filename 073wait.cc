@@ -399,6 +399,8 @@ for (int i = 0; i < SIZE(Routines); ++i) {
   }
 }
 
+//: yield voluntarily to let some other routine run
+
 :(before "End Primitive Recipe Declarations")
 SWITCH,
 :(before "End Primitive Recipe Numbers")
@@ -407,17 +409,18 @@ put(Recipe_ordinal, "switch", SWITCH);
 case SWITCH: {
   break;
 }
+//: pick another RUNNING routine at random and wait for it to get a chance
+//: there might be a better implementation than this
 :(before "End Primitive Recipe Implementations")
 case SWITCH: {
   int id = some_other_running_routine();
   if (id) {
     assert(id != Current_routine->id);
     Current_routine->state = WAITING;
-    Current_routine->waiting_on_routine = id;
+    Current_routine->waiting_on_routine_to_block = id;
   }
   break;
 }
-
 :(code)
 int some_other_running_routine() {
   for (int i = 0; i < SIZE(Routines); ++i) {
