@@ -247,8 +247,6 @@ void restore_snapshots() {
   // End restore_snapshots
 }
 
-
-
 //:: Helpers
 
 :(code)

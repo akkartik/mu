@@ -149,8 +149,6 @@ struct trace_stream {
   }
 };
 
-
-
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
@@ -259,8 +257,6 @@ bool line_exists_anywhere(const string& label, const string& contents) {
   return false;
 }
 
-
-
 int trace_count(string label) {
   return trace_count(label, "");
 }
@@ -319,8 +315,6 @@ bool trace_doesnt_contain(string expected) {
 }
 
 #define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
-
-
 
 vector<string> split(string s, string delim) {
   vector<string> result;
