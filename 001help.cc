@@ -180,7 +180,7 @@ feenableexcept(FE_OVERFLOW | FE_UNDERFLOW);
 #ifdef __APPLE__
 // Public domain polyfill for feenableexcept on OS X
 // http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c
-inline int feenableexcept (unsigned int excepts) {
+int feenableexcept (unsigned int excepts) {
   static fenv_t fenv;
   unsigned int new_excepts = excepts & FE_ALL_EXCEPT;
   unsigned int old_excepts;
