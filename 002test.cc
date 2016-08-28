@@ -10,16 +10,18 @@
 
 :(before "End Types")
 typedef void (*test_fn)(void);
-
-:(before "End Globals")
+:(before "Globals")
+// move a global ahead into types that we can't generate an extern declaration for
 const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see makefile
 };
 
+:(before "End Globals")
 bool Run_tests = false;
 bool Passed = true;  // set this to false inside any test to indicate failure
 long Num_failures = 0;
 
+:(before "End Includes")
 #define CHECK(X) \
   if (!(X)) { \
     ++Num_failures; \

@@ -98,6 +98,11 @@
 #include "function_list"  // by convention, files ending with '_list' are auto-generated
 
 // Globals
+//
+// (Code in this section should strictly consist only of single-line variable
+// definitions; the makefile will simplistically auto-generate extern
+// declarations for them.)
+//
 // End Globals
 
 int main(int argc, char* argv[]) {

@@ -155,11 +155,19 @@ string trace_stream::readable_contents(string label) {
 trace_stream* Trace_stream = NULL;
 int Trace_errors = 0;  // used only when Trace_stream is NULL
 
+:(before "End Includes")
+#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
+
 // Top-level helper. IMPORTANT: can't nest
 #define trace(...)  !Trace_stream ? cerr /*print nothing*/ : Trace_stream->stream(__VA_ARGS__)
 
+// Just for debugging; 'git log' should never show any calls to 'dbg'.
+#define dbg trace(0, "a")
+#define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
+
 // Errors are a special layer.
 #define raise  (!Trace_stream ? (tb_shutdown(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.
 :(before "End Test Teardown")
@@ -167,9 +175,6 @@ if (Passed && !Hide_errors && trace_count("error") > 0) {
   Passed = false;
   ++Num_failures;
 }
-
-// Just for debugging.
-#define dbg trace(0, "a")
 
 :(before "End Types")
 struct end {};
@@ -180,26 +185,26 @@ ostream& operator<<(ostream& os, unused end) {
 }
 
 :(before "End Globals")
-#define CLEAR_TRACE  delete Trace_stream, Trace_stream = new trace_stream;
-
-#define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
-
 bool Save_trace = false;
 
 // Trace_stream is a resource, lease_tracer uses RAII to manage it.
+:(before "End Types")
 struct lease_tracer {
-  lease_tracer() { Trace_stream = new trace_stream; }
-  ~lease_tracer() {
-    if (!Trace_stream) return;  // in case tests close Trace_stream
-    if (Save_trace) {
-      ofstream fout("last_trace");
-      fout << Trace_stream->readable_contents("");
-      fout.close();
-    }
-    delete Trace_stream, Trace_stream = NULL;
-  }
+  lease_tracer();
+  ~lease_tracer();
 };
-
+:(code)
+lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
+lease_tracer::~lease_tracer() {
+  if (!Trace_stream) return;  // in case tests close Trace_stream
+  if (Save_trace) {
+    ofstream fout("last_trace");
+    fout << Trace_stream->readable_contents("");
+    fout.close();
+  }
+  delete Trace_stream, Trace_stream = NULL;
+}
+:(before "End Includes")
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
 :(before "End Test Setup")
 START_TRACING_UNTIL_END_OF_SCOPE
