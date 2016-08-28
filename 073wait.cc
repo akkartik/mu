@@ -34,6 +34,11 @@ if (Passed && any_routines_waiting()) {
   Passed = false;
   raise << Current_scenario->name << ": deadlock!\n" << end();
 }
+:(before "End Run Routine")
+if (any_routines_waiting()) {
+  raise << "deadlock!\n" << end();
+  dump_waiting_routines();
+}
 :(before "End Test Teardown")
 if (Passed && any_routines_with_error()) {
   Passed = false;
@@ -46,6 +51,12 @@ bool any_routines_waiting() {
       return true;
   }
   return false;
+}
+void dump_waiting_routines() {
+  for (int i = 0; i < SIZE(Routines); ++i) {
+    if (Routines.at(i)->state == WAITING)
+      cerr << i << ": " << routine_label(Routines.at(i)) << '\n';
+  }
 }
 
 //: primitive recipe to put routines in that state
