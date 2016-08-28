@@ -14,9 +14,12 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .muScenario { color: #00af00; }
+.Delimiter { color: #800080; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #c00000; }
+.muControl { color: #c0a020; }
 -->
 </style>
 
@@ -50,6 +53,77 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">10</span>  <span class="Comment"># newline</span>
     <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># eof</span>
   ]
+]
+
+<span class="muScenario">scenario</span> write-to-fake-file [
+  <span class="Constant">local-scope</span>
+  assume-filesystem [
+  ]
+  sink:address:sink:character, writer:number/routine<span class="Special"> &lt;- </span>start-writing filesystem:address:filesystem, <span class="Constant">[a]</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">120/x</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">121/y</span>
+  close sink
+  wait-for-routine writer
+  contents-read-back:address:array:character<span class="Special"> &lt;- </span>slurp filesystem, <span class="Constant">[a]</span>
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal contents-read-back, <span class="Constant">[xy]</span>
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># file contents read back exactly match what was written</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> write-to-fake-file-that-exists [
+  <span class="Constant">local-scope</span>
+  assume-filesystem [
+    <span class="Constant">[a]</span><span class="Special"> &lt;- </span><span class="Constant">[]</span>
+  ]
+  sink:address:sink:character, writer:number/routine<span class="Special"> &lt;- </span>start-writing filesystem:address:filesystem, <span class="Constant">[a]</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">120/x</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">121/y</span>
+  close sink
+  wait-for-routine writer
+  contents-read-back:address:array:character<span class="Special"> &lt;- </span>slurp filesystem, <span class="Constant">[a]</span>
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal contents-read-back, <span class="Constant">[xy]</span>
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># file contents read back exactly match what was written</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> write-to-existing-file-preserves-other-files [
+  <span class="Constant">local-scope</span>
+  assume-filesystem [
+    <span class="Constant">[a]</span><span class="Special"> &lt;- </span><span class="Constant">[]</span>
+    <span class="Constant">[b]</span><span class="Special"> &lt;- </span>[
+<span class="Constant">      |bcd|</span>
+    ]
+  ]
+  sink:address:sink:character, writer:number/routine<span class="Special"> &lt;- </span>start-writing filesystem:address:filesystem, <span class="Constant">[a]</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">120/x</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">121/y</span>
+  close sink
+  wait-for-routine writer
+  contents-read-back:address:array:character<span class="Special"> &lt;- </span>slurp filesystem, <span class="Constant">[a]</span>
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal contents-read-back, <span class="Constant">[xy]</span>
+  other-file-contents:address:array:character<span class="Special"> &lt;- </span>slurp filesystem, <span class="Constant">[b]</span>
+  <span class="Constant">11</span>:boolean/<span class="Special">raw &lt;- </span>equal other-file-contents, <span class="Constant">[bcd</span>
+<span class="Constant">]</span>
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># file contents read back exactly match what was written</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># other files also continue to persist unchanged</span>
+  ]
+]
+
+<span class="muRecipe">def</span> slurp fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>contents:address:array:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  source:address:source:character<span class="Special"> &lt;- </span>start-reading fs, filename
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30/capacity</span>
+  <span class="Delimiter">{</span>
+    c:character, done?:boolean, source<span class="Special"> &lt;- </span>read source
+    <span class="muControl">break-if</span> done?
+    buf<span class="Special"> &lt;- </span>append buf, c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  contents<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 </pre>
 </body>

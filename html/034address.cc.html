@@ -304,7 +304,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">int</span> size = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// array allocation</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array size is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;array length is &quot;</span> &lt;&lt; ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     size = <span class="Comment">/*</span><span class="Comment">space for length</span><span class="Comment">*/</span><span class="Constant">1</span> + size*ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>size<span class="Delimiter">);</span>
@@ -320,10 +320,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(code)</span>
 <span class="Normal">int</span> allocate<span class="Delimiter">(</span><span class="Normal">int</span> size<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// include space for refcount</span>
-  size++<span class="Delimiter">;</span>
+  ++size<span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;allocating size &quot;</span> &lt;&lt; size &lt;&lt; end<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   Total_alloc += size;</span>
-<span class="CommentedCode">//?   Num_alloc++;</span>
+<span class="CommentedCode">//?   ++Num_alloc;</span>
   <span class="Comment">// Allocate Special-cases</span>
   <span class="Comment">// compute the region of memory to return</span>
   <span class="Comment">// really crappy at the moment</span>
@@ -385,8 +385,8 @@ def main [
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {5: &quot;literal&quot;}</span>
-<span class="traceContains">+mem: array size is 5</span>
-<span class="Comment"># don't forget the extra location for array size, and the second extra location for the refcount</span>
+<span class="traceContains">+mem: array length is 5</span>
+<span class="Comment"># don't forget the extra location for array length, and the second extra location for the refcount</span>
 <span class="traceContains">+mem: storing 7 in location 3</span>
 
 <span class="Delimiter">:(scenario new_empty_array)</span>
@@ -396,8 +396,8 @@ def main [
   <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {0: &quot;literal&quot;}</span>
-<span class="traceContains">+mem: array size is 0</span>
-<span class="Comment"># one location for array size, and one for the refcount</span>
+<span class="traceContains">+mem: array length is 0</span>
+<span class="Comment"># one location for array length, and one for the refcount</span>
 <span class="traceContains">+mem: storing 2 in location 3</span>
 
 <span class="Comment">//: If a routine runs out of its initial allocation, it should allocate more.</span>

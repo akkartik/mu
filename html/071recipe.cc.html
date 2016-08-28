@@ -68,12 +68,58 @@ put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> 
 type_ordinal recipe = put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">,</span> Next_type_ordinal++<span class="Delimiter">);</span>
 get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> recipe<span class="Delimiter">).</span>name = <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(before &quot;End Null-type is_disqualified Exceptions&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type &amp;&amp; contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-  x<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">);</span>
-  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
+<span class="Delimiter">:(after &quot;Begin transform_names Ingredient Special-cases(ingredient, inst, caller)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_recipe_literal<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> caller<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  initialize_recipe_literal<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(after &quot;Begin transform_names Product Special-cases(product, inst, caller)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_recipe_literal<span class="Delimiter">(</span>product<span class="Delimiter">,</span> caller<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  initialize_recipe_literal<span class="Delimiter">(</span>product<span class="Delimiter">);</span>
+  <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> is_recipe_literal<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_reagent_with_type<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;you can't use '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' as a recipe literal when it's also a variable</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
+<span class="Normal">void</span> initialize_recipe_literal<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  x<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">);</span>
+  x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+<span class="Normal">bool</span> contains_reagent_with_type<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_matching_non_recipe_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_matching_non_recipe_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Normal">bool</span> is_matching_non_recipe_literal<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name != name<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;recipe-literal&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: It's confusing to use variable names that are also recipe names. Always</span>
+<span class="Comment">//: assume variable types override recipe literals.</span>
+<span class="Delimiter">:(scenario error_on_recipe_literal_used_as_a_variable)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  local-scope
+  <span class="Normal">a</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Identifier">break</span> <span class="Constant">0</span>
+  <span class="Normal">break</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+error: main: you can't use 'break' as a recipe literal when it's also a variable</span>
+<span class="traceContains">+error: main: missing type for 'break' in 'a:boolean &lt;- equal break, 0'</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CALL<span class="Delimiter">,</span>

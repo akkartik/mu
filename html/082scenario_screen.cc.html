@@ -161,10 +161,13 @@ def main [
 $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenarios run_mu_scenario)</span>
 
+<span class="Comment">//: It's easier to implement assume-screen and other similar scenario-only</span>
+<span class="Comment">//: primitives if they always write to a fixed location. So we'll assign a</span>
+<span class="Comment">//: single fixed location for the per-scenario screen, keyboard, file system,</span>
+<span class="Comment">//: etc. Carve space for these fixed locations out of the reserved-for-test</span>
+<span class="Comment">//: locations.</span>
+
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Comment">// Scenarios may not define default-space, so they should fit within the</span>
-<span class="Comment">// initial area of memory reserved for tests. We'll put the predefined</span>
-<span class="Comment">// variables available to them at the end of that region.</span>
 <span class="Normal">const</span> <span class="Normal">int</span> Max_variables_in_scenarios = Reserved_for_tests-<span class="Constant">100</span><span class="Delimiter">;</span>
 <span class="Normal">int</span> Next_predefined_global_for_scenarios = Max_variables_in_scenarios<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
@@ -192,9 +195,17 @@ Name[r][<span class="Constant">&quot;screen&quot;</span>] = SCREEN<span class="D
 <span class="Comment">// `screen:address:screen &lt;- new-fake-screen width, height`</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;assume-screen&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   curr<span class="Delimiter">.</span>name = <span class="Constant">&quot;new-fake-screen&quot;</span><span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:screen/raw&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// only allowed in scenario blocks</span>
-  curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: 'assume-screen' has no products</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!starts_with<span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;scenario_&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;: 'assume-screen' can't be called here, only in scenarios</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+    curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;screen:address:screen/raw&quot;</span><span class="Delimiter">));</span>
+    curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>SCREEN<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario assume_screen_shows_up_in_errors)</span>
@@ -211,6 +222,14 @@ SCREEN_SHOULD_CONTAIN<span class="Delimiter">,</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen-should-contain&quot;</span><span class="Delimiter">,</span> SCREEN_SHOULD_CONTAIN<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> SCREEN_SHOULD_CONTAIN: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'screen-should-contain' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'screen-should-contain' should be a literal string, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
@@ -227,6 +246,18 @@ SCREEN_SHOULD_CONTAIN_IN_COLOR<span class="Delimiter">,</span>
 put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;screen-should-contain-in-color&quot;</span><span class="Delimiter">,</span> SCREEN_SHOULD_CONTAIN_IN_COLOR<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
 <span class="Normal">case</span> SCREEN_SHOULD_CONTAIN_IN_COLOR: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'screen-should-contain-in-color' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'screen-should-contain-in-color' should be a number (color code), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'screen-should-contain-in-color' should be a literal string, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
@@ -269,7 +300,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> row = <span class="Constant">0</span><span class="Delimiter">;</span> row &lt; screen_height<span class="Delimiter">;</span> ++row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     cursor<span class="Delimiter">.</span>skip_whitespace_and_comments<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> != <span class="Constant">'.'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: each row of the expected screen should start with a '.'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> column = <span class="Constant">0</span><span class="Delimiter">;</span>  column &lt; screen_width<span class="Delimiter">;</span>  ++column<span class="Delimiter">,</span> addr+= <span class="Comment">/*</span><span class="Comment">size of screen-cell</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">const</span> <span class="Normal">int</span> cell_color_offset = <span class="Constant">1</span><span class="Delimiter">;</span>
       <span class="Normal">uint32_t</span> curr = cursor<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
@@ -321,10 +356,17 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       <span class="Normal">if</span> <span class="Delimiter">(</span>!Scenario_testing_scenario<span class="Delimiter">)</span> Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
       <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> == <span class="Constant">'.'</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>get<span class="Delimiter">()</span> != <span class="Constant">'.'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: row &quot;</span> &lt;&lt; row &lt;&lt; <span class="Constant">&quot; of the expected screen is too long</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   cursor<span class="Delimiter">.</span>skip_whitespace_and_comments<span class="Delimiter">();</span>
-  assert<span class="Delimiter">(</span>cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">());</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!cursor<span class="Delimiter">.</span>at_end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected screen has too many rows</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 raw_string_stream::raw_string_stream<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; backing<span class="Delimiter">)</span> :index<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> max<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>backing<span class="Delimiter">)),</span> buf<span class="Delimiter">(</span>backing<span class="Delimiter">.</span>c_str<span class="Delimiter">())</span> <span class="Delimiter">{}</span>

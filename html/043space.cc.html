@@ -198,7 +198,7 @@ def main [
   <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
 ]
 <span class="Comment"># allocate space for x and y, as well as the chaining slot at 0</span>
-<span class="traceContains">+mem: array size is 3</span>
+<span class="traceContains">+mem: array length is 3</span>
 
 <span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;number-of-locals&quot;</span><span class="Delimiter">)</span>
@@ -275,14 +275,15 @@ try_reclaim_locals<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Comment">/*</span><span class="Comment">leave default space for last</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>exiting_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; inst = exiting_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> reagent&amp; product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
       <span class="Comment">// local variables only</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// tests often want to check such locations after they run</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>escaping<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// tests often want to check such locations after they run</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>escaping<span class="Delimiter">(</span>product<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Comment">// End Checks For Reclaiming Locals</span>
-      trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;clearing &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
-      zeros<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
-      write_memory<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> zeros<span class="Delimiter">);</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;clearing &quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
+      zeros<span class="Delimiter">.</span>resize<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>product<span class="Delimiter">));</span>
+      write_memory<span class="Delimiter">(</span>product<span class="Delimiter">,</span> zeros<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;automatically abandoning &quot;</span> &lt;&lt; current_call<span class="Delimiter">().</span>default_space &lt;&lt; end<span class="Delimiter">();</span>
@@ -300,8 +301,8 @@ try_reclaim_locals<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">long</span> <span class="Normal">long</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>r == current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>caller_uses_product<span class="Delimiter">(</span>i<span class="Delimiter">))</span>
-      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>caller_uses_product<span class="Delimiter">(</span>i<span class="Delimiter">))</span>
+        <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>

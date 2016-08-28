@@ -454,28 +454,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after init]</span>
     <span class="Comment"># buffer stdin into buffered-stdin, try to read from buffered-stdin</span>
     buffer-routine:number<span class="Special"> &lt;- </span>start-running buffer-lines, source, buffered-stdin
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty?<span class="Special"> &lt;- </span>channel-empty? buffered-chan
     assert empty?:boolean, <span class="Constant">[ </span>
 <span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]</span>
     <span class="Comment"># write 'a'</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty?<span class="Special"> &lt;- </span>channel-empty? buffered-chan
     assert empty?:boolean, <span class="Constant">[ </span>
 <span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']</span>
     <span class="Comment"># write 'b'</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">98/b</span>
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty?<span class="Special"> &lt;- </span>channel-empty? buffered-chan
     assert empty?:boolean, <span class="Constant">[ </span>
 <span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']</span>
     <span class="Comment"># write newline</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10/newline</span>
     restart buffer-routine
-    wait-for-routine buffer-routine
+    wait-for-routine-to-block buffer-routine
     empty?<span class="Special"> &lt;- </span>channel-empty? buffered-chan
     data-emitted?:boolean<span class="Special"> &lt;- </span>not empty?
     assert data-emitted?, <span class="Constant">[ </span>

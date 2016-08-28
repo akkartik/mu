@@ -185,12 +185,13 @@ Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span
 ^L
 
 trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Normal">int</span> Trace_errors = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// used only when Trace_stream is NULL</span>
 
 <span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
 
 <span class="Comment">// Errors are a special layer.</span>
-<span class="PreProc">#define raise  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
+<span class="PreProc">#define raise  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">++Trace_errors</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
 <span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
 <span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>

@@ -21,8 +21,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.CommentedCode { color: #6c6c6c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -95,6 +96,7 @@ Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
     assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_routine_label<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?     cerr &lt;&lt; &quot;schedule: &quot; &lt;&lt; current_routine_label() &lt;&lt; '\n';</span>
     run_current_routine<span class="Delimiter">(</span>Scheduling_interval<span class="Delimiter">);</span>
     <span class="Comment">// Scheduler State Transitions</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
@@ -104,6 +106,7 @@ Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
     <span class="Comment">// Scheduler Cleanup</span>
     <span class="Comment">// End Scheduler Cleanup</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// End Run Routine</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -128,8 +131,12 @@ Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 string current_routine_label<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> routine_label<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+string routine_label<span class="Delimiter">(</span>routine* r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
-  <span class="Normal">const</span> call_stack&amp; calls = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
+  <span class="Normal">const</span> call_stack&amp; calls = r<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_iterator p = calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != calls<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>p != calls<span class="Delimiter">.</span>begin<span class="Delimiter">())</span> result &lt;&lt; <span class="Constant">'/'</span><span class="Delimiter">;</span>
     result &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
@@ -172,7 +179,7 @@ Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</s
 Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
 id = Next_routine_id<span class="Delimiter">;</span>
-Next_routine_id++<span class="Delimiter">;</span>
+<span class="traceContains">++Next_routine_id;</span>
 
 <span class="Comment">//: routines save the routine that spawned them</span>
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>

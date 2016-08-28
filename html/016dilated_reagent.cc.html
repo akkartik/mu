@@ -89,32 +89,35 @@ $error: <span class="Constant">0</span>
 
 <span class="Comment">// Assume the first letter is an open bracket, and read everything until the</span>
 <span class="Comment">// matching close bracket.</span>
-<span class="Comment">// We balance {} () and []. And we skip one character after '\'.</span>
+<span class="Comment">// We balance {} () and [].</span>
 string slurp_balanced_bracket<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream result<span class="Delimiter">;</span>
   <span class="Normal">char</span> c<span class="Delimiter">;</span>
   list&lt;<span class="Normal">char</span>&gt; open_brackets<span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Comment">// always silently skip the next character</span>
-      result &lt;&lt; c<span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>!<span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-      result &lt;&lt; c<span class="Delimiter">;</span>
-      <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'('</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;unbalanced ')'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
       assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">);</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'['</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;unbalanced ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'{'</span><span class="Delimiter">)</span> open_brackets<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>c<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="Constant">'}'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      assert<span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> == <span class="Constant">'{'</span><span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>open_brackets<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || open_brackets<span class="Delimiter">.</span>back<span class="Delimiter">()</span> != <span class="Constant">'{'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        raise &lt;&lt; <span class="Constant">&quot;unbalanced '}'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
       open_brackets<span class="Delimiter">.</span>pop_back<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     result &lt;&lt; c<span class="Delimiter">;</span>

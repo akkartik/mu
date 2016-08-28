@@ -69,23 +69,24 @@ def main [
   <span class="Comment">// allocate an array just large enough for it</span>
   <span class="Normal">int</span> string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   Total_alloc += string_length+1;</span>
-<span class="CommentedCode">//?   Num_alloc++;</span>
-  ensure_space<span class="Delimiter">(</span>string_length+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// don't forget the extra location for array size</span>
-  <span class="Comment">// initialize string</span>
-  <span class="Normal">int</span> result = Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
-  <span class="Comment">// initialize refcount</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc++<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Comment">// store length</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc++<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
+<span class="CommentedCode">//?   ++Num_alloc;</span>
+  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>string_length+<span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string refcount 0 in location &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">int</span> curr_address = result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string length &quot;</span> &lt;&lt; string_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
+  ++curr_address<span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
   <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; string_length<span class="Delimiter">;</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
     assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
     tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
+    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string character &quot;</span> &lt;&lt; curr_character &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
+    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
     curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
-    ++Current_routine<span class="Delimiter">-&gt;</span>alloc<span class="Delimiter">;</span>
+    ++curr_address<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// mu strings are not null-terminated in memory</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
@@ -133,13 +134,13 @@ def main [
 
 <span class="Comment">//: Allocate more to routine when initializing a literal string</span>
 <span class="Delimiter">:(scenario new_string_overflow)</span>
-<span class="Special">% Initial_memory_per_routine = 2;</span>
+<span class="Special">% Initial_memory_per_routine = 3;</span>
 def main [
   <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the array size into account</span>
+  <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
 ]
-<span class="traceContains">+new: routine allocated memory from 1000 to 1002</span>
-<span class="traceContains">+new: routine allocated memory from 1002 to 1004</span>
+<span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>
+<span class="traceContains">+new: routine allocated memory from 1003 to 1006</span>
 
 <span class="Comment">//: helpers</span>
 <span class="Delimiter">:(code)</span>
@@ -157,7 +158,7 @@ def main [
 
 string read_mu_string<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  address++<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
+  ++address<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
   <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>size == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   ostringstream tmp<span class="Delimiter">;</span>
