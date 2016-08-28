@@ -176,7 +176,6 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   trace(9990, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
-  if (Trace_main) delete Trace_stream, Trace_stream = NULL;
   teardown();
 }
 :(code)
@@ -218,6 +217,7 @@ void cleanup_main() {
     fout << Trace_stream->readable_contents("");
     fout.close();
   }
+  if (Trace_stream) delete Trace_stream, Trace_stream = NULL;
 }
 :(before "End One-time Setup")
 atexit(cleanup_main);
