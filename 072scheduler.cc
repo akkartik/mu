@@ -93,8 +93,12 @@ void skip_to_next_routine() {
 }
 
 string current_routine_label() {
+  return routine_label(Current_routine);
+}
+
+string routine_label(routine* r) {
   ostringstream result;
-  const call_stack& calls = Current_routine->calls;
+  const call_stack& calls = r->calls;
   for (call_stack::const_iterator p = calls.begin(); p != calls.end(); ++p) {
     if (p != calls.begin()) result << '/';
     result << get(Recipe, p->running_recipe).name;
