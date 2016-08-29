@@ -111,23 +111,23 @@ bool should_copy_ingredients() {
 //: We'll need to override these later as we change the definition of routine.
 //: Important that they return referrences into the routine.
 
-inline int& current_step_index() {
+int& current_step_index() {
   return Current_routine->running_step_index;
 }
 
-inline const string& current_recipe_name() {
+const string& current_recipe_name() {
   return get(Recipe, Current_routine->running_recipe).name;
 }
 
-inline const instruction& current_instruction() {
+const instruction& current_instruction() {
   return get(Recipe, Current_routine->running_recipe).steps.at(Current_routine->running_step_index);
 }
 
-inline bool routine::completed() const {
+bool routine::completed() const {
   return running_step_index >= SIZE(get(Recipe, running_recipe).steps);
 }
 
-inline const vector<instruction>& routine::steps() const {
+const vector<instruction>& routine::steps() const {
   return get(Recipe, running_recipe).steps;
 }
 
@@ -325,17 +325,17 @@ bool size_mismatch(const reagent& x, const vector<double>& data) {
   return size_of(x) != SIZE(data);
 }
 
-inline bool is_literal(const reagent& r) {
+bool is_literal(const reagent& r) {
   if (!r.type) return false;
   if (r.type->value == 0)
     assert(!r.type->left && !r.type->right);
   return r.type->value == 0;
 }
 
-inline bool scalar(const vector<int>& x) {
+bool scalar(const vector<int>& x) {
   return SIZE(x) == 1;
 }
-inline bool scalar(const vector<double>& x) {
+bool scalar(const vector<double>& x) {
   return SIZE(x) == 1;
 }
 

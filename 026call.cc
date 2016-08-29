@@ -68,29 +68,29 @@ routine::routine(recipe_ordinal r) {
 }
 
 :(code)
-inline call& current_call() {
+call& current_call() {
   return Current_routine->calls.front();
 }
 
 //:: now update routine's helpers
 
-:(replace{} "inline int& current_step_index()")
-inline int& current_step_index() {
+:(replace{} "int& current_step_index()")
+int& current_step_index() {
   assert(!Current_routine->calls.empty());
   return current_call().running_step_index;
 }
-:(replace{} "inline const string& current_recipe_name()")
-inline const string& current_recipe_name() {
+:(replace{} "const string& current_recipe_name()")
+const string& current_recipe_name() {
   assert(!Current_routine->calls.empty());
   return get(Recipe, current_call().running_recipe).name;
 }
-:(replace{} "inline const instruction& current_instruction()")
-inline const instruction& current_instruction() {
+:(replace{} "const instruction& current_instruction()")
+const instruction& current_instruction() {
   assert(!Current_routine->calls.empty());
   return to_instruction(current_call());
 }
 :(code)
-inline const instruction& to_instruction(const call& call) {
+const instruction& to_instruction(const call& call) {
   return get(Recipe, call.running_recipe).steps.at(call.running_step_index);
 }
 
@@ -139,13 +139,13 @@ def main [
 
 //:: finally, we need to fix the termination conditions for the run loop
 
-:(replace{} "inline bool routine::completed() const")
-inline bool routine::completed() const {
+:(replace{} "bool routine::completed() const")
+bool routine::completed() const {
   return calls.empty();
 }
 
-:(replace{} "inline const vector<instruction>& routine::steps() const")
-inline const vector<instruction>& routine::steps() const {
+:(replace{} "const vector<instruction>& routine::steps() const")
+const vector<instruction>& routine::steps() const {
   assert(!calls.empty());
   return get(Recipe, calls.front().running_recipe).steps;
 }

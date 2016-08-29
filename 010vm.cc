@@ -509,7 +509,7 @@ string to_string(const reagent& r) {
 }
 
 // special name for ignoring some products
-inline bool is_dummy(const reagent& x) {
+bool is_dummy(const reagent& x) {
   return x.name == "_";
 }
 

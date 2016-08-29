@@ -318,7 +318,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   }
 }
 
-inline int min(int a, int b) {
+int min(int a, int b) {
   return (a < b) ? a : b;
 }
 
