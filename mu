@@ -11,11 +11,10 @@ make -q || make >&2 || exit 1
 # Might be too clever..
 if [[ $CXXFLAGS && $# -gt 0 && $1 != '--help' ]]  # latter two conditions are to continue printing the help message
 then
-  ./mu_bin --test-only-app "$@"
-  exit 1
+  FLAGS=--test-only-app
 fi
 
-./mu_bin "$@"
+./mu_bin $FLAGS "$@"
 
 # Scenarios considered:
 #   mu
