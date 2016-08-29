@@ -5,7 +5,8 @@
 //:: Display management
 
 :(before "End Globals")
-int Display_row = 0, Display_column = 0;
+int Display_row = 0;
+int Display_column = 0;
 bool Autodisplay = true;
 
 :(before "End Primitive Recipe Declarations")
