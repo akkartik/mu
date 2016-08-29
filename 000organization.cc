@@ -105,6 +105,9 @@
 //
 // End Globals
 
+// Constants
+// End Constants
+
 int main(int argc, char* argv[]) {
   atexit(teardown);
 

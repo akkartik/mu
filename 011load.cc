@@ -155,7 +155,7 @@ string next_word(istream& in) {
   return out.str();
 }
 
-:(before "End Globals")
+:(before "End Constants")
 // word boundaries
 const string Terminators("(){}");
 :(code)

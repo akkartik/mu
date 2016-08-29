@@ -79,7 +79,7 @@ container foo:t [
 ]
 +error: foo: type ingredient 't' must begin with an underscore
 
-:(before "End Globals")
+:(before "End Constants")
 // We'll use large type ordinals to mean "the following type of the variable".
 // For example, if we have a generic type called foo:_elem, the type
 // ingredient _elem in foo's type_info will have value START_TYPE_INGREDIENTS,

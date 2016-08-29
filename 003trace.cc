@@ -383,7 +383,7 @@ using std::ofstream;
 
 #include "termbox/termbox.h"
 
-:(before "End Globals")
+:(before "End Constants")
 //: In future layers we'll use the depth field as follows:
 //:
 //: Errors will be depth 0.

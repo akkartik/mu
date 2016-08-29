@@ -72,7 +72,7 @@ scenario assume-filesystem [
   ]
 ]
 
-:(before "End Globals")
+:(before "End Fixed Scenario Locations")
 const int FILESYSTEM = Next_predefined_global_for_scenarios++;
 //: give 'filesystem' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")

@@ -143,10 +143,10 @@ assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 // initialize a default-space.
 assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
-:(before "End Globals")
-// Scenario Globals.
+:(before "End Constants")
+// Fixed Scenario Locations.
 const int SCREEN = Next_predefined_global_for_scenarios++;
-// End Scenario Globals.
+// End Fixed Scenario Locations.
 
 //: give 'screen' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")

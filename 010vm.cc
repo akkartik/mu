@@ -412,7 +412,7 @@ string_tree* property(const reagent& r, const string& name) {
   return NULL;
 }
 
-:(before "End Globals")
+:(before "End Constants")
 const string Ignore(",");  // commas are ignored in mu except within [] strings
 :(code)
 void skip_whitespace_but_not_newline(istream& in) {

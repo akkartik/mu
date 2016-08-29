@@ -33,7 +33,7 @@ scenario keyboard-in-scenario [
   ]
 ]
 
-:(before "End Scenario Globals")
+:(before "End Fixed Scenario Locations")
 const int CONSOLE = Next_predefined_global_for_scenarios++;
 //: give 'console' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")
