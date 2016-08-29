@@ -214,6 +214,28 @@ START_TRACING_UNTIL_END_OF_SCOPE
 :(before "End Includes")
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
+#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
+#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
+  if (trace_count("error") > 0) { \
+    ++Num_failures; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
+    DUMP("error"); \
+    Passed = false; \
+    return; \
+  }
+
+#define CHECK_TRACE_COUNT(label, count) \
+  if (trace_count(label) != (count)) { \
+    ++Num_failures; \
+    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): trace_count of " << label << " should be " << count << '\n'; \
+    cerr << "  got " << trace_count(label) << '\n';  /* multiple eval */ \
+    DUMP(label); \
+    Passed = false; \
+    return;  /* Currently we stop at the very first failure. */ \
+  }
+
+#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
+
 :(code)
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
   if (!Trace_stream) return false;
@@ -296,26 +318,6 @@ int trace_count_prefix(string label, string prefix) {
   return result;
 }
 
-#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
-#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
-  if (trace_count("error") > 0) { \
-    ++Num_failures; \
-    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
-    DUMP("error"); \
-    Passed = false; \
-    return; \
-  }
-
-#define CHECK_TRACE_COUNT(label, count) \
-  if (trace_count(label) != (count)) { \
-    ++Num_failures; \
-    cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): trace_count of " << label << " should be " << count << '\n'; \
-    cerr << "  got " << trace_count(label) << '\n';  /* multiple eval */ \
-    DUMP(label); \
-    Passed = false; \
-    return;  /* Currently we stop at the very first failure. */ \
-  }
-
 bool trace_doesnt_contain(string label, string line) {
   return trace_count(label, line) == 0;
 }
@@ -324,8 +326,6 @@ bool trace_doesnt_contain(string expected) {
   vector<string> tmp = split_first(expected, ": ");
   return trace_doesnt_contain(tmp.at(0), tmp.at(1));
 }
-
-#define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
 
 vector<string> split(string s, string delim) {
   vector<string> result;
