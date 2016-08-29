@@ -245,7 +245,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
 //: implement 'allocate' based on size
 
 :(before "End Globals")
-const int Reserved_for_tests = 1000;
+extern const int Reserved_for_tests = 1000;
 int Memory_allocated_until = Reserved_for_tests;
 int Initial_memory_per_routine = 100000;
 :(before "End Setup")

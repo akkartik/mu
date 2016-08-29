@@ -79,13 +79,13 @@ container foo:t [
 ]
 +error: foo: type ingredient 't' must begin with an underscore
 
-:(before "End Constants")
+:(before "End Globals")
 // We'll use large type ordinals to mean "the following type of the variable".
 // For example, if we have a generic type called foo:_elem, the type
 // ingredient _elem in foo's type_info will have value START_TYPE_INGREDIENTS,
 // and we'll handle it by looking in the current reagent for the next type
 // that appears after foo.
-const int START_TYPE_INGREDIENTS = 2000;
+extern const int START_TYPE_INGREDIENTS = 2000;
 :(before "End Commandline Parsing")  // after loading .mu files
 assert(Next_type_ordinal < START_TYPE_INGREDIENTS);
 

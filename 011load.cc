@@ -155,9 +155,9 @@ string next_word(istream& in) {
   return out.str();
 }
 
-:(before "End Constants")
+:(before "End Globals")
 // word boundaries
-const string Terminators("(){}");
+extern const string Terminators("(){}");
 :(code)
 void slurp_word(istream& in, ostream& out) {
   char c;

@@ -92,7 +92,9 @@ bool Hide_errors = false;
 Hide_errors = false;
 
 :(before "End Types")
-// pre-define some globals that trace_stream needs to know about
+// Pre-define some global constants that trace_stream needs to know about.
+// Since they're in the Types section, they'll be included in any cleaved
+// compilation units. So no extern linkage.
 const int Max_depth = 9999;
 const int Error_depth = 0;  // definitely always print errors
 const int App_depth = 2;  // temporarily where all mu code will trace to
@@ -383,14 +385,14 @@ using std::ofstream;
 
 #include "termbox/termbox.h"
 
-:(before "End Constants")
+:(before "End Globals")
 //: In future layers we'll use the depth field as follows:
 //:
 //: Errors will be depth 0.
 //: Mu 'applications' will be able to use depths 1-100 as they like.
 //: Primitive statements will occupy 101-9989
-const int Initial_callstack_depth = 101;
-const int Max_callstack_depth = 9989;
+extern const int Initial_callstack_depth = 101;
+extern const int Max_callstack_depth = 9989;
 //: Finally, details of primitive mu statements will occupy depth 9990-9999 (more on that later as well)
 //:
 //: This framework should help us hide some details at each level, mixing

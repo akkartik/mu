@@ -133,7 +133,7 @@ $error: 0
 //: locations.
 
 :(before "End Globals")
-const int Max_variables_in_scenarios = Reserved_for_tests-100;
+extern const int Max_variables_in_scenarios = Reserved_for_tests-100;
 int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
@@ -143,10 +143,10 @@ assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 // initialize a default-space.
 assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
-:(before "End Constants")
-// Fixed Scenario Locations.
-const int SCREEN = Next_predefined_global_for_scenarios++;
-// End Fixed Scenario Locations.
+:(before "End Globals")
+// Scenario Globals.
+extern const int SCREEN = Next_predefined_global_for_scenarios++;
+// End Scenario Globals.
 
 //: give 'screen' a fixed location in scenarios
 :(before "End Special Scenario Variable Names(r)")

@@ -10,7 +10,8 @@
 
 :(before "End Types")
 typedef void (*test_fn)(void);
-:(before "End Constants")
+:(before "Globals")
+// move a global ahead into types that we can't generate an extern declaration for
 const test_fn Tests[] = {
   #include "test_list"  // auto-generated; see makefile
 };

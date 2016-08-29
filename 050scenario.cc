@@ -159,6 +159,7 @@ for (int i = 0; i < SIZE(Scenarios); ++i) {
 }
 
 :(before "End Globals")
+// this isn't a constant, just a global of type const*
 const scenario* Current_scenario = NULL;
 :(code)
 void run_mu_scenario(const scenario& s) {
