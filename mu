@@ -9,7 +9,7 @@ make -q || make >&2 || exit 1
 # disabling optimizations. In that case don't run all tests if I load any app
 # files.
 # Might be too clever..
-if [[ $CFLAGS && $# -gt 0 && $1 != '--help' ]]  # latter two conditions are to continue printing the help message
+if [[ $CXXFLAGS && $# -gt 0 && $1 != '--help' ]]  # latter two conditions are to continue printing the help message
 then
   ./mu_bin --test-only-app "$@"
   exit 1
@@ -22,4 +22,4 @@ fi
 #   mu --help
 #   mu test
 #   mu test file1.mu
-#   CFLAGS=-g mu test file1.mu  # run only tests in file1.mu
+#   CXXFLAGS=-g mu test file1.mu  # run only tests in file1.mu
