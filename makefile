@@ -25,7 +25,7 @@ mu_bin: mu.cc makefile function_list test_list cleave/cleave
 
 BUILD_SRC=$(wildcard .build/*.cc)
 .build/mu_bin: $(BUILD_SRC:.cc=.o) termbox/libtermbox.a
-	${CXX} .build/*.o termbox/libtermbox.a -o .build/mu_bin
+	${CXX} ${LDFLAGS} .build/*.o termbox/libtermbox.a -o .build/mu_bin
 
 .build/%.o: .build/%.cc .build/header .build/global_declarations_list
 	@# explicitly state default rule since we added dependencies
