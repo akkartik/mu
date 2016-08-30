@@ -1,26 +1,50 @@
+# [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
+# (layers)   |        |              |             |
+#          tangle  cleave          $CXX          $CXX
+#
+# [0-9]*.mu -> core.mu
+
 all: mu_bin core.mu
 
 CXX ?= c++
 CXXFLAGS ?= -g -O3
-# reduce memory usage for small servers
-CXXFLAGS := ${CXXFLAGS} --param ggc-min-expand=1 --param ggc-min-heapsize=32768
+CXXFLAGS := ${CXXFLAGS} -Wall -Wextra -ftrapv -fno-strict-aliasing
 
-mu_bin: makefile mu.cc termbox/libtermbox.a function_list test_list
-	${CXX} ${CXXFLAGS} -Wall -Wextra -ftrapv -fno-strict-aliasing mu.cc termbox/libtermbox.a -o mu_bin
+core.mu: [0-9]*.mu mu.cc makefile
+	cat $$(./enumerate/enumerate --until zzz |grep '.mu$$') > core.mu
+
+mu_bin: mu.cc makefile function_list test_list cleave/cleave
+	@mkdir -p .build
+	@cp function_list test_list .build
+	@mkdir -p .build/termbox
+	@cp termbox/termbox.h .build/termbox
+	./cleave/cleave mu.cc .build
+	@# recursive (potentially parallel) make to pick up BUILD_SRC after cleave
+	@make .build/mu_bin
+	cp .build/mu_bin .
+
+BUILD_SRC=$(wildcard .build/*.cc)
+.build/mu_bin: $(BUILD_SRC:.cc=.o) termbox/libtermbox.a
+	${CXX} .build/*.o termbox/libtermbox.a -o .build/mu_bin
+
+.build/%.o: .build/%.cc .build/header .build/global_declarations_list
+	@# explicitly state default rule since we added dependencies
+	${CXX} ${CXXFLAGS} -c $< -o $@
 
 # To see what the program looks like after all layers have been applied, read
 # mu.cc
 mu.cc: [0-9]*.cc enumerate/enumerate tangle/tangle
 	./tangle/tangle $$(./enumerate/enumerate --until zzz |grep -v '.mu$$') > mu.cc
 
-core.mu: [0-9]*.mu mu.cc
-	cat $$(./enumerate/enumerate --until zzz |grep '.mu$$') > core.mu
-
 enumerate/enumerate:
 	cd enumerate && make
 
 tangle/tangle:
 	cd tangle && make && ./tangle test
+
+cleave/cleave: cleave/cleave.cc
+	cd cleave && make
+	rm -rf .build
 
 termbox/libtermbox.a: termbox/*.c termbox/*.h termbox/*.inl
 	cd termbox && make
@@ -43,12 +67,17 @@ test_list: mu.cc
 	@grep -h "^\s*void test_" mu.cc |perl -pwe 's/^\s*void (.*)\(\) \{.*/$$1,/' > test_list
 	@grep -h "^\s*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/test_$$1,/' >> test_list
 
+.build/global_declarations_list: .build/global_definitions_list
+	grep ';' .build/global_definitions_list |perl -pwe 's/[=(].*/;/' |perl -pwe 's/^[^\/# ]/extern $$&/' |perl -pwe 's/^extern extern /extern /' > .build/global_declarations_list
+
 .PHONY: all clean clena
 
 clena: clean
 clean:
 	cd enumerate && make clean
 	cd tangle && make clean
+	cd cleave && make clean
 	cd termbox && make clean
 	-rm mu.cc core.mu mu_bin *_list
 	-rm -rf mu_bin.*
+	-rm -rf .build
