@@ -10,10 +10,10 @@ def main [
 ]
 +parse:   product: {1: "number", "foo": ("bar" ("baz" "quux"))}
 
-:(before "End Parsing Reagent Property(value)")
+:(before "End Parsing Dilated Reagent Property(value)")
 value = parse_string_tree(value);
-:(before "End Parsing Reagent Type Property(value)")
-value = parse_string_tree(value);
+:(before "End Parsing Dilated Reagent Type Property(type_names)")
+type_names = parse_string_tree(type_names);
 
 :(code)
 string_tree* parse_string_tree(string_tree* s) {

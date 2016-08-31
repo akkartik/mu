@@ -107,17 +107,17 @@ if (s.at(0) == '{') {
     return;
   }
   {
-    string_tree* value = new string_tree(next_word(in));
-    // End Parsing Reagent Type Property(value)
-    type = new_type_tree(value);
-    delete value;
+    string_tree* type_names = new string_tree(next_word(in));
+    // End Parsing Dilated Reagent Type Property(type_names)
+    type = new_type_tree(type_names);
+    delete type_names;
   }
   while (has_data(in)) {
     string key = slurp_key(in);
     if (key.empty()) continue;
     if (key == "}") continue;
     string_tree* value = new string_tree(next_word(in));
-    // End Parsing Reagent Property(value)
+    // End Parsing Dilated Reagent Property(value)
     properties.push_back(pair<string, string_tree*>(key, value));
   }
   return;

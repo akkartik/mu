@@ -9,7 +9,7 @@
 :(scenarios load)
 :(scenario string_literal)
 def main [
-  1:address:array:character <- copy [abc def]  # copy can't really take a string
+  1:address:array:character <- copy [abc def]
 ]
 +parse:   ingredient: {"abc def": "literal-string"}
 

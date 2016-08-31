@@ -270,6 +270,7 @@ reagent::reagent(const string& s) :original_string(s), type(NULL), value(0), ini
   first_row >> std::noskipws;
   name = slurp_until(first_row, ':');
   string_tree* type_names = parse_property_list(first_row);
+  // End Parsing Reagent Type Property(type_names)
   type = new_type_tree(type_names);
   delete type_names;
   // special cases
