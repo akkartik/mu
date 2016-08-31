@@ -38,9 +38,9 @@
 
 // Tune this parameter to balance time for initial vs incremental build.
 //
-//   Larger numbers -> larger/fewer compilation units -> faster initial build
-//   Smaller numbers -> smaller compilation units -> faster incremental build
-int Compilation_unit_size = 200;
+//   decrease value -> faster initial build
+//   increase value -> faster incremental build
+int Num_compilation_units = 3;
 
 #include<assert.h>
 #include<cstdlib>
@@ -115,7 +115,9 @@ size_t slurp_some_functions(const vector<string>& in, size_t start, vector<strin
     out.push_back("#include \"global_declarations_list\"");
   out.push_back("");
   size_t curr = start;
-  for (int i = 0; i < Compilation_unit_size; ++i) {
+  while (true) {
+    if (curr >= in.size()) break;
+    if (out.size() >= in.size()/Num_compilation_units) break;
     while (curr < in.size()) {
       // read functions -- lines until unindented '}'
       while (curr < in.size()) {
@@ -137,12 +139,6 @@ size_t slurp_some_functions(const vector<string>& in, size_t start, vector<strin
     }
     try_return:;
   }
-
-  // Idea: Increase the number of functions to include in the next call to
-  // slurp_some_functions.
-  // Early functions are more likely to be larger because later layers added
-  // to them.
-//?   Compilation_unit_size *= 1.5;
   return curr;
 }
 

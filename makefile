@@ -14,6 +14,7 @@ core.mu: [0-9]*.mu mu.cc makefile
 	cat $$(./enumerate/enumerate --until zzz |grep '.mu$$') > core.mu
 
 mu_bin: mu.cc makefile function_list test_list cleave/cleave
+	@date
 	@mkdir -p .build
 	@cp function_list test_list .build
 	@mkdir -p .build/termbox
@@ -21,14 +22,17 @@ mu_bin: mu.cc makefile function_list test_list cleave/cleave
 	./cleave/cleave mu.cc .build
 	@# recursive (potentially parallel) make to pick up BUILD_SRC after cleave
 	@make .build/mu_bin
+	@date
 	cp .build/mu_bin .
 
 BUILD_SRC=$(wildcard .build/*.cc)
 .build/mu_bin: $(BUILD_SRC:.cc=.o) termbox/libtermbox.a
+	@date
 	${CXX} ${LDFLAGS} .build/*.o termbox/libtermbox.a -o .build/mu_bin
 
 .build/%.o: .build/%.cc .build/header .build/global_declarations_list
 	@# explicitly state default rule since we added dependencies
+	@date
 	${CXX} ${CXXFLAGS} -c $< -o $@
 
 # To see what the program looks like after all layers have been applied, read
@@ -47,6 +51,7 @@ cleave/cleave: cleave/cleave.cc
 	rm -rf .build
 
 termbox/libtermbox.a: termbox/*.c termbox/*.h termbox/*.inl
+	@date
 	cd termbox && make
 
 # auto-generated files; by convention they end in '_list'.
