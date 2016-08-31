@@ -340,7 +340,7 @@ type_tree::type_tree(const type_tree& old) {
   right = old.right ? new type_tree(*old.right) : NULL;
 }
 
-string_tree::string_tree(const string_tree& old) {  // :value(old.value) {
+string_tree::string_tree(const string_tree& old) {
   value = old.value;
   left = old.left ? new string_tree(*old.left) : NULL;
   right = old.right ? new string_tree(*old.right) : NULL;
@@ -383,6 +383,26 @@ type_tree::~type_tree() {
 string_tree::~string_tree() {
   delete left;
   delete right;
+}
+
+void append(type_tree*& base, type_tree* extra) {
+  if (!base) {
+    base = extra;
+    return;
+  }
+  type_tree* curr = base;
+  while (curr->right) curr = curr->right;
+  curr->right = extra;
+}
+
+void append(string_tree*& base, string_tree* extra) {
+  if (!base) {
+    base = extra;
+    return;
+  }
+  string_tree* curr = base;
+  while (curr->right) curr = curr->right;
+  curr->right = extra;
 }
 
 string slurp_until(istream& in, char delim) {

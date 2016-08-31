@@ -364,26 +364,6 @@ bool final_type_ingredient(int type_ingredient_index, const type_info& container
   return true;
 }
 
-void append(type_tree*& base, type_tree* extra) {
-  if (!base) {
-    base = extra;
-    return;
-  }
-  type_tree* curr = base;
-  while (curr->right) curr = curr->right;
-  curr->right = extra;
-}
-
-void append(string_tree*& base, string_tree* extra) {
-  if (!base) {
-    base = extra;
-    return;
-  }
-  string_tree* curr = base;
-  while (curr->right) curr = curr->right;
-  curr->right = extra;
-}
-
 void test_replace_type_ingredients_entire() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
