@@ -679,18 +679,18 @@ string trim_floating_point(const string& in) {
 }
 
 void test_trim_floating_point() {
-  CHECK_EQ("", trim_floating_point(""));
-  CHECK_EQ("0", trim_floating_point("000000000"));
-  CHECK_EQ("1.5", trim_floating_point("1.5000"));
-  CHECK_EQ("1.000001", trim_floating_point("1.000001"));
-  CHECK_EQ("23", trim_floating_point("23.000000"));
-  CHECK_EQ("23", trim_floating_point("23.0"));
-  CHECK_EQ("23", trim_floating_point("23."));
-  CHECK_EQ("23", trim_floating_point("23"));
-  CHECK_EQ("3", trim_floating_point("3.000000"));
-  CHECK_EQ("3", trim_floating_point("3.0"));
-  CHECK_EQ("3", trim_floating_point("3."));
-  CHECK_EQ("3", trim_floating_point("3"));
+  CHECK_EQ(trim_floating_point(""), "");
+  CHECK_EQ(trim_floating_point("000000000"), "0");
+  CHECK_EQ(trim_floating_point("1.5000"), "1.5");
+  CHECK_EQ(trim_floating_point("1.000001"), "1.000001");
+  CHECK_EQ(trim_floating_point("23.000000"), "23");
+  CHECK_EQ(trim_floating_point("23.0"), "23");
+  CHECK_EQ(trim_floating_point("23."), "23");
+  CHECK_EQ(trim_floating_point("23"), "23");
+  CHECK_EQ(trim_floating_point("3.000000"), "3");
+  CHECK_EQ(trim_floating_point("3.0"), "3");
+  CHECK_EQ(trim_floating_point("3."), "3");
+  CHECK_EQ(trim_floating_point("3"), "3");
 }
 
 :(before "End Includes")
