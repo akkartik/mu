@@ -669,24 +669,27 @@ ostream& operator<<(ostream& os, no_scientific x) {
 
 string trim_floating_point(const string& in) {
   if (in.empty()) return "";
+  if (in.find('.') == string::npos) return in;
   int length = SIZE(in);
   while (length > 1) {
     if (in.at(length-1) != '0') break;
     --length;
   }
   if (in.at(length-1) == '.') --length;
+  if (length == 0) return "0";
   return in.substr(0, length);
 }
 
 void test_trim_floating_point() {
   CHECK_EQ(trim_floating_point(""), "");
-  CHECK_EQ(trim_floating_point("000000000"), "0");
+  CHECK_EQ(trim_floating_point(".0"), "0");
   CHECK_EQ(trim_floating_point("1.5000"), "1.5");
   CHECK_EQ(trim_floating_point("1.000001"), "1.000001");
   CHECK_EQ(trim_floating_point("23.000000"), "23");
   CHECK_EQ(trim_floating_point("23.0"), "23");
   CHECK_EQ(trim_floating_point("23."), "23");
   CHECK_EQ(trim_floating_point("23"), "23");
+  CHECK_EQ(trim_floating_point("230"), "230");
   CHECK_EQ(trim_floating_point("3.000000"), "3");
   CHECK_EQ(trim_floating_point("3.0"), "3");
   CHECK_EQ(trim_floating_point("3."), "3");
