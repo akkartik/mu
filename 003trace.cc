@@ -216,7 +216,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 
 #define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
 #define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
-  if (trace_count("error") > 0) { \
+  if (Passed && trace_count("error") > 0) { \
     ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
     DUMP("error"); \
@@ -225,7 +225,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
   }
 
 #define CHECK_TRACE_COUNT(label, count) \
-  if (trace_count(label) != (count)) { \
+  if (Passed && trace_count(label) != (count)) { \
     ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): trace_count of " << label << " should be " << count << '\n'; \
     cerr << "  got " << trace_count(label) << '\n';  /* multiple eval */ \
@@ -238,6 +238,7 @@ START_TRACING_UNTIL_END_OF_SCOPE
 
 :(code)
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expected) {
+  if (!Passed) return false;
   if (!Trace_stream) return false;
   vector<string> expected_lines = split(expected, "");
   int curr_expected_line = 0;

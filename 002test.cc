@@ -23,7 +23,7 @@ long Num_failures = 0;
 
 :(before "End Includes")
 #define CHECK(X) \
-  if (!(X)) { \
+  if (Passed && !(X)) { \
     ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << '\n'; \
     Passed = false; \
@@ -31,7 +31,7 @@ long Num_failures = 0;
   }
 
 #define CHECK_EQ(X, Y) \
-  if ((X) != (Y)) { \
+  if (Passed && (X) != (Y)) { \
     ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << " == " << #Y << '\n'; \
     cerr << "  got " << (X) << '\n';  /* BEWARE: multiple eval */ \
