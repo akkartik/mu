@@ -230,7 +230,7 @@ void test_maybe_make_raw() {
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.at(0));
-  CHECK(trace_count("error") == 0);
+  CHECK_EQ(trace_count("error"), 0);
 }
 
 //: Watch out for redefinitions of scenario routines. We should never ever be

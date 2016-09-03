@@ -201,7 +201,7 @@ def main [
 +mem: storing 23 in location 7
 +run: reply
 # no other stores
-% CHECK(trace_count_prefix("mem", "storing") == 7);
+% CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
 
 :(scenario get_on_shape_shifting_container)
 container foo:_t [

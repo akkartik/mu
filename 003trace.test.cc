@@ -12,8 +12,8 @@ void test_trace_check_ignores_other_layers() {
 
 void test_trace_check_ignores_leading_whitespace() {
   trace("test layer 1") << " foo" << end();
-  CHECK(trace_count("test layer 1", /*too little whitespace*/"foo") == 1);
-  CHECK(trace_count("test layer 1", /*too much whitespace*/"  foo") == 1);
+  CHECK_EQ(trace_count("test layer 1", /*too little whitespace*/"foo"), 1);
+  CHECK_EQ(trace_count("test layer 1", /*too much whitespace*/"  foo"), 1);
 }
 
 void test_trace_check_ignores_other_lines() {
@@ -59,7 +59,7 @@ void test_trace_supports_count2() {
 
 void test_trace_count_ignores_trailing_whitespace() {
   trace("test layer 1") << "foo\n" << end();
-  CHECK(trace_count("test layer 1", "foo") == 1);
+  CHECK_EQ(trace_count("test layer 1", "foo"), 1);
 }
 
 // pending: DUMP tests
