@@ -219,7 +219,7 @@ container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, cons
       return all.at(i).second;
   }
   tb_shutdown();
-  raise << "unknown size for type " << to_string(key) << '\n' << end();
+  raise << "unknown size for type '" << to_string(key) << "'\n" << end();
   assert(false);
 }
 
