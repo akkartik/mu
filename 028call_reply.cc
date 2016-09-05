@@ -71,7 +71,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         // End Check RETURN Copy(lhs, rhs)
         if (!types_coercible(rhs, lhs)) {
           raise << maybe(callee.name) << reply_inst.name << " ingredient '" << lhs.original_string << "' can't be saved in '" << rhs.original_string << "'\n" << end();
-          raise << "  (" << to_string(lhs.type) << " vs " << to_string(rhs.type) << ")\n" << end();
+          raise << "  ['" << to_string(lhs.type) << "' vs '" << to_string(rhs.type) << "']\n" << end();
           goto finish_reply_check;
         }
       }
