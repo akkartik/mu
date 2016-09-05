@@ -121,6 +121,9 @@ int main(int argc, char* argv[]) {
   return 0;  // End Main
 }
 
+// Unit Tests
+// End Unit Tests
+
 //: our first directive; will move the include above the program
 :(before "End Includes")
 #include <stdlib.h>
