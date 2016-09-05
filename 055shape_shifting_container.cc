@@ -1,7 +1,6 @@
 //:: Container definitions can contain 'type ingredients'
 
 :(scenario size_of_shape_shifting_container)
-% cerr << "S1\n";
 container foo:_t [
   x:_t
   y:number
@@ -17,7 +16,6 @@ def main [
 +mem: storing 16 in location 5
 
 :(scenario size_of_shape_shifting_container_2)
-% cerr << "S2\n";
 # multiple type ingredients
 container foo:_a:_b [
   x:_a
@@ -29,7 +27,6 @@ def main [
 $error: 0
 
 :(scenario size_of_shape_shifting_container_3)
-% cerr << "S3\n";
 container foo:_a:_b [
   x:_a
   y:_b
@@ -42,7 +39,6 @@ def main [
 $error: 0
 
 :(scenario size_of_shape_shifting_container_4)
-% cerr << "S4\n";
 container foo:_a:_b [
   x:_a
   y:_b
@@ -58,7 +54,6 @@ def main [
 $error: 0
 
 :(scenario shape_shifting_container_extend)
-% cerr << "S5\n";
 container foo:_a [
   x:_a
 ]
@@ -68,7 +63,6 @@ container foo:_a [
 $error: 0
 
 :(scenario shape_shifting_container_extend_error)
-% cerr << "S6\n";
 % Hide_errors = true;
 container foo:_a [
   x:_a
@@ -79,7 +73,6 @@ container foo:_b [
 +error: headers of container 'foo' must use identical type ingredients
 
 :(scenario type_ingredient_must_start_with_underscore)
-% cerr << "S7\n";
 % Hide_errors = true;
 container foo:t [
   x:number
@@ -373,7 +366,6 @@ bool final_type_ingredient(int type_ingredient_index, const type_info& container
 
 :(before "End Unit Tests")
 void test_replace_type_ingredients_entire() {
-  cerr << "U1\n";
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "  y:number\n"
@@ -386,7 +378,6 @@ void test_replace_type_ingredients_entire() {
 }
 
 void test_replace_type_ingredients_tail() {
-  cerr << "U2\n";
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -402,7 +393,6 @@ void test_replace_type_ingredients_tail() {
 }
 
 void test_replace_type_ingredients_head_tail_multiple() {
-  cerr << "U3\n";
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -420,7 +410,6 @@ void test_replace_type_ingredients_head_tail_multiple() {
 }
 
 void test_replace_type_ingredients_head_middle() {
-  cerr << "U4\n";
   run("container foo:_elem [\n"
       "  x:_elem\n"
       "]\n"
@@ -440,7 +429,6 @@ void test_replace_type_ingredients_head_middle() {
 }
 
 void test_replace_last_type_ingredient_with_multiple() {
-  cerr << "U5\n";
   run("container foo:_a:_b [\n"
       "  x:_a\n"
       "  y:_b\n"
@@ -459,7 +447,6 @@ void test_replace_last_type_ingredient_with_multiple() {
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {
-  cerr << "U6\n";
   run("container foo:_a:_b:_c [\n"
       "  x:_a\n"
       "  y:_b\n"
@@ -483,7 +470,6 @@ void test_replace_middle_type_ingredient_with_multiple() {
 }
 
 void test_replace_middle_type_ingredient_with_multiple2() {
-  cerr << "U7\n";
   run("container foo:_key:_value [\n"
       "  key:_key\n"
       "  value:_value\n"
@@ -498,7 +484,6 @@ void test_replace_middle_type_ingredient_with_multiple2() {
 }
 
 void test_replace_middle_type_ingredient_with_multiple3() {
-  cerr << "U8\n";
   run("container foo_table:_key:_value [\n"
       "  data:address:array:foo_table_row:_key:_value\n"
       "]\n"
