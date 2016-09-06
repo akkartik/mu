@@ -165,6 +165,8 @@ if (t.kind == CONTAINER) {
 
 //: precompute Container_metadata before we need size_of
 //: also store a copy in each reagent in each instruction in each recipe
+//: does unnecessary work for meaningless types
+//:   e.g. (address number) also computes size of 'address'
 
 :(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after "End Type Modifying Transforms" below
 Transform.push_back(compute_container_sizes);

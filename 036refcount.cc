@@ -277,9 +277,10 @@ bool operator<(const address_element_info& a, const address_element_info& b) {
   return false;  // equal
 }
 
-
 //: populate metadata.address in a separate transform, because it requires
 //: already knowing the sizes of all types
+//: does unnecessary work for meaningless types
+//:   e.g. (address number) also computes address offsets for 'address'
 
 :(after "Transform.push_back(compute_container_sizes)")
 Transform.push_back(compute_container_address_offsets);
