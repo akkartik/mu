@@ -1,7 +1,7 @@
 //: Containers contain a fixed number of elements of different types.
 
 :(before "End Mu Types Initialization")
-//: We'll use this container as a running example, with two number elements.
+//: We'll use this container as a running example in scenarios below.
 type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
 get_or_insert(Type, point);  // initialize
 get(Type, point).kind = CONTAINER;
@@ -13,8 +13,8 @@ get(Type, point).elements.push_back(reagent("y:number"));
 //: numbers, no matter how large they are.
 
 //: Tests in this layer often explicitly set up memory before reading it as a
-//: container. Don't do this in general. I'm tagging exceptions with /raw to
-//: avoid errors.
+//: container. Don't do this in general. I'm tagging exceptions with /unsafe to
+//: skip later checks.
 :(scenario copy_multiple_locations)
 def main [
   1:number <- copy 34
@@ -33,8 +33,8 @@ def main [
 +error: main: can't copy '1:number' to '2:point'; types don't match
 
 :(before "End Mu Types Initialization")
-// A more complex container, containing another container as one of its
-// elements.
+// A more complex example container, containing another container as one of
+// its elements.
 type_ordinal point_number = put(Type_ordinal, "point-number", Next_type_ordinal++);
 get_or_insert(Type, point_number);  // initialize
 get(Type, point_number).kind = CONTAINER;
