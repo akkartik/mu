@@ -168,7 +168,7 @@ if (t.kind == CONTAINER) {
 //: does unnecessary work for meaningless types
 //:   e.g. (address number) also computes size of 'address'
 
-:(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after "End Type Modifying Transforms" below
+:(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after Type Modifying Transforms below
 Transform.push_back(compute_container_sizes);
 :(code)
 void compute_container_sizes(recipe_ordinal r) {
