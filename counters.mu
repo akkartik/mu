@@ -25,6 +25,5 @@ def main [
   a-value:number <- increment-counter a, 1
   # check results
   $print [Contents of counters], 10/newline
-  # trailing space in next line is to help with syntax highlighting
   $print [a: ], a-value, [ b: ], b-value,  10/newline
 ]

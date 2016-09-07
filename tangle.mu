@@ -31,6 +31,7 @@ after <recursive-case> [
 
 def main [
   1:number <- factorial 5
-  $print [result: ], 1:number, [
+  # trailing space in next line is to help with syntax highlighting
+  $print [result: ], 1:number, [ 
 ]
 ]
