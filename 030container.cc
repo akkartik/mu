@@ -165,8 +165,7 @@ if (t.kind == CONTAINER) {
 
 //: precompute Container_metadata before we need size_of
 //: also store a copy in each reagent in each instruction in each recipe
-//: does unnecessary work for meaningless types
-//:   e.g. (address number) also computes size of 'address'
+//: sometimes does unnecessary work for meaningless types
 
 :(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after Type Modifying Transforms below
 Transform.push_back(compute_container_sizes);
@@ -197,7 +196,8 @@ void compute_container_sizes(const type_tree* type, set<type_ordinal>& pending_m
   if (contains_key(pending_metadata, type->value)) return;
   if (type->value) pending_metadata.insert(type->value);
   if (contains_key(Container_metadata, type)) return;
-  if (type->left) compute_container_sizes(type->left, pending_metadata);
+  // might be needed by later layers, but we haven't found a need for it yet
+//?   if (type->left) compute_container_sizes(type->left, pending_metadata);
   if (type->right) compute_container_sizes(type->right, pending_metadata);
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);

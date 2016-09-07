@@ -279,8 +279,7 @@ bool operator<(const address_element_info& a, const address_element_info& b) {
 
 //: populate metadata.address in a separate transform, because it requires
 //: already knowing the sizes of all types
-//: does unnecessary work for meaningless types
-//:   e.g. (address number) also computes address offsets for 'address'
+//: sometimes does unnecessary work for meaningless types
 
 :(after "Transform.push_back(compute_container_sizes)")
 Transform.push_back(compute_container_address_offsets);
@@ -305,7 +304,8 @@ void compute_container_address_offsets(reagent& r) {
 }
 void compute_container_address_offsets(type_tree* type) {
   if (!type) return;
-  if (type->left) compute_container_address_offsets(type->left);
+  // might be needed by later layers, but we haven't found a need for it yet
+//?   if (type->left) compute_container_address_offsets(type->left);
   if (type->right) compute_container_address_offsets(type->right);
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
