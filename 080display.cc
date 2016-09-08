@@ -9,6 +9,24 @@ int Display_row = 0;
 int Display_column = 0;
 bool Autodisplay = true;
 
+:(before "End Includes")
+#define CHECK_SCREEN \
+    if (!tb_is_active()) { \
+      if (Run_tests) \
+        raise << maybe(current_recipe_name()) << "tried to print to real screen before 'open-console'\n" << end(); \
+      else \
+        raise << maybe(current_recipe_name()) << "tried to print to real screen in a test!\n" << end(); \
+      break; \
+    }
+#define CHECK_CONSOLE \
+    if (!tb_is_active()) { \
+      if (Run_tests) \
+        raise << maybe(current_recipe_name()) << "tried to read event from real keyboard/mouse before 'open-console'\n" << end(); \
+      else \
+        raise << maybe(current_recipe_name()) << "tried to read event from real keyboard/mouse in a test!\n" << end(); \
+      break; \
+    }
+
 :(before "End Primitive Recipe Declarations")
 OPEN_CONSOLE,
 :(before "End Primitive Recipe Numbers")
@@ -58,6 +76,7 @@ case CLEAR_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLEAR_DISPLAY: {
+  CHECK_SCREEN;
   tb_clear();
   Display_row = Display_column = 0;
   break;
@@ -73,6 +92,7 @@ case SYNC_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case SYNC_DISPLAY: {
+  CHECK_SCREEN;
   tb_sync();
   break;
 }
@@ -87,6 +107,7 @@ case CLEAR_LINE_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLEAR_LINE_ON_DISPLAY: {
+  CHECK_SCREEN;
   int width = tb_width();
   for (int x = Display_column; x < width; ++x) {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
@@ -126,6 +147,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case PRINT_CHARACTER_TO_DISPLAY: {
+  CHECK_SCREEN;
   int h=tb_height(), w=tb_width();
   int height = (h >= 0) ? h : 0;
   int width = (w >= 0) ? w : 0;
@@ -176,6 +198,7 @@ case CURSOR_POSITION_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case CURSOR_POSITION_ON_DISPLAY: {
+  CHECK_SCREEN;
   products.resize(2);
   products.at(0).push_back(Display_row);
   products.at(1).push_back(Display_column);
@@ -204,6 +227,7 @@ case MOVE_CURSOR_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_ON_DISPLAY: {
+  CHECK_SCREEN;
   Display_row = ingredients.at(0).at(0);
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
@@ -221,6 +245,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_DOWN_ON_DISPLAY: {
+  CHECK_SCREEN;
   int h=tb_height();
   int height = (h >= 0) ? h : 0;
   if (Display_row < height-1) {
@@ -241,6 +266,7 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_UP_ON_DISPLAY: {
+  CHECK_SCREEN;
   if (Display_row > 0) {
     --Display_row;
     tb_set_cursor(Display_column, Display_row);
@@ -259,6 +285,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
+  CHECK_SCREEN;
   int w=tb_width();
   int width = (w >= 0) ? w : 0;
   if (Display_column < width-1) {
@@ -279,6 +306,7 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case MOVE_CURSOR_LEFT_ON_DISPLAY: {
+  CHECK_SCREEN;
   if (Display_column > 0) {
     --Display_column;
     tb_set_cursor(Display_column, Display_row);
@@ -311,6 +339,7 @@ case DISPLAY_WIDTH: {
 }
 :(before "End Primitive Recipe Implementations")
 case DISPLAY_WIDTH: {
+  CHECK_SCREEN;
   products.resize(1);
   products.at(0).push_back(tb_width());
   break;
@@ -326,6 +355,7 @@ case DISPLAY_HEIGHT: {
 }
 :(before "End Primitive Recipe Implementations")
 case DISPLAY_HEIGHT: {
+  CHECK_SCREEN;
   products.resize(1);
   products.at(0).push_back(tb_height());
   break;
@@ -341,6 +371,7 @@ case HIDE_CURSOR_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case HIDE_CURSOR_ON_DISPLAY: {
+  CHECK_SCREEN;
   tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR);
   break;
 }
@@ -355,6 +386,7 @@ case SHOW_CURSOR_ON_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case SHOW_CURSOR_ON_DISPLAY: {
+  CHECK_SCREEN;
   tb_set_cursor(Display_row, Display_column);
   break;
 }
@@ -369,6 +401,7 @@ case HIDE_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case HIDE_DISPLAY: {
+  CHECK_SCREEN;
   Autodisplay = false;
   break;
 }
@@ -383,6 +416,7 @@ case SHOW_DISPLAY: {
 }
 :(before "End Primitive Recipe Implementations")
 case SHOW_DISPLAY: {
+  CHECK_SCREEN;
   Autodisplay = true;
   tb_present();
   break;
@@ -400,6 +434,7 @@ case WAIT_FOR_SOME_INTERACTION: {
 }
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_SOME_INTERACTION: {
+  CHECK_SCREEN;
   tb_event event;
   tb_poll_event(&event);
   break;
@@ -415,6 +450,7 @@ case CHECK_FOR_INTERACTION: {
 }
 :(before "End Primitive Recipe Implementations")
 case CHECK_FOR_INTERACTION: {
+  CHECK_CONSOLE;
   products.resize(2);  // result and status
   tb_event event;
   int event_type = tb_peek_event(&event, 5/*ms*/);
@@ -485,6 +521,7 @@ case INTERACTIONS_LEFT: {
 }
 :(before "End Primitive Recipe Implementations")
 case INTERACTIONS_LEFT: {
+  CHECK_CONSOLE;
   products.resize(1);
   products.at(0).push_back(tb_event_ready());
   break;
@@ -502,6 +539,7 @@ case CLEAR_DISPLAY_FROM: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLEAR_DISPLAY_FROM: {
+  CHECK_SCREEN;
   // todo: error checking
   int row = ingredients.at(0).at(0);
   int column = ingredients.at(1).at(0);
