@@ -172,7 +172,8 @@ feenableexcept(FE_OVERFLOW | FE_UNDERFLOW);
 //? assert(sizeof(int) == 4 && sizeof(float) == 4);
 //? //                          | exp   |  mantissa
 //? int smallest_subnormal = 0b00000000000000000000000000000001;
-//? float smallest_subnormal_f = *reinterpret_cast<int*>(&smallest_subnormal);
+//? float smallest_subnormal_f = *reinterpret_cast<float*>(&smallest_subnormal);
+//? cerr << "ε: " << smallest_subnormal_f << '\n';
 //? cerr << "ε/2: " << smallest_subnormal_f/2 << " (underflow)\n";  // test SIGFPE
 :(before "End Includes")
 #include <fenv.h>

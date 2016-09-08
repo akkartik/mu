@@ -662,6 +662,7 @@ ostream& operator<<(ostream& os, no_scientific x) {
     return os;
   }
   ostringstream tmp;
+  tmp.precision(308);  // for 64-bit numbers
   tmp << std::fixed << x.x;
   os << trim_floating_point(tmp.str());
   return os;
