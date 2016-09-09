@@ -202,6 +202,9 @@ void compute_container_sizes(const type_tree* type, set<type_ordinal>& pending_m
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   if (info.kind == CONTAINER) {
+    // size of a container is the sum of the sizes of its element
+    // (So it can only contain arrays if they're static and include their
+    // length in the type.)
     container_metadata metadata;
     for (int i = 0; i < SIZE(info.elements); ++i) {
       reagent/*copy*/ element = info.elements.at(i);

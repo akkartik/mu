@@ -37,19 +37,19 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
 }
 :(before "End compute_container_sizes Cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
-  container_metadata metadata;
   // size of an exclusive container is the size of its largest variant
-  // (So like containers, it can't contain arrays.)
-  int size = 0;
+  // (So, like containers, it can only contain arrays if they're static and
+  // include their length in the type.)
+  container_metadata metadata;
   for (int i = 0; i < SIZE(info.elements); ++i) {
     reagent/*copy*/ element = info.elements.at(i);
     // Compute Exclusive Container Size(element)
     compute_container_sizes(element.type, pending_metadata);
     int variant_size = size_of(element);
-    if (variant_size > size) size = variant_size;
+    if (variant_size > metadata.size) metadata.size = variant_size;
   }
   // ...+1 for its tag.
-  metadata.size = size+1;
+  ++metadata.size;
   Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
 }
 

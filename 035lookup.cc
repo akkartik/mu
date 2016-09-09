@@ -151,6 +151,8 @@ if (!canonize_type(rcopy)) return;
 
 :(before "Compute Container Size(element)")
 assert(!has_property(element, "lookup"));
+:(before "Compute Exclusive Container Size(element)")
+assert(!has_property(element, "lookup"));
 
 :(code)
 bool canonize_type(reagent& r) {
