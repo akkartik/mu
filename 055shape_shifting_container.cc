@@ -372,9 +372,7 @@ void test_replace_type_ingredients_entire() {
       "]\n");
   reagent callsite("x:foo:point");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.type->name, "point");
-  CHECK(!element.type->right);
+  CHECK_EQ(to_string(element), "{x: \"point\"}");
 }
 
 void test_replace_type_ingredients_tail() {
@@ -386,10 +384,7 @@ void test_replace_type_ingredients_tail() {
       "]\n");
   reagent callsite("x:bar:point");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.type->name, "foo");
-  CHECK_EQ(element.type->right->name, "point");
-  CHECK(!element.type->right->right);
+  CHECK_EQ(to_string(element), "{x: (\"foo\" \"point\")}");
 }
 
 void test_replace_type_ingredients_head_tail_multiple() {
@@ -401,12 +396,7 @@ void test_replace_type_ingredients_head_tail_multiple() {
       "]\n");
   reagent callsite("x:bar:address:array:character");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK_EQ(element.type->name, "foo");
-  CHECK_EQ(element.type->right->name, "address");
-  CHECK_EQ(element.type->right->right->name, "array");
-  CHECK_EQ(element.type->right->right->right->name, "character");
-  CHECK(!element.type->right->right->right->right);
+  CHECK_EQ(to_string(element), "{x: (\"foo\" \"address\" \"array\" \"character\")}");
 }
 
 void test_replace_type_ingredients_head_middle() {
@@ -418,14 +408,7 @@ void test_replace_type_ingredients_head_middle() {
       "]\n");
   reagent callsite("x:bar:address");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "x");
-  CHECK(element.type)
-  CHECK_EQ(element.type->name, "foo");
-  CHECK(element.type->right)
-  CHECK_EQ(element.type->right->name, "address");
-  CHECK(element.type->right->right)
-  CHECK_EQ(element.type->right->right->name, "number");
-  CHECK(!element.type->right->right->right);
+  CHECK_EQ(to_string(element), "{x: (\"foo\" \"address\" \"number\")}");
 }
 
 void test_replace_last_type_ingredient_with_multiple() {
@@ -435,15 +418,9 @@ void test_replace_last_type_ingredient_with_multiple() {
       "]\n");
   reagent callsite("{f: (foo number (address array character))}");
   reagent element1 = element_type(callsite.type, 0);
-  CHECK_EQ(element1.name, "x");
-  CHECK_EQ(element1.type->name, "number");
-  CHECK(!element1.type->right);
+  CHECK_EQ(to_string(element1), "{x: \"number\"}");
   reagent element2 = element_type(callsite.type, 1);
-  CHECK_EQ(element2.name, "y");
-  CHECK_EQ(element2.type->name, "address");
-  CHECK_EQ(element2.type->right->name, "array");
-  CHECK_EQ(element2.type->right->right->name, "character");
-  CHECK(!element2.type->right->right->right);
+  CHECK_EQ(to_string(element2), "{y: (\"address\" \"array\" \"character\")}");
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {
@@ -454,19 +431,11 @@ void test_replace_middle_type_ingredient_with_multiple() {
       "]\n");
   reagent callsite("{f: (foo number (address array character) boolean)}");
   reagent element1 = element_type(callsite.type, 0);
-  CHECK_EQ(element1.name, "x");
-  CHECK_EQ(element1.type->name, "number");
-  CHECK(!element1.type->right);
+  CHECK_EQ(to_string(element1), "{x: \"number\"}");
   reagent element2 = element_type(callsite.type, 1);
-  CHECK_EQ(element2.name, "y");
-  CHECK_EQ(element2.type->name, "address");
-  CHECK_EQ(element2.type->right->name, "array");
-  CHECK_EQ(element2.type->right->right->name, "character");
-  CHECK(!element2.type->right->right->right);
+  CHECK_EQ(to_string(element2), "{y: (\"address\" \"array\" \"character\")}");
   reagent element3 = element_type(callsite.type, 2);
-  CHECK_EQ(element3.name, "z");
-  CHECK_EQ(element3.type->name, "boolean");
-  CHECK(!element3.type->right);
+  CHECK_EQ(to_string(element3), "{z: \"boolean\"}");
 }
 
 void test_replace_middle_type_ingredient_with_multiple2() {
@@ -476,11 +445,7 @@ void test_replace_middle_type_ingredient_with_multiple2() {
       "]\n");
   reagent callsite("{f: (foo (address array character) number)}");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "key");
-  CHECK_EQ(element.type->name, "address");
-  CHECK_EQ(element.type->right->name, "array");
-  CHECK_EQ(element.type->right->right->name, "character");
-  CHECK(!element.type->right->right->right);
+  CHECK_EQ(to_string(element), "{key: (\"address\" \"array\" \"character\")}");
 }
 
 void test_replace_middle_type_ingredient_with_multiple3() {
@@ -494,16 +459,7 @@ void test_replace_middle_type_ingredient_with_multiple3() {
       "]\n");
   reagent callsite("{f: (foo_table (address array character) number)}");
   reagent element = element_type(callsite.type, 0);
-  CHECK_EQ(element.name, "data");
-  CHECK_EQ(element.type->name, "address");
-  CHECK_EQ(element.type->right->name, "array");
-  CHECK_EQ(element.type->right->right->name, "foo_table_row");
-    CHECK(element.type->right->right->right->left);
-    CHECK_EQ(element.type->right->right->right->left->name, "address");
-    CHECK_EQ(element.type->right->right->right->left->right->name, "array");
-    CHECK_EQ(element.type->right->right->right->left->right->right->name, "character");
-  CHECK_EQ(element.type->right->right->right->right->name, "number");
-  CHECK(!element.type->right->right->right->right->right);
+  CHECK_EQ(to_string(element), "{data: (\"address\" \"array\" \"foo_table_row\" (\"address\" \"array\" \"character\") \"number\")}");
 }
 
 :(code)
