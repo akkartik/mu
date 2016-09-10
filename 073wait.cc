@@ -123,7 +123,12 @@ case GET_LOCATION: {
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
   if (!canonize_type(base)) break;
-  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
+  if (!base.type) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-location' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  const type_tree* base_root_type = base.type->atom ? base.type : base.type->left;
+  if (!base_root_type->atom || base_root_type->value == 0 || !contains_key(Type, base_root_type->value) || get(Type, base_root_type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get-location' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -160,9 +165,9 @@ case GET_LOCATION: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.type->value;
+  const type_tree* base_root_type = root_type(base.type);
   int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
   int result = base_address;
   for (int i = 0; i < offset; ++i)
     result += size_of(element_type(base.type, i));

@@ -31,7 +31,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
 //?   ++Num_free;
 //?   cerr << "abandon: " << size << '\n';
   // decrement any contained refcounts
-  if (payload_type->name == "array") {
+  if (is_mu_array(payload_type)) {
     reagent element;
     element.type = copy_array_element(payload_type);
     int array_length = get_or_insert(Memory, address+/*skip refcount*/1);

@@ -45,14 +45,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
     for (int j = 0; j < SIZE(inst.products); ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
-      type_tree* type = inst.products.at(j).type;
-      if (!type
-          || type->value != get(Type_ordinal, "address")
-          || !type->right
-          || type->right->value != get(Type_ordinal, "array")
-          || !type->right->right
-          || type->right->right->value != get(Type_ordinal, "location")
-          || type->right->right->right) {
+      if (!is_space(inst.products.at(j))) {
         raise << "slot 0 should always have type address:array:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
         continue;
       }
@@ -61,7 +54,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
         raise << "slot 0 requires a /names property in recipe '" << get(Recipe, r).name << "'\n" << end();
         continue;
       }
-      if (s->right) raise << "slot 0 should have a single value in /names, but got '" << to_string(inst.products.at(j)) << "'\n" << end();
+      if (!s->atom) raise << "slot 0 should have a single value in /names, but got '" << to_string(inst.products.at(j)) << "'\n" << end();
       const string& surrounding_recipe_name = s->value;
       if (surrounding_recipe_name.empty()) {
         raise << "slot 0 doesn't initialize its /names property in recipe '" << get(Recipe, r).name << "'\n" << end();
@@ -92,7 +85,7 @@ int lookup_name(const reagent& x, const recipe_ordinal default_recipe) {
     return Name[default_recipe][x.name];
   }
   string_tree* p = property(x, "space");
-  if (!p || p->right) raise << "/space property should have exactly one (non-negative integer) value\n" << end();
+  if (!p || !p->atom) raise << "/space property should have exactly one (non-negative integer) value\n" << end();
   int n = to_integer(p->value);
   assert(n >= 0);
   recipe_ordinal surrounding_recipe = lookup_surrounding_recipe(default_recipe, n);
@@ -136,7 +129,7 @@ recipe_ordinal lookup_surrounding_recipe(const recipe_ordinal r, int n) {
 bool already_transformed(const reagent& r, const map<string, int>& names) {
   if (has_property(r, "space")) {
     string_tree* p = property(r, "space");
-    if (!p || p->right) {
+    if (!p || !p->atom) {
       raise << "/space property should have exactly one (non-negative integer) value in '" << r.original_string << "'\n" << end();
       return false;
     }

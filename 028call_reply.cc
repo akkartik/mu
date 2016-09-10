@@ -80,7 +80,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
         if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
           string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
-          if (!tmp || tmp->right) {
+          if (!tmp || !tmp->atom) {
             raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in '" << to_original_string(reply_inst) << "'\n" << end();
             goto finish_reply_check;
           }

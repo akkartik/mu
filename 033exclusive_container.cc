@@ -35,22 +35,27 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
   // Compute size_of Exclusive Container
   return get(Container_metadata, type).size;
 }
-:(before "End compute_container_sizes Cases")
+:(before "End compute_container_sizes Atom Cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
+  compute_exclusive_container_sizes(info, type, pending_metadata);
+}
+
+:(code)
+void compute_exclusive_container_sizes(const type_info& exclusive_container_info, const type_tree* full_type, set<string>& pending_metadata) {
   // size of an exclusive container is the size of its largest variant
   // (So, like containers, it can only contain arrays if they're static and
   // include their length in the type.)
   container_metadata metadata;
-  for (int i = 0; i < SIZE(info.elements); ++i) {
-    reagent/*copy*/ element = info.elements.at(i);
-    // Compute Exclusive Container Size(element)
+  for (int i = 0; i < SIZE(exclusive_container_info.elements); ++i) {
+    reagent/*copy*/ element = exclusive_container_info.elements.at(i);
+    // Compute Exclusive Container Size(element, full_type)
     compute_container_sizes(element.type, pending_metadata);
     int variant_size = size_of(element);
     if (variant_size > metadata.size) metadata.size = variant_size;
   }
   // ...+1 for its tag.
   ++metadata.size;
-  Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
+  Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*full_type), metadata));
 }
 
 //:: To access variants of an exclusive container, use 'maybe-convert'.
@@ -100,7 +105,12 @@ case MAYBE_CONVERT: {
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update MAYBE_CONVERT base in Check
-  if (!base.type || !base.type->value || get(Type, base.type->value).kind != EXCLUSIVE_CONTAINER) {
+  if (!base.type) {
+    raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got '" << base.original_string << "'\n" << end();
+    break;
+  }
+  const type_tree* root_type = base.type->atom ? base.type : base.type->left;
+  if (!root_type->atom || root_type->value == 0 || !contains_key(Type, root_type->value) || get(Type, root_type->value).kind != EXCLUSIVE_CONTAINER) {
     raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got '" << base.original_string << "'\n" << end();
     break;
   }
@@ -117,7 +127,7 @@ case MAYBE_CONVERT: {
   // Update MAYBE_CONVERT product in Check
   reagent& offset = inst.ingredients.at(1);
   populate_value(offset);
-  if (offset.value >= SIZE(get(Type, base.type->value).elements)) {
+  if (offset.value >= SIZE(get(Type, root_type->value).elements)) {
     raise << maybe(caller.name) << "invalid tag " << offset.value << " in '" << inst.original_string << '\n' << end();
     break;
   }
@@ -176,9 +186,10 @@ const reagent variant_type(const reagent& base, int tag) {
 
 const reagent variant_type(const type_tree* type, int tag) {
   assert(tag >= 0);
-  assert(contains_key(Type, type->value));
-  assert(!get(Type, type->value).name.empty());
-  const type_info& info = get(Type, type->value);
+  const type_tree* root_type = type->atom ? type : type->left;
+  assert(contains_key(Type, root_type->value));
+  assert(!get(Type, root_type->value).name.empty());
+  const type_info& info = get(Type, root_type->value);
   assert(info.kind == EXCLUSIVE_CONTAINER);
   reagent/*copy*/ element = info.elements.at(tag);
   // End variant_type Special-cases
@@ -430,7 +441,9 @@ if (current_step_index() < SIZE(Current_routine->steps())
     && current_instruction().products.at(0).type) {
   reagent/*copy*/ x = current_instruction().products.at(0);
   // Update size_mismatch Check for MERGE(x)
-  if (get(Type, x.type->value).kind == EXCLUSIVE_CONTAINER)
+  const type_tree* root_type = x.type->atom ? x.type : x.type->left;
+  assert(root_type->atom);
+  if (get(Type, root_type->value).kind == EXCLUSIVE_CONTAINER)
     return size_of(x) < SIZE(data);
 }
 

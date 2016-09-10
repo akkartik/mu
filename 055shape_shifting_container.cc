@@ -1,5 +1,14 @@
 //:: Container definitions can contain 'type ingredients'
 
+//: pre-requisite: extend our notion of containers to not necessarily be
+//: atomic types
+:(before "End is_mu_container(type) Special-cases")
+if (!type->atom)
+  return is_mu_container(root_type(type));
+:(before "End is_mu_exclusive_container(type) Special-cases")
+if (!type->atom)
+  return is_mu_exclusive_container(root_type(type));
+
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
   x:_t
@@ -267,10 +276,10 @@ def main [
 
 :(before "End element_type Special-cases")
 replace_type_ingredients(element, type, info);
-:(before "Compute Container Size(element)")
-replace_type_ingredients(element, type, info);
-:(before "Compute Exclusive Container Size(element)")
-replace_type_ingredients(element, type, info);
+:(before "Compute Container Size(element, full_type)")
+replace_type_ingredients(element, full_type, container_info);
+:(before "Compute Exclusive Container Size(element, full_type)")
+replace_type_ingredients(element, full_type, exclusive_container_info);
 :(before "Compute Container Address Offset(element)")
 replace_type_ingredients(element, type, info);
 if (contains_type_ingredient(element)) return;  // error raised elsewhere
@@ -296,63 +305,42 @@ bool contains_type_ingredient(const reagent& x) {
 
 bool contains_type_ingredient(const type_tree* type) {
   if (!type) return false;
-  if (type->value >= START_TYPE_INGREDIENTS) return true;
-  assert(!is_type_ingredient_name(type->name));
+  if (type->atom) return type->value >= START_TYPE_INGREDIENTS;
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
 }
 
 // replace all type_ingredients in element_type with corresponding elements of callsite_type
-// todo: too complicated and likely incomplete; maybe avoid replacing in place?
 void replace_type_ingredients(type_tree* element_type, const type_tree* callsite_type, const type_info& container_info) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
-
-  // A. recurse first to avoid nested replaces (which I can't reason about yet)
-  replace_type_ingredients(element_type->left, callsite_type, container_info);
-  replace_type_ingredients(element_type->right, callsite_type, container_info);
+  if (!element_type->atom) {
+    replace_type_ingredients(element_type->left, callsite_type, container_info);
+    replace_type_ingredients(element_type->right, callsite_type, container_info);
+    return;
+  }
   if (element_type->value < START_TYPE_INGREDIENTS) return;
-
   const int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
     raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
     return;
   }
+  *element_type = *nth_type_ingredient(callsite_type, type_ingredient_index, container_info);
+}
 
-  // B. replace the current location
-  const type_tree* replacement = NULL;
-  bool zig_left = false;
-  {
-    const type_tree* curr = callsite_type;
-    for (int i = 0; i < type_ingredient_index; ++i)
-      curr = curr->right;
-    if (curr && curr->left) {
-      replacement = curr->left;
-      zig_left = true;
-    }
-    else {
-      // We want foo:_t to be used like foo:number, which expands to {foo: number}
-      // rather than {foo: (number)}
-      // We'd also like to use it with multiple types: foo:address:number.
-      replacement = curr;
-    }
+const type_tree* nth_type_ingredient(const type_tree* callsite_type, int type_ingredient_index, const type_info& container_info) {
+  bool final = final_type_ingredient(type_ingredient_index, container_info);
+  const type_tree* curr = callsite_type;
+  for (int i = 0; i < type_ingredient_index; ++i) {
+    assert(curr);
+    assert(!curr->atom);
+//?     cerr << "type ingredient " << i << " is " << to_string(curr->left) << '\n';
+    curr = curr->right;
   }
-  if (element_type->right && replacement->right && zig_left) {  // ZERO confidence that this condition is accurate
-    element_type->name = "";
-    element_type->value = 0;
-    element_type->left = new type_tree(*replacement);
-  }
-  else {
-    string old_name = element_type->name;
-    element_type->name = replacement->name;
-    element_type->value = replacement->value;
-    assert(!element_type->left);  // since value is set
-    element_type->left = replacement->left ? new type_tree(*replacement->left) : NULL;
-    if (zig_left || final_type_ingredient(type_ingredient_index, container_info)) {
-      type_tree* old_right = element_type->right;
-      element_type->right = replacement->right ? new type_tree(*replacement->right) : NULL;
-      append(element_type->right, old_right);
-    }
-  }
+  assert(curr);
+  if (curr->atom) return curr;
+  if (!final) return curr->left;
+  if (!curr->right) return curr->left;
+  return curr;
 }
 
 bool final_type_ingredient(int type_ingredient_index, const type_info& container_info) {
@@ -482,7 +470,128 @@ def main [
 ]
 +error: illegal type "foo" seems to be missing a type ingredient or three
 
-//: 'merge' on shape-shifting containers
+//:: fix up previous layers
+
+//: We have two transforms in previous layers -- for computing sizes and
+//: offsets containing addresses for containers and exclusive containers --
+//: that we need to teach about type ingredients.
+
+:(before "End compute_container_sizes Non-atom Cases")
+const type_tree* root = root_type(type);
+type_info& info = get(Type, root->value);
+if (info.kind == CONTAINER) {
+  compute_container_sizes(info, type, pending_metadata);
+  return;
+}
+if (info.kind == EXCLUSIVE_CONTAINER) {
+  compute_exclusive_container_sizes(info, type, pending_metadata);
+  return;
+}
+
+:(before "End Unit Tests")
+void test_container_sizes_shape_shifting_container() {
+  run("container foo:_t [\n"
+      "  x:number\n"
+      "  y:_t\n"
+      "]\n");
+  reagent r("x:foo:point");
+  compute_container_sizes(r);
+  CHECK_EQ(r.metadata.size, 3);
+}
+
+void test_container_sizes_shape_shifting_exclusive_container() {
+  run("exclusive-container foo:_t [\n"
+      "  x:number\n"
+      "  y:_t\n"
+      "]\n");
+  reagent r("x:foo:point");
+  compute_container_sizes(r);
+  CHECK_EQ(r.metadata.size, 3);
+  reagent r2("x:foo:number");
+  compute_container_sizes(r2);
+  CHECK_EQ(r2.metadata.size, 2);
+}
+
+void test_container_sizes_compound_type_ingredient() {
+  run("container foo:_t [\n"
+      "  x:number\n"
+      "  y:_t\n"
+      "]\n");
+  reagent r("x:foo:address:point");
+  compute_container_sizes(r);
+  CHECK_EQ(r.metadata.size, 2);
+  // scan also pre-computes metadata for type ingredient
+  reagent point("x:point");
+  CHECK(contains_key(Container_metadata, point.type));
+  CHECK_EQ(get(Container_metadata, point.type).size, 2);
+}
+
+void test_container_sizes_recursive_shape_shifting_container() {
+  run("container foo:_t [\n"
+      "  x:number\n"
+      "  y:address:foo:_t\n"
+      "]\n");
+  reagent r2("x:foo:number");
+  compute_container_sizes(r2);
+  CHECK_EQ(r2.metadata.size, 2);
+}
+
+:(before "End compute_container_address_offsets Non-atom Cases")
+const type_tree* root = root_type(type);
+type_info& info = get(Type, root->value);
+if (info.kind == CONTAINER) {
+  compute_container_address_offsets(info, type);
+  return;
+}
+if (info.kind == EXCLUSIVE_CONTAINER) {
+  compute_exclusive_container_address_offsets(info, type);
+  return;
+}
+
+:(before "End Unit Tests")
+void test_container_address_offsets_in_shape_shifting_container() {
+  run("container foo:_t [\n"
+      "  x:number\n"
+      "  y:_t\n"
+      "]\n");
+  reagent r("x:foo:address:number");
+  compute_container_sizes(r);
+  compute_container_address_offsets(r);
+  CHECK_EQ(SIZE(r.metadata.address), 1);
+  CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
+  set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
+  CHECK_EQ(SIZE(offset_info), 1);
+  CHECK_EQ(offset_info.begin()->offset, 1);  //
+  CHECK(offset_info.begin()->payload_type->atom);
+  CHECK_EQ(offset_info.begin()->payload_type->name, "number");
+}
+
+void test_container_address_offsets_in_nested_shape_shifting_container() {
+  run("container foo:_t [\n"
+      "  x:number\n"
+      "  y:_t\n"
+      "]\n"
+      "container bar:_t [\n"
+      "  x:_t\n"
+      "  y:foo:_t\n"
+      "]\n");
+  reagent r("x:bar:address:number");
+  CLEAR_TRACE;
+  compute_container_sizes(r);
+  compute_container_address_offsets(r);
+  CHECK_EQ(SIZE(r.metadata.address), 1);
+  CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
+  set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
+  CHECK_EQ(SIZE(offset_info), 2);
+  CHECK_EQ(offset_info.begin()->offset, 0);  //
+  CHECK(offset_info.begin()->payload_type->atom);
+  CHECK_EQ(offset_info.begin()->payload_type->name, "number");
+  CHECK_EQ((++offset_info.begin())->offset, 2);  //
+  CHECK((++offset_info.begin())->payload_type->atom);
+  CHECK_EQ((++offset_info.begin())->payload_type->name, "number");
+}
+
+//:: 'merge' on shape-shifting containers
 
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container)
 container foo:_elem [

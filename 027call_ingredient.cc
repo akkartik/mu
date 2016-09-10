@@ -176,10 +176,14 @@ case INGREDIENT: {
 bool is_mu_string(reagent/*copy*/ x) {
   // End Preprocess is_mu_string(reagent x)
   return x.type
-    && x.type->value == get(Type_ordinal, "address")
-    && x.type->right
-    && x.type->right->value == get(Type_ordinal, "array")
-    && x.type->right->right
-    && x.type->right->right->value == get(Type_ordinal, "character")
-    && x.type->right->right->right == NULL;
+      && !x.type->atom
+      && x.type->left->atom
+      && x.type->left->value == get(Type_ordinal, "address")
+      && x.type->right
+      && !x.type->right->atom
+      && x.type->right->left->atom
+      && x.type->right->left->value == get(Type_ordinal, "array")
+      && x.type->right->right
+      && x.type->right->right->atom
+      && x.type->right->right->value == get(Type_ordinal, "character");
 }

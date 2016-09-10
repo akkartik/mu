@@ -102,7 +102,6 @@ bool types_coercible(const reagent& to, const reagent& from) {
   if (is_mu_address(from) && is_mu_number(to)) return true;
   if (is_mu_boolean(from) && is_mu_number(to)) return true;
   if (is_mu_number(from) && is_mu_boolean(to)) return true;
-  // End types_coercible Special-cases
   return false;
 }
 
@@ -116,18 +115,11 @@ bool types_match(const reagent& to, const reagent& from) {
     // allow writing 0 to any address
     if (is_mu_address(to)) return from.name == "0";
     if (!to.type) return false;
-    if (to.type->value == get(Type_ordinal, "boolean"))
-      return boolean_matches_literal(to, from);
+    if (to.type->atom && to.type->value == get(Type_ordinal, "boolean"))
+      return from.name == "0" || from.name == "1";
     return size_of(to) == 1;  // literals are always scalars
   }
   return types_strictly_match(to, from);
-}
-
-bool boolean_matches_literal(const reagent& to, const reagent& from) {
-  if (!is_literal(from)) return false;
-  if (!to.type) return false;
-  if (to.type->value != get(Type_ordinal, "boolean")) return false;
-  return from.name == "0" || from.name == "1";
 }
 
 // copy arguments because later layers will want to make changes to them
@@ -147,10 +139,14 @@ bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
 // two types match if the second begins like the first
 // (trees perform the same check recursively on each subtree)
 bool types_strictly_match(const type_tree* to, const type_tree* from) {
-  if (!to) return true;
-  if (!from) return to->value == 0;
-  if (from->value == -1) return from->name == to->name;
-  if (to->value != from->value) return false;
+  if (from == to) return true;
+  if (!from) return to->atom && to->value == 0;
+  if (to->atom && !from->atom) return from->left->atom && from->left->name == to->name;
+  if (from->atom) {
+    if (!to->atom) return false;
+    if (from->value == -1) return from->name == to->name;
+    return from->value == to->value;
+  }
   return types_strictly_match(to->left, from->left) && types_strictly_match(to->right, from->right);
 }
 
@@ -172,30 +168,43 @@ bool is_unsafe(const reagent& r) {
 
 bool is_mu_array(reagent/*copy*/ r) {
   // End Preprocess is_mu_array(reagent r)
-  if (!r.type) return false;
-  if (is_literal(r)) return false;
-  return r.type->value == get(Type_ordinal, "array");
+  return is_mu_array(r.type);
+}
+
+bool is_mu_array(const type_tree* type) {
+  if (!type) return false;
+  if (is_literal(type)) return false;
+  if (type->atom) return false;
+  assert(type->left->atom);
+  return type->left->value == get(Type_ordinal, "array");
 }
 
 bool is_mu_address(reagent/*copy*/ r) {
   // End Preprocess is_mu_address(reagent r)
-  if (!r.type) return false;
-  if (is_literal(r)) return false;
-  return r.type->value == get(Type_ordinal, "address");
+  return is_mu_address(r.type);
+}
+
+bool is_mu_address(const type_tree* type) {
+  if (!type) return false;
+  if (is_literal(type)) return false;
+  if (type->atom) return false;
+  assert(type->left->atom);
+  return type->left->value == get(Type_ordinal, "address");
 }
 
 bool is_mu_boolean(reagent/*copy*/ r) {
   // End Preprocess is_mu_boolean(reagent r)
   if (!r.type) return false;
   if (is_literal(r)) return false;
+  if (!r.type->atom) return false;
   return r.type->value == get(Type_ordinal, "boolean");
 }
 
 bool is_mu_number(reagent/*copy*/ r) {
   // End Preprocess is_mu_number(reagent r)
   if (!r.type) return false;
+  if (!r.type->atom) return false;
   if (is_literal(r)) {
-    if (!r.type) return false;
     return r.type->name == "literal-fractional-number"
         || r.type->name == "literal";
   }
@@ -205,15 +214,24 @@ bool is_mu_number(reagent/*copy*/ r) {
 
 bool is_mu_character(reagent/*copy*/ r) {
   // End Preprocess is_mu_character(reagent r)
-  if (!r.type) return false;
-  if (is_literal(r)) return false;
-  return r.type->value == get(Type_ordinal, "character");
+  return is_mu_character(r.type);
+}
+bool is_mu_character(const type_tree* type) {
+  if (!type) return false;
+  if (!type->atom) return false;
+  if (is_literal(type)) return false;
+  return type->value == get(Type_ordinal, "character");
 }
 
 bool is_mu_scalar(reagent/*copy*/ r) {
-  if (!r.type) return false;
-  if (is_literal(r))
-    return !r.type || r.type->name != "literal-string";
-  if (is_mu_array(r)) return false;
-  return size_of(r) == 1;
+  return is_mu_scalar(r.type);
+}
+
+bool is_mu_scalar(const type_tree* type) {
+  if (!type) return false;
+  if (is_mu_address(type)) return true;
+  if (!type->atom) return false;
+  if (is_literal(type))
+    return type->name != "literal-string";
+  return size_of(type) == 1;
 }

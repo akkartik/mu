@@ -148,32 +148,41 @@ void clear_container_metadata() {
 if (r.metadata.size) return r.metadata.size;
 
 :(before "End size_of(type) Cases")
-if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
-if (type->value == 0) {
-  assert(!type->left && !type->right);
-  return 1;
+if (type->atom) {
+  if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
+  if (type->value == 0) return 1;
 }
-if (!contains_key(Type, type->value)) {
-  raise << "no such type " << type->value << '\n' << end();
+const type_tree* root = root_type(type);
+if (!contains_key(Type, root->value)) {
+  raise << "no such type " << root->value << '\n' << end();
   return 0;
 }
-type_info t = get(Type, type->value);
+type_info t = get(Type, root->value);
 if (t.kind == CONTAINER) {
   // Compute size_of Container
+  if (!contains_key(Container_metadata, type)) return 1;  // error raised elsewhere
   return get(Container_metadata, type).size;
+}
+
+:(code)
+const type_tree* root_type(const type_tree* t) {
+  const type_tree* result = t->atom ? t : t->left;
+  assert(result->atom);
+  return result;
 }
 
 //: precompute Container_metadata before we need size_of
 //: also store a copy in each reagent in each instruction in each recipe
-//: sometimes does unnecessary work for meaningless types
 
 :(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after Type Modifying Transforms below
 Transform.push_back(compute_container_sizes);
 :(code)
 void compute_container_sizes(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
+  trace(9992, "transform") << "--- compute container sizes for " << caller.name << end();
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
+    trace(9993, "transform") << "- compute container sizes for " << to_string(inst) << end();
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
       compute_container_sizes(inst.ingredients.at(i));
     for (int i = 0; i < SIZE(inst.products); ++i)
@@ -185,37 +194,64 @@ void compute_container_sizes(reagent& r) {
   if (is_literal(r) || is_dummy(r)) return;
   reagent rcopy = r;
   // Compute Container Size(reagent rcopy)
-  set<type_ordinal> pending_metadata;
+  set<string> pending_metadata;
   compute_container_sizes(rcopy.type, pending_metadata);
   if (contains_key(Container_metadata, rcopy.type))
     r.metadata = get(Container_metadata, rcopy.type);
 }
 
-void compute_container_sizes(const type_tree* type, set<type_ordinal>& pending_metadata) {
+void compute_container_sizes(const type_tree* type, set<string>& pending_metadata) {
   if (!type) return;
-  if (contains_key(pending_metadata, type->value)) return;
-  if (type->value) pending_metadata.insert(type->value);
+  trace(9993, "transform") << "compute container sizes for " << to_string(type) << end();
   if (contains_key(Container_metadata, type)) return;
-  // might be needed by later layers, but we haven't found a need for it yet
-//?   if (type->left) compute_container_sizes(type->left, pending_metadata);
-  if (type->right) compute_container_sizes(type->right, pending_metadata);
+  if (contains_key(pending_metadata, names_to_string_without_quotes(type))) return;
+  pending_metadata.insert(names_to_string_without_quotes(type));
+//?   cerr << to_string(type) << '\n';
+  if (!type->atom) {
+    assert(type->left->atom);
+    if (type->left->name == "address") {
+//?       cerr << "  address\n";
+      compute_container_sizes(type->right, pending_metadata);
+    }
+    else if (type->left->name == "array") {
+      const type_tree* element_type = type->right;
+      // hack: support both array:number:3 and array:address:number
+//?       cerr << "  array\n";
+//?       cerr << "    " << to_string(type) << '\n';
+//?       cerr << "    " << to_string(element_type) << ' ' << element_type->atom << ' ' << element_type->right;
+//?       if (element_type->right)
+//?         cerr << " -- " << to_string(element_type->right) << ' ' << element_type->right->atom << ' ' << is_integer(element_type->right->name);
+//?       cerr << '\n';
+      if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
+        element_type = element_type->left;
+      compute_container_sizes(element_type, pending_metadata);
+    }
+    // End compute_container_sizes Non-atom Cases
+    return;
+  }
+  assert(type->atom);
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   if (info.kind == CONTAINER) {
-    // size of a container is the sum of the sizes of its element
-    // (So it can only contain arrays if they're static and include their
-    // length in the type.)
-    container_metadata metadata;
-    for (int i = 0; i < SIZE(info.elements); ++i) {
-      reagent/*copy*/ element = info.elements.at(i);
-      // Compute Container Size(element)
-      compute_container_sizes(element.type, pending_metadata);
-      metadata.offset.push_back(metadata.size);  // save previous size as offset
-      metadata.size += size_of(element.type);
-    }
-    Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*type), metadata));
+    compute_container_sizes(info, type, pending_metadata);
   }
-  // End compute_container_sizes Cases
+  // End compute_container_sizes Atom Cases
+}
+
+void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<string>& pending_metadata) {
+  assert(container_info.kind == CONTAINER);
+  // size of a container is the sum of the sizes of its element
+  // (So it can only contain arrays if they're static and include their
+  // length in the type.)
+  container_metadata metadata;
+  for (int i = 0; i < SIZE(container_info.elements); ++i) {
+    reagent/*copy*/ element = container_info.elements.at(i);
+    // Compute Container Size(element, full_type)
+    compute_container_sizes(element.type, pending_metadata);
+    metadata.offset.push_back(metadata.size);  // save previous size as offset
+    metadata.size += size_of(element.type);
+  }
+  Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*full_type), metadata));
 }
 
 container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
@@ -239,7 +275,8 @@ bool contains_key(const vector<pair<type_tree*, container_metadata> >& all, cons
 bool matches(const type_tree* a, const type_tree* b) {
   if (a == b) return true;
   if (!a || !b) return false;
-  if (a->value != b->value) return false;
+  if (a->atom != b->atom) return false;
+  if (a->atom) return a->value == b->value;
   return matches(a->left, b->left) && matches(a->right, b->right);
 }
 
@@ -252,7 +289,122 @@ def main [
 ]
 +app: foo: 34 35 36
 
+//: for the following unit tests we'll do the work of the transform by hand
+
+:(before "End Unit Tests")
+void test_container_sizes() {
+  // a container we don't have the size for
+  reagent r("x:point");
+  CHECK(!contains_key(Container_metadata, r.type));
+  // scan
+  compute_container_sizes(r);
+  // the reagent we scanned knows its size
+  CHECK_EQ(r.metadata.size, 2);
+  // the global table also knows its size
+  CHECK(contains_key(Container_metadata, r.type));
+  CHECK_EQ(get(Container_metadata, r.type).size, 2);
+}
+
+void test_container_sizes_nested() {
+  // a container we don't have the size for
+  reagent r("x:point-number");
+  CHECK(!contains_key(Container_metadata, r.type));
+  // scan
+  compute_container_sizes(r);
+  // the reagent we scanned knows its size
+  CHECK_EQ(r.metadata.size, 3);
+  // the global table also knows its size
+  CHECK(contains_key(Container_metadata, r.type));
+  CHECK_EQ(get(Container_metadata, r.type).size, 3);
+}
+
+void test_container_sizes_recursive() {
+  // define a container containing an address to itself
+  run("container foo [\n"
+      "  x:number\n"
+      "  y:address:foo\n"
+      "]\n");
+  reagent r("x:foo");
+  compute_container_sizes(r);
+  CHECK_EQ(r.metadata.size, 2);
+}
+
+void test_container_sizes_from_address() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  CHECK(!contains_key(Container_metadata, container.type));
+  // scanning an address to the container precomputes the size of the container
+  reagent r("x:address:point");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+}
+
+void test_container_sizes_from_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  CHECK(!contains_key(Container_metadata, container.type));
+  // scanning an array of the container precomputes the size of the container
+  reagent r("x:array:point");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+}
+
+void test_container_sizes_from_address_to_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  CHECK(!contains_key(Container_metadata, container.type));
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:address:array:point");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+}
+
+void test_container_sizes_from_static_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:array:point:10");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
+
+void test_container_sizes_from_address_to_static_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:address:array:point:10");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
+
+void test_container_sizes_from_repeated_address_and_array_types() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning repeated address and array types modifying the container precomputes the size of the container
+  reagent r("x:address:array:address:array:point:10");
+  compute_container_sizes(r);
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
+
 //:: To access elements of a container, use 'get'
+//: 'get' takes a 'base' container and an 'offset' into it and returns the
+//: appropriate element of the container value.
+
 :(scenario get)
 def main [
   12:number <- copy 34
@@ -273,11 +425,15 @@ case GET: {
   }
   reagent/*copy*/ base = inst.ingredients.at(0);  // new copy for every invocation
   // Update GET base in Check
-  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
+  if (!base.type) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.type->value;
+  const type_tree* base_root_type = base.type->atom ? base.type : base.type->left;
+  if (!base_root_type->atom || base_root_type->value == 0 || !contains_key(Type, base_root_type->value) || get(Type, base_root_type->value).kind != CONTAINER) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
   const reagent& offset = inst.ingredients.at(1);
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'get' should have type 'offset', but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
@@ -288,14 +444,14 @@ case GET: {
     offset_value = to_integer(offset.name);
   else
     offset_value = offset.value;
-  if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-    raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type).name << "'\n" << end();
+  if (offset_value < 0 || offset_value >= SIZE(get(Type, base_root_type->value).elements)) {
+    raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_root_type->value).name << "'\n" << end();
     break;
   }
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update GET product in Check
-  const reagent/*copy*/ element = element_type(base.type, offset_value);
+  const reagent/*copy*/ element = element_type(base.type, offset_value);  // not just base_root_type because later layers will introduce compound types
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << product.name << "' has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
@@ -311,13 +467,13 @@ case GET: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.type->value;
+  const type_tree* base_root_type = root_type(base.type);
   int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
   assert(base.metadata.size);
   int src = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent/*copy*/ element = element_type(base.type, offset);
+  reagent/*copy*/ element = element_type(base.type, offset);  // not just base_root_type because later layers will introduce compound types
   element.set_value(src);
   trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
@@ -328,9 +484,10 @@ case GET: {
 :(code)
 const reagent element_type(const type_tree* type, int offset_value) {
   assert(offset_value >= 0);
-  assert(contains_key(Type, type->value));
-  assert(!get(Type, type->value).name.empty());
-  const type_info& info = get(Type, type->value);
+  const type_tree* root = root_type(type);
+  assert(contains_key(Type, root->value));
+  assert(!get(Type, root->value).name.empty());
+  const type_info& info = get(Type, root->value);
   assert(info.kind == CONTAINER);
   if (offset_value >= SIZE(info.elements)) return reagent();  // error handled elsewhere
   reagent/*copy*/ element = info.elements.at(offset_value);
@@ -411,11 +568,15 @@ case PUT: {
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
   // Update PUT base in Check
-  if (!base.type || !base.type->value || !contains_key(Type, base.type->value) || get(Type, base.type->value).kind != CONTAINER) {
+  if (!base.type) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.type->value;
+  const type_tree* base_root_type = base.type->atom ? base.type : base.type->left;
+  if (!base_root_type->atom || base_root_type->value == 0 || !contains_key(Type, base_root_type->value) || get(Type, base_root_type->value).kind != CONTAINER) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
   reagent/*copy*/ offset = inst.ingredients.at(1);
   // Update PUT offset in Check
   if (!is_literal(offset) || !is_mu_scalar(offset)) {
@@ -425,8 +586,8 @@ case PUT: {
   int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
-    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
-      raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type).name << "'\n" << end();
+    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_root_type->value).elements)) {
+      raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_root_type->value).name << "'\n" << end();
       break;
     }
   }
@@ -434,7 +595,7 @@ case PUT: {
     offset_value = offset.value;
   }
   const reagent& value = inst.ingredients.at(2);
-  const reagent& element = element_type(base.type, offset_value);
+  const reagent& element = element_type(base.type, offset_value);  // not just base_root_type because later layers will introduce compound types
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
@@ -456,9 +617,9 @@ case PUT: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  type_ordinal base_type = base.type->value;
+  const type_tree* base_root_type = root_type(base.type);
   int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(get(Type, base_type).elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
   int address = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
@@ -592,21 +753,23 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
 
 void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info& info) {
   if (!type) return;
-  if (!type->name.empty()) {
-    if (contains_key(Type_ordinal, type->name)) {
-      type->value = get(Type_ordinal, type->name);
-    }
-    else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
-      type->value = 0;
-    }
-    // End insert_container Special-cases
-    else if (type->name != "->") {  // used in recipe types
-      put(Type_ordinal, type->name, Next_type_ordinal++);
-      type->value = get(Type_ordinal, type->name);
-    }
+  if (!type->atom) {
+    replace_unknown_types_with_unique_ordinals(type->left, info);
+    replace_unknown_types_with_unique_ordinals(type->right, info);
+    return;
   }
-  replace_unknown_types_with_unique_ordinals(type->left, info);
-  replace_unknown_types_with_unique_ordinals(type->right, info);
+  assert(!type->name.empty());
+  if (contains_key(Type_ordinal, type->name)) {
+    type->value = get(Type_ordinal, type->name);
+  }
+  else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
+    type->value = 0;
+  }
+  // End insert_container Special-cases
+  else if (type->name != "->") {  // used in recipe types
+    put(Type_ordinal, type->name, Next_type_ordinal++);
+    type->value = get(Type_ordinal, type->name);
+  }
 }
 
 void skip_bracket(istream& in, string message) {
@@ -687,6 +850,11 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
 void check_or_set_invalid_types(type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
   // End Container Type Checks
+  if (!type->atom) {
+    check_or_set_invalid_types(type->left, block, name);
+    check_or_set_invalid_types(type->right, block, name);
+    return;
+  }
   if (type->value == 0) return;
   if (!contains_key(Type, type->value)) {
     assert(!type->name.empty());
@@ -695,8 +863,6 @@ void check_or_set_invalid_types(type_tree* type, const string& block, const stri
     else
       raise << block << "unknown type " << type->name << " in " << name << '\n' << end();
   }
-  check_or_set_invalid_types(type->left, block, name);
-  check_or_set_invalid_types(type->right, block, name);
 }
 
 :(scenario container_unknown_field)
@@ -738,10 +904,13 @@ void check_container_field_types() {
 
 void check_invalid_types(const type_tree* type, const string& block, const string& name) {
   if (!type) return;  // will throw a more precise error elsewhere
+  if (!type->atom) {
+    check_invalid_types(type->left, block, name);
+    check_invalid_types(type->right, block, name);
+    return;
+  }
   if (type->value != 0) {  // value 0 = compound types (layer parse_tree) or type ingredients (layer shape_shifting_container)
     if (!contains_key(Type, type->value))
       raise << block << "unknown type in " << name << '\n' << end();
   }
-  check_invalid_types(type->left, block, name);
-  check_invalid_types(type->right, block, name);
 }

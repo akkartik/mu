@@ -54,7 +54,7 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
     raise << maybe(caller.name) << "'" << x.name << "' used with multiple types\n" << end();
     return;
   }
-  if (x.type->name == "array") {
+  if (is_mu_array(x)) {
     if (!x.type->right) {
       raise << maybe(caller.name) << "'" << x.name << ": can't be just an array. What is it an array of?\n" << end();
       return;

@@ -83,18 +83,14 @@ int address(int offset, int base) {
 
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
-  if (!scalar(data)
-      || !x.type
-      || x.type->value != get(Type_ordinal, "address")
-      || !x.type->right
-      || x.type->right->value != get(Type_ordinal, "array")
-      || !x.type->right->right
-      || x.type->right->right->value != get(Type_ordinal, "location")
-      || x.type->right->right->right) {
+  if (!scalar(data) || !is_space(x))
     raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
-  }
   current_call().default_space = data.at(0);
   return;
+}
+:(code)
+bool is_space(const reagent& r) {
+  return is_address_of_array_of_numbers(r);
 }
 
 :(scenario get_default_space)

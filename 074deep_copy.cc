@@ -283,7 +283,7 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
       // construct a fake reagent that reads directly from the appropriate
       // field of the container
       reagent curr;
-      curr.type = new type_tree("address", new type_tree(*info->payload_type));
+      curr.type = new type_tree(new type_tree("address"), new type_tree(*info->payload_type));
       curr.set_value(canonized_in.value + info->offset);
       curr.properties.push_back(pair<string, string_tree*>("raw", NULL));
       trace(9991, "run") << "deep-copy: copying address " << curr.value << end();

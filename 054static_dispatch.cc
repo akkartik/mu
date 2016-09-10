@@ -310,9 +310,8 @@ bool all_header_reagents_strictly_match_except_literal_against_address_or_boolea
 }
 
 bool types_strictly_match_except_literal_against_address_or_boolean(const reagent& to, const reagent& from) {
-  if (is_literal(from)
-      && to.type && to.type->value == get(Type_ordinal, "boolean"))
-    return boolean_matches_literal(to, from);
+  if (is_literal(from) && is_mu_boolean(to))
+    return from.name == "0" || from.name == "1";
   return types_strictly_match_except_literal_zero_against_address(to, from);
 }
 

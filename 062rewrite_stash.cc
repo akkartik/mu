@@ -117,14 +117,15 @@ void rewrite_stash_to_text(reagent& r, vector<instruction>& out, const string& t
 }
 
 bool is_lookup_of_address_of_array(reagent/*copy*/ x) {
-  if (x.type->name != "address") return false;
+  if (x.type->atom) return false;
+  if (x.type->left->name != "address") return false;
   if (!canonize_type(x)) return false;
-  return x.type->name == "array";
+  return is_mu_array(x);
 }
 
 bool is_static_array(const reagent& x) {
   // no canonize_type()
-  return x.type->name == "array";
+  return !x.type->atom && x.type->left->atom && x.type->left->name == "array";
 }
 
 //: Make sure that the new system is strictly better than just the 'stash'

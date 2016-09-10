@@ -34,11 +34,14 @@ case CREATE_ARRAY: {
     break;
   }
   // 'create-array' will need to check properties rather than types
-  if (!product.type->right->right) {
+  type_tree* array_length_from_type = product.type->right->right;
+  if (!array_length_from_type) {
     raise << maybe(get(Recipe, r).name) << "create array of what size? '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_integer(product.type->right->right->name)) {
+  if (!product.type->right->right->atom)
+    array_length_from_type = array_length_from_type->left;
+  if (!is_integer(array_length_from_type->name)) {
     raise << maybe(get(Recipe, r).name) << "'create-array' product should specify size of array after its element type, but got '" << product.type->right->right->name << "'\n" << end();
     break;
   }
@@ -49,7 +52,10 @@ case CREATE_ARRAY: {
   reagent/*copy*/ product = current_instruction().products.at(0);
   // Update CREATE_ARRAY product in Run
   int base_address = product.value;
-  int array_length = to_integer(product.type->right->right->name);
+  type_tree* array_length_from_type = product.type->right->right;
+  if (!product.type->right->right->atom)
+    array_length_from_type = array_length_from_type->left;
+  int array_length = to_integer(array_length_from_type->name);
   // initialize array length, so that size_of will work
   trace(9999, "mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
@@ -93,7 +99,7 @@ def main [
 +app: foo: 3 14 15 16
 
 :(before "End size_of(reagent r) Cases")
-if (r.type && r.type->value == get(Type_ordinal, "array")) {
+if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
@@ -107,7 +113,7 @@ if (r.type && r.type->value == get(Type_ordinal, "array")) {
 //: disable the size mismatch check for arrays since the destination array
 //: need not be initialized
 :(before "End size_mismatch(x) Cases")
-if (x.type && x.type->value == get(Type_ordinal, "array")) return false;
+if (x.type && !x.type->atom && x.type->left->value == get(Type_ordinal, "array")) return false;
 
 //: arrays are disallowed inside containers unless their length is fixed in
 //: advance
@@ -147,12 +153,16 @@ def main [
 :(before "End Load Container Element Definition")
 {
   const type_tree* type = info.elements.back().type;
-  if (type && type->name == "array") {
+  if (type && type->atom && type->name == "array") {
+    raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
+    continue;
+  }
+  if (type && !type->atom && type->left->atom && type->left->name == "array") {
     if (!type->right) {
       raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
       continue;
     }
-    if (!type->right->right) {  // array has no length
+    if (type->right->atom) {  // array has no length
       raise << "container '" << name << "' cannot determine size of element '" << info.elements.back().name << "'\n" << end();
       continue;
     }
@@ -179,6 +189,16 @@ def main [
   3:number <- copy 15
   4:number <- copy 16
   5:number <- index 1:array:number:3, 0
+]
++mem: storing 14 in location 5
+
+:(scenario index_compound_element)
+def main [
+  {1: (array (address number) 3)} <- create-array
+  2:number <- copy 14
+  3:number <- copy 15
+  4:number <- copy 16
+  5:address:number <- index {1: (array (address number) 3)}, 0
 ]
 +mem: storing 14 in location 5
 
@@ -246,7 +266,7 @@ case INDEX: {
   type_tree* element_type = copy_array_element(base.type);
   int src = base_address + 1 + index_val.at(0)*size_of(element_type);
   trace(9998, "run") << "address to copy is " << src << end();
-  trace(9998, "run") << "its type is " << get(Type, element_type->value).name << end();
+  trace(9998, "run") << "its type is " << to_string(element_type) << end();
   reagent element;
   element.set_value(src);
   element.type = element_type;
@@ -257,19 +277,15 @@ case INDEX: {
 
 :(code)
 type_tree* copy_array_element(const type_tree* type) {
-  if (type->right->left) {
-    assert(!type->right->left->left);
-    return new type_tree(*type->right->left);
-  }
   assert(type->right);
-  // array:<type>:<size>? return just <type>
-  if (type->right->right && is_integer(type->right->right->name))
-    return new type_tree(type->right->name, type->right->value);  // snip type->right->right
+  // hack: don't require parens for either array:number:3 array:address:number
+  if (!type->right->atom && type->right->right && type->right->right->atom && is_integer(type->right->right->name))
+    return new type_tree(*type->right->left);
   return new type_tree(*type->right);
 }
 
 int array_length(const reagent& x) {
-  if (x.type->right->right && !x.type->right->right->right  // exactly 3 types
+  if (!x.type->atom && !x.type->right->atom && x.type->right->right->atom  // exactly 3 types
       && is_integer(x.type->right->right->name)) {  // third 'type' is a number
     // get size from type
     return to_integer(x.type->right->right->name);

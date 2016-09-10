@@ -70,40 +70,37 @@ struct reagent {
 // Types can range from a simple type ordinal, to arbitrarily complex trees of
 // type parameters, like (map (address array character) (list number))
 struct type_tree {
-  string name;
-  type_ordinal value;
-  type_tree* left;
-  type_tree* right;
+  bool atom;
+  string name;  // only if atom
+  type_ordinal value;  // only if atom
+  type_tree* left;  // only if !atom
+  type_tree* right;  // only if !atom
   ~type_tree();
   type_tree(const type_tree& old);
-  // simple: type ordinal
+  // atomic type ordinal
   explicit type_tree(string name);
-  type_tree(string name, type_ordinal v) :name(name), value(v), left(NULL), right(NULL) {}
-  // intermediate: list of type ordinals
-  type_tree(string name, type_ordinal v, type_tree* r) :name(name), value(v), left(NULL), right(r) {}
-  type_tree(string name, type_tree* r);
-  // advanced: tree containing type ordinals
-  type_tree(type_tree* l, type_tree* r) :value(0), left(l), right(r) {}
+  type_tree(string name, type_ordinal v) :atom(true), name(name), value(v), left(NULL), right(NULL) {}
+  // tree of type ordinals
+  type_tree(type_tree* l, type_tree* r) :atom(false), value(0), left(l), right(r) {}
+  type_tree& operator=(const type_tree& old);
 };
 
 struct string_tree {
-  string value;
-  string_tree* left;
-  string_tree* right;
+  bool atom;
+  string value;  // only if atom
+  string_tree* left;  // only if !atom
+  string_tree* right;  // only if !atom
   ~string_tree();
   string_tree(const string_tree& old);
-  // simple: flat string
-  explicit string_tree(string v) :value(v), left(NULL), right(NULL) {}
-  // intermediate: list of strings
-  string_tree(string v, string_tree* r) :value(v), left(NULL), right(r) {}
-  // advanced: tree containing strings
-  string_tree(string_tree* l, string_tree* r) :left(l), right(r) {}
+  // atomic string
+  explicit string_tree(string v) :atom(true), value(v), left(NULL), right(NULL) {}
+  // tree of strings
+  string_tree(string_tree* l, string_tree* r) :atom(false), left(l), right(r) {}
 };
 
 // End type_tree Definition
 :(code)
-type_tree::type_tree(string name) :name(name), value(get(Type_ordinal, name)), left(NULL), right(NULL) {}
-type_tree::type_tree(string name, type_tree* r) :name(name), value(get(Type_ordinal, name)), left(NULL), right(r) {}
+type_tree::type_tree(string name) :atom(true), name(name), value(get(Type_ordinal, name)), left(NULL), right(NULL) {}
 
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
@@ -296,26 +293,29 @@ void slurp_properties(istream& in, vector<pair<string, string_tree*> >& out) {
 string_tree* parse_property_list(istream& in) {
   skip_whitespace_but_not_newline(in);
   if (!has_data(in)) return NULL;
-  string_tree* result = new string_tree(slurp_until(in, ':'));
-  result->right = parse_property_list(in);
-  return result;
+  string_tree* left = new string_tree(slurp_until(in, ':'));
+  if (!has_data(in)) return left;
+  string_tree* right = parse_property_list(in);
+  return new string_tree(left, right);
 }
 
 type_tree* new_type_tree(const string_tree* properties) {
   if (!properties) return NULL;
-  type_tree* result = new type_tree("", 0);
-  if (!properties->value.empty()) {
-    const string& type_name = result->name = properties->value;
+  if (properties->atom) {
+    const string& type_name = properties->value;
+    int value = 0;
     if (contains_key(Type_ordinal, type_name))
-      result->value = get(Type_ordinal, type_name);
+      value = get(Type_ordinal, type_name);
     else if (is_integer(type_name))  // sometimes types will contain non-type tags, like numbers for the size of an array
-      result->value = 0;
-    else if (properties->value != "->")  // used in recipe types
-      result->value = -1;  // should never happen; will trigger errors later
+      value = 0;
+    else if (properties->value == "->")  // used in recipe types
+      value = 0;
+    else
+      value = -1;  // should never happen; will trigger errors later
+    return new type_tree(type_name, value);
   }
-  result->left = new_type_tree(properties->left);
-  result->right = new_type_tree(properties->right);
-  return result;
+  return new type_tree(new_type_tree(properties->left),
+                       new_type_tree(properties->right));
 }
 
 //: avoid memory leaks for the type tree
@@ -334,13 +334,24 @@ reagent::reagent(const reagent& other) {
 }
 
 type_tree::type_tree(const type_tree& old) {
+  atom = old.atom;
   name = old.name;
   value = old.value;
   left = old.left ? new type_tree(*old.left) : NULL;
   right = old.right ? new type_tree(*old.right) : NULL;
 }
 
+type_tree& type_tree::operator=(const type_tree& old) {
+  atom = old.atom;
+  name = old.name;
+  value = old.value;
+  left = old.left ? new type_tree(*old.left) : NULL;
+  right = old.right ? new type_tree(*old.right) : NULL;
+  return *this;
+}
+
 string_tree::string_tree(const string_tree& old) {
+  atom = old.atom;
   value = old.value;
   left = old.left ? new string_tree(*old.left) : NULL;
   right = old.right ? new string_tree(*old.right) : NULL;
@@ -543,27 +554,25 @@ string debug_string(const reagent& x) {
 string to_string(const string_tree* property) {
   if (!property) return "()";
   ostringstream out;
-  if (!property->left && !property->right)
-    // abbreviate a single-node tree to just its contents
-    out << '"' << property->value << '"';
-  else
-    dump(property, out);
+  dump(property, out);
   return out.str();
 }
 
 void dump(const string_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
-    out << x->value;
+  if (!x) return;
+  if (x->atom) {
+    out << '"' << x->value << '"';
     return;
   }
   out << '(';
-  for (const string_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      dump(curr->left, out);
-    else
-      out << '"' << curr->value << '"';
+  const string_tree* curr = x;
+  while (curr && !curr->atom) {
+    dump(curr->left, out);
+    if (curr->right) out << ' ';
+    curr = curr->right;
   }
+  // final right
+  dump(curr, out);
   out << ')';
 }
 
@@ -576,18 +585,20 @@ string to_string(const type_tree* type) {
 }
 
 void dump(const type_tree* x, ostream& out) {
-  if (!x->left && !x->right) {
+  if (!x) return;
+  if (x->atom) {
     dump(x->value, out);
     return;
   }
   out << '(';
-  for (const type_tree* curr = x; curr; curr = curr->right) {
-    if (curr != x) out << ' ';
-    if (curr->left)
-      dump(curr->left, out);
-    else
-      dump(curr->value, out);
+  const type_tree* curr = x;
+  while (curr && !curr->atom) {
+    dump(curr->left, out);
+    if (curr->right) out << ' ';
+    curr = curr->right;
   }
+  // final right
+  dump(curr, out);
   out << ')';
 }
 
@@ -606,19 +617,21 @@ string names_to_string(const type_tree* type) {
   return out.str();
 }
 
-void dump_names(const type_tree* type, ostream& out) {
-  if (!type->left && !type->right) {
-    out << '"' << type->name << '"';
+void dump_names(const type_tree* x, ostream& out) {
+  if (!x) return;
+  if (x->atom) {
+    out << '"' << x->name << '"';
     return;
   }
   out << '(';
-  for (const type_tree* curr = type; curr; curr = curr->right) {
-    if (curr != type) out << ' ';
-    if (curr->left)
-      dump_names(curr->left, out);
-    else
-      out << '"' << curr->name << '"';
+  const type_tree* curr = x;
+  while (curr && !curr->atom) {
+    dump_names(curr->left, out);
+    if (curr->right) out << ' ';
+    curr = curr->right;
   }
+  // final right
+  dump_names(curr, out);
   out << ')';
 }
 
@@ -630,19 +643,21 @@ string names_to_string_without_quotes(const type_tree* type) {
   return out.str();
 }
 
-void dump_names_without_quotes(const type_tree* type, ostream& out) {
-  if (!type->left && !type->right) {
-    out << type->name;
+void dump_names_without_quotes(const type_tree* x, ostream& out) {
+  if (!x) return;
+  if (x->atom) {
+    out << x->name;
     return;
   }
   out << '(';
-  for (const type_tree* curr = type; curr; curr = curr->right) {
-    if (curr != type) out << ' ';
-    if (curr->left)
-      dump_names_without_quotes(curr->left, out);
-    else
-      out << curr->name;
+  const type_tree* curr = x;
+  while (curr && !curr->atom) {
+    dump_names_without_quotes(curr->left, out);
+    if (curr->right) out << ' ';
+    curr = curr->right;
   }
+  // final right
+  dump_names_without_quotes(curr, out);
   out << ')';
 }
 

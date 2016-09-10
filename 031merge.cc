@@ -124,12 +124,13 @@ void check_merge_calls(const recipe_ordinal r) {
     }
     reagent/*copy*/ product = inst.products.at(0);
     // Update product While Type-checking Merge
-    type_ordinal product_type = product.type->value;
-    if (product_type == 0 || !contains_key(Type, product_type)) {
+    const type_tree* product_base_type = product.type->atom ? product.type : product.type->left;
+    assert(product_base_type->atom);
+    if (product_base_type->value == 0 || !contains_key(Type, product_base_type->value)) {
       raise << maybe(caller.name) << "'merge' should yield a container in '" << inst.original_string << "'\n" << end();
       continue;
     }
-    const type_info& info = get(Type, product_type);
+    const type_info& info = get(Type, product_base_type->value);
     if (info.kind != CONTAINER && info.kind != EXCLUSIVE_CONTAINER) {
       raise << maybe(caller.name) << "'merge' should yield a container in '" << inst.original_string << "'\n" << end();
       continue;
@@ -151,7 +152,9 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
     }
     reagent& container = state.data.top().container;
     if (!container.type) return;  // error handled elsewhere
-    type_info& container_info = get(Type, container.type->value);
+    const type_tree* top_root_type = container.type->atom ? container.type : container.type->left;
+    assert(top_root_type->atom);
+    type_info& container_info = get(Type, top_root_type->value);
     switch (container_info.kind) {
       case CONTAINER: {
         // degenerate case: merge with the same type always succeeds
@@ -163,7 +166,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {
           ++ingredient_index;
           ++state.data.top().container_element_index;
-          while (state.data.top().container_element_index >= SIZE(get(Type, state.data.top().container.type->value).elements)) {
+          while (state.data.top().container_element_index >= SIZE(get(Type, root_type(state.data.top().container.type)->value).elements)) {
             state.data.pop();
             if (state.data.empty()) {
               if (ingredient_index < SIZE(ingredients))
@@ -198,7 +201,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
             return;
           }
           ++state.data.top().container_element_index;
-        } while (state.data.top().container_element_index >= SIZE(get(Type, state.data.top().container.type->value).elements));
+        } while (state.data.top().container_element_index >= SIZE(get(Type, root_type(state.data.top().container.type)->value).elements));
       }
     }
   }
@@ -216,4 +219,3 @@ def main [
 :(before "End Includes")
 #include <stack>
 using std::stack;
-

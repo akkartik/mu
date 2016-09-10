@@ -97,8 +97,8 @@ vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instructi
   for (int i = 0; i < SIZE(variants); ++i) {
     if (variants.at(i) == -1) continue;
     if (!any_type_ingredient_in_header(variants.at(i))) continue;
-    if (all_concrete_header_reagents_strictly_match(inst, get(Recipe, variants.at(i))))
-      result.push_back(variants.at(i));
+    if (!all_concrete_header_reagents_strictly_match(inst, get(Recipe, variants.at(i)))) continue;
+    result.push_back(variants.at(i));
   }
   return result;
 }
@@ -192,31 +192,28 @@ int number_of_concrete_type_names(const reagent& r) {
 
 int number_of_concrete_type_names(const type_tree* type) {
   if (!type) return 0;
-  int result = 0;
-  if (!type->name.empty() && !is_type_ingredient_name(type->name))
-    ++result;
-  result += number_of_concrete_type_names(type->left);
-  result += number_of_concrete_type_names(type->right);
-  return result;
+  if (type->atom)
+    return is_type_ingredient_name(type->name) ? 0 : 1;
+  return number_of_concrete_type_names(type->left)
+       + number_of_concrete_type_names(type->right);
 }
 
 bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* from, const reagent& rhs_reagent) {
   if (!to) return !from;
   if (!from) return !to;
-  if (is_type_ingredient_name(to->name)) return true;  // type ingredient matches anything
-  if (to->name == "literal" && from->name == "literal")
-    return true;
-  if (to->name == "literal"
-      && Literal_type_names.find(from->name) != Literal_type_names.end())
-    return true;
-  if (from->name == "literal"
-      && Literal_type_names.find(to->name) != Literal_type_names.end())
-    return true;
-  if (from->name == "literal" && to->name == "address")
-    return rhs_reagent.name == "0";
-  return to->name == from->name
-      && concrete_type_names_strictly_match(to->left, from->left, rhs_reagent)
-      && concrete_type_names_strictly_match(to->right, from->right, rhs_reagent);
+  if (to->atom && is_type_ingredient_name(to->name)) return true;  // type ingredient matches anything
+  if (from->atom && is_mu_address(to))
+    return from->name == "literal" && rhs_reagent.name == "0";
+  if (!from->atom && !to->atom)
+    return concrete_type_names_strictly_match(to->left, from->left, rhs_reagent)
+        && concrete_type_names_strictly_match(to->right, from->right, rhs_reagent);
+  if (from->atom != to->atom) return false;
+  // both from and to are atoms
+  if (from->name == "literal")
+    return Literal_type_names.find(to->name) != Literal_type_names.end();
+  if (to->name == "literal")
+    return Literal_type_names.find(from->name) != Literal_type_names.end();
+  return to->name == from->name;
 }
 
 bool contains_type_ingredient_name(const reagent& x) {
@@ -337,14 +334,12 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
   }
   if (is_type_ingredient_name(exemplar_type->name)) {
     const type_tree* curr_refinement_type = NULL;  // temporary heap allocation; must always be deleted before it goes out of scope
-    if (refinement_type->left)
-      curr_refinement_type = new type_tree(*refinement_type->left);
-    else if (exemplar_type->right)
-      // splice out refinement_type->right, it'll be used later by the exemplar_type->right
-      curr_refinement_type = new type_tree(refinement_type->name, refinement_type->value, NULL);
-    else
+    if (exemplar_type->atom)
       curr_refinement_type = new type_tree(*refinement_type);
-    assert(!curr_refinement_type->left);
+    else {
+      assert(!refinement_type->atom);
+      curr_refinement_type = new type_tree(*refinement_type->left);
+    }
     if (!contains_key(mappings, exemplar_type->name)) {
       trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(curr_refinement_type) << end();
       put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
@@ -409,49 +404,27 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
 // todo: too complicated and likely incomplete; maybe avoid replacing in place?
 void replace_type_ingredients(type_tree* type, const map<string, const type_tree*>& mappings) {
   if (!type) return;
-  if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect
-    type->value = get(Type_ordinal, type->name);
-  if (!is_type_ingredient_name(type->name) || !contains_key(mappings, type->name)) {
+  if (!type->atom) {
     replace_type_ingredients(type->left, mappings);
     replace_type_ingredients(type->right, mappings);
     return;
   }
-
+  if (contains_key(Type_ordinal, type->name))  // todo: ugly side effect
+    type->value = get(Type_ordinal, type->name);
+  if (!contains_key(mappings, type->name))
+    return;
   const type_tree* replacement = get(mappings, type->name);
   trace(9993, "transform") << type->name << " => " << names_to_string(replacement) << end();
-  if (!contains_key(Type_ordinal, replacement->name)) {
-    // error in program; should be reported elsewhere
-    return;
-  }
-
-  // type is a single type ingredient
-  assert(!type->left);
-  if (!type->right) assert(!replacement->left);
-
-  if (!replacement->right) {
-    if (!replacement->left) {
-      type->name = (replacement->name == "literal") ? "number" : replacement->name;
-      type->value = get(Type_ordinal, type->name);
+  if (replacement->atom) {
+    if (!contains_key(Type_ordinal, replacement->name)) {
+      // error in program; should be reported elsewhere
+      return;
     }
-    else {
-      type->name = "";
-      type->value = 0;
-      type->left = new type_tree(*replacement);
-    }
-    replace_type_ingredients(type->right, mappings);
-  }
-  // replace non-last type?
-  else if (type->right) {
-    type->name = "";
-    type->value = 0;
-    type->left = new type_tree(*replacement);
-    replace_type_ingredients(type->right, mappings);
-  }
-  // replace last type?
-  else {
-    type->name = replacement->name;
+    type->name = (replacement->name == "literal") ? "number" : replacement->name;
     type->value = get(Type_ordinal, type->name);
-    type->right = new type_tree(*replacement->right);
+  }
+  else {
+    *type = *replacement;
   }
 }
 
@@ -473,34 +446,9 @@ void accumulate_type_ingredients(const type_tree* type, set<string>& out) {
 }
 
 type_tree* parse_type_tree(const string& s) {
-  istringstream in(s);
-  in >> std::noskipws;
-  return parse_type_tree(in);
-}
-
-type_tree* parse_type_tree(istream& in) {
-  skip_whitespace_but_not_newline(in);
-  if (!has_data(in)) return NULL;
-  if (in.peek() == ')') {
-    in.get();
-    return NULL;
-  }
-  if (in.peek() != '(')
-    return new type_tree(next_word(in), 0);
-  in.get();  // skip '('
-  type_tree* result = NULL;
-  type_tree** curr = &result;
-  while (in.peek() != ')') {
-    assert(has_data(in));
-    *curr = new type_tree("", 0);
-    skip_whitespace_but_not_newline(in);
-    if (in.peek() == '(')
-      (*curr)->left = parse_type_tree(in);
-    else
-      (*curr)->name = next_word(in);
-    curr = &(*curr)->right;
-  }
-  in.get();  // skip ')'
+  string_tree* s2 = parse_string_tree(s);
+  type_tree* result = new_type_tree(s2);
+  delete s2;
   return result;
 }
 

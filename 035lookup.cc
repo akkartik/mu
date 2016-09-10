@@ -76,7 +76,7 @@ void canonize(reagent& x) {
 }
 
 void lookup_memory(reagent& x) {
-  if (!x.type || x.type->value != get(Type_ordinal, "address")) {
+  if (!x.type || x.type->atom || x.type->left->value != get(Type_ordinal, "address")) {
     raise << maybe(current_recipe_name()) << "tried to /lookup '" << x.original_string << "' but it isn't an address\n" << end();
     return;
   }
@@ -149,15 +149,15 @@ canonize_type(rhs);
 :(before "Compute Container Size(reagent rcopy)")
 if (!canonize_type(rcopy)) return;
 
-:(before "Compute Container Size(element)")
+:(before "Compute Container Size(element, full_type)")
 assert(!has_property(element, "lookup"));
-:(before "Compute Exclusive Container Size(element)")
+:(before "Compute Exclusive Container Size(element, full_type)")
 assert(!has_property(element, "lookup"));
 
 :(code)
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
-    if (!r.type || r.type->value != get(Type_ordinal, "address")) {
+    if (!r.type || r.type->atom || !r.type->left || !r.type->left->atom || r.type->left->value != get(Type_ordinal, "address")) {
       raise << "can't lookup non-address: '" << to_string(r) << "': '" << to_string(r.type) << "'\n" << end();
       return false;
     }

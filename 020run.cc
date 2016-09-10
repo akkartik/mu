@@ -326,10 +326,12 @@ bool size_mismatch(const reagent& x, const vector<double>& data) {
 }
 
 bool is_literal(const reagent& r) {
-  if (!r.type) return false;
-  if (r.type->value == 0)
-    assert(!r.type->left && !r.type->right);
-  return r.type->value == 0;
+  return is_literal(r.type);
+}
+bool is_literal(const type_tree* type) {
+  if (!type) return false;
+  if (!type->atom) return false;
+  return type->value == 0;
 }
 
 bool scalar(const vector<int>& x) {

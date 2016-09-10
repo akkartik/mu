@@ -174,12 +174,13 @@ case NEW: {
 bool product_of_new_is_valid(const instruction& inst) {
   reagent/*copy*/ product = inst.products.at(0);
   // Update NEW product in Check
-  if (!product.type || product.type->value != get(Type_ordinal, "address"))
+  if (!product.type || product.type->atom || product.type->left->value != get(Type_ordinal, "address"))
     return false;
   drop_from_type(product, "address");
   if (SIZE(inst.ingredients) > 1) {
     // array allocation
-    if (!product.type || product.type->value != get(Type_ordinal, "array")) return false;
+    if (!product.type || product.type->atom || product.type->left->value != get(Type_ordinal, "array"))
+      return false;
     drop_from_type(product, "array");
   }
   reagent/*copy*/ expected_product("x:"+inst.ingredients.at(0).name);
@@ -193,7 +194,8 @@ bool product_of_new_is_valid(const instruction& inst) {
 }
 
 void drop_from_type(reagent& r, string expected_type) {
-  if (r.type->name != expected_type) {
+  assert(!r.type->atom);
+  if (r.type->left->name != expected_type) {
     raise << "can't drop2 " << expected_type << " from '" << to_string(r) << "'\n" << end();
     return;
   }

@@ -12,15 +12,21 @@ case TO_LOCATION_ARRAY: {
   break;
 }
 :(code)
-bool is_address_of_array_of_numbers(reagent/*copy*/ product) {
-  canonize_type(product);
-  if (!product.type || product.type->value != get(Type_ordinal, "address")) return false;
-  drop_from_type(product, "address");
-  if (!product.type || product.type->value != get(Type_ordinal, "array")) return false;
-  drop_from_type(product, "array");
-  if (!product.type || product.type->value != get(Type_ordinal, "number")) return false;
-  return true;
+bool is_address_of_array_of_numbers(reagent/*copy*/ x) {
+  canonize_type(x);
+  if (!is_compound_type_starting_with(x.type, "address")) return false;
+  drop_from_type(x, "address");
+  if (!is_compound_type_starting_with(x.type, "array")) return false;
+  drop_from_type(x, "array");
+  return x.type && x.type->atom && x.type->value == get(Type_ordinal, "number");
 }
+bool is_compound_type_starting_with(const type_tree* type, const string& expected_name) {
+  if (!type) return false;
+  if (type->atom) return false;
+  if (!type->left->atom) return false;
+  return type->left->value == get(Type_ordinal, expected_name);
+}
+
 :(before "End Primitive Recipe Implementations")
 case TO_LOCATION_ARRAY: {
   int array_size = SIZE(ingredients.at(0));

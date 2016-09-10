@@ -2,6 +2,11 @@
 // support for more complex trees of properties in dilated reagents. This will
 // come in handy later for expressing complex types, like "a dictionary from
 // (address to array of charaters) to (list of numbers)".
+//
+// Type trees aren't as general as s-expressions even if they look like them:
+// the first element of a type tree is always an atom, and left and right
+// pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp
+// parlance.
 
 :(scenarios load)
 :(scenario dilated_reagent_with_nested_brackets)
@@ -17,7 +22,7 @@ type_names = parse_string_tree(type_names);
 
 :(code)
 string_tree* parse_string_tree(string_tree* s) {
-  assert(!s->left && !s->right);
+  assert(s->atom);
   if (s->value.at(0) != '(') return s;
   string_tree* result = parse_string_tree(s->value);
   delete s;
@@ -44,17 +49,30 @@ string_tree* parse_string_tree(istream& in) {
   in.get();  // skip '('
   string_tree* result = NULL;
   string_tree** curr = &result;
-  while (in.peek() != ')') {
-    assert(has_data(in));
-    *curr = new string_tree("");
+  while (true) {
     skip_whitespace_but_not_newline(in);
+    assert(has_data(in));
+    if (in.peek() == ')') break;
+    *curr = new string_tree(NULL, NULL);
     if (in.peek() == '(')
       (*curr)->left = parse_string_tree(in);
     else
-      (*curr)->value = next_word(in);
+      (*curr)->left = new string_tree(next_word(in));
     curr = &(*curr)->right;
   }
   in.get();  // skip ')'
+  assert(*curr == NULL);
+  // standardize the final element to always be on the right if it's an atom
+  // (a b c) => (a b . c) in s-expression parlance
+  string_tree* tmp = result;
+  while (tmp->right && tmp->right->right) tmp = tmp->right;
+  assert(!tmp->right->atom);
+  if (!tmp->right->left->atom) return result;
+  string_tree* tmp2 = tmp->right;
+  tmp->right = tmp2->left;
+  tmp2->left = NULL;
+  assert(tmp2->right == NULL);
+  delete tmp2;
   return result;
 }
 

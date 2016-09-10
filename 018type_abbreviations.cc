@@ -16,8 +16,7 @@ def main [
   f 4:&&@&@number  # ..any number of times
   f 5:array:&number:3  # abbreviations take precedence over ':'
   f {6: (array &number 3)}  # support for dilated reagents and more complex parse trees
-  f 7:&&@&  # abbreviations without payload
-  f 8:@number:3  # *not* the same as array:number:3
+  f 7:@number:3  # *not* the same as array:number:3
 ]
 +parse:   ingredient: {1: ("address" "number")}
 +parse:   ingredient: {2: ("array" "number")}
@@ -25,32 +24,33 @@ def main [
 +parse:   ingredient: {4: ("address" "address" "array" "address" "array" "number")}
 +parse:   ingredient: {5: ("array" ("address" "number") "3")}
 +parse:   ingredient: {6: ("array" ("address" "number") "3")}
-# an error that will be raised elsewhere
-+parse:   ingredient: {7: ("address" "address" "array" "address")}
 # not what you want
-+parse:   ingredient: {8: (("array" "number") "3")}
++parse:   ingredient: {7: (("array" "number") "3")}
+
+:(scenario abbreviation_error)
+% Hide_errors = true;
+def main [
+  f 1:&&@&  # abbreviations without payload
+]
++error: invalid type abbreviation &&@&
 
 :(before "End Parsing Reagent Type Property(type_names)")
-type_names = replace_address_and_array_symbols(type_names);
+string_tree* new_type_names = replace_address_and_array_symbols(type_names);
+delete type_names;
+type_names = new_type_names;
 :(before "End Parsing Dilated Reagent Type Property(type_names)")
-type_names = replace_address_and_array_symbols(type_names);
+string_tree* new_type_names = replace_address_and_array_symbols(type_names);
+delete type_names;
+type_names = new_type_names;
 
 :(code)
 // simple version; lots of unnecessary allocations; always creates a new pointer
-string_tree* replace_address_and_array_symbols(string_tree*& orig) {
+string_tree* replace_address_and_array_symbols(string_tree* orig) {
   if (orig == NULL) return NULL;
-  string_tree* new_left = replace_address_and_array_symbols(orig->left);
-  string_tree* new_right = replace_address_and_array_symbols(orig->right);
-  if (orig->value.empty()) {
-    delete orig;  orig = NULL;
-    return new string_tree(new_left, new_right);
-  }
-  assert(new_left == NULL);
-  new_left = replace_address_and_array_symbols(orig->value);
-  assert(new_left);
-  delete orig;  orig = NULL;
-  append(new_left, new_right);
-  return new_left;
+  if (orig->atom)
+    return replace_address_and_array_symbols(orig->value);
+  return new string_tree(replace_address_and_array_symbols(orig->left),
+                         replace_address_and_array_symbols(orig->right));
 }
 
 // todo: unicode
@@ -69,14 +69,18 @@ string_tree* replace_address_and_array_symbols(const string& type_name) {
       new_node = new string_tree("array");
     else
       break;
-    if (!curr)
-      result = curr = new_node;
-    else
-      curr->right = new_node, curr = curr->right;
+    if (result == NULL)
+      result = curr = new string_tree(new_node, NULL);
+    else {
+      curr->right = new string_tree(new_node, NULL);
+      curr = curr->right;
+    }
     ++i;
   }
   if (i < SIZE(type_name))
     curr->right = new string_tree(type_name.substr(i));
+  else
+    raise << "invalid type abbreviation " << type_name << "\n" << end();
   return result;
 }
 

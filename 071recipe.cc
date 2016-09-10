@@ -70,8 +70,8 @@ bool contains_reagent_with_type(const recipe& caller, const string& name) {
 bool is_matching_non_recipe_literal(const reagent& x, const string& name) {
   if (x.name != name) return false;
   if (!x.type) return false;
-  if (x.type->value == get(Type_ordinal, "recipe-literal")) return false;
-  return true;
+  if (!x.type->atom) return false;
+  return x.type->value != get(Type_ordinal, "recipe-literal");
 }
 
 //: It's confusing to use variable names that are also recipe names. Always
@@ -177,21 +177,31 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
 }
 
 recipe from_reagent(const reagent& r) {
-  assert(r.type->name == "recipe");
+  assert(!r.type->atom && r.type->left->atom && r.type->left->name == "recipe");
   recipe result_header;  // will contain only ingredients and products, nothing else
   result_header.has_header = true;
   const type_tree* curr = r.type->right;
-  for (; curr; curr=curr->right) {
-    if (curr->name == "->") {
+  for (/*nada*/; curr && !curr->atom; curr = curr->right) {
+    if (curr->left->atom && curr->left->name == "->") {
       curr = curr->right;  // skip delimiter
       break;
     }
-    result_header.ingredients.push_back(next_recipe_reagent(curr));
+    result_header.ingredients.push_back(next_recipe_reagent(curr->left));
+    if (curr->right && curr->right->atom) {
+      result_header.ingredients.push_back(next_recipe_reagent(curr->right));
+      return result_header;  // no products
+    }
   }
-  for (; curr; curr=curr->right)
+  for (; curr && !curr->atom; curr=curr->right)
+    result_header.products.push_back(next_recipe_reagent(curr->left));
+  if (curr) {
+    assert(curr->atom);
     result_header.products.push_back(next_recipe_reagent(curr));
+  }
   return result_header;
 }
+
+// todo: unit test: 'recipe number' vs 'recipe -> number'
 
 reagent next_recipe_reagent(const type_tree* curr) {
   if (!curr->left) return reagent("recipe:"+curr->name);
@@ -203,9 +213,10 @@ reagent next_recipe_reagent(const type_tree* curr) {
 
 bool is_mu_recipe(const reagent& r) {
   if (!r.type) return false;
-  if (r.type->name == "recipe") return true;
-  if (r.type->name == "recipe-literal") return true;
-  // End is_mu_recipe Cases
+  if (r.type->atom)
+    return r.type->name == "recipe-literal";
+  if (!r.type->left->atom) return false;
+  if (r.type->left->name == "recipe") return true;
   return false;
 }
 

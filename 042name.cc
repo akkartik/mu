@@ -117,12 +117,10 @@ int lookup_name(const reagent& r, const recipe_ordinal default_recipe) {
 }
 
 type_ordinal skip_addresses(type_tree* type) {
-  type_ordinal address = get(Type_ordinal, "address");
-  for (; type; type = type->right) {
-    if (type->value != address)
-      return type->value;
-  }
-  return -1;
+  while (type && is_compound_type_starting_with(type, "address"))
+    type = type->right;
+  if (!type) return -1;  // error handled elsewhere
+  return root_type(type)->value;
 }
 
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {

@@ -555,9 +555,9 @@ $error: 0
 :(before "End Immutable Ingredients Special-cases")
 if (has_property(current_ingredient, "contained-in")) {
   const string_tree* tmp = property(current_ingredient, "contained-in");
-  if (tmp->left || tmp->right
+  if (!tmp->atom
       || !is_present_in_ingredients(caller, tmp->value)
       || !is_present_in_products(caller, tmp->value))
-    raise << maybe(caller.name) << "/contained-in can only point to another ingredient+product, but got '" << to_string(property(current_ingredient, "contained-in")) << "'\n" << end();
+    raise << maybe(caller.name) << "/contained-in can only point to another ingredient or product, but got '" << to_string(property(current_ingredient, "contained-in")) << "'\n" << end();
   continue;
 }
