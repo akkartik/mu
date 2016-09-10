@@ -214,6 +214,30 @@ augment scenarios with corresponding abilities.
 
 ---
 
+Mu assumes that all ingredients passed in to functions are immutable by
+default -- *unless* they are also products. So this program will throw an
+error:
+
+<img alt='immutable ingredient triggering an error' src='html/immutable-error.png'>
+
+To modify `foo`'s ingredient, you have to add it to the list of products
+returned:
+
+<img alt='mutable ingredient' src='html/mutable.png'>
+
+The names of the variables are important here: a function that takes an
+(immutable) address and returns a different one is different from a function
+that takes a mutable address (and also returns it).
+
+Immutability checks can be annoying sometimes, but the benefit they provide is
+that you always know what a function modifies just by looking at its header.
+They provide all the benefits of [referential transparency](https://en.wikipedia.org/wiki/Referential_transparency)
+that we typically associate with (particularly purely functional) high-level
+languages -- but without giving up the flexibility to imperatively modify
+variables willy-nilly.
+
+---
+
 You can append arbitrary properties to reagents besides types and spaces. Just
 separate them with slashes.
 
