@@ -401,7 +401,6 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
   replace_type_ingredients(x.type, mappings);
 }
 
-// todo: too complicated and likely incomplete; maybe avoid replacing in place?
 void replace_type_ingredients(type_tree* type, const map<string, const type_tree*>& mappings) {
   if (!type) return;
   if (!type->atom) {
