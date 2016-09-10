@@ -189,15 +189,17 @@ recipe from_reagent(const reagent& r) {
   for (/*nada*/; curr && !curr->atom; curr = curr->right) {
     if (curr->left->atom && curr->left->name == "->") {
       curr = curr->right;  // skip delimiter
-      break;
+      goto read_products;
     }
     result_header.ingredients.push_back(next_recipe_reagent(curr->left));
-    if (curr->right && curr->right->atom) {
-      result_header.ingredients.push_back(next_recipe_reagent(curr->right));
-      return result_header;  // no products
-    }
   }
-  for (; curr && !curr->atom; curr=curr->right)
+  if (curr) {
+    assert(curr->atom);
+    result_header.ingredients.push_back(next_recipe_reagent(curr));
+    return result_header;  // no products
+  }
+  read_products:
+  for (/*nada*/; curr && !curr->atom; curr=curr->right)
     result_header.products.push_back(next_recipe_reagent(curr->left));
   if (curr) {
     assert(curr->atom);
@@ -223,6 +225,12 @@ void test_from_reagent_reads_ingredient_at_end() {
   reagent a("{f: (recipe number number)}");
   recipe r_header = from_reagent(a);
   CHECK_EQ(SIZE(r_header.ingredients), 2);
+  CHECK(r_header.products.empty());
+}
+void test_from_reagent_reads_sole_ingredient_at_end() {
+  reagent a("{f: (recipe number)}");
+  recipe r_header = from_reagent(a);
+  CHECK_EQ(SIZE(r_header.ingredients), 1);
   CHECK(r_header.products.empty());
 }
 
