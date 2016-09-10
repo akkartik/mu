@@ -313,7 +313,8 @@ Hit F4 to rerun all sandboxes with the latest version of the code. More
 details: http://akkartik.name/post/mu. Beware, it won't save your edits by
 default. But if you create a sub-directory called `lesson/` under `mu/` it
 will. If you turn that directory into a git repo with `git init`, it will also
-back up your changes each time you hit F4.
+back up your changes each time you hit F4. Use the provided `new_lesson`
+script to take care of these details.
 
 Once you have a sandbox you can click on its result to mark it as expected:
 
