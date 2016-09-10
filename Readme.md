@@ -144,6 +144,9 @@ Here's a second example, of a function that can take ingredients:
 Functions can specify headers showing their expected ingredients and products,
 separated by `->` (unlike the `<-` in calls).
 
+Once defined, functions can be called just like primitives. No need to mess
+with a `CALL` instruction or push/pop arguments to the stack.
+
 Since Mu is a low-level VM language, it provides extra control at the cost of
 verbosity. Using `local-scope`, you have explicit control over stack frames to
 isolate your functions in a type-safe manner. You can also create more
@@ -295,28 +298,9 @@ and pointers can never be invalidated.
 
 ---
 
-If you're still reading, here are some more things to check out:
-
-a) Look at the [chessboard program](http://akkartik.github.io/mu/html/chessboard.mu.html)
-for a more complex example where I write tests showing blocking reads from the
-keyboard and what gets printed to the screen -- things we don't typically
-associate with automated tests.
-
-b) Try skimming the [colorized source code](https://akkartik.github.io/mu).
-I'd like it to eventually be possible to get a pretty good sense for how
-things work just by skimming the files in order, skimming the top of each file
-and ignoring details lower down. Tell me how successful my efforts are.
-
-c) Try running the tests:
+Mu has a programming environment:
 
   ```shell
-  $ ./mu test
-  ```
-
-d) Try out the programming environment:
-
-  ```shell
-  $ ./mu test edit
   $ ./mu edit
   ```
 
@@ -350,8 +334,28 @@ to browse. To add to the trace, use `stash`. For example:
 Invaluable for understanding complex control flow without cluttering up the
 screen.
 
+---
+
+If you're still reading, here are some more things to check out:
+
+a) Look at the [chessboard program](http://akkartik.github.io/mu/html/chessboard.mu.html)
+for a more complex example where I write tests showing blocking reads from the
+keyboard and what gets printed to the screen -- things we don't typically
+associate with automated tests.
+
+b) Try skimming the [colorized source code](https://akkartik.github.io/mu).
+I'd like it to eventually be possible to get a pretty good sense for how
+things work just by skimming the files in order, skimming the top of each file
+and ignoring details lower down. Tell me how successful my efforts are.
+
+c) Try running the tests:
+
+  ```shell
+  $ ./mu test
+  ```
+
 The next major milestone on Mu's roadmap is dependency-injected interfaces for
-the network and file system.
+the network.
 
 **Credits**
 
