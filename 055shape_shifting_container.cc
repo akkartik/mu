@@ -8,6 +8,17 @@ if (!type->atom)
 :(before "End is_mu_exclusive_container(type) Special-cases")
 if (!type->atom)
   return is_mu_exclusive_container(root_type(type));
+// a few calls to root_type() without the assertion (for better error handling)
+:(after "Update GET base_type in Check")
+if (!base_type->atom) base_type = base_type->left;
+:(after "Update GET base_type in Run")
+if (!base_type->atom) base_type = base_type->left;
+:(after "Update PUT base_type in Check")
+if (!base_type->atom) base_type = base_type->left;
+:(after "Update PUT base_type in Run")
+if (!base_type->atom) base_type = base_type->left;
+:(after "Update MAYBE_CONVERT base_type in Check")
+if (!base_type->atom) base_type = base_type->left;
 
 :(scenario size_of_shape_shifting_container)
 container foo:_t [

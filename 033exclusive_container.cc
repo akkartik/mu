@@ -109,8 +109,9 @@ case MAYBE_CONVERT: {
     raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got '" << base.original_string << "'\n" << end();
     break;
   }
-  const type_tree* root_type = base.type->atom ? base.type : base.type->left;
-  if (!root_type->atom || root_type->value == 0 || !contains_key(Type, root_type->value) || get(Type, root_type->value).kind != EXCLUSIVE_CONTAINER) {
+  const type_tree* base_type = base.type;
+  // Update MAYBE_CONVERT base_type in Check
+  if (!base_type->atom || base_type->value == 0 || !contains_key(Type, base_type->value) || get(Type, base_type->value).kind != EXCLUSIVE_CONTAINER) {
     raise << maybe(caller.name) << "first ingredient of 'maybe-convert' should be an exclusive-container, but got '" << base.original_string << "'\n" << end();
     break;
   }
@@ -127,7 +128,7 @@ case MAYBE_CONVERT: {
   // Update MAYBE_CONVERT product in Check
   reagent& offset = inst.ingredients.at(1);
   populate_value(offset);
-  if (offset.value >= SIZE(get(Type, root_type->value).elements)) {
+  if (offset.value >= SIZE(get(Type, base_type->value).elements)) {
     raise << maybe(caller.name) << "invalid tag " << offset.value << " in '" << inst.original_string << '\n' << end();
     break;
   }

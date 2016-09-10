@@ -421,8 +421,9 @@ case GET: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  const type_tree* base_root_type = base.type->atom ? base.type : base.type->left;
-  if (!base_root_type->atom || base_root_type->value == 0 || !contains_key(Type, base_root_type->value) || get(Type, base_root_type->value).kind != CONTAINER) {
+  const type_tree* base_type = base.type;
+  // Update GET base_type in Check
+  if (!base_type->atom || base_type->value == 0 || !contains_key(Type, base_type->value) || get(Type, base_type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'get' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -436,14 +437,14 @@ case GET: {
     offset_value = to_integer(offset.name);
   else
     offset_value = offset.value;
-  if (offset_value < 0 || offset_value >= SIZE(get(Type, base_root_type->value).elements)) {
-    raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_root_type->value).name << "'\n" << end();
+  if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type->value).elements)) {
+    raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type->value).name << "'\n" << end();
     break;
   }
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update GET product in Check
-  const reagent/*copy*/ element = element_type(base.type, offset_value);  // not just base_root_type because later layers will introduce compound types
+  const reagent/*copy*/ element = element_type(base.type, offset_value);  // not just base_type because later layers will introduce compound types
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << product.name << "' has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
@@ -459,13 +460,14 @@ case GET: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  const type_tree* base_root_type = root_type(base.type);
+  const type_tree* base_type = base.type;
+  // Update GET base_type in Run
   int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_type->value).elements)) break;  // copied from Check above
   assert(base.metadata.size);
   int src = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent/*copy*/ element = element_type(base.type, offset);  // not just base_root_type because later layers will introduce compound types
+  reagent/*copy*/ element = element_type(base.type, offset);  // not just base_type because later layers will introduce compound types
   element.set_value(src);
   trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
@@ -564,8 +566,9 @@ case PUT: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  const type_tree* base_root_type = base.type->atom ? base.type : base.type->left;
-  if (!base_root_type->atom || base_root_type->value == 0 || !contains_key(Type, base_root_type->value) || get(Type, base_root_type->value).kind != CONTAINER) {
+  const type_tree* base_type = base.type;
+  // Update PUT base_type in Check
+  if (!base_type->atom || base_type->value == 0 || !contains_key(Type, base_type->value) || get(Type, base_type->value).kind != CONTAINER) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'put' should be a container, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -578,8 +581,8 @@ case PUT: {
   int offset_value = 0;
   if (is_integer(offset.name)) {  // later layers permit non-integer offsets
     offset_value = to_integer(offset.name);
-    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_root_type->value).elements)) {
-      raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_root_type->value).name << "'\n" << end();
+    if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type->value).elements)) {
+      raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type->value).name << "'\n" << end();
       break;
     }
   }
@@ -587,7 +590,7 @@ case PUT: {
     offset_value = offset.value;
   }
   const reagent& value = inst.ingredients.at(2);
-  const reagent& element = element_type(base.type, offset_value);  // not just base_root_type because later layers will introduce compound types
+  const reagent& element = element_type(base.type, offset_value);  // not just base_type because later layers will introduce compound types
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;
@@ -609,9 +612,10 @@ case PUT: {
     raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  const type_tree* base_root_type = root_type(base.type);
+  const type_tree* base_type = base.type;
+  // Update PUT base_type in Run
   int offset = ingredients.at(1).at(0);
-  if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
+  if (offset < 0 || offset >= SIZE(get(Type, base_type->value).elements)) break;  // copied from Check above
   int address = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
