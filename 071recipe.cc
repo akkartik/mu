@@ -177,9 +177,14 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
 }
 
 recipe from_reagent(const reagent& r) {
-  assert(!r.type->atom && r.type->left->atom && r.type->left->name == "recipe");
+  assert(r.type);
   recipe result_header;  // will contain only ingredients and products, nothing else
   result_header.has_header = true;
+  if (r.type->atom) {
+    assert(r.type->name == "recipe");
+    return result_header;
+  }
+  assert(root_type(r.type)->name == "recipe");
   const type_tree* curr = r.type->right;
   for (/*nada*/; curr && !curr->atom; curr = curr->right) {
     if (curr->left->atom && curr->left->name == "->") {
@@ -201,8 +206,27 @@ recipe from_reagent(const reagent& r) {
   return result_header;
 }
 
-// todo: unit test: 'recipe number' vs 'recipe -> number'
+:(before "End Unit Tests")
+void test_from_reagent_atomic() {
+  reagent a("{f: recipe}");
+  recipe r_header = from_reagent(a);
+  CHECK(r_header.ingredients.empty());
+  CHECK(r_header.products.empty());
+}
+void test_from_reagent_non_atomic() {
+  reagent a("{f: (recipe number -> number)}");
+  recipe r_header = from_reagent(a);
+  CHECK_EQ(SIZE(r_header.ingredients), 1);
+  CHECK_EQ(SIZE(r_header.products), 1);
+}
+void test_from_reagent_reads_ingredient_at_end() {
+  reagent a("{f: (recipe number number)}");
+  recipe r_header = from_reagent(a);
+  CHECK_EQ(SIZE(r_header.ingredients), 2);
+  CHECK(r_header.products.empty());
+}
 
+:(code)
 reagent next_recipe_reagent(const type_tree* curr) {
   if (!curr->left) return reagent("recipe:"+curr->name);
   reagent result;
