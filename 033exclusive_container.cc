@@ -41,7 +41,7 @@ if (info.kind == EXCLUSIVE_CONTAINER) {
 }
 
 :(code)
-void compute_exclusive_container_sizes(const type_info& exclusive_container_info, const type_tree* full_type, set<string>& pending_metadata) {
+void compute_exclusive_container_sizes(const type_info& exclusive_container_info, const type_tree* full_type, set<type_tree>& pending_metadata) {
   // size of an exclusive container is the size of its largest variant
   // (So, like containers, it can only contain arrays if they're static and
   // include their length in the type.)

@@ -83,6 +83,10 @@ struct type_tree {
   // tree of type ordinals
   type_tree(type_tree* l, type_tree* r) :atom(false), value(0), left(l), right(r) {}
   type_tree& operator=(const type_tree& old);
+  bool operator==(const type_tree& other) const;
+  bool operator!=(const type_tree& other) const { return !operator==(other); }
+  bool operator<(const type_tree& other) const;
+  bool operator>(const type_tree& other) const { return other.operator<(*this); }
 };
 
 struct string_tree {
@@ -350,6 +354,85 @@ type_tree& type_tree::operator=(const type_tree& old) {
   return *this;
 }
 
+bool type_tree::operator==(const type_tree& other) const {
+  if (atom != other.atom) return false;
+  if (atom)
+    return name == other.name && value == other.value;
+  return (left == other.left || *left == *other.left)
+      && (right == other.right || *right == *other.right);
+}
+
+// only constraint we care about: if a < b then !(b < a)
+bool type_tree::operator<(const type_tree& other) const {
+  if (atom != other.atom) return atom > other.atom;  // atoms before non-atoms
+  if (atom) return name < other.name;  // sort atoms in lexical order
+  // first location in one that's missing in the other makes that side 'smaller'
+  if (left && !other.left) return false;
+  if (!left && other.left) return true;
+  if (right && !other.right) return false;
+  if (!right && other.right) return true;
+  // if one side is equal that's easy
+  if (left == other.left || *left == *other.left) return *right < *other.right;
+  if (right == other.right || *right == *other.right) return *left < *other.left;
+  // if the two sides criss-cross, pick the side with the smaller lhs
+  if ((left == other.right || *left == *other.right)
+      && (right == other.left || *right == *other.left))
+    return *left < *other.left;
+  // now the hard case: both sides are not equal
+  // make sure we stay consistent between (a < b) and (b < a)
+  // just return the side with the smallest of the 4 branches
+  if (*left < *other.left && *left < *other.right) return true;
+  if (*right < *other.left && *right < *other.right) return true;
+  return false;
+}
+:(before "End Unit Tests")
+// These unit tests don't always use valid types.
+void test_compare_atom_types() {
+  reagent a("a:address"), b("b:boolean");
+  CHECK(*a.type < *b.type);
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_equal_atom_types() {
+  reagent a("a:address"), b("b:address");
+  CHECK(!(*a.type < *b.type));
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_atom_with_non_atom() {
+  reagent a("a:address:number"), b("b:boolean");
+  CHECK(!(*a.type < *b.type));
+  CHECK(*b.type < *a.type);
+}
+void test_compare_lists_with_identical_structure() {
+  reagent a("a:address:address"), b("b:address:boolean");
+  CHECK(*a.type < *b.type);
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_identical_lists() {
+  reagent a("a:address:boolean"), b("b:address:boolean");
+  CHECK(!(*a.type < *b.type));
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_list_with_extra_element() {
+  reagent a("a:address:address"), b("b:address:address:number");
+  CHECK(*a.type < *b.type);
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_list_with_smaller_left_but_larger_right() {
+  reagent a("a:address:number"), b("b:character:array");
+  assert(a.type->left->atom && a.type->right->atom);
+  assert(b.type->left->atom && b.type->right->atom);
+  CHECK(*a.type < *b.type);
+  CHECK(!(*b.type < *a.type));
+}
+void test_compare_list_with_smaller_left_but_larger_right_identical_types() {
+  reagent a("a:address:boolean"), b("b:boolean:address");
+  assert(a.type->left->atom && a.type->right->atom);
+  assert(b.type->left->atom && b.type->right->atom);
+  CHECK(*a.type < *b.type);
+  CHECK(!(*b.type < *a.type));
+}
+
+:(code)
 string_tree::string_tree(const string_tree& old) {
   atom = old.atom;
   value = old.value;

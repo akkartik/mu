@@ -194,34 +194,26 @@ void compute_container_sizes(reagent& r) {
   if (is_literal(r) || is_dummy(r)) return;
   reagent rcopy = r;
   // Compute Container Size(reagent rcopy)
-  set<string> pending_metadata;
+  set<type_tree> pending_metadata;  // might actually be faster to just convert to string rather than compare type_tree directly; so far the difference is negligible
   compute_container_sizes(rcopy.type, pending_metadata);
   if (contains_key(Container_metadata, rcopy.type))
     r.metadata = get(Container_metadata, rcopy.type);
 }
 
-void compute_container_sizes(const type_tree* type, set<string>& pending_metadata) {
+void compute_container_sizes(const type_tree* type, set<type_tree>& pending_metadata) {
   if (!type) return;
   trace(9993, "transform") << "compute container sizes for " << to_string(type) << end();
   if (contains_key(Container_metadata, type)) return;
-  if (contains_key(pending_metadata, names_to_string_without_quotes(type))) return;
-  pending_metadata.insert(names_to_string_without_quotes(type));
-//?   cerr << to_string(type) << '\n';
+  if (contains_key(pending_metadata, *type)) return;
+  pending_metadata.insert(*type);
   if (!type->atom) {
     assert(type->left->atom);
     if (type->left->name == "address") {
-//?       cerr << "  address\n";
       compute_container_sizes(type->right, pending_metadata);
     }
     else if (type->left->name == "array") {
       const type_tree* element_type = type->right;
       // hack: support both array:number:3 and array:address:number
-//?       cerr << "  array\n";
-//?       cerr << "    " << to_string(type) << '\n';
-//?       cerr << "    " << to_string(element_type) << ' ' << element_type->atom << ' ' << element_type->right;
-//?       if (element_type->right)
-//?         cerr << " -- " << to_string(element_type->right) << ' ' << element_type->right->atom << ' ' << is_integer(element_type->right->name);
-//?       cerr << '\n';
       if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
         element_type = element_type->left;
       compute_container_sizes(element_type, pending_metadata);
@@ -238,7 +230,7 @@ void compute_container_sizes(const type_tree* type, set<string>& pending_metadat
   // End compute_container_sizes Atom Cases
 }
 
-void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<string>& pending_metadata) {
+void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<type_tree>& pending_metadata) {
   assert(container_info.kind == CONTAINER);
   // size of a container is the sum of the sizes of its element
   // (So it can only contain arrays if they're static and include their
