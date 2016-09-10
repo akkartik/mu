@@ -209,12 +209,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">bool</span> product_of_new_is_valid<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update NEW product in Check</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// array allocation</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom || product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     drop_from_type<span class="Delimiter">(</span>product<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:&quot;</span>+inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
@@ -228,7 +229,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> drop_from_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> string expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name != expected_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -280,7 +282,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//: implement 'allocate' based on size</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">const</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
+<span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> Reserved_for_tests = <span class="Constant">1000</span><span class="Delimiter">;</span>
 <span class="Normal">int</span> Memory_allocated_until = Reserved_for_tests<span class="Delimiter">;</span>
 <span class="Normal">int</span> Initial_memory_per_routine = <span class="Constant">100000</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>

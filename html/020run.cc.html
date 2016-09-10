@@ -149,23 +149,23 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
 <span class="Comment">//: We'll need to override these later as we change the definition of routine.</span>
 <span class="Comment">//: Important that they return referrences into the routine.</span>
 
-<span class="Normal">inline</span> <span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> running_step_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -363,17 +363,19 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">bool</span> is_literal<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span>
-    assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left &amp;&amp; !r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Normal">bool</span> is_literal<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> is_literal<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Normal">bool</span> is_literal<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">int</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">int</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-<span class="Normal">inline</span> <span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> scalar<span class="Delimiter">(</span><span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> SIZE<span class="Delimiter">(</span>x<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

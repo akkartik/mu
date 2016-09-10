@@ -207,7 +207,8 @@ feenableexcept<span class="Delimiter">(</span>FE_OVERFLOW | FE_UNDERFLOW<span cl
 <span class="CommentedCode">//? assert(sizeof(int) == 4 &amp;&amp; sizeof(float) == 4);</span>
 <span class="CommentedCode">//? //                          | exp   |  mantissa</span>
 <span class="CommentedCode">//? int smallest_subnormal = 0b00000000000000000000000000000001;</span>
-<span class="CommentedCode">//? float smallest_subnormal_f = *reinterpret_cast&lt;int*&gt;(&amp;smallest_subnormal);</span>
+<span class="CommentedCode">//? float smallest_subnormal_f = *reinterpret_cast&lt;float*&gt;(&amp;smallest_subnormal);</span>
+<span class="CommentedCode">//? cerr &lt;&lt; &quot;ε: &quot; &lt;&lt; smallest_subnormal_f &lt;&lt; '\n';</span>
 <span class="CommentedCode">//? cerr &lt;&lt; &quot;ε/2: &quot; &lt;&lt; smallest_subnormal_f/2 &lt;&lt; &quot; (underflow)\n&quot;;  // test SIGFPE</span>
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;fenv.h&gt;</span>
@@ -215,7 +216,7 @@ feenableexcept<span class="Delimiter">(</span>FE_OVERFLOW | FE_UNDERFLOW<span cl
 <span class="PreProc">#ifdef __APPLE__</span>
 <span class="Comment">// Public domain polyfill for feenableexcept on OS X</span>
 <span class="Comment">// <a href="http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c">http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c</a></span>
-<span class="Normal">inline</span> <span class="Normal">int</span> feenableexcept <span class="Delimiter">(</span><span class="Normal">unsigned</span> <span class="Normal">int</span> excepts<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> feenableexcept <span class="Delimiter">(</span><span class="Normal">unsigned</span> <span class="Normal">int</span> excepts<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">static</span> fenv_t fenv<span class="Delimiter">;</span>
   <span class="Normal">unsigned</span> <span class="Normal">int</span> new_excepts = excepts &amp; FE_ALL_EXCEPT<span class="Delimiter">;</span>
   <span class="Normal">unsigned</span> <span class="Normal">int</span> old_excepts<span class="Delimiter">;</span>

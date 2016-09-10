@@ -196,6 +196,7 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Comment">// this isn't a constant, just a global of type const*</span>
 <span class="Normal">const</span> scenario* Current_scenario = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> run_mu_scenario<span class="Delimiter">(</span><span class="Normal">const</span> scenario&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -266,7 +267,7 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
   bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
   run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  CHECK<span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">),</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Watch out for redefinitions of scenario routines. We should never ever be</span>
@@ -424,9 +425,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Normal">void</span> check_type<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; lhs<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent x<span class="Delimiter">(</span>lhs<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span>
-      &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;character&quot;</span>
-      &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_array<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &amp;&amp; is_mu_character<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">));</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string _assign = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>

@@ -313,7 +313,6 @@ map&lt;set&lt;tag_condition_info&gt;<span class="Delimiter">,</span> set&lt;addr
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// equal</span>
 <span class="Delimiter">}</span>
 
-
 <span class="Comment">//: populate metadata.address in a separate transform, because it requires</span>
 <span class="Comment">//: already knowing the sizes of all types</span>
 
@@ -332,45 +331,70 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       compute_container_address_offsets<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
+
 <span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">)</span> || is_dummy<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">))</span>
     r<span class="Delimiter">.</span>metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
-<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+
+<span class="Comment">// the recursive structure of this function needs to exactly match</span>
+<span class="Comment">// compute_container_sizes</span>
+<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> compute_container_address_offsets<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> compute_container_address_offsets<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
-  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      compute_container_address_offsets<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">const</span> type_tree* element_type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+      <span class="Comment">// hack: support both array:number:3 and array:address:number</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!element_type<span class="Delimiter">-&gt;</span>atom &amp;&amp; element_type<span class="Delimiter">-&gt;</span>right &amp;&amp; element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom &amp;&amp; is_integer<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
+        element_type = element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+      compute_container_address_offsets<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
+    <span class="Comment">// End compute_container_address_offsets Non-atom Cases</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">(</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">(</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for container &quot;</span> &lt;&lt; info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-    append_addresses<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> type<span class="Delimiter">,</span> metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+    compute_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for exclusive container &quot;</span> &lt;&lt; info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> tag = <span class="Constant">0</span><span class="Delimiter">;</span> tag &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      set&lt;tag_condition_info&gt; key<span class="Delimiter">;</span>
-      key<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>tag_condition_info<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">tag is at offset</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">,</span> tag<span class="Delimiter">));</span>
-      append_addresses<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip tag offset</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> variant_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> tag<span class="Delimiter">).</span>type<span class="Delimiter">,</span> metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> key<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
+    compute_exclusive_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> compute_container_address_offsets<span class="Delimiter">(</span><span class="Normal">const</span> type_info&amp; container_info<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* full_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> full_type<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for container &quot;</span> &lt;&lt; container_info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  append_addresses<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> full_type<span class="Delimiter">,</span> metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> compute_exclusive_container_address_offsets<span class="Delimiter">(</span><span class="Normal">const</span> type_info&amp; exclusive_container_info<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* full_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> full_type<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9994</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compute address offsets for exclusive container &quot;</span> &lt;&lt; exclusive_container_info<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> tag = <span class="Constant">0</span><span class="Delimiter">;</span> tag &lt; SIZE<span class="Delimiter">(</span>exclusive_container_info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    set&lt;tag_condition_info&gt; key<span class="Delimiter">;</span>
+    key<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>tag_condition_info<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">tag is at offset</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">,</span> tag<span class="Delimiter">));</span>
+    append_addresses<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">skip tag offset</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> variant_type<span class="Delimiter">(</span>full_type<span class="Delimiter">,</span> tag<span class="Delimiter">).</span>type<span class="Delimiter">,</span> metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> key<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> append_addresses<span class="Delimiter">(</span><span class="Normal">int</span> base_offset<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* type<span class="Delimiter">,</span> map&lt;set&lt;tag_condition_info&gt;<span class="Delimiter">,</span> set&lt;address_element_info&gt; &gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> set&lt;tag_condition_info&gt;&amp; key<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     get_or_insert<span class="Delimiter">(</span>out<span class="Delimiter">,</span> key<span class="Delimiter">).</span>insert<span class="Delimiter">(</span>address_element_info<span class="Delimiter">(</span>base_offset<span class="Delimiter">,</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)));</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Normal">const</span> type_tree* root = root_type<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
+  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr_index = <span class="Constant">0</span><span class="Delimiter">,</span> curr_offset = base_offset<span class="Delimiter">;</span> curr_index &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++curr_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking container &quot;</span> &lt;&lt; type<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;, element &quot;</span> &lt;&lt; curr_index &lt;&lt; end<span class="Delimiter">();</span>
-      reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> curr_index<span class="Delimiter">);</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking container &quot;</span> &lt;&lt; root<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;, element &quot;</span> &lt;&lt; curr_index &lt;&lt; end<span class="Delimiter">();</span>
+      reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = element_type<span class="Delimiter">(</span>type<span class="Delimiter">,</span> curr_index<span class="Delimiter">);</span>  <span class="Comment">// not root</span>
       <span class="Comment">// Compute Container Address Offset(element)</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
         trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address at offset &quot;</span> &lt;&lt; curr_offset &lt;&lt; end<span class="Delimiter">();</span>
@@ -382,7 +406,8 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
         curr_offset += size_of<span class="Delimiter">(</span>element<span class="Delimiter">);</span>
       <span class="Delimiter">}</span>
       <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_exclusive_container<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        <span class="Normal">const</span> type_info&amp; element_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+        <span class="Normal">const</span> type_tree* element_root_type = root_type<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+        <span class="Normal">const</span> type_info&amp; element_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> element_root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
         <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> tag = <span class="Constant">0</span><span class="Delimiter">;</span> tag &lt; SIZE<span class="Delimiter">(</span>element_info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
           set&lt;tag_condition_info&gt; new_key = key<span class="Delimiter">;</span>
           new_key<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>tag_condition_info<span class="Delimiter">(</span>curr_offset<span class="Delimiter">,</span> tag<span class="Delimiter">));</span>
@@ -411,6 +436,280 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> + <span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">//: for the following unit tests we'll do the work of the transform by hand</span>
+
+<span class="Delimiter">:(before &quot;End Unit Tests&quot;)</span>
+<span class="Normal">void</span> test_container_address_offsets_empty<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with no addresses</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:point&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// scan</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// the reagent we scanned knows it has no addresses</span>
+  CHECK<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Comment">// the global table contains an identical entry</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  CHECK<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0 that we have the size for</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// scan</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// the reagent we scanned knows it has an address at offset 0</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">()));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets = get<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>  <span class="Comment">// unconditional for containers</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// the global table contains an identical entry</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_2<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 1 that we have the size for</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// the reagent we scanned knows it has an address at offset 1</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">()));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets = get<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">//</span>
+  CHECK<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// the global table contains an identical entry</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">//</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_nested<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with a nested container containing an address</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;container bar [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  p:point</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  f:foo</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>  <span class="Comment">// nested container containing address</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:bar&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains entries for bar and included types: point and foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// the reagent we scanned knows it has an address at offset 2</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">()));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets = get<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">//</span>
+  CHECK<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// the global table also knows its address offset</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> r<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>  <span class="Comment">//</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_address<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:foo&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan an address to the container</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_array<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:array:foo&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan an array of the container</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_address_to_array<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:foo&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan an address to an array of the container</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_static_array<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:array:foo:10&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan a static array of the container</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_address_to_static_array<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:foo:10&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan an address to a static array of the container</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> test_container_address_offsets_from_repeated_address_and_array_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
+  <span class="Comment">// define a container with an address at offset 0</span>
+  run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  <span class="Comment">// scan a deep nest of 'address' and 'array' types modifying a container</span>
+  reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:address:address:array:foo:10&quot;</span><span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
+  <span class="Comment">// global metadata contains just the entry for foo</span>
+  <span class="Comment">// no entries for non-container types or other junk</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  <span class="Comment">// compute_container_address_offsets creates no new entries</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">)</span>-old_size<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Comment">// scanning precomputed metadata for the container</span>
+  reagent container<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
+  <span class="Normal">const</span> set&lt;address_element_info&gt;&amp; address_offsets2 = get<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">).</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
+  CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>offset<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>address_offsets2<span class="Delimiter">.</span>begin<span class="Delimiter">()-&gt;</span>payload_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: use metadata.address to update refcounts within containers, arrays and</span>
@@ -683,6 +982,7 @@ def main [
 <span class="Delimiter">}</span>
 <span class="Normal">bool</span> is_mu_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Comment">// End is_mu_container(type) Special-cases</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">;</span>
@@ -693,6 +993,7 @@ def main [
 <span class="Delimiter">}</span>
 <span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Comment">// End is_mu_exclusive_container(type) Special-cases</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">;</span>

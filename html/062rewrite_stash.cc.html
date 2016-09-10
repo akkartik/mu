@@ -151,14 +151,15 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> is_lookup_of_address_of_array<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> is_mu_array<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> is_static_array<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// no canonize_type()</span>
-  <span class="Identifier">return</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Make sure that the new system is strictly better than just the 'stash'</span>

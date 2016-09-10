@@ -134,8 +134,8 @@ vector&lt;recipe_ordinal&gt; strictly_matching_shape_shifting_variants<span clas
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>variants<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!any_type_ingredient_in_header<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>all_concrete_header_reagents_strictly_match<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span>
-      result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!all_concrete_header_reagents_strictly_match<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+    result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>variants<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -229,31 +229,28 @@ recipe_ordinal best_shape_shifting_variant<span class="Delimiter">(</span><span 
 
 <span class="Normal">int</span> number_of_concrete_type_names<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !is_type_ingredient_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
-    ++result<span class="Delimiter">;</span>
-  result += number_of_concrete_type_names<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-  result += number_of_concrete_type_names<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    <span class="Identifier">return</span> is_type_ingredient_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> ? <span class="Constant">0</span> : <span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> number_of_concrete_type_names<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+       + number_of_concrete_type_names<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> concrete_type_names_strictly_match<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* to<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* from<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; rhs_reagent<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!to<span class="Delimiter">)</span> <span class="Identifier">return</span> !from<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!from<span class="Delimiter">)</span> <span class="Identifier">return</span> !to<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// type ingredient matches anything</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; from<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span>
-      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
-    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span>
-      &amp;&amp; Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
-    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; to<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;address&quot;</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> rhs_reagent<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> to<span class="Delimiter">-&gt;</span>name == from<span class="Delimiter">-&gt;</span>name
-      &amp;&amp; concrete_type_names_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">)</span>
-      &amp;&amp; concrete_type_names_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>atom &amp;&amp; is_type_ingredient_name<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// type ingredient matches anything</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>atom &amp;&amp; is_mu_address<span class="Delimiter">(</span>to<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> from<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; rhs_reagent<span class="Delimiter">.</span>name == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!from<span class="Delimiter">-&gt;</span>atom &amp;&amp; !to<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    <span class="Identifier">return</span> concrete_type_names_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">)</span>
+        &amp;&amp; concrete_type_names_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> rhs_reagent<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>atom != to<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Comment">// both from and to are atoms</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+    <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+    <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>from<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> to<span class="Delimiter">-&gt;</span>name == from<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> contains_type_ingredient_name<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -355,7 +352,7 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">inline</span> <span class="Normal">int</span> min<span class="Delimiter">(</span><span class="Normal">int</span> a<span class="Delimiter">,</span> <span class="Normal">int</span> b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> min<span class="Delimiter">(</span><span class="Normal">int</span> a<span class="Delimiter">,</span> <span class="Normal">int</span> b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> <span class="Delimiter">(</span>a &lt; b<span class="Delimiter">)</span> ? a : b<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -374,14 +371,12 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_type_ingredient_name<span class="Delimiter">(</span>exemplar_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> type_tree* curr_refinement_type = <span class="Constant">NULL</span><span class="Delimiter">;</span>  <span class="Comment">// temporary heap allocation; must always be deleted before it goes out of scope</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>refinement_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
-      curr_refinement_type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*refinement_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>exemplar_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-      <span class="Comment">// splice out refinement_type-&gt;right, it'll be used later by the exemplar_type-&gt;right</span>
-      curr_refinement_type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>refinement_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> refinement_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>
-    <span class="Normal">else</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>exemplar_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
       curr_refinement_type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*refinement_type<span class="Delimiter">);</span>
-    assert<span class="Delimiter">(</span>!curr_refinement_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!refinement_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+      curr_refinement_type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*refinement_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> exemplar_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;adding mapping from &quot;</span> &lt;&lt; exemplar_type<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot; to &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>curr_refinement_type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
       put<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> exemplar_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*curr_refinement_type<span class="Delimiter">));</span>
@@ -443,52 +438,29 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
   replace_type_ingredients<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">// todo: too complicated and likely incomplete; maybe avoid replacing in place?</span>
 <span class="Normal">void</span> replace_type_ingredients<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">,</span> <span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree*&gt;&amp; mappings<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>  <span class="Comment">// todo: ugly side effect</span>
-    type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_type_ingredient_name<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> || !contains_key<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     replace_type_ingredients<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
     replace_type_ingredients<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>  <span class="Comment">// todo: ugly side effect</span>
+    type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">const</span> type_tree* replacement = get<span class="Delimiter">(</span>mappings<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; type<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot; =&gt; &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>replacement<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Comment">// error in program; should be reported elsewhere</span>
-    <span class="Identifier">return</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-  <span class="Comment">// type is a single type ingredient</span>
-  assert<span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> assert<span class="Delimiter">(</span>!replacement<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!replacement<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!replacement<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      type<span class="Delimiter">-&gt;</span>name = <span class="Delimiter">(</span>replacement<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span> ? <span class="Constant">&quot;number&quot;</span> : replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
-      type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>replacement<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+      <span class="Comment">// error in program; should be reported elsewhere</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">else</span> <span class="Delimiter">{</span>
-      type<span class="Delimiter">-&gt;</span>name = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-      type<span class="Delimiter">-&gt;</span>value = <span class="Constant">0</span><span class="Delimiter">;</span>
-      type<span class="Delimiter">-&gt;</span>left = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">);</span>
-    <span class="Delimiter">}</span>
-    replace_type_ingredients<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// replace non-last type?</span>
-  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    type<span class="Delimiter">-&gt;</span>name = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-    type<span class="Delimiter">-&gt;</span>value = <span class="Constant">0</span><span class="Delimiter">;</span>
-    type<span class="Delimiter">-&gt;</span>left = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">);</span>
-    replace_type_ingredients<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> mappings<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// replace last type?</span>
-  <span class="Normal">else</span> <span class="Delimiter">{</span>
-    type<span class="Delimiter">-&gt;</span>name = replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
+    type<span class="Delimiter">-&gt;</span>name = <span class="Delimiter">(</span>replacement<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span> ? <span class="Constant">&quot;number&quot;</span> : replacement<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
     type<span class="Delimiter">-&gt;</span>value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
-    type<span class="Delimiter">-&gt;</span>right = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*replacement<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    *type = *replacement<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -510,34 +482,9 @@ recipe_ordinal new_variant<span class="Delimiter">(</span>recipe_ordinal exempla
 <span class="Delimiter">}</span>
 
 type_tree* parse_type_tree<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  istringstream in<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
-  in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
-  <span class="Identifier">return</span> parse_type_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-type_tree* parse_type_tree<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">),</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-  in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '('</span>
-  type_tree* result = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  type_tree** curr = &amp;result<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-    *curr = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-    skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
-      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = parse_type_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Normal">else</span>
-      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    curr = &amp;<span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
+  string_tree* s2 = parse_string_tree<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
+  type_tree* result = new_type_tree<span class="Delimiter">(</span>s2<span class="Delimiter">);</span>
+  <span class="Normal">delete</span> s2<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

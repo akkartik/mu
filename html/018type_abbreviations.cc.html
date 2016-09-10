@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 018type_abbreviations.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.traceContains { color: #008000; }
+.cSpecial { color: #008000; }
+.Comment { color: #9090ff; }
+.Delimiter { color: #800080; }
+.SalientComment { color: #00ffff; }
+.Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">//: For convenience, make some common types shorter.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   a) Rewrite '&amp;t' to 'address:t' and '@t' to 'array:type' (with the</span>
+<span class="Comment">//:   ability to chain any combination of the two). This is not extensible.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//:   b) Provide a facility to create new type names out of old ones.</span>
+
+<span class="SalientComment">//:: a) expanding '&amp;' and '@'</span>
+
+<span class="Delimiter">:(scenarios load)</span>
+<span class="Delimiter">:(scenario abbreviations_for_address_and_array)</span>
+def main [
+  f <span class="Constant">1</span>:&amp;number  <span class="Comment"># abbreviation for 'address:number'</span>
+  f <span class="Constant">2</span>:@number  <span class="Comment"># abbreviation for 'array:number'</span>
+  f <span class="Constant">3</span>:&amp;@number  <span class="Comment"># combining '&amp;' and '@'</span>
+  f <span class="Constant">4</span>:&amp;&amp;@&amp;@number  <span class="Comment"># ..any number of times</span>
+  f <span class="Constant">5</span>:array:&amp;number:<span class="Constant">3</span>  <span class="Comment"># abbreviations take precedence over ':'</span>
+  f <span class="Delimiter">{</span><span class="Constant">6</span>: <span class="Delimiter">(</span>array &amp;number <span class="Constant">3</span><span class="Delimiter">)}</span>  <span class="Comment"># support for dilated reagents and more complex parse trees</span>
+  f <span class="Constant">7</span>:@number:<span class="Constant">3</span>  <span class="Comment"># *not* the same as array:number:3</span>
+]
+<span class="traceContains">+parse:   ingredient: {1: (&quot;address&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+parse:   ingredient: {2: (&quot;array&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+parse:   ingredient: {3: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+parse:   ingredient: {4: (&quot;address&quot; &quot;address&quot; &quot;array&quot; &quot;address&quot; &quot;array&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+parse:   ingredient: {5: (&quot;array&quot; (&quot;address&quot; &quot;number&quot;) &quot;3&quot;)}</span>
+<span class="traceContains">+parse:   ingredient: {6: (&quot;array&quot; (&quot;address&quot; &quot;number&quot;) &quot;3&quot;)}</span>
+<span class="Comment"># not what you want</span>
+<span class="traceContains">+parse:   ingredient: {7: ((&quot;array&quot; &quot;number&quot;) &quot;3&quot;)}</span>
+
+<span class="Delimiter">:(scenario abbreviation_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+def main [
+  f <span class="Constant">1</span>:&amp;&amp;@&amp;  <span class="Comment"># abbreviations without payload</span>
+]
+<span class="traceContains">+error: invalid type abbreviation &amp;&amp;@&amp;</span>
+
+<span class="Delimiter">:(before &quot;End Parsing Reagent Type Property(type_names)&quot;)</span>
+string_tree* new_type_names = replace_address_and_array_symbols<span class="Delimiter">(</span>type_names<span class="Delimiter">);</span>
+<span class="Normal">delete</span> type_names<span class="Delimiter">;</span>
+type_names = new_type_names<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Parsing Dilated Reagent Type Property(type_names)&quot;)</span>
+string_tree* new_type_names = replace_address_and_array_symbols<span class="Delimiter">(</span>type_names<span class="Delimiter">);</span>
+<span class="Normal">delete</span> type_names<span class="Delimiter">;</span>
+type_names = new_type_names<span class="Delimiter">;</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// simple version; lots of unnecessary allocations; always creates a new pointer</span>
+string_tree* replace_address_and_array_symbols<span class="Delimiter">(</span>string_tree* orig<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>orig == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>orig<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    <span class="Identifier">return</span> replace_address_and_array_symbols<span class="Delimiter">(</span>orig<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>replace_address_and_array_symbols<span class="Delimiter">(</span>orig<span class="Delimiter">-&gt;</span>left<span class="Delimiter">),</span>
+                         replace_address_and_array_symbols<span class="Delimiter">(</span>orig<span class="Delimiter">-&gt;</span>right<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Comment">// todo: unicode</span>
+string_tree* replace_address_and_array_symbols<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; type_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'&amp;'</span> &amp;&amp; type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'@'</span><span class="Delimiter">)</span>
+    <span class="Identifier">return</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
+  string_tree* result = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  string_tree* curr = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    string_tree* new_node = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="Constant">'&amp;'</span><span class="Delimiter">)</span>
+      new_node = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="Constant">'@'</span><span class="Delimiter">)</span>
+      new_node = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span><span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
+    <span class="Normal">else</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>result == <span class="Constant">NULL</span><span class="Delimiter">)</span>
+      result = curr = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>new_node<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      curr<span class="Delimiter">-&gt;</span>right = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>new_node<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>
+      curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    ++i<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>
+    curr<span class="Delimiter">-&gt;</span>right = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">.</span>substr<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+  <span class="Normal">else</span>
+    raise &lt;&lt; <span class="Constant">&quot;invalid type abbreviation &quot;</span> &lt;&lt; type_name &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: b) extensible type abbreviations</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+map&lt;string<span class="Delimiter">,</span> type_tree*&gt; Type_abbreviations<span class="Delimiter">;</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

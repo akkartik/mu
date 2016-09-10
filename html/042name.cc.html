@@ -154,12 +154,10 @@ Name = Name_snapshot<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  type_ordinal address = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(;</span> type<span class="Delimiter">;</span> type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value != address<span class="Delimiter">)</span>
-      <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>type &amp;&amp; is_compound_type_starting_with<span class="Delimiter">(</span>type<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
+    type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
+  <span class="Identifier">return</span> root_type<span class="Delimiter">(</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">int</span> find_element_name<span class="Delimiter">(</span><span class="Normal">const</span> type_ordinal t<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>

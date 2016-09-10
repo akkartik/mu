@@ -35,6 +35,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">// support for more complex trees of properties in dilated reagents. This will</span>
 <span class="Comment">// come in handy later for expressing complex types, like &quot;a dictionary from</span>
 <span class="Comment">// (address to array of charaters) to (list of numbers)&quot;.</span>
+<span class="Comment">//</span>
+<span class="Comment">// Type trees aren't as general as s-expressions even if they look like them:</span>
+<span class="Comment">// the first element of a type tree is always an atom, and left and right</span>
+<span class="Comment">// pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp</span>
+<span class="Comment">// parlance.</span>
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario dilated_reagent_with_nested_brackets)</span>
@@ -43,14 +48,14 @@ def main [
 ]
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;, &quot;foo&quot;: (&quot;bar&quot; (&quot;baz&quot; &quot;quux&quot;))}</span>
 
-<span class="Delimiter">:(before &quot;End Parsing Reagent Property(value)&quot;)</span>
+<span class="Delimiter">:(before &quot;End Parsing Dilated Reagent Property(value)&quot;)</span>
 value = parse_string_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Parsing Reagent Type Property(value)&quot;)</span>
-value = parse_string_tree<span class="Delimiter">(</span>value<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Parsing Dilated Reagent Type Property(type_names)&quot;)</span>
+type_names = parse_string_tree<span class="Delimiter">(</span>type_names<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
 string_tree* parse_string_tree<span class="Delimiter">(</span>string_tree* s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!s<span class="Delimiter">-&gt;</span>left &amp;&amp; !s<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Identifier">return</span> s<span class="Delimiter">;</span>
   string_tree* result = parse_string_tree<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">delete</span> s<span class="Delimiter">;</span>
@@ -77,17 +82,30 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '('</span>
   string_tree* result = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   string_tree** curr = &amp;result<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
-    *curr = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    *curr = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
       <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = parse_string_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">else</span>
-      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>value = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     curr = &amp;<span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
+  assert<span class="Delimiter">(</span>*curr == <span class="Constant">NULL</span><span class="Delimiter">);</span>
+  <span class="Comment">// standardize the final element to always be on the right if it's an atom</span>
+  <span class="Comment">// (a b c) =&gt; (a b . c) in s-expression parlance</span>
+  string_tree* tmp = result<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>right &amp;&amp; tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> tmp = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  string_tree* tmp2 = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  tmp<span class="Delimiter">-&gt;</span>right = tmp2<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  tmp2<span class="Delimiter">-&gt;</span>left = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>tmp2<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">);</span>
+  <span class="Normal">delete</span> tmp2<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

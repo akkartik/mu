@@ -69,11 +69,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// 'create-array' will need to check properties rather than types</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  type_tree* array_length_from_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!array_length_from_type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;create array of what size? '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    array_length_from_type = array_length_from_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>array_length_from_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'create-array' product should specify size of array after its element type, but got '&quot;</span> &lt;&lt; product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -84,7 +87,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> product = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update CREATE_ARRAY product in Run</span>
   <span class="Normal">int</span> base_address = product<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  <span class="Normal">int</span> array_length = to_integer<span class="Delimiter">(</span>product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
+  type_tree* array_length_from_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    array_length_from_type = array_length_from_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  <span class="Normal">int</span> array_length = to_integer<span class="Delimiter">(</span>array_length_from_type<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
   <span class="Comment">// initialize array length, so that size_of will work</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing &quot;</span> &lt;&lt; array_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; base_address &lt;&lt; end<span class="Delimiter">();</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> base_address<span class="Delimiter">,</span> array_length<span class="Delimiter">);</span>  <span class="Comment">// in array elements</span>
@@ -128,7 +134,7 @@ def main [
 <span class="traceContains">+app: foo: 3 14 15 16</span>
 
 <span class="Delimiter">:(before &quot;End size_of(reagent r) Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type &amp;&amp; r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; r<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' is an array of what?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
@@ -142,7 +148,7 @@ def main [
 <span class="Comment">//: disable the size mismatch check for arrays since the destination array</span>
 <span class="Comment">//: need not be initialized</span>
 <span class="Delimiter">:(before &quot;End size_mismatch(x) Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: arrays are disallowed inside containers unless their length is fixed in</span>
 <span class="Comment">//: advance</span>
@@ -182,12 +188,16 @@ def main [
 <span class="Delimiter">:(before &quot;End Load Container Element Definition&quot;)</span>
 <span class="Delimiter">{</span>
   <span class="Normal">const</span> type_tree* type = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>type<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type &amp;&amp; type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type &amp;&amp; type<span class="Delimiter">-&gt;</span>atom &amp;&amp; type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;container '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' doesn't specify type of array elements for '&quot;</span> &lt;&lt; info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">continue</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type &amp;&amp; !type<span class="Delimiter">-&gt;</span>atom &amp;&amp; type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; <span class="Constant">&quot;container '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' doesn't specify type of array elements for '&quot;</span> &lt;&lt; info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// array has no length</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// array has no length</span>
       raise &lt;&lt; <span class="Constant">&quot;container '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' cannot determine size of element '&quot;</span> &lt;&lt; info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>back<span class="Delimiter">().</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -214,6 +224,16 @@ def main [
   <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
   <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
   <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:number:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">0</span>
+]
+<span class="traceContains">+mem: storing 14 in location 5</span>
+
+<span class="Delimiter">:(scenario index_compound_element)</span>
+def main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>index <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)},</span> <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
@@ -281,7 +301,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   type_tree* element_type = copy_array_element<span class="Delimiter">(</span>base<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   <span class="Normal">int</span> src = base_address + <span class="Constant">1</span> + index_val<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span>*size_of<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;address to copy is &quot;</span> &lt;&lt; src &lt;&lt; end<span class="Delimiter">();</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> element_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;its type is &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>element_type<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
   reagent element<span class="Delimiter">;</span>
   element<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>src<span class="Delimiter">);</span>
   element<span class="Delimiter">.</span>type = element_type<span class="Delimiter">;</span>
@@ -292,19 +312,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(code)</span>
 type_tree* copy_array_element<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    assert<span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-    <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
   assert<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
-  <span class="Comment">// array:&lt;type&gt;:&lt;size&gt;? return just &lt;type&gt;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right &amp;&amp; is_integer<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
-    <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>  <span class="Comment">// snip type-&gt;right-&gt;right</span>
+  <span class="Comment">// hack: don't require parens for either array:number:3 array:address:number</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom &amp;&amp; type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right &amp;&amp; type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom &amp;&amp; is_integer<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
+    <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
   <span class="Identifier">return</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">int</span> array_length<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right  <span class="Comment">// exactly 3 types</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom  <span class="Comment">// exactly 3 types</span>
       &amp;&amp; is_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// third 'type' is a number</span>
     <span class="Comment">// get size from type</span>
     <span class="Identifier">return</span> to_integer<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>

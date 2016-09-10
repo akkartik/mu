@@ -44,18 +44,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Normal">typedef</span> <span class="Normal">void</span> <span class="Delimiter">(</span>*test_fn<span class="Delimiter">)(</span><span class="Normal">void</span><span class="Delimiter">);</span>
-
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Delimiter">:(before &quot;Globals&quot;)</span>
+<span class="Comment">// move a global ahead into types that we can't generate an extern declaration for</span>
 <span class="Normal">const</span> test_fn Tests[] = <span class="Delimiter">{</span>
 <span class="PreProc">  #include </span><span class="Constant">&quot;test_list&quot;</span>  <span class="Comment">// auto-generated; see makefile</span>
 <span class="Delimiter">};</span>
 
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Normal">bool</span> Run_tests = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Normal">bool</span> Passed = <span class="Constant">true</span><span class="Delimiter">;</span>  <span class="Comment">// set this to false inside any test to indicate failure</span>
 <span class="Normal">long</span> Num_failures = <span class="Constant">0</span><span class="Delimiter">;</span>
 
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define CHECK(X) \</span>
-<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (!(X)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; !(X)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -63,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="PreProc">  </span><span class="Delimiter">}</span>
 
 <span class="PreProc">#define CHECK_EQ(X</span><span class="Delimiter">,</span><span class="PreProc"> Y) \</span>
-<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> ((X) != (Y)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; (X) != (Y)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
 <span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="Constant">&quot; == &quot;</span><span class="PreProc"> &lt;&lt; #Y &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; (X) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> BEWARE: multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>

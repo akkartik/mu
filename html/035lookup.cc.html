@@ -112,7 +112,7 @@ def main [
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> lookup_memory<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom || x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' but it isn't an address</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -185,13 +185,15 @@ canonize_type<span class="Delimiter">(</span>rhs<span class="Delimiter">);</span
 <span class="Delimiter">:(before &quot;Compute Container Size(reagent rcopy)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>rcopy<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(before &quot;Compute Container Size(element)&quot;)</span>
+<span class="Delimiter">:(before &quot;Compute Container Size(element, full_type)&quot;)</span>
+assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>element<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
+<span class="Delimiter">:(before &quot;Compute Exclusive Container Size(element, full_type)&quot;)</span>
 assert<span class="Delimiter">(</span>!has_property<span class="Delimiter">(</span>element<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> canonize_type<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom || !r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left || !r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom || r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value != get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; <span class="Constant">&quot;can't lookup non-address: '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;': '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>

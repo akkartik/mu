@@ -103,29 +103,29 @@ routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Del
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">inline</span> call&amp; current_call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+call&amp; current_call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: now update routine's helpers</span>
 
-<span class="Delimiter">:(replace{} &quot;inline int&amp; current_step_index()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;int&amp; current_step_index()&quot;)</span>
+<span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> current_call<span class="Delimiter">().</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-<span class="Delimiter">:(replace{} &quot;inline const string&amp; current_recipe_name()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;const string&amp; current_recipe_name()&quot;)</span>
+<span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> current_call<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-<span class="Delimiter">:(replace{} &quot;inline const instruction&amp; current_instruction()&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;const instruction&amp; current_instruction()&quot;)</span>
+<span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> to_instruction<span class="Delimiter">(</span>current_call<span class="Delimiter">());</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(code)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> instruction&amp; to_instruction<span class="Delimiter">(</span><span class="Normal">const</span> call&amp; call<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">const</span> instruction&amp; to_instruction<span class="Delimiter">(</span><span class="Normal">const</span> call&amp; call<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> call<span class="Delimiter">.</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>call<span class="Delimiter">.</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -174,13 +174,13 @@ def main [
 
 <span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
 
-<span class="Delimiter">:(replace{} &quot;inline bool routine::completed() const&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;bool routine::completed() const&quot;)</span>
+<span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> calls<span class="Delimiter">.</span>empty<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(replace{} &quot;inline const vector&lt;instruction&gt;&amp; routine::steps() const&quot;)</span>
-<span class="Normal">inline</span> <span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span class="Delimiter">:(replace{} &quot;const vector&lt;instruction&gt;&amp; routine::steps() const&quot;)</span>
+<span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>!calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>

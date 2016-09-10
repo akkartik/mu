@@ -70,22 +70,27 @@ def main [
   <span class="Comment">// Compute size_of Exclusive Container</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> type<span class="Delimiter">).</span>size<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End compute_container_sizes Cases&quot;)</span>
+<span class="Delimiter">:(before &quot;End compute_container_sizes Atom Cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  container_metadata metadata<span class="Delimiter">;</span>
+  compute_exclusive_container_sizes<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> compute_exclusive_container_sizes<span class="Delimiter">(</span><span class="Normal">const</span> type_info&amp; exclusive_container_info<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* full_type<span class="Delimiter">,</span> set&lt;type_tree&gt;&amp; pending_metadata<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// size of an exclusive container is the size of its largest variant</span>
-  <span class="Comment">// (So like containers, it can't contain arrays.)</span>
-  <span class="Normal">int</span> size = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Comment">// Compute Exclusive Container Size(element)</span>
+  <span class="Comment">// (So, like containers, it can only contain arrays if they're static and</span>
+  <span class="Comment">// include their length in the type.)</span>
+  container_metadata metadata<span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>exclusive_container_info<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = exclusive_container_info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Comment">// Compute Exclusive Container Size(element, full_type)</span>
     compute_container_sizes<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
     <span class="Normal">int</span> variant_size = size_of<span class="Delimiter">(</span>element<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>variant_size &gt; size<span class="Delimiter">)</span> size = variant_size<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>variant_size &gt; metadata<span class="Delimiter">.</span>size<span class="Delimiter">)</span> metadata<span class="Delimiter">.</span>size = variant_size<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Comment">// ...+1 for its tag.</span>
-  metadata<span class="Delimiter">.</span>size = size+<span class="Constant">1</span><span class="Delimiter">;</span>
-  Container_metadata<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt;<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*type<span class="Delimiter">),</span> metadata<span class="Delimiter">));</span>
+  ++metadata<span class="Delimiter">.</span>size<span class="Delimiter">;</span>
+  Container_metadata<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;type_tree*<span class="Delimiter">,</span> container_metadata&gt;<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*full_type<span class="Delimiter">),</span> metadata<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: To access variants of an exclusive container, use 'maybe-convert'.</span>
@@ -135,7 +140,12 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Delimiter">}</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> base = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update MAYBE_CONVERT base in Check</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type || !base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!base<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'maybe-convert' should be an exclusive-container, but got '&quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">const</span> type_tree* root_type = base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom ? base<span class="Delimiter">.</span>type : base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!root_type<span class="Delimiter">-&gt;</span>atom || root_type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span> || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> || get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'maybe-convert' should be an exclusive-container, but got '&quot;</span> &lt;&lt; base<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -152,7 +162,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Comment">// Update MAYBE_CONVERT product in Check</span>
   reagent&amp; offset = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
   populate_value<span class="Delimiter">(</span>offset<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> base<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>offset<span class="Delimiter">.</span>value &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;invalid tag &quot;</span> &lt;&lt; offset<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -211,9 +221,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Normal">const</span> reagent variant_type<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">,</span> <span class="Normal">int</span> tag<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>tag &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
-  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+  <span class="Normal">const</span> type_tree* root_type = type<span class="Delimiter">-&gt;</span>atom ? type : type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">));</span>
+  assert<span class="Delimiter">(</span>!get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">);</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> element = info<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>tag<span class="Delimiter">);</span>
   <span class="Comment">// End variant_type Special-cases</span>
@@ -465,7 +476,9 @@ $error: <span class="Constant">0</span>
     &amp;&amp; current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x = current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Comment">// Update size_mismatch Check for MERGE(x)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span>
+  <span class="Normal">const</span> type_tree* root_type = x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom ? x<span class="Delimiter">.</span>type : x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>root_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span>
     <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> &lt; SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 

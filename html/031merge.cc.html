@@ -159,12 +159,13 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Delimiter">}</span>
     reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     <span class="Comment">// Update product While Type-checking Merge</span>
-    type_ordinal product_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>product_type == <span class="Constant">0</span> || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">const</span> type_tree* product_base_type = product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom ? product<span class="Delimiter">.</span>type : product<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+    assert<span class="Delimiter">(</span>product_base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>product_base_type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span> || !contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_base_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_type<span class="Delimiter">);</span>
+    <span class="Normal">const</span> type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> product_base_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind != CONTAINER &amp;&amp; info<span class="Delimiter">.</span>kind != EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'merge' should yield a container in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -186,7 +187,9 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Delimiter">}</span>
     reagent&amp; container = state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!container<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-    type_info&amp; container_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+    <span class="Normal">const</span> type_tree* top_root_type = container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom ? container<span class="Delimiter">.</span>type : container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+    assert<span class="Delimiter">(</span>top_root_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+    type_info&amp; container_info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> top_root_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
     <span class="Normal">switch</span> <span class="Delimiter">(</span>container_info<span class="Delimiter">.</span>kind<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">case</span> CONTAINER: <span class="Delimiter">{</span>
         <span class="Comment">// degenerate case: merge with the same type always succeeds</span>
@@ -198,7 +201,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
         <span class="Normal">if</span> <span class="Delimiter">(</span>types_coercible<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>ingredient_index<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
           ++ingredient_index<span class="Delimiter">;</span>
           ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
-          <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+          <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">))</span> <span class="Delimiter">{</span>
             state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>pop<span class="Delimiter">();</span>
             <span class="Normal">if</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
               <span class="Normal">if</span> <span class="Delimiter">(</span>ingredient_index &lt; SIZE<span class="Delimiter">(</span>ingredients<span class="Delimiter">))</span>
@@ -233,7 +236,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
             <span class="Identifier">return</span><span class="Delimiter">;</span>
           <span class="Delimiter">}</span>
           ++state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index<span class="Delimiter">;</span>
-        <span class="Delimiter">}</span> <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">));</span>
+        <span class="Delimiter">}</span> <span class="Normal">while</span> <span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container_element_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root_type<span class="Delimiter">(</span>state<span class="Delimiter">.</span>data<span class="Delimiter">.</span>top<span class="Delimiter">().</span>container<span class="Delimiter">.</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">).</span>elements<span class="Delimiter">));</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -251,7 +254,6 @@ def main [
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;stack&gt;</span>
 <span class="Normal">using</span> std::stack<span class="Delimiter">;</span>
-
 </pre>
 </body>
 </html>

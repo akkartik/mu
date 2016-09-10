@@ -110,9 +110,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//:   programmers form a mental model, rather than as production of a program.&quot;</span>
 <span class="Comment">//:   -- Peter Naur (<a href="http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)">http://alistair.cockburn.us/ASD+book+extract%3A+%22Naur,+Ehn,+Musashi%22)</a></span>
 
-<span class="Delimiter">:(before &quot;int main&quot;)</span>
-<span class="Comment">// End Tracing  // hack to ensure most code in this layer comes before anything else</span>
-
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Normal">struct</span> trace_line <span class="Delimiter">{</span>
   <span class="Normal">int</span> depth<span class="Delimiter">;</span>  <span class="Comment">// optional field just to help browse traces later</span>
@@ -123,15 +120,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">const</span> <span class="Normal">int</span> Max_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
-<span class="Normal">const</span> <span class="Normal">int</span> Error_depth = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// definitely always print errors</span>
-<span class="Normal">const</span> <span class="Normal">int</span> App_depth = <span class="Constant">2</span><span class="Delimiter">;</span>  <span class="Comment">// temporarily where all mu code will trace to</span>
-<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
 <span class="Normal">bool</span> Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
 
-<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
+<span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span class="Comment">// Pre-define some global constants that trace_stream needs to know about.</span>
+<span class="Comment">// Since they're in the Types section, they'll be included in any cleaved</span>
+<span class="Comment">// compilation units. So no extern linkage.</span>
+<span class="Normal">const</span> <span class="Normal">int</span> Max_depth = <span class="Constant">9999</span><span class="Delimiter">;</span>
+<span class="Normal">const</span> <span class="Normal">int</span> Error_depth = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// definitely always print errors</span>
+<span class="Normal">const</span> <span class="Normal">int</span> App_depth = <span class="Constant">2</span><span class="Delimiter">;</span>  <span class="Comment">// temporarily where all mu code will trace to</span>
+
 <span class="Normal">struct</span> trace_stream <span class="Delimiter">{</span>
   vector&lt;trace_line&gt; past_lines<span class="Delimiter">;</span>
   <span class="Comment">// accumulator for current line</span>
@@ -157,41 +157,52 @@ Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span
   <span class="Delimiter">}</span>
 
   <span class="Comment">// be sure to call this before messing with curr_stream or curr_label</span>
-  <span class="Normal">void</span> newline<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!curr_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    string curr_contents = curr_stream<span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>curr_contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-    past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_label<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span>
-      cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-    <span class="Normal">delete</span> curr_stream<span class="Delimiter">;</span>
-    curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-    curr_label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-    curr_depth = Max_depth<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
+  <span class="Normal">void</span> newline<span class="Delimiter">();</span>
   <span class="Comment">// useful for debugging</span>
-  string readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// empty label = show everything</span>
-    ostringstream output<span class="Delimiter">;</span>
-    label = trim<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>depth &lt;&lt; <span class="Constant">' '</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-      <span class="Delimiter">}</span>
-    <span class="Identifier">return</span> output<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
+  string readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">);</span>  <span class="Comment">// empty label = show everything</span>
 <span class="Delimiter">};</span>
 
-^L
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> trace_stream::newline<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!curr_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  string curr_contents = curr_stream<span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr_contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_label<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span>
+    cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+  <span class="Normal">delete</span> curr_stream<span class="Delimiter">;</span>
+  curr_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  curr_label<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  curr_depth = Max_depth<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
+string trace_stream::readable_contents<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  ostringstream output<span class="Delimiter">;</span>
+  label = trim<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>vector&lt;trace_line&gt;::iterator p = past_lines<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != past_lines<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> || label == p<span class="Delimiter">-&gt;</span>label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      output &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">4</span><span class="Delimiter">)</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>depth &lt;&lt; <span class="Constant">' '</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> output<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Normal">int</span> Trace_errors = <span class="Constant">0</span><span class="Delimiter">;</span>  <span class="Comment">// used only when Trace_stream is NULL</span>
+
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span class="PreProc">#define CLEAR_TRACE  </span><span class="Normal">delete</span><span class="PreProc"> Trace_stream</span><span class="Delimiter">,</span><span class="PreProc"> Trace_stream = </span><span class="Normal">new</span><span class="PreProc"> trace_stream</span><span class="Delimiter">;</span>
 
 <span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
 <span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
 
+<span class="Comment">// Just for debugging; 'git log' should never show any calls to 'dbg'.</span>
+<span class="PreProc">#define dbg trace(</span><span class="Constant">0</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;a&quot;</span><span class="PreProc">)</span>
+<span class="PreProc">#define DUMP(label)  </span><span class="Normal">if</span><span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(label)</span><span class="Delimiter">;</span>
+
 <span class="Comment">// Errors are a special layer.</span>
 <span class="PreProc">#define raise  (!Trace_stream ? (tb_shutdown()</span><span class="Delimiter">,</span><span class="PreProc">++Trace_errors</span><span class="Delimiter">,</span><span class="PreProc">cerr) </span><span class="Comment">/*</span><span class="Comment">do print</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(Error_depth</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;error&quot;</span><span class="PreProc">))</span>
+
 <span class="Comment">// Inside tests, fail any tests that displayed (unexpected) errors.</span>
 <span class="Comment">// Expected errors in tests should always be hidden and silently checked for.</span>
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
@@ -200,37 +211,35 @@ trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Deli
   ++Num_failures<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">// Just for debugging.</span>
-<span class="PreProc">#define dbg trace(</span><span class="Constant">0</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;a&quot;</span><span class="PreProc">)</span>
-
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Normal">struct</span> end <span class="Delimiter">{};</span>
-<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
+<span class="Delimiter">:(code)</span>
 ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> unused end<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> Trace_stream<span class="Delimiter">-&gt;</span>newline<span class="Delimiter">();</span>
   <span class="Identifier">return</span> os<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="PreProc">#define CLEAR_TRACE  </span><span class="Normal">delete</span><span class="PreProc"> Trace_stream</span><span class="Delimiter">,</span><span class="PreProc"> Trace_stream = </span><span class="Normal">new</span><span class="PreProc"> trace_stream</span><span class="Delimiter">;</span>
-
-<span class="PreProc">#define DUMP(label)  </span><span class="Normal">if</span><span class="PreProc"> (Trace_stream) cerr &lt;&lt; Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">readable_contents(label)</span><span class="Delimiter">;</span>
-
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Normal">bool</span> Save_trace = <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">// Trace_stream is a resource, lease_tracer uses RAII to manage it.</span>
+<span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Normal">struct</span> lease_tracer <span class="Delimiter">{</span>
-  lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
-  ~lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// in case tests close Trace_stream</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Save_trace<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      ofstream fout<span class="Delimiter">(</span><span class="Constant">&quot;last_trace&quot;</span><span class="Delimiter">);</span>
-      fout &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>readable_contents<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-      fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
-    <span class="Delimiter">}</span>
-    <span class="Normal">delete</span> Trace_stream<span class="Delimiter">,</span> Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
+  lease_tracer<span class="Delimiter">();</span>
+  ~lease_tracer<span class="Delimiter">();</span>
 <span class="Delimiter">};</span>
-
+<span class="Delimiter">:(code)</span>
+lease_tracer::lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span> Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span> <span class="Delimiter">}</span>
+lease_tracer::~lease_tracer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// in case tests close Trace_stream</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Save_trace<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    ofstream fout<span class="Delimiter">(</span><span class="Constant">&quot;last_trace&quot;</span><span class="Delimiter">);</span>
+    fout &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>readable_contents<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+    fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">delete</span> Trace_stream<span class="Delimiter">,</span> Trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Test Setup&quot;)</span>
 START_TRACING_UNTIL_END_OF_SCOPE
@@ -238,8 +247,31 @@ START_TRACING_UNTIL_END_OF_SCOPE
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> __VA_ARGS__)</span>
 
-<span class="Delimiter">:(before &quot;End Tracing&quot;)</span>
+<span class="PreProc">#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">)</span>
+<span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    DUMP(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Delimiter">}</span>
+
+<span class="PreProc">#define CHECK_TRACE_COUNT(label</span><span class="Delimiter">,</span><span class="PreProc"> count) \</span>
+<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; trace_count(label) != (count)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
+<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): trace_count of &quot;</span><span class="PreProc"> &lt;&lt; label &lt;&lt; </span><span class="Constant">&quot; should be &quot;</span><span class="PreProc"> &lt;&lt; count &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; trace_count(label) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
+<span class="PreProc">    DUMP(label)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
+<span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span><span class="PreProc"> \</span>
+<span class="PreProc">  </span><span class="Delimiter">}</span>
+
+<span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN(</span><span class="Delimiter">...</span><span class="PreProc">)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
+
+<span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> check_trace_contents<span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string <span class="Normal">FILE</span><span class="Delimiter">,</span> <span class="Normal">int</span> LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Passed<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!Trace_stream<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   vector&lt;string&gt; expected_lines = split<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;^D&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">int</span> curr_expected_line = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -292,8 +324,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-^L
-
 <span class="Normal">int</span> trace_count<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
@@ -322,26 +352,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="PreProc">#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">)</span>
-<span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \</span>
-<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    DUMP(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">  </span><span class="Delimiter">}</span>
-
-<span class="PreProc">#define CHECK_TRACE_COUNT(label</span><span class="Delimiter">,</span><span class="PreProc"> count) \</span>
-<span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (trace_count(label) != (count)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): trace_count of &quot;</span><span class="PreProc"> &lt;&lt; label &lt;&lt; </span><span class="Constant">&quot; should be &quot;</span><span class="PreProc"> &lt;&lt; count &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; trace_count(label) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
-<span class="PreProc">    DUMP(label)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
-<span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span><span class="PreProc"> \</span>
-<span class="PreProc">  </span><span class="Delimiter">}</span>
-
 <span class="Normal">bool</span> trace_doesnt_contain<span class="Delimiter">(</span>string label<span class="Delimiter">,</span> string line<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> trace_count<span class="Delimiter">(</span>label<span class="Delimiter">,</span> line<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -350,10 +360,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
   vector&lt;string&gt; tmp = split_first<span class="Delimiter">(</span>expected<span class="Delimiter">,</span> <span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> trace_doesnt_contain<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
-
-<span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN(</span><span class="Delimiter">...</span><span class="PreProc">)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
-
-^L
 
 vector&lt;string&gt; split<span class="Delimiter">(</span>string s<span class="Delimiter">,</span> string delim<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;string&gt; result<span class="Delimiter">;</span>
@@ -419,8 +425,8 @@ string trim<span class="Delimiter">(</span><span class="Normal">const</span> str
 <span class="Comment">//: Errors will be depth 0.</span>
 <span class="Comment">//: Mu 'applications' will be able to use depths 1-100 as they like.</span>
 <span class="Comment">//: Primitive statements will occupy 101-9989</span>
-<span class="Normal">const</span> <span class="Normal">int</span> Initial_callstack_depth = <span class="Constant">101</span><span class="Delimiter">;</span>
-<span class="Normal">const</span> <span class="Normal">int</span> Max_callstack_depth = <span class="Constant">9989</span><span class="Delimiter">;</span>
+<span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> Initial_callstack_depth = <span class="Constant">101</span><span class="Delimiter">;</span>
+<span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> Max_callstack_depth = <span class="Constant">9989</span><span class="Delimiter">;</span>
 <span class="Comment">//: Finally, details of primitive mu statements will occupy depth 9990-9999 (more on that later as well)</span>
 <span class="Comment">//:</span>
 <span class="Comment">//: This framework should help us hide some details at each level, mixing</span>
