@@ -6,6 +6,13 @@
 
 all: mu_bin core.mu
 
+# beware: if you introduce or delete functions the makefile isn't smart enough
+# to recompute dependencies. You have to manually run 'make redo' to recreate
+# the .build/ directory from scratch.
+redo:
+	rm -rf .build
+	@make
+
 CXX ?= c++
 CXXFLAGS ?= -g -O3
 CXXFLAGS := ${CXXFLAGS} -Wall -Wextra -ftrapv -fno-strict-aliasing
@@ -67,7 +74,7 @@ test_list: mu.cc
 .build/global_declarations_list: .build/global_definitions_list
 	@grep ';' .build/global_definitions_list |perl -pwe 's/[=(].*/;/' |perl -pwe 's/^[^\/# ]/extern $$&/' |perl -pwe 's/^extern extern /extern /' > .build/global_declarations_list
 
-.PHONY: all clean clena
+.PHONY: all redo clean clena
 
 clena: clean
 clean:
