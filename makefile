@@ -60,13 +60,10 @@ function_list: mu.cc
 	@# occasionally we need to modify a declaration in a later layer without messing with ugly unbalanced brackets
 	@# assume such functions move the '{' to column 0 of the very next line
 	@grep -v "^#line" mu.cc |grep -B1 "^{" |grep -v "^{" |perl -pwe 's/$$/;/' >> function_list
-	@# test functions
-	@grep -h "^\s*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/void test_$$1();/' >> function_list
 
 # auto-generated list of tests to run
 test_list: mu.cc
 	@grep -h "^\s*void test_" mu.cc |perl -pwe 's/^\s*void (.*)\(\) \{.*/$$1,/' > test_list
-	@grep -h "^\s*TEST(" mu.cc |perl -pwe 's/^\s*TEST\((.*)\)$$/test_$$1,/' >> test_list
 
 # auto-generated list of extern declarations to global variables
 # for separate compilation
