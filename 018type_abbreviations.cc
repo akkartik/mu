@@ -72,6 +72,7 @@ type_tree* new_type_tree(const string& x) {
   string_tree* type_names = starts_with(x, "(") ? parse_string_tree(x) : parse_string_list(x);
   type_tree* result = new_type_tree(type_names);
   delete type_names;
+  expand_type_abbreviations(result);
   return result;
 }
 
@@ -117,6 +118,13 @@ put(Type_abbreviations, "@", new type_tree("array"));
 put(Type_abbreviations, "num", new type_tree("number"));
 put(Type_abbreviations, "bool", new type_tree("boolean"));
 put(Type_abbreviations, "char", new type_tree("character"));
+
+:(scenario use_type_abbreviations_when_declaring_type_abbreviations)
+type foo = &:num
+def main [
+  a:foo <- copy 0
+]
++run: {a: ("address" "number")} <- copy {0: "literal"}
 
 //:: Expand type aliases before running.
 //: We'll do this in a transform so that we don't need to define abbreviations
