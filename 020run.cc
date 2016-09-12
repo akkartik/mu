@@ -57,8 +57,7 @@ void run(recipe_ordinal r) {
 }
 
 void run_current_routine() {
-  while (!Current_routine->completed())  // later layers will modify condition
-  {
+  while (should_continue_running(Current_routine)) {  // beware: later layers modify Current_routine here
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index(); continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
@@ -99,6 +98,11 @@ void run_current_routine() {
     ++current_step_index();
   }
   stop_running_current_routine:;
+}
+
+bool should_continue_running(const routine* current_routine) {
+  assert(current_routine == Current_routine);  // argument passed in just to make caller readable above
+  return !Current_routine->completed();
 }
 
 bool should_copy_ingredients() {

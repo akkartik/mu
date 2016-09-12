@@ -57,9 +57,6 @@ function_list: mu.cc
 	@# functions start out unindented, have all args on the same line, and end in ') {'
 	@#                                      ignore methods
 	@grep -h "^[^[:space:]#].*) {$$" mu.cc |grep -v ":.*(" |perl -pwe 's/ \{.*/;/' > function_list
-	@# occasionally we need to modify a declaration in a later layer without messing with ugly unbalanced brackets
-	@# assume such functions move the '{' to column 0 of the very next line
-	@grep -v "^#line" mu.cc |grep -B1 "^{" |grep -v "^{" |perl -pwe 's/$$/;/' >> function_list
 
 # auto-generated list of tests to run
 test_list: mu.cc

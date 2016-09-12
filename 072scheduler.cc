@@ -18,12 +18,21 @@ def f2 [
 //: first, add a deadline to run(routine)
 :(before "End Globals")
 int Scheduling_interval = 500;
-//: these changes are ugly and brittle; just close your nose and get through the next few lines
-:(replace "while (!Current_routine->completed())" following "void run_current_routine()")
-int ninstrs = 0;
-while (Current_routine->state == RUNNING && ninstrs < Scheduling_interval)
-:(after "Running One Instruction")
-ninstrs++;
+:(before "End routine Fields")
+int instructions_run_this_scheduling_slice;
+:(before "End routine Constructor")
+instructions_run_this_scheduling_slice = 0;
+:(before "Running One Instruction")
+ ++Current_routine->instructions_run_this_scheduling_slice;
+:(replace{} "bool should_continue_running(const routine* current_routine)")
+bool should_continue_running(const routine* current_routine) {
+  assert(current_routine == Current_routine);  // argument passed in just to make caller readable above
+  return Current_routine->state == RUNNING
+      && Current_routine->instructions_run_this_scheduling_slice < Scheduling_interval;
+}
+:(after "stop_running_current_routine:")
+// Reset instructions_run_this_scheduling_slice
+Current_routine->instructions_run_this_scheduling_slice = 0;
 
 //: now the rest of the scheduler is clean
 
@@ -577,11 +586,11 @@ case LIMIT_TIME: {
 }
 
 :(before "End routine Fields")
-int ninstrs;
+int instructions_run;
 :(before "End routine Constructor")
-ninstrs = 0;
-:(after "stop_running_current_routine:")
-Current_routine->ninstrs += ninstrs;
+instructions_run = 0;
+:(before "Reset instructions_run_this_scheduling_slice")
+Current_routine->instructions_run += Current_routine->instructions_run_this_scheduling_slice;
 :(before "End Primitive Recipe Declarations")
 NUMBER_OF_INSTRUCTIONS,
 :(before "End Primitive Recipe Numbers")
@@ -604,7 +613,7 @@ case NUMBER_OF_INSTRUCTIONS: {
   int result = -1;
   for (int i = 0; i < SIZE(Routines); ++i) {
     if (Routines.at(i)->id == id) {
-      result = Routines.at(i)->ninstrs;
+      result = Routines.at(i)->instructions_run;
       break;
     }
   }
