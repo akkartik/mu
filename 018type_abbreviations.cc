@@ -69,11 +69,16 @@ void load_type_abbreviations(istream& in) {
 }
 
 type_tree* new_type_tree(const string& x) {
-  string_tree* type_names = new string_tree(x);
-  type_names = parse_string_tree(type_names);
+  string_tree* type_names = starts_with(x, "(") ? parse_string_tree(x) : parse_string_list(x);
   type_tree* result = new_type_tree(type_names);
   delete type_names;
   return result;
+}
+
+string_tree* parse_string_list(const string& s) {
+  istringstream in(s);
+  in >> std::noskipws;
+  return parse_property_list(in);
 }
 
 :(scenario type_error1)
@@ -96,6 +101,13 @@ type foo bar baz
 type foo = bar
 type foo = baz
 +error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'
+
+:(scenario type_abbreviation_for_compound)
+type foo = address:number
+def main [
+  a:foo <- copy 0
+]
++run: {a: ("address" "number")} <- copy {0: "literal"}
 
 //:: A few default abbreviations.
 
