@@ -1,11 +1,12 @@
 //: For convenience, make some common types shorter.
 
+:(scenarios transform)
 :(scenario type_abbreviations)
 type foo = number
 def main [
   a:foo <- copy 34
 ]
-+run: {a: "number"} <- copy {34: "literal"}
++transform: product type after expanding abbreviations: "number"
 
 //:: Allow type abbreviations to be defined in mu code.
 
@@ -107,7 +108,7 @@ type foo = address:number
 def main [
   a:foo <- copy 0
 ]
-+run: {a: ("address" "number")} <- copy {0: "literal"}
++transform: product type after expanding abbreviations: ("address" "number")
 
 //:: A few default abbreviations.
 
@@ -123,13 +124,12 @@ type foo = &:num
 def main [
   a:foo <- copy 0
 ]
-+run: {a: ("address" "number")} <- copy {0: "literal"}
++transform: product type after expanding abbreviations: ("address" "number")
 
 //:: Expand type aliases before running.
 //: We'll do this in a transform so that we don't need to define abbreviations
 //: before we use them.
 
-:(scenarios transform)
 :(scenario abbreviations_for_address_and_array)
 def main [
   f 1:&:number  # abbreviation for 'address:number'
