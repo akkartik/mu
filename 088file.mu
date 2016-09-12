@@ -10,7 +10,7 @@ container file-mapping [
   contents:text
 ]
 
-def start-reading fs:address:filesystem, filename:address:array:character -> contents:address:source:character [
+def start-reading fs:address:filesystem, filename:text -> contents:address:source:character [
   local-scope
   load-ingredients
   {
@@ -55,7 +55,7 @@ def transmit-from-file file:number, sink:address:sink:character -> sink:address:
   file <- $close-file file
 ]
 
-def transmit-from-text contents:address:array:character, sink:address:sink:character -> sink:address:sink:character [
+def transmit-from-text contents:text, sink:address:sink:character -> sink:address:sink:character [
   local-scope
   load-ingredients
   i:number <- copy 0
@@ -71,7 +71,7 @@ def transmit-from-text contents:address:array:character, sink:address:sink:chara
   sink <- close sink
 ]
 
-def start-writing fs:address:filesystem, filename:address:array:character -> sink:address:sink:character, routine-id:number [
+def start-writing fs:address:filesystem, filename:text -> sink:address:sink:character, routine-id:number [
   local-scope
   load-ingredients
   source:address:source:character, sink:address:sink:character <- new-channel 30
@@ -100,7 +100,7 @@ def transmit-to-file file:number, source:address:source:character -> source:addr
   file <- $close-file file
 ]
 
-def transmit-to-fake-file fs:address:filesystem, filename:address:array:character, source:address:source:character -> fs:address:filesystem, source:address:source:character [
+def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:source:character -> fs:address:filesystem, source:address:source:character [
   local-scope
   load-ingredients
   # compute new file contents

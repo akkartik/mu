@@ -2,7 +2,7 @@
 
 # temporary main: interactive editor
 # hit ctrl-c to exit
-def! main text:address:array:character [
+def! main text:text [
   local-scope
   load-ingredients
   open-console

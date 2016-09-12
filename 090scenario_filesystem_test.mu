@@ -79,7 +79,7 @@ scenario write-to-existing-file-preserves-other-files [
   ]
 ]
 
-def slurp fs:address:filesystem, filename:address:array:character -> contents:address:array:character [
+def slurp fs:address:filesystem, filename:text -> contents:text [
   local-scope
   load-ingredients
   source:address:source:character <- start-reading fs, filename

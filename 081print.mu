@@ -643,7 +643,7 @@ def show-screen screen:address:screen -> screen:address:screen [
   show-display
 ]
 
-def print screen:address:screen, s:address:array:character -> screen:address:screen [
+def print screen:address:screen, s:text -> screen:address:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient

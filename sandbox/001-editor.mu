@@ -2,7 +2,7 @@
 
 # temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
-def! main text:address:array:character [
+def! main text:text [
   local-scope
   load-ingredients
   open-console
@@ -71,7 +71,7 @@ def new-editor s:address:array:character, screen:address:screen, left:number, ri
   <editor-initialization>
 ]
 
-def insert-text editor:address:editor-data, text:address:array:character -> editor:address:editor-data [
+def insert-text editor:address:editor-data, text:text -> editor:address:editor-data [
   local-scope
   load-ingredients
   # early exit if text is empty

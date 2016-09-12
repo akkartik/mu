@@ -258,7 +258,7 @@ scenario removing-from-singleton-list [
   ]
 ]
 
-def to-text in:address:list:_elem -> result:address:array:character [
+def to-text in:address:list:_elem -> result:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 80
@@ -267,7 +267,7 @@ def to-text in:address:list:_elem -> result:address:array:character [
 ]
 
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
-def to-text-line in:address:list:_elem -> result:address:array:character [
+def to-text-line in:address:list:_elem -> result:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 80

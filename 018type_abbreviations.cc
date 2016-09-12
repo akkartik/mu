@@ -178,6 +178,7 @@ void expand_type_abbreviations(const recipe_ordinal r) {
       trace(9992, "transform") << "product type after expanding abbreviations: " << names_to_string(inst.products.at(i).type) << end();
     }
   }
+  // End Expand Type Abbreviations(caller)
 }
 
 void expand_type_abbreviations(type_tree* type) {

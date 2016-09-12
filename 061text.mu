@@ -16,7 +16,7 @@ def array-to-text-line x:address:array:_elem -> y:address:array:character [
   y <- to-text *x
 ]
 
-def equal a:address:array:character, b:address:array:character -> result:boolean [
+def equal a:text, b:text -> result:boolean [
   local-scope
   load-ingredients
   a-len:number <- length *a
@@ -167,7 +167,7 @@ def buffer-full? in:address:buffer -> result:boolean [
 def append buf:address:buffer, x:_elem -> buf:address:buffer [
   local-scope
   load-ingredients
-  text:address:array:character <- to-text x
+  text:text <- to-text x
   len:number <- length *text
   i:number <- copy 0
   {
@@ -277,7 +277,7 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-def buffer-to-array in:address:buffer -> result:address:array:character [
+def buffer-to-array in:address:buffer -> result:text [
   local-scope
   load-ingredients
   {
@@ -300,7 +300,7 @@ def buffer-to-array in:address:buffer -> result:address:array:character [
   }
 ]
 
-def append a:address:array:character, b:address:array:character -> result:address:array:character [
+def append a:text, b:text -> result:text [
   local-scope
   load-ingredients
   # handle null addresses
@@ -391,7 +391,7 @@ scenario replace-character-in-text [
   ]
 ]
 
-def replace s:address:array:character, oldc:character, newc:character, from:number/optional -> s:address:array:character [
+def replace s:text, oldc:character, newc:character, from:number/optional -> s:text [
   local-scope
   load-ingredients
   len:number <- length *s
@@ -452,7 +452,7 @@ scenario replace-all-characters [
 ]
 
 # replace underscores in first with remaining args
-def interpolate template:address:array:character -> result:address:array:character [
+def interpolate template:text -> result:text [
   local-scope
   load-ingredients  # consume just the template
   # compute result-len, space to allocate for result
@@ -626,7 +626,7 @@ def space? c:character -> result:boolean [
   result <- equal c, 12288/ideographic-space
 ]
 
-def trim s:address:array:character -> result:address:array:character [
+def trim s:text -> result:text [
   local-scope
   load-ingredients
   len:number <- length *s
@@ -736,7 +736,7 @@ scenario trim-newline-tab [
   ]
 ]
 
-def find-next text:address:array:character, pattern:character, idx:number -> next-index:number [
+def find-next text:text, pattern:character, idx:number -> next-index:number [
   local-scope
   load-ingredients
   len:number <- length *text
@@ -842,7 +842,7 @@ scenario text-find-next-second [
 
 # search for a pattern of multiple characters
 # fairly dumb algorithm
-def find-next text:address:array:character, pattern:address:array:character, idx:number -> next-index:number [
+def find-next text:text, pattern:text, idx:number -> next-index:number [
   local-scope
   load-ingredients
   first:character <- index *pattern, 0
@@ -923,7 +923,7 @@ scenario find-next-suffix-match-2 [
 ]
 
 # checks if pattern matches at index 'idx'
-def match-at text:address:array:character, pattern:address:array:character, idx:number -> result:boolean [
+def match-at text:text, pattern:text, idx:number -> result:boolean [
   local-scope
   load-ingredients
   pattern-len:number <- length *pattern
@@ -1060,7 +1060,7 @@ scenario match-at-inside-bounds-2 [
   ]
 ]
 
-def split s:address:array:character, delim:character -> result:address:array:address:array:character [
+def split s:text, delim:character -> result:address:array:text [
   local-scope
   load-ingredients
   # empty text? return empty array
@@ -1192,7 +1192,7 @@ scenario text-split-empty-piece [
   ]
 ]
 
-def split-first text:address:array:character, delim:character -> x:address:array:character, y:address:array:character [
+def split-first text:text, delim:character -> x:text, y:text [
   local-scope
   load-ingredients
   # empty text? return empty texts
@@ -1224,7 +1224,7 @@ scenario text-split-first [
   ]
 ]
 
-def copy-range buf:address:array:character, start:number, end:number -> result:address:array:character [
+def copy-range buf:text, start:number, end:number -> result:text [
   local-scope
   load-ingredients
   # if end is out of bounds, trim it

@@ -585,7 +585,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
 ]
 
-def editor-contents editor:address:editor-data -> result:address:array:character [
+def editor-contents editor:address:editor-data -> result:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 80

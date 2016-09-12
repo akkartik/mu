@@ -21,7 +21,7 @@ container programming-environment-data [
   sandbox-in-focus?:boolean  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-def new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
+def new-programming-environment screen:address:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -540,7 +540,7 @@ def update-cursor screen:address:screen, recipes:address:editor-data, current-sa
 ]
 
 # like 'render' for texts, but with colorization for comments like in the editor
-def render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
+def render-code screen:address:screen, s:text, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless s

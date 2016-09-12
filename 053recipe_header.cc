@@ -142,6 +142,28 @@ if (result.has_header) {
   trace(9999, "parse") << "recipe " << result.name << " has a header" << end();
 }
 
+//: Support type abbreviations in headers.
+
+:(scenario type_abbreviations_in_recipe_headers)
+type string = address:array:character
+def main [
+  local-scope
+  a:string <- foo
+  1:character/raw <- index *a, 0
+]
+def foo -> a:string [
+  local-scope
+  load-ingredients
+  a <- new [abc]
+]
++mem: storing 97 in location 1
+
+:(before "End Expand Type Abbreviations(caller)")
+for (long int i = 0; i < SIZE(caller.ingredients); ++i)
+  expand_type_abbreviations(caller.ingredients.at(i).type);
+for (long int i = 0; i < SIZE(caller.products); ++i)
+  expand_type_abbreviations(caller.products.at(i).type);
+
 //: Rewrite 'load-ingredients' to instructions to create all reagents in the header.
 
 :(before "End Rewrite Instruction(curr, recipe result)")
