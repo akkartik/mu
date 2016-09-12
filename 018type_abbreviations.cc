@@ -1,4 +1,4 @@
-//: For convenience, make some common types shorter.
+//: For convenience, allow Mu types to be abbreviated.
 
 :(scenarios transform)
 :(scenario type_abbreviations)
@@ -8,30 +8,10 @@ def main [
 ]
 +transform: product type after expanding abbreviations: "number"
 
-//:: Allow type abbreviations to be defined in mu code.
-
 :(before "End Globals")
 map<string, type_tree*> Type_abbreviations, Type_abbreviations_snapshot;
-:(before "End save_snapshots")
-Type_abbreviations_snapshot = Type_abbreviations;
-:(before "End restore_snapshots")
-restore_type_abbreviations();
-:(before "End One-time Setup")
-atexit(clear_type_abbreviations);
-:(code)
-void restore_type_abbreviations() {
-  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p) {
-    if (!contains_key(Type_abbreviations_snapshot, p->first))
-      delete p->second;
-  }
-  Type_abbreviations.clear();
-  Type_abbreviations = Type_abbreviations_snapshot;
-}
-void clear_type_abbreviations() {
-  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p)
-    delete p->second;
-  Type_abbreviations.clear();
-}
+
+//:: Defining type abbreviations.
 
 :(before "End Command Handlers")
 else if (command == "type") {
@@ -116,6 +96,29 @@ def main [
   a:foo <- copy 0
 ]
 +transform: product type after expanding abbreviations: ("address" "number")
+
+//: cleaning up type abbreviations between tests and before exiting
+
+:(before "End save_snapshots")
+Type_abbreviations_snapshot = Type_abbreviations;
+:(before "End restore_snapshots")
+restore_type_abbreviations();
+:(before "End One-time Setup")
+atexit(clear_type_abbreviations);
+:(code)
+void restore_type_abbreviations() {
+  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p) {
+    if (!contains_key(Type_abbreviations_snapshot, p->first))
+      delete p->second;
+  }
+  Type_abbreviations.clear();
+  Type_abbreviations = Type_abbreviations_snapshot;
+}
+void clear_type_abbreviations() {
+  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p)
+    delete p->second;
+  Type_abbreviations.clear();
+}
 
 //:: A few default abbreviations.
 
