@@ -16,12 +16,12 @@ def f2 [
 +schedule: f2
 
 //: first, add a deadline to run(routine)
+:(before "End Globals")
+int Scheduling_interval = 500;
 //: these changes are ugly and brittle; just close your nose and get through the next few lines
-:(replace "void run_current_routine()")
-void run_current_routine(int time_slice)
-:(replace "while (!Current_routine->completed())" following "void run_current_routine(int time_slice)")
+:(replace "while (!Current_routine->completed())" following "void run_current_routine()")
 int ninstrs = 0;
-while (Current_routine->state == RUNNING && ninstrs < time_slice)
+while (Current_routine->state == RUNNING && ninstrs < Scheduling_interval)
 :(after "Running One Instruction")
 ninstrs++;
 
@@ -41,7 +41,6 @@ state = RUNNING;
 :(before "End Globals")
 vector<routine*> Routines;
 int Current_routine_index = 0;
-int Scheduling_interval = 500;
 :(before "End Setup")
 Scheduling_interval = 500;
 Routines.clear();
@@ -60,7 +59,7 @@ void run(routine* rr) {
     assert(Current_routine->state == RUNNING);
     trace(9990, "schedule") << current_routine_label() << end();
 //?     cerr << "schedule: " << current_routine_label() << '\n';
-    run_current_routine(Scheduling_interval);
+    run_current_routine();
     // Scheduler State Transitions
     if (Current_routine->completed())
       Current_routine->state = COMPLETED;
