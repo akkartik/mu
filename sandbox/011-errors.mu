@@ -1,7 +1,7 @@
 ## handling malformed programs
 
 container programming-environment-data [
-  recipe-errors:address:array:character
+  recipe-errors:text
 ]
 
 # copy code from recipe editor, persist, load into mu, save any errors
@@ -73,7 +73,7 @@ before <render-components-end> [
 ]
 
 container sandbox-data [
-  errors:address:array:character
+  errors:text
 ]
 
 def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [

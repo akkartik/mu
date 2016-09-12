@@ -159,7 +159,7 @@ scenario clicking-on-app-trace-does-nothing [
 ]
 
 container sandbox-data [
-  trace:address:array:character
+  trace:text
   display-trace?:boolean
 ]
 

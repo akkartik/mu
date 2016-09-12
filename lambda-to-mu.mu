@@ -23,7 +23,7 @@ def lambda-to-mu in:address:array:character -> out:address:array:character [
 
 # 'parse' will turn lambda expressions into trees made of cells
 exclusive-container cell [
-  atom:address:array:character
+  atom:text
   pair:pair
 ]
 

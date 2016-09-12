@@ -781,6 +781,31 @@ container foo [
 ]
 +error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.
 
+//: support type abbreviations in container definitions
+
+:(scenario type_abbreviations_in_containers)
+type foo = number
+container bar [
+  x:foo
+]
+def main [
+  1:number <- copy 34
+  2:foo <- get 1:bar/unsafe, 0:offset
+]
++mem: storing 34 in location 2
+
+:(after "Transform.push_back(expand_type_abbreviations)")
+Transform.push_back(expand_type_abbreviations_in_containers);
+:(code)
+// extremely inefficient; we process all types over and over again, once for every single recipe
+// but it doesn't seem to cause any noticeable slowdown
+void expand_type_abbreviations_in_containers(unused const recipe_ordinal r) {
+  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
+    for (int i = 0; i < SIZE(p->second.elements); ++i)
+      expand_type_abbreviations(p->second.elements.at(i).type);
+  }
+}
+
 //: ensure scenarios are consistent by always starting new container
 //: declarations at the same type number
 :(before "End Setup")  //: for tests

@@ -115,7 +115,7 @@ scenario text-equal-common-lengths-but-distinct [
 # A new type to help incrementally construct texts.
 container buffer [
   length:number
-  data:address:array:character
+  data:text
 ]
 
 def new-buffer capacity:number -> result:address:buffer [

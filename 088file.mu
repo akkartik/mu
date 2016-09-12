@@ -6,8 +6,8 @@ container filesystem [
 ]
 
 container file-mapping [
-  name:address:array:character
-  contents:address:array:character
+  name:text
+  contents:text
 ]
 
 def start-reading fs:address:filesystem, filename:address:array:character -> contents:address:source:character [

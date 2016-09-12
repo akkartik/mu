@@ -18,8 +18,8 @@ after <programming-environment-initialization> [
 ]
 
 container sandbox-data [
-  data:address:array:character
-  response:address:array:character
+  data:text
+  response:text
   # coordinates to track clicks
   # constraint: will be 0 for sandboxes at positions before env.render-from
   starting-row-on-screen:number

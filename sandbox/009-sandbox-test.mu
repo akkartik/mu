@@ -84,7 +84,7 @@ def foo [
 # this requires tracking a couple more things
 container sandbox-data [
   response-starting-row-on-screen:number
-  expected-response:address:array:character
+  expected-response:text
 ]
 
 # include expected response when saving or restoring a sandbox
