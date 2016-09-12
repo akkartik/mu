@@ -162,7 +162,7 @@ bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out, const s
       raise << container_name << ": empty type ingredients not permitted\n" << end();
       return false;
     }
-    if (curr.at(0) != '_') {
+    if (!starts_with(curr, "_")) {
       raise << container_name << ": type ingredient '" << curr << "' must begin with an underscore\n" << end();
       return false;
     }
@@ -191,7 +191,7 @@ else if (is_type_ingredient_name(type->name)) {
 }
 :(code)
 bool is_type_ingredient_name(const string& type) {
-  return !type.empty() && type.at(0) == '_';
+  return starts_with(type, "_");
 }
 
 :(before "End Container Type Checks")

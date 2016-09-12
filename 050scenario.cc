@@ -84,7 +84,7 @@ scenario parse_scenario(istream& in) {
   // inside comments
   result.to_run = slurp_quoted(in);
   // delete [] delimiters
-  assert(result.to_run.at(0) == '[');
+  assert(starts_with(result.to_run, "["));
   result.to_run.erase(0, 1);
   assert(result.to_run.at(SIZE(result.to_run)-1) == ']');
   result.to_run.erase(SIZE(result.to_run)-1);

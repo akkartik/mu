@@ -26,7 +26,7 @@ void transform_labels(const recipe_ordinal r) {
   map<string, int> offset;
   for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
-    if (!inst.label.empty() && inst.label.at(0) == '+') {
+    if (starts_with(inst.label, "+")) {
       if (!contains_key(offset, inst.label)) {
         put(offset, inst.label, i);
       }
@@ -88,7 +88,7 @@ void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int cu
 }
 
 bool is_jump_target(string label) {
-  return label.at(0) == '+';
+  return starts_with(label, "+");
 }
 
 :(scenario break_to_label)

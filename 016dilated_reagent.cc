@@ -92,7 +92,7 @@ string slurp_balanced_bracket(istream& in) {
 }
 
 :(after "Parsing reagent(string s)")
-if (s.at(0) == '{') {
+if (starts_with(s, "{")) {
   assert(properties.empty());
   istringstream in(s);
   in >> std::noskipws;

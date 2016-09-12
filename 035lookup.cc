@@ -479,7 +479,7 @@ def main [
 
 :(before "End Parsing reagent")
 {
-  while (!name.empty() && name.at(0) == '*') {
+  while (starts_with(name, "*")) {
     name.erase(0, 1);
     properties.push_back(pair<string, string_tree*>("lookup", NULL));
   }

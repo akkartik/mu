@@ -26,8 +26,7 @@ type_names = parse_string_tree(type_names);
 :(code)
 string_tree* parse_string_tree(string_tree* s) {
   assert(s->atom);
-  assert(!s->value.empty());
-  if (s->value.at(0) != '(') return s;
+  if (!starts_with(s->value, "(")) return s;
   string_tree* result = parse_string_tree(s->value);
   delete s;
   return result;
