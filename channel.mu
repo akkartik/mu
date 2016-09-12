@@ -16,6 +16,7 @@ def producer sink:address:sink:character -> sink:address:sink:character [
     n <- add n, 1
     loop
   }
+  close sink
 ]
 
 def consumer source:address:source:character -> source:address:source:character [
