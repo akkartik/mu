@@ -4,16 +4,16 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 recipe foo [
   reply 4
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -64,16 +64,16 @@ scenario clicking-on-a-sandbox-moves-it-to-editor-2 [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 recipe foo [
   reply 4
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -163,7 +163,7 @@ def try-edit-sandbox click-row:number, env:address:programming-environment-data 
   return-unless sandbox, 0/false
   clicked-on-edit-button? <- copy 1/true
   # 'edit' button = 'copy' button + 'delete' button
-  text:address:array:character <- get *sandbox, data:offset
+  text:text <- get *sandbox, data:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   env <- delete-sandbox env, sandbox
@@ -177,10 +177,10 @@ scenario sandbox-with-print-can-be-edited [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
-  1:address:array:character <- new []
+  1:text <- new []
   # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  2:text <- new [print-integer screen, 4]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   # run the sandbox
   assume-console [
     press F4
@@ -221,9 +221,9 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:array:character <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new []
+  2:text <- new []
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -269,9 +269,9 @@ scenario editing-sandbox-updates-sandbox-count [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:array:character <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new []
+  2:text <- new []
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes
   assume-console [

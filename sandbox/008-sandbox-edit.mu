@@ -4,11 +4,11 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # run something
-  1:address:array:character <- new [add 2, 2]
+  1:text <- new [add 2, 2]
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
@@ -92,7 +92,7 @@ def try-edit-sandbox click-row:number, env:address:programming-environment-data 
   return-unless sandbox, 0/false
   clicked-on-edit-button? <- copy 1/true
   # 'edit' button = 'copy' button + 'delete' button
-  text:address:array:character <- get *sandbox, data:offset
+  text:text <- get *sandbox, data:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   env <- delete-sandbox env, sandbox
@@ -104,8 +104,8 @@ scenario sandbox-with-print-can-be-edited [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # run a print instruction
-  1:address:array:character <- new [print-integer screen, 4]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new [print-integer screen, 4]
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   # run the sandbox
   assume-console [
     press F4
@@ -146,8 +146,8 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -193,8 +193,8 @@ scenario editing-sandbox-updates-sandbox-count [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [

@@ -7,9 +7,9 @@
 scenario editor-inserts-two-spaces-on-tab [
   assume-screen 10/width, 5/height
   # just one character in final line
-  1:address:array:character <- new [ab
+  1:text <- new [ab
 cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   assume-console [
     press tab
   ]
@@ -40,8 +40,8 @@ after <handle-special-character> [
 
 scenario editor-handles-backspace-key [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -218,9 +218,9 @@ def previous-line-length curr:address:duplex-list:character, start:address:duple
 scenario editor-clears-last-line-on-backspace [
   assume-screen 10/width, 5/height
   # just one character in final line
-  1:address:array:character <- new [ab
+  1:text <- new [ab
 cd]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
     press backspace
@@ -245,9 +245,9 @@ cd]
 scenario editor-joins-and-wraps-lines-on-backspace [
   assume-screen 10/width, 5/height
   # initialize editor with two long-ish but non-wrapping lines
-  1:address:array:character <- new [abc def
+  1:text <- new [abc def
 ghi jkl]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position the cursor at the start of the second and hit backspace
@@ -271,8 +271,8 @@ ghi jkl]
 scenario editor-wraps-long-lines-on-backspace [
   assume-screen 10/width, 5/height
   # initialize editor in part of the screen with a long line
-  1:address:array:character <- new [abc def ghij]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 8/right
+  1:text <- new [abc def ghij]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 8/right
   editor-render screen, 2:address:editor-data
   # confirm that it wraps
   screen-should-contain [
@@ -304,8 +304,8 @@ scenario editor-wraps-long-lines-on-backspace [
 
 scenario editor-handles-delete-key [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -393,8 +393,8 @@ def delete-at-cursor editor:address:editor-data, screen:address:screen -> editor
 
 scenario editor-moves-cursor-right-with-key [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -490,9 +490,9 @@ def move-cursor-coordinates-right editor:address:editor-data, screen-height:numb
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # type right-arrow a few times to get to start of second line
@@ -525,9 +525,9 @@ d]
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 1/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 1/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     press right-arrow
@@ -550,8 +550,8 @@ d]
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  1:text <- new [abcdef]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -580,8 +580,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   assume-screen 10/width, 5/height
   # line just barely wrapping
-  1:address:array:character <- new [abcde]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  1:text <- new [abcde]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position cursor at last character before wrap and hit right-arrow
@@ -616,8 +616,8 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
 
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 1/left, 6/right
+  1:text <- new [abcdef]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 1/left, 6/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -645,9 +645,9 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
 
 scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # move to end of line, press right-arrow, type a character
@@ -676,8 +676,8 @@ d]
 
 scenario editor-moves-cursor-left-with-key [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -719,9 +719,9 @@ after <handle-special-key> [
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
   assume-screen 10/width, 5/height
   # initialize editor with two lines
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position cursor at start of second line (so there's no previous newline)
@@ -744,10 +744,10 @@ d]
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
   assume-screen 10/width, 5/height
   # initialize editor with three lines
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position cursor further down (so there's a newline before the character at
@@ -772,10 +772,10 @@ g]
 
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position cursor at start of text, press left-arrow, then type a character
@@ -801,10 +801,10 @@ g]
 scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
   assume-screen 10/width, 5/height
   # initialize editor with text containing an empty line
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # position cursor right after empty line
@@ -829,8 +829,8 @@ d]
 scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   assume-screen 10/width, 5/height
   # initialize editor with a wrapping line
-  1:address:array:character <- new [abcdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  1:text <- new [abcdef]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   screen-should-contain [
@@ -860,9 +860,9 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
 scenario editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
   assume-screen 10/width, 5/height
   # initialize editor with a wrapping line followed by a second line
-  1:address:array:character <- new [abcdef
+  1:text <- new [abcdef
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   screen-should-contain [
@@ -892,9 +892,9 @@ g]
 scenario editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
   assume-screen 10/width, 5/height
   # initialize editor with a line on the verge of wrapping, followed by a second line
-  1:address:array:character <- new [abcd
+  1:text <- new [abcd
 e]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   screen-should-contain [
@@ -927,9 +927,9 @@ e]
 
 scenario editor-moves-to-previous-line-with-up-arrow [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -1043,9 +1043,9 @@ def move-to-previous-line editor:address:editor-data -> editor:address:editor-da
 
 scenario editor-adjusts-column-at-previous-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [ab
+  1:text <- new [ab
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -1079,9 +1079,9 @@ def]
 
 scenario editor-adjusts-column-at-empty-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [
+  1:text <- new [
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -1116,10 +1116,10 @@ def]
 scenario editor-moves-to-previous-line-from-left-margin [
   assume-screen 10/width, 5/height
   # start out with three lines
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # click on the third line and hit up-arrow, so you end up just after a newline
@@ -1156,9 +1156,9 @@ ghi]
 
 scenario editor-moves-to-next-line-with-down-arrow [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # cursor starts out at (1, 0)
@@ -1261,9 +1261,9 @@ def move-to-next-line editor:address:editor-data, screen-height:number -> editor
 
 scenario editor-adjusts-column-at-next-line [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 de]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   assume-console [
@@ -1299,9 +1299,9 @@ de]
 
 scenario editor-moves-to-start-of-line-with-ctrl-a [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on second line, press ctrl-a
@@ -1374,9 +1374,9 @@ def move-to-start-of-line editor:address:editor-data -> editor:address:editor-da
 
 scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on first line (no newline before), press ctrl-a
@@ -1399,9 +1399,9 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
 
 scenario editor-moves-to-start-of-line-with-home [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   $clear-trace
   # start on second line, press 'home'
   assume-console [
@@ -1423,9 +1423,9 @@ scenario editor-moves-to-start-of-line-with-home [
 
 scenario editor-moves-to-start-of-line-with-home-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on first line (no newline before), press 'home'
@@ -1450,9 +1450,9 @@ scenario editor-moves-to-start-of-line-with-home-2 [
 
 scenario editor-moves-to-end-of-line-with-ctrl-e [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on first line, press ctrl-e
@@ -1542,9 +1542,9 @@ def move-to-end-of-line editor:address:editor-data -> editor:address:editor-data
 
 scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on second line (no newline after), press ctrl-e
@@ -1567,9 +1567,9 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
 
 scenario editor-moves-to-end-of-line-with-end [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on first line, press 'end'
@@ -1592,9 +1592,9 @@ scenario editor-moves-to-end-of-line-with-end [
 
 scenario editor-moves-to-end-of-line-with-end-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # start on second line (no newline after), press 'end'
@@ -1619,9 +1619,9 @@ scenario editor-moves-to-end-of-line-with-end-2 [
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
@@ -1682,9 +1682,9 @@ def delete-to-start-of-line editor:address:editor-data -> result:address:duplex-
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
@@ -1705,9 +1705,9 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
@@ -1728,9 +1728,9 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
 
 scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start past end of final line, press ctrl-u
   assume-console [
     left-click 2, 3
@@ -1753,9 +1753,9 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
@@ -1808,9 +1808,9 @@ def delete-to-end-of-line editor:address:editor-data -> result:address:duplex-li
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
@@ -1831,9 +1831,9 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start at end of line
   assume-console [
     left-click 1, 2
@@ -1854,9 +1854,9 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start past end of line
   assume-console [
     left-click 1, 3
@@ -1877,9 +1877,9 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start at end of text
   assume-console [
     left-click 2, 2
@@ -1900,9 +1900,9 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [123
+  1:text <- new [123
 456]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   # start past end of text
   assume-console [
     left-click 2, 3
@@ -1927,11 +1927,11 @@ scenario editor-can-scroll-down-using-arrow-keys [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # initialize editor with >3 lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2005,11 +2005,11 @@ scenario editor-scrolls-down-past-wrapped-line-using-arrow-keys [
   assume-screen 10/width, 4/height
   # initialize editor with a long, wrapped line and more than a screen of
   # other lines
-  1:address:array:character <- new [abcdef
+  1:text <- new [abcdef
 g
 h
 i]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2037,11 +2037,11 @@ scenario editor-scrolls-down-past-wrapped-line-using-arrow-keys-2 [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # editor starts with a long line wrapping twice
-  1:address:array:character <- new [abcdefghij
+  1:text <- new [abcdefghij
 k
 l
 m]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at last line, then try to move further down
   assume-console [
     left-click 3, 0
@@ -2077,10 +2077,10 @@ scenario editor-scrolls-down-when-line-wraps [
   # screen has 1 line for menu + 3 lines
   assume-screen 5/width, 4/height
   # editor contains a long line in the third line
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 cdef]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at end, type a character
   assume-console [
     left-click 3, 4
@@ -2107,10 +2107,10 @@ cdef]
 scenario editor-scrolls-down-on-newline [
   assume-screen 5/width, 4/height
   # position cursor after last line and type newline
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   assume-console [
     left-click 3, 4
     type [
@@ -2138,10 +2138,10 @@ scenario editor-scrolls-down-on-right-arrow [
   # screen has 1 line for menu + 3 lines
   assume-screen 5/width, 4/height
   # editor contains a wrapped line
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 cdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
@@ -2169,11 +2169,11 @@ scenario editor-scrolls-down-on-right-arrow-2 [
   # screen has 1 line for menu + 3 lines
   assume-screen 5/width, 4/height
   # editor contains more lines than can fit on screen
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
@@ -2199,9 +2199,9 @@ d]
 
 scenario editor-scrolls-at-end-on-down-arrow [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 de]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   $clear-trace
   # try to move down past end of text
@@ -2266,14 +2266,14 @@ scenario editor-combines-page-and-line-scroll [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # initialize editor with a few pages of lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d
 e
 f
 g]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # scroll down one page and one line
   assume-console [
     press page-down
@@ -2298,11 +2298,11 @@ scenario editor-can-scroll-up-using-arrow-keys [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # initialize editor with >3 lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2386,11 +2386,11 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys [
   assume-screen 10/width, 4/height
   # initialize editor with a long, wrapped line and more than a screen of
   # other lines
-  1:address:array:character <- new [abcdef
+  1:text <- new [abcdef
 g
 h
 i]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2430,11 +2430,11 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-2 [
   # screen has 1 line for menu + 4 lines
   assume-screen 10/width, 5/height
   # editor starts with a long line wrapping twice, occupying 3 of the 4 lines
-  1:address:array:character <- new [abcdefghij
+  1:text <- new [abcdefghij
 k
 l
 m]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
     press page-down
@@ -2503,11 +2503,11 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-3 [
   assume-screen 10/width, 4/height
   # initialize editor with a long, wrapped line and more than a screen of
   # other lines
-  1:address:array:character <- new [abcdef
+  1:text <- new [abcdef
 g
 h
 i]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 6/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 6/right
   screen-should-contain [
     .          .
     .abcde↩    .
@@ -2547,13 +2547,13 @@ i]
 scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-4 [
   assume-screen 10/width, 4/height
   # initialize editor with some lines around an empty line
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 
 c
 d
 e]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 6/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 6/right
   assume-console [
     press page-down
   ]
@@ -2596,12 +2596,12 @@ scenario editor-scrolls-up-on-left-arrow [
   # screen has 1 line for menu + 3 lines
   assume-screen 5/width, 4/height
   # editor contains >3 lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d
 e]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
     press page-down
@@ -2641,11 +2641,11 @@ scenario editor-can-scroll-up-to-start-of-file [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # initialize editor with >3 lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2689,11 +2689,11 @@ d]
 
 scenario editor-can-scroll [
   assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2776,9 +2776,9 @@ def page-down editor:address:editor-data -> editor:address:editor-data [
 
 scenario editor-does-not-scroll-past-end [
   assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
+  1:text <- new [a
 b]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   screen-should-contain [
     .          .
@@ -2806,11 +2806,11 @@ scenario editor-starts-next-page-at-start-of-wrapped-line [
   # screen has 1 line for menu + 3 lines for text
   assume-screen 10/width, 4/height
   # editor contains a long last line
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 cdefgh]
   # editor screen triggers wrap of last line
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -2839,9 +2839,9 @@ scenario editor-starts-next-page-at-start-of-wrapped-line-2 [
   assume-screen 10/width, 4/height
   # editor contains a very long line that occupies last two lines of screen
   # and still has something left over
-  1:address:array:character <- new [a
+  1:text <- new [a
 bcdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -2869,11 +2869,11 @@ bcdefgh]
 
 scenario editor-can-scroll-up [
   assume-screen 10/width, 4/height
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2965,7 +2965,7 @@ scenario editor-can-scroll-up-multiple-pages [
   # screen has 1 line for menu + 3 lines
   assume-screen 10/width, 4/height
   # initialize editor with 8 lines
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 c
 d
@@ -2973,7 +2973,7 @@ e
 f
 g
 h]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -3029,7 +3029,7 @@ scenario editor-can-scroll-up-wrapped-lines [
   # screen has 1 line for menu + 5 lines for text
   assume-screen 10/width, 6/height
   # editor contains a long line in the first page
-  1:address:array:character <- new [a
+  1:text <- new [a
 b
 cdefgh
 i
@@ -3040,7 +3040,7 @@ m
 n
 o]
   # editor screen triggers wrap of last line
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -3091,9 +3091,9 @@ scenario editor-can-scroll-up-wrapped-lines-2 [
   assume-screen 10/width, 4/height
   # editor contains a very long line that occupies last two lines of screen
   # and still has something left over
-  1:address:array:character <- new [a
+  1:text <- new [a
 bcdefgh]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -3134,7 +3134,7 @@ bcdefgh]
 scenario editor-can-scroll-up-past-nonempty-lines [
   assume-screen 10/width, 4/height
   # text with empty line in second screen
-  1:address:array:character <- new [axx
+  1:text <- new [axx
 bxx
 cxx
 dxx
@@ -3143,7 +3143,7 @@ fxx
 gxx
 hxx
 ]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   screen-should-contain [
     .          .
     .axx       .
@@ -3192,7 +3192,7 @@ hxx
 scenario editor-can-scroll-up-past-empty-lines [
   assume-screen 10/width, 4/height
   # text with empty line in second screen
-  1:address:array:character <- new [axy
+  1:text <- new [axy
 bxy
 cxy
 
@@ -3201,7 +3201,7 @@ exy
 fxy
 gxy
 ]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 4/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 4/right
   screen-should-contain [
     .          .
     .axy       .

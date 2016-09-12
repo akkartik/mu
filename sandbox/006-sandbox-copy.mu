@@ -4,11 +4,11 @@
 scenario copy-a-sandbox-to-editor [
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:address:array:character <- new [add 1, 1]
+  1:text <- new [add 1, 1]
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
@@ -66,11 +66,11 @@ scenario copy-a-sandbox-to-editor [
 scenario copy-a-sandbox-to-editor-2 [
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:address:array:character <- new [add 1, 1]
+  1:text <- new [add 1, 1]
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .
@@ -167,7 +167,7 @@ def try-copy-sandbox click-row:number, env:address:programming-environment-data 
   sandbox:address:sandbox-data <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   clicked-on-copy-button? <- copy 1/true
-  text:address:array:character <- get *sandbox, data:offset
+  text:text <- get *sandbox, data:offset
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   # reset scroll
@@ -217,11 +217,11 @@ def within-range? x:number, low:number, high:number -> result:boolean [
 scenario copy-fails-if-sandbox-editor-not-empty [
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:address:array:character <- new [add 1, 1]
+  1:text <- new [add 1, 1]
   assume-console [
     press F4
   ]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
   screen-should-contain [
     .                               run (F4)           .

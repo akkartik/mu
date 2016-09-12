@@ -101,8 +101,8 @@ after <handle-special-character> [
 scenario editor-can-undo-typing [
   # create an editor and type a character
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [0]
@@ -231,8 +231,8 @@ after <handle-undo> [
 scenario editor-can-undo-typing-multiple [
   # create an editor and type multiple characters
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [012]
@@ -257,8 +257,8 @@ scenario editor-can-undo-typing-multiple [
 scenario editor-can-undo-typing-multiple-2 [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [a]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [a]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # type some characters
   assume-console [
@@ -303,8 +303,8 @@ scenario editor-can-undo-typing-multiple-2 [
 scenario editor-can-undo-typing-enter [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [  abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [  abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # new line
   assume-console [
@@ -366,8 +366,8 @@ scenario editor-can-undo-typing-enter [
 scenario editor-redo-typing [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [a]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [a]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [012]
@@ -430,8 +430,8 @@ after <handle-redo> [
 scenario editor-redo-typing-empty [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [012]
@@ -476,10 +476,10 @@ scenario editor-redo-typing-empty [
 scenario editor-work-clears-redo-stack [
   # create an editor with some text, do some work, undo
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [1]
@@ -518,8 +518,8 @@ ghi]
 scenario editor-can-redo-typing-and-enter-and-tab [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and tabs, hit enter, some more text and tabs
   assume-console [
@@ -675,10 +675,10 @@ scenario editor-can-redo-typing-and-enter-and-tab [
 scenario editor-can-undo-touch [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor
   assume-console [
@@ -765,10 +765,10 @@ after <handle-undo> [
 scenario editor-can-undo-left-arrow [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor
   assume-console [
@@ -809,10 +809,10 @@ ghi]
 scenario editor-can-undo-up-arrow [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor
   assume-console [
@@ -859,10 +859,10 @@ ghi]
 scenario editor-can-undo-down-arrow [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor
   assume-console [
@@ -903,10 +903,10 @@ ghi]
 scenario editor-can-undo-ctrl-a [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor, then to start of line
   assume-console [
@@ -947,10 +947,10 @@ ghi]
 scenario editor-can-undo-home [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor, then to start of line
   assume-console [
@@ -991,10 +991,10 @@ ghi]
 scenario editor-can-undo-ctrl-e [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor, then to start of line
   assume-console [
@@ -1035,10 +1035,10 @@ ghi]
 scenario editor-can-undo-end [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor, then to start of line
   assume-console [
@@ -1079,10 +1079,10 @@ ghi]
 scenario editor-can-undo-multiple-arrows-in-the-same-direction [
   # create an editor with some text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # move the cursor
   assume-console [
@@ -1133,10 +1133,10 @@ ghi]
 scenario editor-redo-touch [
   # create an editor with some text, click on a character, undo
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def
 ghi]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     left-click 3, 1
@@ -1190,8 +1190,8 @@ after <handle-redo> [
 scenario editor-separates-undo-insert-from-undo-cursor-move [
   # create an editor, type some text, move the cursor, type some more text
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   assume-console [
     type [abc]
@@ -1339,8 +1339,8 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
 scenario editor-can-undo-and-redo-backspace [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and hit backspace
   assume-console [
@@ -1484,8 +1484,8 @@ after <handle-redo> [
 scenario editor-can-undo-and-redo-delete [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1673,9 +1673,9 @@ before <delete-character-end> [
 scenario editor-can-undo-and-redo-ctrl-k [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1775,9 +1775,9 @@ before <delete-to-end-of-line-end> [
 scenario editor-can-undo-and-redo-ctrl-u [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc
+  1:text <- new [abc
 def]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1876,8 +1876,8 @@ before <delete-to-start-of-line-end> [
 scenario editor-can-undo-and-redo-ctrl-u-2 [
   # create an editor
   assume-screen 10/width, 5/height
-  1:address:array:character <- new []
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new []
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   editor-render screen, 2:address:editor-data
   # insert some text and hit delete and backspace a few times
   assume-console [

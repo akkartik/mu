@@ -31,7 +31,7 @@ scenario write-to-fake-file [
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:address:array:character <- slurp filesystem, [a]
+  contents-read-back:text <- slurp filesystem, [a]
   10:boolean/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
@@ -48,7 +48,7 @@ scenario write-to-fake-file-that-exists [
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:address:array:character <- slurp filesystem, [a]
+  contents-read-back:text <- slurp filesystem, [a]
   10:boolean/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
@@ -68,9 +68,9 @@ scenario write-to-existing-file-preserves-other-files [
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:address:array:character <- slurp filesystem, [a]
+  contents-read-back:text <- slurp filesystem, [a]
   10:boolean/raw <- equal contents-read-back, [xy]
-  other-file-contents:address:array:character <- slurp filesystem, [b]
+  other-file-contents:text <- slurp filesystem, [b]
   11:boolean/raw <- equal other-file-contents, [bcd
 ]
   memory-should-contain [

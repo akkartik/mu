@@ -31,11 +31,11 @@ def start-reading fs:address:filesystem, filename:address:array:character -> con
     break-if done?
     tmp:file-mapping <- index *data, i
     i <- add i, 1
-    curr-filename:address:array:character <- get tmp, name:offset
+    curr-filename:text <- get tmp, name:offset
     found?:boolean <- equal filename, curr-filename
     loop-unless found?
     contents:address:source:character, sink:address:sink:character <- new-channel 30
-    curr-contents:address:array:character <- get tmp, contents:offset
+    curr-contents:text <- get tmp, contents:offset
     start-running transmit-from-text curr-contents, sink
     return
   }
@@ -111,10 +111,10 @@ def transmit-to-fake-file fs:address:filesystem, filename:address:array:characte
     buf <- append buf, c
     loop
   }
-  contents:address:array:character <- buffer-to-array buf
+  contents:text <- buffer-to-array buf
   new-file-mapping:file-mapping <- merge filename, contents
   # write to filesystem
-  curr-filename:address:array:character <- copy 0
+  curr-filename:text <- copy 0
   data:address:array:file-mapping <- get *fs, data:offset
   # replace file contents if it already exists
   i:number <- copy 0

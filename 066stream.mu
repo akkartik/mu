@@ -41,7 +41,7 @@ def peek in:address:stream:_elem -> result:_elem, empty?:boolean [
   load-ingredients
   empty?:boolean <- copy 0/false
   idx:number <- get *in, index:offset
-  s:address:array:character <- get *in, data:offset
+  s:address:array:_elem <- get *in, data:offset
   len:number <- length *s
   at-end?:boolean <- greater-or-equal idx len
   {
@@ -56,7 +56,7 @@ def read-line in:address:stream:character -> result:address:array:character, in:
   local-scope
   load-ingredients
   idx:number <- get *in, index:offset
-  s:address:array:character <- get *in, data:offset
+  s:text <- get *in, data:offset
   next-idx:number <- find-next s, 10/newline, idx
   result <- copy-range s, idx, next-idx
   idx <- add next-idx, 1  # skip newline

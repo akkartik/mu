@@ -674,8 +674,8 @@ scenario print-text-stops-at-right-margin [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    s:address:array:character <- new [abcd]
-    fake-screen <- print fake-screen, s:address:array:character
+    s:text <- new [abcd]
+    fake-screen <- print fake-screen, s:text
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     10:array:screen-cell/raw <- copy *cell
   ]
@@ -708,7 +708,7 @@ def print-integer screen:address:screen, n:number -> screen:address:screen [
     bg-color <- copy 0/black
   }
   # todo: other bases besides decimal
-  s:address:array:character <- to-text n
+  s:text <- to-text n
   screen <- print screen, s, color, bg-color
 ]
 

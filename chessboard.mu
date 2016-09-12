@@ -62,10 +62,12 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
+type board = address:array:address:array:character
+
 def chessboard screen:address:screen, console:address:console -> screen:address:screen, console:address:console [
   local-scope
   load-ingredients
-  board:address:array:address:array:character <- initial-position
+  board:board <- initial-position
   # hook up stdin
   stdin-in:address:source:character, stdin-out:address:sink:character <- new-channel 10/capacity
   start-running send-keys-to-channel, console, stdin-out, screen
@@ -200,7 +202,7 @@ scenario printing-the-board [
   assume-screen 30/width, 12/height
   run [
     local-scope
-    board:address:array:address:array:character <- initial-position
+    board:board <- initial-position
     screen:address:screen <- print-board screen:address:screen, board
   ]
   screen-should-contain [
@@ -548,7 +550,7 @@ scenario making-a-move [
   assume-screen 30/width, 12/height
   run [
     local-scope
-    board:address:array:address:array:character <- initial-position
+    board:board <- initial-position
     move:address:move <- new move:type
     *move <- merge 6/g, 1/'2', 6/g, 3/'4'
     board <- make-move board, move

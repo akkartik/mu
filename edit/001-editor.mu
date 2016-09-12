@@ -16,8 +16,8 @@ def! main text:address:array:character [
 scenario editor-initially-prints-text-to-screen [
   assume-screen 10/width, 5/height
   run [
-    1:address:array:character <- new [abc]
-    new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+    1:text <- new [abc]
+    new-editor 1:text, screen:address:screen, 0/left, 10/right
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -257,9 +257,9 @@ def clear-rest-of-screen screen:address:screen, row:number, left:number, right:n
 scenario editor-initially-prints-multiple-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abc
+    s:text <- new [abc
 def]
-    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -272,8 +272,8 @@ def]
 scenario editor-initially-handles-offsets [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abc]
-    new-editor s:address:array:character, screen:address:screen, 1/left, 5/right
+    s:text <- new [abc]
+    new-editor s:text, screen:address:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -285,9 +285,9 @@ scenario editor-initially-handles-offsets [
 scenario editor-initially-prints-multiple-lines-at-offset [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abc
+    s:text <- new [abc
 def]
-    new-editor s:address:array:character, screen:address:screen, 1/left, 5/right
+    new-editor s:text, screen:address:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -300,8 +300,8 @@ def]
 scenario editor-initially-wraps-long-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abc def]
-    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
+    s:text <- new [abc def]
+    new-editor s:text, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -320,8 +320,8 @@ scenario editor-initially-wraps-long-lines [
 scenario editor-initially-wraps-barely-long-lines [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abcde]
-    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
+    s:text <- new [abcde]
+    new-editor s:text, screen:address:screen, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -342,8 +342,8 @@ scenario editor-initially-wraps-barely-long-lines [
 scenario editor-initializes-empty-text [
   assume-screen 5/width, 5/height
   run [
-    1:address:array:character <- new []
-    2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 5/right
+    1:text <- new []
+    2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
     3:number <- get *2:address:editor-data, cursor-row:offset
     4:number <- get *2:address:editor-data, cursor-column:offset
   ]
@@ -363,10 +363,10 @@ scenario editor-initializes-empty-text [
 scenario render-colors-comments [
   assume-screen 5/width, 5/height
   run [
-    s:address:array:character <- new [abc
+    s:text <- new [abc
 # de
 f]
-    new-editor s:address:array:character, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:address:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -444,10 +444,10 @@ def get-color color:number, c:character -> color:number [
 scenario render-colors-assignment [
   assume-screen 8/width, 5/height
   run [
-    s:address:array:character <- new [abc
+    s:text <- new [abc
 d <- e
 f]
-    new-editor s:address:array:character, screen:address:screen, 0/left, 8/right
+    new-editor s:text, screen:address:screen, 0/left, 8/right
   ]
   screen-should-contain [
     .        .

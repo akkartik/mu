@@ -10,8 +10,8 @@
 def! main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- restore [recipes.mu]
-  initial-sandbox:address:array:character <- new []
+  initial-recipe:text <- restore [recipes.mu]
+  initial-sandbox:text <- new []
   hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
   env <- restore-sandboxes env
@@ -45,10 +45,10 @@ scenario run-and-show-results [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # recipe editor is empty
-  1:address:array:character <- new []
+  1:text <- new []
   # sandbox editor contains an instruction without storing outputs
-  2:address:array:character <- new [divide-with-remainder 11, 3]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  2:text <- new [divide-with-remainder 11, 3]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   # run the code in the editors
   assume-console [
     press F4
@@ -151,7 +151,7 @@ def run-sandboxes env:address:programming-environment-data, screen:address:scree
   <run-sandboxes-begin>
   current-sandbox:address:editor-data <- get *env, current-sandbox:offset
   {
-    sandbox-contents:address:array:character <- editor-contents current-sandbox
+    sandbox-contents:text <- editor-contents current-sandbox
     break-unless sandbox-contents
     # if contents exist, first save them
     # run them and turn them into a new sandbox-data
@@ -191,7 +191,7 @@ def update-recipes env:address:programming-environment-data, screen:address:scre
   local-scope
   load-ingredients
   recipes:address:editor-data <- get *env, recipes:offset
-  in:address:array:character <- editor-contents recipes
+  in:text <- editor-contents recipes
   save [recipes.mu], in  # newlayer: persistence
   reload in
   errors-found? <- copy 0/false
@@ -201,8 +201,8 @@ def update-recipes env:address:programming-environment-data, screen:address:scre
 def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  data:address:array:character <- get *sandbox, data:offset
-  response:address:array:character, _, fake-screen:address:screen <- run-sandboxed data
+  data:text <- get *sandbox, data:offset
+  response:text, _, fake-screen:address:screen <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, screen:offset, fake-screen
 ]
@@ -224,8 +224,8 @@ def save-sandboxes env:address:programming-environment-data [
   idx:number <- copy 0
   {
     break-unless curr
-    data:address:array:character <- get *curr, data:offset
-    filename:address:array:character <- to-text idx
+    data:text <- get *curr, data:offset
+    filename:text <- to-text idx
     save filename, data
     <end-save-sandbox>
     idx <- add idx, 1
@@ -277,11 +277,11 @@ def render-sandboxes screen:address:screen, sandbox:address:sandbox-data, left:n
     # render sandbox contents
     row <- add row, 1
     screen <- move-cursor screen, row, left
-    sandbox-data:address:array:character <- get *sandbox, data:offset
+    sandbox-data:text <- get *sandbox, data:offset
     row, screen <- render-code screen, sandbox-data, left, right, row
     *sandbox <- put *sandbox, code-ending-row-on-screen:offset, row
     # render sandbox warnings, screen or response, in that order
-    sandbox-response:address:array:character <- get *sandbox, response:offset
+    sandbox-response:text <- get *sandbox, response:offset
     <render-sandbox-results>
     {
       sandbox-screen:address:screen <- get *sandbox, screen:offset
@@ -424,8 +424,8 @@ def restore-sandboxes env:address:programming-environment-data -> env:address:pr
   curr:address:sandbox-data <- copy 0
   prev:address:sandbox-data <- copy 0
   {
-    filename:address:array:character <- to-text idx
-    contents:address:array:character <- restore filename
+    filename:text <- to-text idx
+    contents:text <- restore filename
     break-unless contents  # stop at first error; assuming file didn't exist
                            # todo: handle empty sandbox
     # create new sandbox for file
@@ -519,15 +519,15 @@ scenario run-updates-results [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 recipe foo [
 local-scope
 z:number <- add 2, 2
 reply z
 ]]
   # sandbox editor contains an instruction without storing outputs
-  2:address:array:character <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  2:text <- new [foo]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   # run the code in the editors
   assume-console [
     press F4
@@ -572,10 +572,10 @@ scenario run-instruction-manages-screen-per-sandbox [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
-  1:address:array:character <- new []
+  1:text <- new []
   # right editor contains an instruction
-  2:address:array:character <- new [print-integer screen, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  2:text <- new [print-integer screen, 4]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   # run the code in the editor
   assume-console [
     press F4
@@ -622,16 +622,16 @@ def editor-contents editor:address:editor-data -> result:address:array:character
 
 scenario editor-provides-edited-contents [
   assume-screen 10/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:editor-data <- new-editor 1:address:array:character, screen:address:screen, 0/left, 10/right
+  1:text <- new [abc]
+  2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
   ]
   run [
     editor-event-loop screen:address:screen, console:address:console, 2:address:editor-data
-    3:address:array:character <- editor-contents 2:address:editor-data
-    4:array:character <- copy *3:address:array:character
+    3:text <- editor-contents 2:address:editor-data
+    4:array:character <- copy *3:text
   ]
   memory-should-contain [
     4:array:character <- [abdefc]
@@ -798,9 +798,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize sandbox side
-  1:address:array:character <- new []
-  2:address:array:character <- new [add 2, 2]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new []
+  2:text <- new [add 2, 2]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   assume-console [
     # create a sandbox
@@ -931,11 +931,11 @@ scenario scrolling-down-on-recipe-side [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize sandbox side and create a sandbox
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 ]
   # create a sandbox
-  2:address:array:character <- new [add 2, 2]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  2:text <- new [add 2, 2]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   assume-console [
     press F4
@@ -964,9 +964,9 @@ scenario scrolling-through-multiple-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:array:character <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new []
+  2:text <- new []
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # create 2 sandboxes
   assume-console [
@@ -1116,9 +1116,9 @@ scenario scrolling-manages-sandbox-index-correctly [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:array:character <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new []
+  2:text <- new []
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # create a sandbox
   assume-console [

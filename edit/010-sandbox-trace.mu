@@ -4,16 +4,16 @@ scenario sandbox-click-on-code-toggles-app-trace [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 recipe foo [
   stash [abc]
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -80,17 +80,17 @@ scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 recipe foo [
   stash [abc]
   reply 4
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -127,14 +127,14 @@ recipe foo [
 scenario clicking-on-app-trace-does-nothing [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  1:address:array:character <- new []
+  1:text <- new []
   # create and expand the trace
-  2:address:array:character <- new [stash 123456789]
+  2:text <- new [stash 123456789]
   assume-console [
     press F4
     left-click 4, 51
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -177,8 +177,8 @@ container sandbox-data [
 def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [
   local-scope
   load-ingredients
-  data:address:array:character <- get *sandbox, data:offset
-  response:address:array:character, _, fake-screen:address:screen, trace:address:array:character <- run-sandboxed data
+  data:text <- get *sandbox, data:offset
+  response:text, _, fake-screen:address:screen, trace:text <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, screen:offset, fake-screen
   *sandbox <- put *sandbox, trace:offset, trace
@@ -250,7 +250,7 @@ after <render-sandbox-results> [
   {
     display-trace?:boolean <- get *sandbox, display-trace?:offset
     break-unless display-trace?
-    sandbox-trace:address:array:character <- get *sandbox, trace:offset
+    sandbox-trace:text <- get *sandbox, trace:offset
     break-unless sandbox-trace  # nothing to print; move on
     row, screen <- render-text screen, sandbox-trace, left, right, 245/grey, row
   }

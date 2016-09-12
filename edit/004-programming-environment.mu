@@ -6,8 +6,8 @@
 def! main [
   local-scope
   open-console
-  initial-recipe:address:array:character <- restore [recipes.mu]
-  initial-sandbox:address:array:character <- new []
+  initial-recipe:text <- restore [recipes.mu]
+  initial-sandbox:text <- new []
   hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
   render-all 0/screen, env, render
@@ -296,9 +296,9 @@ scenario point-at-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new [abc]
+  2:text <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -322,9 +322,9 @@ scenario edit-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new [abc]
+  2:text <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # type one letter in each of them
   assume-console [
@@ -367,9 +367,9 @@ scenario multiple-editors-cover-only-their-own-areas [
   trace-until 100/app  # trace too long
   assume-screen 60/width, 10/height
   run [
-    1:address:array:character <- new [abc]
-    2:address:array:character <- new [def]
-    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+    1:text <- new [abc]
+    2:text <- new [def]
+    3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
     render-all screen, 3:address:programming-environment-data, render
   ]
   # divider isn't messed up
@@ -385,9 +385,9 @@ scenario multiple-editors-cover-only-their-own-areas [
 scenario editor-in-focus-keeps-cursor [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
-  1:address:array:character <- new [abc]
-  2:address:array:character <- new [def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  1:text <- new [abc]
+  2:text <- new [def]
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   # initialize programming environment and highlight cursor
   assume-console []
@@ -425,10 +425,10 @@ scenario backspace-in-sandbox-editor-joins-lines [
 #?   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
-  1:address:array:character <- new []
-  2:address:array:character <- new [abc
+  1:text <- new []
+  2:text <- new [abc
 def]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character, 2:address:array:character
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
   render-all screen, 3:address:programming-environment-data, render
   screen-should-contain [
     .           run (F4)           .

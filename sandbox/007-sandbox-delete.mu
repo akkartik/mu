@@ -3,8 +3,8 @@
 scenario deleting-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   # run a few commands
   assume-console [
     type [divide-with-remainder 11, 3]
@@ -147,8 +147,8 @@ scenario deleting-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -195,8 +195,8 @@ scenario deleting-top-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -243,8 +243,8 @@ scenario deleting-final-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -290,8 +290,8 @@ scenario deleting-updates-sandbox-count [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  1:address:array:character <- new []
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:address:array:character
+  1:text <- new []
+  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
   render-all screen, 2:address:programming-environment-data, render
   # create 2 sandboxes
   assume-console [

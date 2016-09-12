@@ -4,17 +4,17 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # basic recipe
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 def foo [
   return 4
 ]]
   # run it
-  2:address:array:character <- new [foo]
+  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:address:array:character
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:address:array:character/test-recipes
+  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -30,7 +30,7 @@ def foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:address:array:character/test-recipes
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -58,7 +58,7 @@ def foo [
     .                                                  .
   ]
   # now change the result
-  1:address:array:character <- new [ 
+  1:text <- new [ 
 def foo [
   return 3
 ]]
@@ -67,7 +67,7 @@ def foo [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:address:array:character/new-test-recipes
+    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/new-test-recipes
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
@@ -90,7 +90,7 @@ container sandbox-data [
 # include expected response when saving or restoring a sandbox
 before <end-save-sandbox> [
   {
-    expected-response:address:array:character <- get *curr, expected-response:offset
+    expected-response:text <- get *curr, expected-response:offset
     break-unless expected-response
     filename <- append filename, [.out]
     save filename, expected-response
@@ -164,7 +164,7 @@ def find-click-in-sandbox-output env:address:programming-environment-data, click
 def toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:sandbox-data [
   local-scope
   load-ingredients
-  expected-response:address:array:character <- get *sandbox, expected-response:offset
+  expected-response:text <- get *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
     break-unless expected-response
@@ -173,7 +173,7 @@ def toggle-expected-response sandbox:address:sandbox-data -> sandbox:address:san
   {
     # if not, set expected response to the current response
     break-if expected-response
-    response:address:array:character <- get *sandbox, response:offset
+    response:text <- get *sandbox, response:offset
     *sandbox <- put *sandbox, expected-response:offset, response
   }
 ]
@@ -183,7 +183,7 @@ after <render-sandbox-response> [
   {
     break-unless sandbox-response
     *sandbox <- put *sandbox, response-starting-row-on-screen:offset, row
-    expected-response:address:array:character <- get *sandbox, expected-response:offset
+    expected-response:text <- get *sandbox, expected-response:offset
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:boolean <- equal expected-response, sandbox-response
     {

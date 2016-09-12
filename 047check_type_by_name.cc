@@ -14,7 +14,7 @@ def main [
 ]
 +error: main: 'x' used with multiple types
 
-:(after "Begin Instruction Modifying Transforms")
+:(after "Transform.push_back(expand_type_abbreviations)")
 Transform.push_back(check_or_set_types_by_name);  // idempotent
 
 :(code)

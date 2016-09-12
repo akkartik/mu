@@ -389,7 +389,7 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
     }
     # copy line into 'buffered-out'
     i:number <- copy 0
-    line-contents:address:array:character <- get *line, data:offset
+    line-contents:text <- get *line, data:offset
     max:number <- get *line, length:offset
     {
       done?:boolean <- greater-or-equal i, max

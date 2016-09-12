@@ -16,8 +16,8 @@ scenario table-read-write [
 scenario table-read-write-non-integer [
   run [
     local-scope
-    key:address:array:character <- new [abc def]
-    {tab: (address table (address array character) number)} <- new-table 30
+    key:text <- new [abc def]
+    {tab: (address table text number)} <- new-table 30
     put-index tab, key, 34
     1:number/raw <- index tab, key
   ]

@@ -158,8 +158,8 @@ def f [
 +transform: ingredient type after expanding abbreviations: ("array" ("address" "number") "3")
 
 :(before "Transform.push_back(update_instruction_operations)")
-// Begin Type Modifying Transforms
 Transform.push_back(expand_type_abbreviations);  // idempotent
+// Begin Type Modifying Transforms
 // End Type Modifying Transforms
 
 :(code)

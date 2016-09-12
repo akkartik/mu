@@ -3,7 +3,7 @@
 def! main [
   local-scope
   open-console
-  initial-sandbox:address:array:character <- new []
+  initial-sandbox:text <- new []
   hide-screen 0/screen
   env:address:programming-environment-data <- new-programming-environment 0/screen, initial-sandbox
   env <- restore-sandboxes env

@@ -4,8 +4,8 @@
 scenario convert-lambda [
   run [
     local-scope
-    1:address:array:character/raw <- lambda-to-mu [(add a (multiply b c))]
-    2:array:character/raw <- copy *1:address:array:character/raw
+    1:text/raw <- lambda-to-mu [(add a (multiply b c))]
+    2:array:character/raw <- copy *1:text/raw
   ]
   memory-should-contain [
     2:array:character <- [t1 <- multiply b c
@@ -63,7 +63,7 @@ def is-pair? x:address:cell -> result:boolean [
 
 scenario atom-is-not-pair [
   local-scope
-  s:address:array:character <- new [a]
+  s:text <- new [a]
   x:address:cell <- new-atom s
   10:boolean/raw <- is-atom? x
   11:boolean/raw <- is-pair? x
@@ -76,7 +76,7 @@ scenario atom-is-not-pair [
 scenario pair-is-not-atom [
   local-scope
   # construct (a . nil)
-  s:address:array:character <- new [a]
+  s:text <- new [a]
   x:address:cell <- new-atom s
   y:address:cell <- new-pair x, 0/nil
   10:boolean/raw <- is-atom? y
@@ -90,7 +90,7 @@ scenario pair-is-not-atom [
 def atom-match? x:address:cell, pat:address:array:character -> result:boolean [
   local-scope
   load-ingredients
-  s:address:array:character, is-atom?:boolean <- maybe-convert *x, atom:variant
+  s:text, is-atom?:boolean <- maybe-convert *x, atom:variant
   reply-unless is-atom?, 0/false
   result <- equal pat, s
 ]
@@ -140,7 +140,7 @@ def set-rest base:address:cell, new-rest:address:cell -> base:address:cell [
 
 scenario cell-operations-on-atom [
   local-scope
-  s:address:array:character <- new [a]
+  s:text <- new [a]
   x:address:cell <- new-atom s
   10:address:cell/raw <- first x
   11:address:cell/raw <- rest x
@@ -153,7 +153,7 @@ scenario cell-operations-on-atom [
 scenario cell-operations-on-pair [
   local-scope
   # construct (a . nil)
-  s:address:array:character <- new [a]
+  s:text <- new [a]
   x:address:cell <- new-atom s
   y:address:cell <- new-pair x, 0/nil
   x2:address:cell <- first y
@@ -200,7 +200,7 @@ def parse in:address:stream:character -> out:address:cell, in:address:stream:cha
       b <- append b, c
       loop
     }
-    s:address:array:character <- buffer-to-array b
+    s:text <- buffer-to-array b
     out <- new-atom s
   }
   {
@@ -298,7 +298,7 @@ def to-buffer x:address:cell, buf:address:buffer -> buf:address:buffer [
   }
   # base case: atom
   {
-    s:address:array:character, atom?:boolean <- maybe-convert *x, atom:variant
+    s:text, atom?:boolean <- maybe-convert *x, atom:variant
     break-unless atom?
     buf <- append buf, s
     reply
@@ -315,9 +315,9 @@ def to-buffer x:address:cell, buf:address:buffer -> buf:address:buffer [
 
 scenario parse-single-letter-atom [
   local-scope
-  s:address:array:character <- new [a]
+  s:text <- new [a]
   x:address:cell <- parse s
-  s2:address:array:character, 10:boolean/raw <- maybe-convert *x, atom:variant
+  s2:text, 10:boolean/raw <- maybe-convert *x, atom:variant
   11:array:character/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
@@ -327,9 +327,9 @@ scenario parse-single-letter-atom [
 
 scenario parse-atom [
   local-scope
-  s:address:array:character <- new [abc]
+  s:text <- new [abc]
   x:address:cell <- parse s
-  s2:address:array:character, 10:boolean/raw <- maybe-convert *x, atom:variant
+  s2:text, 10:boolean/raw <- maybe-convert *x, atom:variant
   11:array:character/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
@@ -339,7 +339,7 @@ scenario parse-atom [
 
 scenario parse-list-of-two-atoms [
   local-scope
-  s:address:array:character <- new [(abc def)]
+  s:text <- new [(abc def)]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < abc | < def | <> > >
@@ -347,10 +347,10 @@ scenario parse-list-of-two-atoms [
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
   x2:address:cell <- rest x
-  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
   12:boolean/raw <- is-pair? x2
   x3:address:cell <- first x2
-  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   14:address:cell/raw <- rest x2
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
@@ -367,7 +367,7 @@ scenario parse-list-of-two-atoms [
 
 scenario parse-list-with-extra-spaces [
   local-scope
-  s:address:array:character <- new [ ( abc  def ) ]  # extra spaces
+  s:text <- new [ ( abc  def ) ]  # extra spaces
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < abc | < def | <> > >
@@ -375,10 +375,10 @@ scenario parse-list-with-extra-spaces [
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
   x2:address:cell <- rest x
-  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
   12:boolean/raw <- is-pair? x2
   x3:address:cell <- first x2
-  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   14:address:cell/raw <- rest x2
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
@@ -395,7 +395,7 @@ scenario parse-list-with-extra-spaces [
 
 scenario parse-list-of-more-than-two-atoms [
   local-scope
-  s:address:array:character <- new [(abc def ghi)]
+  s:text <- new [(abc def ghi)]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < abc | < def | < ghi | <> > > >
@@ -403,14 +403,14 @@ scenario parse-list-of-more-than-two-atoms [
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
   x2:address:cell <- rest x
-  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
   12:boolean/raw <- is-pair? x2
   x3:address:cell <- first x2
-  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   x4:address:cell <- rest x2
   14:boolean/raw <- is-pair? x4
   x5:address:cell <- first x4
-  s3:address:array:character, 15:boolean/raw <- maybe-convert *x5, atom:variant
+  s3:text, 15:boolean/raw <- maybe-convert *x5, atom:variant
   16:address:cell/raw <- rest x4
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
@@ -431,7 +431,7 @@ scenario parse-list-of-more-than-two-atoms [
 
 scenario parse-nested-list [
   local-scope
-  s:address:array:character <- new [((abc))]
+  s:text <- new [((abc))]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < < abc | <> > | <> >
@@ -440,7 +440,7 @@ scenario parse-nested-list [
   x1:address:cell <- first x
   11:boolean/raw <- is-pair? x
   x2:address:cell <- first x1
-  s1:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  s1:text, 12:boolean/raw <- maybe-convert *x2, atom:variant
   13:address:cell/raw <- rest x1
   14:address:cell/raw <- rest x
   20:array:character/raw <- copy *s1
@@ -456,7 +456,7 @@ scenario parse-nested-list [
 
 scenario parse-nested-list-2 [
   local-scope
-  s:address:array:character <- new [((abc) def)]
+  s:text <- new [((abc) def)]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < < abc | <> > | < def | <> > >
@@ -465,11 +465,11 @@ scenario parse-nested-list-2 [
   x1:address:cell <- first x
   11:boolean/raw <- is-pair? x
   x2:address:cell <- first x1
-  s1:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  s1:text, 12:boolean/raw <- maybe-convert *x2, atom:variant
   13:address:cell/raw <- rest x1
   x3:address:cell <- rest x
   x4:address:cell <- first x3
-  s2:address:array:character, 14:boolean/raw <- maybe-convert *x4, atom:variant
+  s2:text, 14:boolean/raw <- maybe-convert *x4, atom:variant
   15:address:cell/raw <- rest x3
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
@@ -489,7 +489,7 @@ scenario parse-nested-list-2 [
 # assertion failures
 #? scenario parse-error [
 #?   local-scope
-#?   s:address:array:character <- new [(]
+#?   s:text <- new [(]
 #? #?   hide-errors
 #?   x:address:cell <- parse s
 #? #?   show-errors
@@ -500,7 +500,7 @@ scenario parse-nested-list-2 [
 #? 
 #? scenario parse-error-after-element [
 #?   local-scope
-#?   s:address:array:character <- new [(abc]
+#?   s:text <- new [(abc]
 #? #?   hide-errors
 #?   x:address:cell <- parse s
 #? #?   show-errors
@@ -511,7 +511,7 @@ scenario parse-nested-list-2 [
 
 scenario parse-dotted-list-of-two-atoms [
   local-scope
-  s:address:array:character <- new [(abc . def)]
+  s:text <- new [(abc . def)]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < abc | def >
@@ -519,8 +519,8 @@ scenario parse-dotted-list-of-two-atoms [
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
   x2:address:cell <- rest x
-  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
-  s2:address:array:character, 12:boolean/raw <- maybe-convert *x2, atom:variant
+  s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s2:text, 12:boolean/raw <- maybe-convert *x2, atom:variant
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
   memory-should-contain [
@@ -535,7 +535,7 @@ scenario parse-dotted-list-of-two-atoms [
 
 scenario parse-dotted-list-of-more-than-two-atoms [
   local-scope
-  s:address:array:character <- new [(abc def . ghi)]
+  s:text <- new [(abc def . ghi)]
   x:address:cell <- parse s
   trace-should-contain [
     app/parse: < abc | < def | ghi > >
@@ -543,12 +543,12 @@ scenario parse-dotted-list-of-more-than-two-atoms [
   10:boolean/raw <- is-pair? x
   x1:address:cell <- first x
   x2:address:cell <- rest x
-  s1:address:array:character, 11:boolean/raw <- maybe-convert *x1, atom:variant
+  s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
   12:boolean/raw <- is-pair? x2
   x3:address:cell <- first x2
-  s2:address:array:character, 13:boolean/raw <- maybe-convert *x3, atom:variant
+  s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   x4:address:cell <- rest x2
-  s3:address:array:character, 14:boolean/raw <- maybe-convert *x4, atom:variant
+  s3:text, 14:boolean/raw <- maybe-convert *x4, atom:variant
   20:array:character/raw <- copy *s1
   30:array:character/raw <- copy *s2
   40:array:character/raw <- copy *s3
@@ -580,4 +580,5 @@ def to-mu in:address:cell, buf:address:buffer -> buf:address:buffer, result-name
   # null cell? no change.
   # pair with all atoms? gensym a new variable
   # pair containing other pairs? recurse
+  result-name <- copy 0
 ]
