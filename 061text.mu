@@ -1,4 +1,5 @@
 # Some useful helpers for dealing with text (arrays of characters)
+type text = address:array:character
 
 # to-text-line gets called implicitly in various places
 # define it to be identical to 'to-text' by default

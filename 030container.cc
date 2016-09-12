@@ -174,7 +174,7 @@ const type_tree* root_type(const type_tree* t) {
 //: precompute Container_metadata before we need size_of
 //: also store a copy in each reagent in each instruction in each recipe
 
-:(after "Begin Instruction Modifying Transforms")  // needs to happen before transform_names, therefore after Type Modifying Transforms below
+:(after "End Type Modifying Transforms")
 Transform.push_back(compute_container_sizes);
 :(code)
 void compute_container_sizes(recipe_ordinal r) {
@@ -824,10 +824,8 @@ container bar [
 ]
 $error: 0
 
-:(after "Begin Instruction Modifying Transforms")
-// Begin Type Modifying Transforms
+:(before "End Type Modifying Transforms")
 Transform.push_back(check_or_set_invalid_types);  // idempotent
-// End Type Modifying Transforms
 
 :(code)
 void check_or_set_invalid_types(const recipe_ordinal r) {

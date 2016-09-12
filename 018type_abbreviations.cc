@@ -1,90 +1,163 @@
 //: For convenience, make some common types shorter.
-//:
-//:   a) Rewrite '&t' to 'address:t' and '@t' to 'array:type' (with the
-//:   ability to chain any combination of the two). This is not extensible.
-//:
-//:   b) Provide a facility to create new type names out of old ones.
 
-//:: a) expanding '&' and '@'
-
-:(scenarios load)
-:(scenario abbreviations_for_address_and_array)
+:(scenario type_abbreviations)
+type foo = number
 def main [
-  f 1:&number  # abbreviation for 'address:number'
-  f 2:@number  # abbreviation for 'array:number'
-  f 3:&@number  # combining '&' and '@'
-  f 4:&&@&@number  # ..any number of times
-  f 5:array:&number:3  # abbreviations take precedence over ':'
-  f {6: (array &number 3)}  # support for dilated reagents and more complex parse trees
-  f 7:@number:3  # *not* the same as array:number:3
+  a:foo <- copy 34
 ]
-+parse:   ingredient: {1: ("address" "number")}
-+parse:   ingredient: {2: ("array" "number")}
-+parse:   ingredient: {3: ("address" "array" "number")}
-+parse:   ingredient: {4: ("address" "address" "array" "address" "array" "number")}
-+parse:   ingredient: {5: ("array" ("address" "number") "3")}
-+parse:   ingredient: {6: ("array" ("address" "number") "3")}
-# not what you want
-+parse:   ingredient: {7: (("array" "number") "3")}
++run: {a: "number"} <- copy {34: "literal"}
 
-:(scenario abbreviation_error)
-% Hide_errors = true;
-def main [
-  f 1:&&@&  # abbreviations without payload
-]
-+error: invalid type abbreviation &&@&
+//:: Allow type abbreviations to be defined in mu code.
+//: For now you can't use abbreviations inside abbreviations.
 
-:(before "End Parsing Reagent Type Property(type_names)")
-string_tree* new_type_names = replace_address_and_array_symbols(type_names);
-delete type_names;
-type_names = new_type_names;
-:(before "End Parsing Dilated Reagent Type Property(type_names)")
-string_tree* new_type_names = replace_address_and_array_symbols(type_names);
-delete type_names;
-type_names = new_type_names;
-
+:(before "End Globals")
+map<string, type_tree*> Type_abbreviations, Type_abbreviations_snapshot;
+:(before "End save_snapshots")
+Type_abbreviations_snapshot = Type_abbreviations;
+:(before "End restore_snapshots")
+restore_type_abbreviations();
 :(code)
-// simple version; lots of unnecessary allocations; always creates a new pointer
-string_tree* replace_address_and_array_symbols(string_tree* orig) {
-  if (orig == NULL) return NULL;
-  if (orig->atom)
-    return replace_address_and_array_symbols(orig->value);
-  return new string_tree(replace_address_and_array_symbols(orig->left),
-                         replace_address_and_array_symbols(orig->right));
+void restore_type_abbreviations() {
+  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p) {
+    if (!contains_key(Type_abbreviations_snapshot, p->first))
+      delete p->second;
+  }
+  Type_abbreviations.clear();
+  Type_abbreviations = Type_abbreviations_snapshot;
 }
 
-// todo: unicode
-string_tree* replace_address_and_array_symbols(const string& type_name) {
-  if (type_name.empty()) return NULL;
-  if (type_name.at(0) != '&' && type_name.at(0) != '@')
-    return new string_tree(type_name);
-  string_tree* result = NULL;
-  string_tree* curr = NULL;
-  int i = 0;
-  while (i < SIZE(type_name)) {
-    string_tree* new_node = NULL;
-    if (type_name.at(i) == '&')
-      new_node = new string_tree("address");
-    else if (type_name.at(i) == '@')
-      new_node = new string_tree("array");
-    else
-      break;
-    if (result == NULL)
-      result = curr = new string_tree(new_node, NULL);
-    else {
-      curr->right = new string_tree(new_node, NULL);
-      curr = curr->right;
-    }
-    ++i;
+:(before "End Command Handlers")
+else if (command == "type") {
+  load_type_abbreviations(in);
+}
+
+:(code)
+void load_type_abbreviations(istream& in) {
+  string new_type_name = next_word(in);
+  assert(has_data(in) || !new_type_name.empty());
+  if (!has_data(in) || new_type_name.empty()) {
+    raise << "incomplete 'type' statement; must be of the form 'type <new type name> = <type expression>'\n" << end();
+    return;
   }
-  if (i < SIZE(type_name))
-    curr->right = new string_tree(type_name.substr(i));
-  else
-    raise << "invalid type abbreviation " << type_name << "\n" << end();
+  string arrow = next_word(in);
+  assert(has_data(in) || !arrow.empty());
+  if (arrow.empty()) {
+    raise << "incomplete 'type' statement 'type " << new_type_name << "'\n" << end();
+    return;
+  }
+  if (arrow != "=") {
+    raise << "'type' statements must be of the form 'type <new type name> = <type expression>' but got 'type " << new_type_name << ' ' << arrow << "'\n" << end();
+    return;
+  }
+  if (!has_data(in)) {
+    raise << "incomplete 'type' statement 'type " << new_type_name << " ='\n" << end();
+    return;
+  }
+  string old = next_word(in);
+  if (old.empty()) {
+    raise << "incomplete 'type' statement 'type " << new_type_name << " ='\n" << end();
+    raise << "'type' statements must be of the form 'type <new type name> = <type expression>' but got 'type " << new_type_name << ' ' << arrow << "'\n" << end();
+    return;
+  }
+  if (contains_key(Type_abbreviations, new_type_name)) {
+    raise << "'type' conflict: '" << new_type_name << "' defined as both '" << names_to_string_without_quotes(get(Type_abbreviations, new_type_name)) << "' and '" << old << "'\n" << end();
+    return;
+  }
+  trace(9990, "type") << "alias " << new_type_name << " = " << old << end();
+  type_tree* old_type = new_type_tree(old);
+  put(Type_abbreviations, new_type_name, old_type);
+}
+
+type_tree* new_type_tree(const string& x) {
+  string_tree* type_names = new string_tree(x);
+  type_names = parse_string_tree(type_names);
+  type_tree* result = new_type_tree(type_names);
+  delete type_names;
   return result;
 }
 
-//:: b) extensible type abbreviations
+:(scenario type_error1)
+% Hide_errors = true;
+type foo
++error: incomplete 'type' statement 'type foo'
 
-:(before "End Globals")
-map<string, type_tree*> Type_abbreviations;
+:(scenario type_error2)
+% Hide_errors = true;
+type foo =
++error: incomplete 'type' statement 'type foo ='
+
+:(scenario type_error3)
+% Hide_errors = true;
+type foo bar baz
++error: 'type' statements must be of the form 'type <new type name> = <type expression>' but got 'type foo bar'
+
+:(scenario type_conflict_error)
+% Hide_errors = true;
+type foo = bar
+type foo = baz
++error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'
+
+//:: A few default abbreviations.
+
+:(before "End Mu Types Initialization")
+put(Type_abbreviations, "&", new type_tree("address"));
+put(Type_abbreviations, "@", new type_tree("array"));
+put(Type_abbreviations, "num", new type_tree("number"));
+put(Type_abbreviations, "bool", new type_tree("boolean"));
+put(Type_abbreviations, "char", new type_tree("character"));
+
+//:: Expand type aliases before running.
+//: We'll do this in a transform so that we don't need to define abbreviations
+//: before we use them.
+
+:(scenarios transform)
+:(scenario abbreviations_for_address_and_array)
+def main [
+  f 1:&:number  # abbreviation for 'address:number'
+  f 2:@:number  # abbreviation for 'array:number'
+  f 3:&:@:number  # combining '&' and '@'
+  f 4:&:&:@:&:@:number  # ..any number of times
+  f {5: (array (& number) 3)}  # support for dilated reagents and more complex parse trees
+]
+def f [
+]
++transform: --- expand type abbreviations in recipe 'main'
++transform: ingredient type after expanding abbreviations: ("address" "number")
++transform: ingredient type after expanding abbreviations: ("array" "number")
++transform: ingredient type after expanding abbreviations: ("address" "array" "number")
++transform: ingredient type after expanding abbreviations: ("address" "address" "array" "address" "array" "number")
++transform: ingredient type after expanding abbreviations: ("array" ("address" "number") "3")
+
+:(before "Transform.push_back(update_instruction_operations)")
+// Begin Type Modifying Transforms
+Transform.push_back(expand_type_abbreviations);  // idempotent
+// End Type Modifying Transforms
+
+:(code)
+void expand_type_abbreviations(const recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
+  for (int i = 0; i < SIZE(caller.steps); ++i) {
+    const instruction& inst = caller.steps.at(i);
+    trace(9991, "transform") << "instruction '" << inst.original_string << end();
+    for (long int i = 0; i < SIZE(inst.ingredients); ++i) {
+      expand_type_abbreviations(inst.ingredients.at(i).type);
+      trace(9992, "transform") << "ingredient type after expanding abbreviations: " << names_to_string(inst.ingredients.at(i).type) << end();
+    }
+    for (long int i = 0; i < SIZE(inst.products); ++i) {
+      expand_type_abbreviations(inst.products.at(i).type);
+      trace(9992, "transform") << "product type after expanding abbreviations: " << names_to_string(inst.products.at(i).type) << end();
+    }
+  }
+}
+
+void expand_type_abbreviations(type_tree* type) {
+  if (!type) return;
+  if (!type->atom) {
+    expand_type_abbreviations(type->left);
+    expand_type_abbreviations(type->right);
+    return;
+  }
+  if (contains_key(Type_abbreviations, type->name))
+    *type = type_tree(*get(Type_abbreviations, type->name));
+}

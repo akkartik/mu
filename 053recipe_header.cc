@@ -221,8 +221,8 @@ def foo x:number -> y:number [
 Transform.push_back(check_calls_against_header);  // idempotent
 :(code)
 void check_calls_against_header(const recipe_ordinal r) {
-  trace(9991, "transform") << "--- type-check calls inside recipe " << get(Recipe, r).name << end();
   const recipe& caller = get(Recipe, r);
+  trace(9991, "transform") << "--- type-check calls inside recipe " << caller.name << end();
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.operation < MAX_PRIMITIVE_RECIPES) continue;

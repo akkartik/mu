@@ -7,6 +7,9 @@
 // the first element of a type tree is always an atom, and left and right
 // pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp
 // parlance.
+//
+// For now you can't use the simpler 'colon-based' representation inside type
+// trees. Once you start typing parens, keep on typing parens.
 
 :(scenarios load)
 :(scenario dilated_reagent_with_nested_brackets)
@@ -23,6 +26,7 @@ type_names = parse_string_tree(type_names);
 :(code)
 string_tree* parse_string_tree(string_tree* s) {
   assert(s->atom);
+  assert(!s->value.empty());
   if (s->value.at(0) != '(') return s;
   string_tree* result = parse_string_tree(s->value);
   delete s;
