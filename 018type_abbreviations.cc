@@ -8,7 +8,6 @@ def main [
 +run: {a: "number"} <- copy {34: "literal"}
 
 //:: Allow type abbreviations to be defined in mu code.
-//: For now you can't use abbreviations inside abbreviations.
 
 :(before "End Globals")
 map<string, type_tree*> Type_abbreviations, Type_abbreviations_snapshot;
