@@ -781,8 +781,8 @@ container foo [
 ]
 +error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.
 
-//: ensure scenarios are consistent by always starting them at the same type
-//: number.
+//: ensure scenarios are consistent by always starting new container
+//: declarations at the same type number
 :(before "End Setup")  //: for tests
 Next_type_ordinal = 1000;
 :(before "End Test Run Initialization")
