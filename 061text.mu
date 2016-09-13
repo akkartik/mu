@@ -1,21 +1,6 @@
 # Some useful helpers for dealing with text (arrays of characters)
 type text = address:array:character
 
-# to-text-line gets called implicitly in various places
-# define it to be identical to 'to-text' by default
-def to-text-line x:_elem -> y:address:array:character [
-  local-scope
-  load-ingredients
-  y <- to-text x
-]
-
-# variant for arrays (since we can't pass them around otherwise)
-def array-to-text-line x:address:array:_elem -> y:address:array:character [
-  local-scope
-  load-ingredients
-  y <- to-text *x
-]
-
 def equal a:text, b:text -> result:boolean [
   local-scope
   load-ingredients
