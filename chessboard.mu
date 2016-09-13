@@ -102,7 +102,7 @@ def chessboard screen:address:screen, console:address:console -> screen:address:
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-def new-board initial-position:address:array:character -> board:address:array:address:array:character [
+def new-board initial-position:address:array:character -> board:board [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
@@ -139,7 +139,7 @@ def new-file position:address:array:character, index:number -> result:address:ar
   }
 ]
 
-def print-board screen:address:screen, board:address:array:address:array:character -> screen:address:screen [
+def print-board screen:address:screen, board:board -> screen:address:screen [
   local-scope
   load-ingredients
   row:number <- copy 7  # start printing from the top of the board
@@ -175,7 +175,7 @@ def print-board screen:address:screen, board:address:array:address:array:charact
   cursor-to-next-line screen
 ]
 
-def initial-position -> board:address:array:address:array:character [
+def initial-position -> board:board [
   local-scope
   # layout in memory (in raster order):
   #   R P _ _ _ _ p r
@@ -532,7 +532,7 @@ F read-move-file: routine failed to pause after coming up (before any keys were 
   ]
 ]
 
-def make-move board:address:array:address:array:character, m:address:move -> board:address:array:address:array:character [
+def make-move board:board, m:address:move -> board:board [
   local-scope
   load-ingredients
   from-file:number <- get *m, from-file:offset

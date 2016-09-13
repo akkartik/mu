@@ -25,8 +25,13 @@ def foo a:_t -> result:_t [
 //: be rewriting such instructions to *specializations* with the type
 //: ingredients filled in.
 
+//: One exception (and this makes things very ugly): we need to expand type
+//: abbreviations in shape-shifting recipes because we need them types for
+//: deciding which variant to specialize.
+
 :(before "End Transform Checks")
-if (any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
+r.transformed_until = t;
+if (Transform.at(t) != static_cast<transform_fn>(expand_type_abbreviations) && any_type_ingredient_in_header(/*recipe_ordinal*/p->first)) continue;
 
 :(after "Running One Instruction")
 if (Current_routine->calls.front().running_step_index == 0
