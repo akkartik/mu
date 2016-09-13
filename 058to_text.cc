@@ -2,6 +2,9 @@
 //: Later layers will allow us to override this to do something smarter for
 //: specific types.
 
+:(before "End Mu Types Initialization")
+put(Type_abbreviations, "text", new_type_tree("address:array:character"));
+
 :(before "End Primitive Recipe Declarations")
 TO_TEXT,
 :(before "End Primitive Recipe Numbers")

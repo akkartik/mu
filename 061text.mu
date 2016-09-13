@@ -1,5 +1,4 @@
 # Some useful helpers for dealing with text (arrays of characters)
-type text = address:array:character
 
 def equal a:text, b:text -> result:boolean [
   local-scope

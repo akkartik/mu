@@ -123,11 +123,11 @@ void clear_type_abbreviations() {
 //:: A few default abbreviations.
 
 :(before "End Mu Types Initialization")
-put(Type_abbreviations, "&", new type_tree("address"));
-put(Type_abbreviations, "@", new type_tree("array"));
-put(Type_abbreviations, "num", new type_tree("number"));
-put(Type_abbreviations, "bool", new type_tree("boolean"));
-put(Type_abbreviations, "char", new type_tree("character"));
+put(Type_abbreviations, "&", new_type_tree("address"));
+put(Type_abbreviations, "@", new_type_tree("array"));
+put(Type_abbreviations, "num", new_type_tree("number"));
+put(Type_abbreviations, "bool", new_type_tree("boolean"));
+put(Type_abbreviations, "char", new_type_tree("character"));
 
 :(scenario use_type_abbreviations_when_declaring_type_abbreviations)
 type foo = &:num
