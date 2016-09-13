@@ -10,7 +10,7 @@ all: mu_bin core.mu
 # to recompute dependencies. You have to manually run 'make redo' to recreate
 # the .build/ directory from scratch.
 redo:
-	rm -rf .build
+	rm -rf mu_bin core.mu .build
 	@make
 
 CXX ?= c++
