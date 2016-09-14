@@ -74,8 +74,8 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
       return false;
   }
   for (int i = 0; i < SIZE(r1.products); ++i) {
-    expand_type_abbreviations(r1.ingredients.at(i).type);
-    expand_type_abbreviations(r2.ingredients.at(i).type);
+    expand_type_abbreviations(r1.products.at(i).type);
+    expand_type_abbreviations(r2.products.at(i).type);
     if (!deeply_equal_type_names(r1.products.at(i), r2.products.at(i)))
       return false;
   }
@@ -616,7 +616,9 @@ def foo a:boolean -> b:number [
 :(scenario override_methods_with_type_abbreviations)
 type string = address:array:character
 def main [
-  1:number/raw <- foo [abc]
+  local-scope
+  s:address:array:character <- new [abc]
+  1:number/raw <- foo s
 ]
 def foo a:address:array:character -> result:number [
   return 34
