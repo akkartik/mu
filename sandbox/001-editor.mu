@@ -48,7 +48,7 @@ container editor-data [
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-def new-editor s:address:array:character, screen:address:screen, left:number, right:number -> result:address:editor-data, screen:address:screen [
+def new-editor s:text, screen:address:screen, left:number, right:number -> result:address:editor-data, screen:address:screen [
   local-scope
   load-ingredients
   # no clipping of bounds

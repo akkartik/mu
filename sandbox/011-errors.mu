@@ -6,7 +6,7 @@ container programming-environment-data [
 
 # copy code from recipe editor, persist, load into mu, save any errors
 # test-recipes is a hook for testing
-def! update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:address:array:character -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+def! update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:text -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   {

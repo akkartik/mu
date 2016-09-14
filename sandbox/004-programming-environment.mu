@@ -19,7 +19,7 @@ container programming-environment-data [
   current-sandbox:address:editor-data
 ]
 
-def new-programming-environment screen:address:screen, initial-sandbox-contents:address:array:character -> result:address:programming-environment-data, screen:address:screen [
+def new-programming-environment screen:address:screen, initial-sandbox-contents:text -> result:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   width:number <- screen-width screen
@@ -284,7 +284,7 @@ def update-cursor screen:address:screen, current-sandbox:address:editor-data, en
 ]
 
 # like 'render' for texts, but with colorization for comments like in the editor
-def render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number -> row:number, screen:address:screen [
+def render-code screen:address:screen, s:text, left:number, right:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless s

@@ -122,7 +122,7 @@ after <global-keypress> [
   }
 ]
 
-def run-sandboxes env:address:programming-environment-data, screen:address:screen, test-recipes:address:array:character -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+def run-sandboxes env:address:programming-environment-data, screen:address:screen, test-recipes:text -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   errors-found?:boolean, env, screen <- update-recipes env, screen, test-recipes
@@ -166,7 +166,7 @@ def run-sandboxes env:address:programming-environment-data, screen:address:scree
 
 # load code from recipes.mu, or from test-recipes in tests
 # replaced in a later layer (whereupon errors-found? will actually be set)
-def update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:address:array:character -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+def update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:text -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
   local-scope
   load-ingredients
   {
@@ -191,7 +191,7 @@ def! update-sandbox sandbox:address:sandbox-data, env:address:programming-enviro
   *sandbox <- put *sandbox, screen:offset, fake-screen
 ]
 
-def update-status screen:address:screen, msg:address:array:character, color:number -> screen:address:screen [
+def update-status screen:address:screen, msg:text, color:number -> screen:address:screen [
   local-scope
   load-ingredients
   screen <- move-cursor screen, 0, 2
@@ -340,7 +340,7 @@ def sandbox-menu-columns left:number, right:number -> edit-button-left:number, e
 
 # print a text 's' to 'editor' in 'color' starting at 'row'
 # clear rest of last line, move cursor to next line
-def render-text screen:address:screen, s:address:array:character, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
+def render-text screen:address:screen, s:text, left:number, right:number, color:number, row:number -> row:number, screen:address:screen [
   local-scope
   load-ingredients
   return-unless s
