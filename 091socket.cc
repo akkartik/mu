@@ -131,11 +131,15 @@ case _READ_FROM_SOCKET: {
 }
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
+  products.resize(1);
   double socket_fd = ingredients.at(0).at(0);
   char single_char[2];
   bzero(single_char, 2);
-  read(socket_fd, single_char, 1);
-  products.resize(1);
+  if (read(socket_fd, single_char, 1) < 0) {
+    raise << maybe(current_recipe_name()) << "read from socket failed\n" << end();
+    products.at(0).push_back(0);
+    break;
+  }
   products.at(0).push_back(single_char[0]);
   break;
 }
