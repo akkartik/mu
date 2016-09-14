@@ -68,14 +68,16 @@ bool all_reagents_match(const recipe& r1, const recipe& r2) {
   if (SIZE(r1.ingredients) != SIZE(r2.ingredients)) return false;
   if (SIZE(r1.products) != SIZE(r2.products)) return false;
   for (int i = 0; i < SIZE(r1.ingredients); ++i) {
-    if (!deeply_equal_type_names(r1.ingredients.at(i), r2.ingredients.at(i))) {
+    expand_type_abbreviations(r1.ingredients.at(i).type);
+    expand_type_abbreviations(r2.ingredients.at(i).type);
+    if (!deeply_equal_type_names(r1.ingredients.at(i), r2.ingredients.at(i)))
       return false;
-    }
   }
   for (int i = 0; i < SIZE(r1.products); ++i) {
-    if (!deeply_equal_type_names(r1.products.at(i), r2.products.at(i))) {
+    expand_type_abbreviations(r1.ingredients.at(i).type);
+    expand_type_abbreviations(r2.ingredients.at(i).type);
+    if (!deeply_equal_type_names(r1.products.at(i), r2.products.at(i)))
       return false;
-    }
   }
   return true;
 }
@@ -610,6 +612,20 @@ def foo a:boolean -> b:number [
 ]
 +error: main: missing type for 'x' in 'y:number <- foo x'
 +error: main: failed to find a matching call for 'y:number <- foo x'
+
+:(scenario override_methods_with_type_abbreviations)
+type string = address:array:character
+def main [
+  1:number/raw <- foo [abc]
+]
+def foo a:address:array:character -> result:number [
+  return 34
+]
+# identical to previous variant once you take type abbreviation into account
+def! foo a:string -> result:number [
+  return 35
+]
++mem: storing 35 in location 1
 
 :(before "End Includes")
 using std::abs;
