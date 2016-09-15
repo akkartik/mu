@@ -117,15 +117,15 @@ def new-buffer capacity:number -> result:address:buffer [
   return result
 ]
 
-def grow-buffer in:address:buffer -> in:address:buffer [
+def grow-buffer buf:address:buffer -> buf:address:buffer [
   local-scope
   load-ingredients
   # double buffer size
-  olddata:text <- get *in, data:offset
+  olddata:text <- get *buf, data:offset
   oldlen:number <- length *olddata
   newlen:number <- multiply oldlen, 2
   newdata:text <- new character:type, newlen
-  *in <- put *in, data:offset, newdata
+  *buf <- put *buf, data:offset, newdata
   # copy old contents
   i:number <- copy 0
   {
@@ -164,10 +164,10 @@ def append buf:address:buffer, x:_elem -> buf:address:buffer [
   }
 ]
 
-def append in:address:buffer, c:character -> in:address:buffer [
+def append buf:address:buffer, c:character -> buf:address:buffer [
   local-scope
   load-ingredients
-  len:number <- get *in, length:offset
+  len:number <- get *buf, length:offset
   {
     # backspace? just drop last character if it exists and return
     backspace?:boolean <- equal c, 8/backspace
@@ -175,19 +175,19 @@ def append in:address:buffer, c:character -> in:address:buffer [
     empty?:boolean <- lesser-or-equal len, 0
     return-if empty?
     len <- subtract len, 1
-    *in <- put *in, length:offset, len
+    *buf <- put *buf, length:offset, len
     return
   }
   {
     # grow buffer if necessary
-    full?:boolean <- buffer-full? in
+    full?:boolean <- buffer-full? buf
     break-unless full?
-    in <- grow-buffer in
+    buf <- grow-buffer buf
   }
-  s:text <- get *in, data:offset
+  s:text <- get *buf, data:offset
   *s <- put-index *s, len, c
   len <- add len, 1
-  *in <- put *in, length:offset, len
+  *buf <- put *buf, length:offset, len
 ]
 
 scenario buffer-append-works [
