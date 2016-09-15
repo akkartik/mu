@@ -299,10 +299,24 @@ def buffer-to-array in:address:buffer -> result:text [
   }
 ]
 
-def append -> result:text [
+# Append any number of texts together.
+# A later layer also translates calls to this to implicitly call to-text, so
+# append to string becomes effectively dynamically typed.
+#
+# Beware though: this hack restricts how much 'append' can be overridden. Any
+# new variants that match:
+#   append _:text, ___
+# will never ever get used.
+def append first:text -> result:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 30
+  # append first ingredient
+  {
+    break-unless first
+    buf <- append buf, first
+  }
+  # append remaining ingredients
   {
     arg:text, arg-found?:boolean <- next-ingredient
     break-unless arg-found?
@@ -363,6 +377,19 @@ scenario text-append-multiary [
   ]
   memory-should-contain [
     10:array:character <- [hello, world!]
+  ]
+]
+
+scenario text-append-multiary-heterogeneous-types [
+  run [
+    local-scope
+    n:number <- copy 34
+    c:character <- copy 111/o
+    z:text <- append [abc ], n, c
+    10:array:character/raw <- copy *z
+  ]
+  memory-should-contain [
+    10:array:character <- [abc 34o]
   ]
 ]
 

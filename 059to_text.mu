@@ -29,3 +29,20 @@ scenario array-to-text-line-early-warning-for-static-dispatch [
   x:text <- array-to-text-line n
   # just ensure there were no errors
 ]
+
+# finally, a specialization for single characters
+def to-text c:character -> y:text [
+  local-scope
+  load-ingredients
+  y <- new character:type, 1/capacity
+  *y <- put-index *y, 0, c
+]
+
+scenario character-to-text [
+  1:character <- copy 111/o
+  2:text <- to-text 1:character
+  3:array:character <- copy *2:text
+  memory-should-contain [
+    3:array:character <- [o]
+  ]
+]

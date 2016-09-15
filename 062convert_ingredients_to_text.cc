@@ -60,6 +60,7 @@ Transform.push_back(convert_ingredients_to_text);
 void convert_ingredients_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
+//?   cerr << "--- convert some ingredients to text in recipe " << caller.name << '\n';
   // in recipes without named locations, 'stash' is still not extensible
   if (contains_numeric_locations(caller)) return;
   convert_ingredients_to_text(caller);
@@ -69,8 +70,10 @@ void convert_ingredients_to_text(recipe& caller) {
   vector<instruction> new_instructions;
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
+    // all these cases are getting hairy. how can we make this extensible?
     if (inst.name == "stash") {
       for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+        if (is_literal_string(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "stash_" << i << '_' << j << ":address:array:character";
         convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
@@ -78,9 +81,24 @@ void convert_ingredients_to_text(recipe& caller) {
     }
     else if (inst.name == "trace") {
       for (int j = /*skip*/2; j < SIZE(inst.ingredients); ++j) {
+        if (is_literal_string(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "trace_" << i << '_' << j << ":address:array:character";
         convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
+      }
+    }
+    else if (inst.old_name == "append") {
+      // override only variants that try to append to a string
+      // Beware: this hack restricts how much 'append' can be overridden. Any
+      // new variants that match:
+      //   append _:text, ___
+      // will never ever get used.
+      if (is_literal_string(inst.ingredients.at(0)) || is_mu_string(inst.ingredients.at(0))) {
+        for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+          ostringstream ingredient_name;
+          ingredient_name << "append_" << i << '_' << j << ":address:array:character";
+          convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
+        }
       }
     }
     trace(9993, "transform") << to_string(inst) << end();
@@ -93,7 +111,6 @@ void convert_ingredients_to_text(recipe& caller) {
 // replace r with converted text
 void convert_ingredient_to_text(reagent& r, vector<instruction>& out, const string& tmp_var) {
   if (!r.type) return;  // error; will be handled elsewhere
-  if (is_literal(r)) return;
   if (is_mu_string(r)) return;
   // don't try to extend static arrays
   if (is_static_array(r)) return;
@@ -127,10 +144,18 @@ bool is_static_array(const reagent& x) {
   return !x.type->atom && x.type->left->atom && x.type->left->name == "array";
 }
 
+:(scenarios run)
+:(scenario append_other_types_to_text)
+def main [
+  local-scope
+  a:text <- append [abc], 10, 11
+  expected:text <- new [abc1011]
+  10:boolean/raw <- equal a, expected
+]
+
 //: Make sure that the new system is strictly better than just the 'stash'
 //: primitive by itself.
 
-:(scenarios run)
 :(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)
 # type without a to-text implementation
 container foo [
