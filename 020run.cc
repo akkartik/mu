@@ -122,6 +122,10 @@ const string& current_recipe_name() {
   return get(Recipe, Current_routine->running_recipe).name;
 }
 
+const recipe& current_recipe() {
+  return get(Recipe, Current_routine->running_recipe);
+}
+
 const instruction& current_instruction() {
   return get(Recipe, Current_routine->running_recipe).steps.at(Current_routine->running_step_index);
 }

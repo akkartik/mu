@@ -84,6 +84,11 @@ const string& current_recipe_name() {
   assert(!Current_routine->calls.empty());
   return get(Recipe, current_call().running_recipe).name;
 }
+:(replace{} "const recipe& current_recipe()")
+const recipe& current_recipe() {
+  assert(!Current_routine->calls.empty());
+  return get(Recipe, current_call().running_recipe);
+}
 :(replace{} "const instruction& current_instruction()")
 const instruction& current_instruction() {
   assert(!Current_routine->calls.empty());
