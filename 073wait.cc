@@ -551,6 +551,7 @@ case RESTART: {
     if (Routines.at(i)->id == id) {
       if (Routines.at(i)->state == WAITING)
         Routines.at(i)->state = RUNNING;
+      Routines.at(i)->blocked = false;
       break;
     }
   }
@@ -571,3 +572,29 @@ def f [
   1:number/raw <- copy 1
 ]
 # shouldn't crash
+
+:(scenario restart_blocked_routine)
+% Scheduling_interval = 1;
+def main [
+  local-scope
+  r:number/routine-id <- start-running f
+  wait-for-routine-to-block r  # get past the block in f below
+  restart r
+  wait-for-routine-to-block r  # should run f to completion
+]
+# function with one block
+def f [
+  current-routine-is-blocked
+  # 8 instructions of padding, many more than 'main' above
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+  1:number <- add 1:number, 1
+]
+# make sure all of f ran
++mem: storing 8 in location 1

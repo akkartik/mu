@@ -372,7 +372,7 @@ scenario read-move-blocking [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
-    waiting?:boolean <- equal read-move-state, 3/waiting
+    waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
@@ -381,7 +381,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     # 'read-move' still waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    waiting? <- equal read-move-state, 3/waiting
+    waiting? <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
@@ -390,7 +390,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # 'read-move' still waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    waiting? <- equal read-move-state, 3/waiting
+    waiting? <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
@@ -399,7 +399,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # 'read-move' still waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    waiting? <- equal read-move-state, 3/waiting
+    waiting? <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
@@ -408,7 +408,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # 'read-move' still waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    waiting? <- equal read-move-state, 3/waiting
+    waiting? <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
@@ -417,7 +417,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # 'read-move' still waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    waiting? <- equal read-move-state, 3/waiting
+    waiting? <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after file 'a2-a4']
     # press 'newline'
@@ -445,7 +445,7 @@ scenario read-move-quit [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
-    waiting?:boolean <- equal read-move-state, 3/waiting
+    waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
@@ -473,9 +473,9 @@ scenario read-move-illegal-file [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
-    waiting?:boolean <- equal read-move-state, 3/waiting
+    waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
-F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 50/'2'
     restart read-move-routine
     wait-for-routine-to-block read-move-routine
@@ -495,9 +495,9 @@ scenario read-move-illegal-rank [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
-    waiting?:boolean <- equal read-move-state, 3/waiting
+    waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
-F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 97/a
     sink <- write sink, 97/a
     restart read-move-routine
@@ -518,9 +518,9 @@ scenario read-move-empty [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:number <- routine-state read-move-routine
-    waiting?:boolean <- equal read-move-state, 3/waiting
+    waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
-F read-move-file: routine failed to pause after coming up (before any keys were pressed)]
+F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 10/newline
     sink <- write sink, 97/a
     restart read-move-routine
