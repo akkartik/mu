@@ -335,7 +335,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
 
 bool is_input(const string& line) {
   if (line.empty()) return true;
-  return line != "===" && line.at(0) != '+' && line.at(0) != '-' && line.at(0) != '$' && line.at(0) != '?';
+  return line != "===" && line.find_first_of("+-$?%") != 0;
 }
 
 Line input_lines(list<Line>& hunk) {
