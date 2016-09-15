@@ -44,13 +44,13 @@ BUILD_SRC=$(wildcard .build/*.cc)
 mu.cc: [0-9]*.cc enumerate/enumerate tangle/tangle
 	./tangle/tangle $$(./enumerate/enumerate --until zzz |grep -v '.mu$$') > mu.cc
 
-enumerate/enumerate:
+enumerate/enumerate: enumerate/*.cc
 	cd enumerate && make
 
-tangle/tangle:
+tangle/tangle: tangle/*.cc
 	cd tangle && make && ./tangle test
 
-cleave/cleave: cleave/cleave.cc
+cleave/cleave: cleave/*.cc
 	cd cleave && make
 	rm -rf .build
 
