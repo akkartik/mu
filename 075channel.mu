@@ -78,9 +78,11 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
     # channel is full; relinquish lock and give a reader the opportunity to
     # create room on it
     reset lock
+    current-routine-is-blocked
     switch  # avoid spinlocking
     loop
   }
+  current-routine-is-unblocked
 #?   $print [performing write], 10/newline
   # store a deep copy of val
   circular-buffer:address:array:_elem <- get *chan, data:offset
@@ -121,10 +123,12 @@ def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:sourc
     # channel is empty; relinquish lock and give a writer the opportunity to
     # add to it
     reset lock
+    current-routine-is-blocked
     <channel-read-empty>
     switch  # avoid spinlocking
     loop
   }
+  current-routine-is-unblocked
   # pull result off
   full:number <- get *chan, first-full:offset
   circular-buffer:address:array:_elem <- get *chan, data:offset
@@ -327,6 +331,7 @@ after <channel-read-empty> [
   {
     break-unless closed?
     empty-result:address:_elem <- new _elem:type
+    current-routine-is-unblocked
     return *empty-result, 1/true
   }
 ]

@@ -363,8 +363,63 @@ for (int i = 0; i < SIZE(Routines); ++i) {
   }
 }
 
+//:: helpers for manipulating routines in tests
+//:
+//: Managing arbitrary scenarios requires the ability to:
+//:   a) stop the current routine (`switch`)
+//:   b) restart a routine (`restart`)
+//:   c) tell when a routine is blocked
+//:
+//: A routine is blocked either if it's waiting or if it explicitly signals
+//: that it's blocked (even as it periodically wakes up and polls for some
+//: event).
+//:
+//: Signalling blockedness might well be a huge hack. But Mu doesn't have Unix
+//: signals to avoid polling with, because signals are also pretty hacky.
+
+:(before "End routine Fields")
+bool blocked;
+:(before "End routine Constructor")
+blocked = false;
+
+:(before "End Primitive Recipe Declarations")
+CURRENT_ROUTINE_IS_BLOCKED,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "current-routine-is-blocked", CURRENT_ROUTINE_IS_BLOCKED);
+:(before "End Primitive Recipe Checks")
+case CURRENT_ROUTINE_IS_BLOCKED: {
+  if (!inst.ingredients.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'current-routine-is-blocked' should have no ingredients, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CURRENT_ROUTINE_IS_BLOCKED: {
+  Current_routine->blocked = true;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+CURRENT_ROUTINE_IS_UNBLOCKED,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "current-routine-is-unblocked", CURRENT_ROUTINE_IS_UNBLOCKED);
+:(before "End Primitive Recipe Checks")
+case CURRENT_ROUTINE_IS_UNBLOCKED: {
+  if (!inst.ingredients.empty()) {
+    raise << maybe(get(Recipe, r).name) << "'current-routine-is-unblocked' should have no ingredients, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CURRENT_ROUTINE_IS_UNBLOCKED: {
+  Current_routine->blocked = false;
+  break;
+}
+
 //: also allow waiting on a routine to block
-//: (just for tests; use wait_for_routine below wherever possible)
+//: (just for tests; use wait_for_routine above wherever possible)
 
 :(scenario wait_for_routine_to_block)
 def f1 [
@@ -379,7 +434,7 @@ def f2 [
 +schedule: f1
 +run: waiting for routine 2 to block
 +schedule: f2
-+schedule: waking up blocked routine 1
++schedule: waking up routine 1 because routine 2 is blocked
 +schedule: f1
 # if we got the synchronization wrong we'd be storing 0 in location 11
 +mem: storing 34 in location 11
@@ -415,7 +470,6 @@ case WAIT_FOR_ROUTINE_TO_BLOCK: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine_to_block = ingredients.at(0).at(0);
   trace(9998, "run") << "waiting for routine " << ingredients.at(0).at(0) << " to block" << end();
-//?   cerr << Current_routine->id << ": waiting for routine " << ingredients.at(0).at(0) << " to block\n";
   break;
 }
 
@@ -429,10 +483,9 @@ for (int i = 0; i < SIZE(Routines); ++i) {
   assert(id != waiter->id);  // routine can't wait on itself
   for (int j = 0; j < SIZE(Routines); ++j) {
     const routine* waitee = Routines.at(j);
-    if (waitee->id == id && waitee->state != RUNNING) {
-      // routine is WAITING or COMPLETED or DISCONTINUED
-      trace(9999, "schedule") << "waking up blocked routine " << waiter->id << end();
-//?       cerr << id << " is now unblocked (" << waitee->state << "); waking up waiting routine " << waiter->id << '\n';
+    if (waitee->id != id) continue;
+    if (waitee->state != RUNNING || waitee->blocked) {
+      trace(9999, "schedule") << "waking up routine " << waiter->id << " because routine " << waitee->id << " is blocked" << end();
       waiter->state = RUNNING;
       waiter->waiting_on_routine_to_block = 0;
     }
