@@ -5,18 +5,22 @@
 
 :(scenario wait_for_location)
 def f1 [
-  1:number <- copy 0
+  10:number <- copy 34
   start-running f2
-  2:location <- copy 1/unsafe
-  wait-for-location 2:location
-  # now wait for f2 to run and modify location 1 before using its value
-  3:number <- copy 1:number
+  20:location <- copy 10/unsafe
+  wait-for-reset-then-set 20:location
+  # wait for f2 to run and reset location 1
+  30:number <- copy 10:number
 ]
 def f2 [
-  1:number <- copy 34
+  10:location <- copy 0/unsafe
 ]
-# if we got the synchronization wrong we'd be storing 0 in location 3
-+mem: storing 34 in location 3
++schedule: f1
++run: waiting for location 10 to reset
++schedule: f2
++schedule: waking up routine 1
++schedule: f1
++mem: storing 1 in location 30
 
 //: define the new state that all routines can be in
 
@@ -25,9 +29,8 @@ WAITING,
 :(before "End routine Fields")
 // only if state == WAITING
 int waiting_on_location;
-int old_value_of_waiting_location;
 :(before "End routine Constructor")
-waiting_on_location = old_value_of_waiting_location = 0;
+waiting_on_location = 0;
 
 :(before "End Mu Test Teardown")
 if (Passed && any_routines_waiting()) {
@@ -59,30 +62,61 @@ void dump_waiting_routines() {
   }
 }
 
-//: primitive recipe to put routines in that state
+//: Primitive recipe to put routines in that state.
+//: This primitive is also known elsewhere as compare-and-set (CAS). Used to
+//: build locks.
 
 :(before "End Primitive Recipe Declarations")
-WAIT_FOR_LOCATION,
+WAIT_FOR_RESET_THEN_SET,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "wait-for-location", WAIT_FOR_LOCATION);
+put(Recipe_ordinal, "wait-for-reset-then-set", WAIT_FOR_RESET_THEN_SET);
 :(before "End Primitive Recipe Checks")
-case WAIT_FOR_LOCATION: {
+case WAIT_FOR_RESET_THEN_SET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-reset-then-set' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_location(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-location' requires a location ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-reset-then-set' requires a location ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case WAIT_FOR_LOCATION: {
-  int loc = ingredients.at(0).at(0);
+case WAIT_FOR_RESET_THEN_SET: {
+  int loc = static_cast<int>(ingredients.at(0).at(0));
+  trace(9998, "run") << "wait: *" << loc << " = " << get_or_insert(Memory, loc) << end();
+  if (get_or_insert(Memory, loc) == 0) {
+    trace(9998, "run") << "location " << loc << " is already 0; setting" << end();
+    put(Memory, loc, 1);
+    break;
+  }
+  trace(9998, "run") << "waiting for location " << loc << " to reset" << end();
   Current_routine->state = WAITING;
   Current_routine->waiting_on_location = loc;
-  Current_routine->old_value_of_waiting_location = get_or_insert(Memory, loc);
-  trace(9998, "run") << "waiting for location " << loc << " to change from " << no_scientific(get_or_insert(Memory, loc)) << end();
+  break;
+}
+
+//: Counterpart to unlock a lock.
+:(before "End Primitive Recipe Declarations")
+RESET,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "reset", RESET);
+:(before "End Primitive Recipe Checks")
+case RESET: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'reset' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_location(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "'reset' requires a location ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case RESET: {
+  int loc = static_cast<int>(ingredients.at(0).at(0));
+  put(Memory, loc, 0);
+  trace(9998, "run") << "reset: *" << loc << " = " << get_or_insert(Memory, loc) << end();
   break;
 }
 
@@ -91,17 +125,18 @@ case WAIT_FOR_LOCATION: {
 :(before "End Scheduler State Transitions")
 for (int i = 0; i < SIZE(Routines); ++i) {
   if (Routines.at(i)->state != WAITING) continue;
-  if (Routines.at(i)->waiting_on_location &&
-      get_or_insert(Memory, Routines.at(i)->waiting_on_location) != Routines.at(i)->old_value_of_waiting_location) {
-    trace(9999, "schedule") << "waking up routine\n" << end();
+  int loc = Routines.at(i)->waiting_on_location;
+  if (loc && get_or_insert(Memory, loc) == 0) {
+    trace(9999, "schedule") << "waking up routine " << Routines.at(i)->id << end();
+    put(Memory, loc, 1);
     Routines.at(i)->state = RUNNING;
-    Routines.at(i)->waiting_on_location = Routines.at(i)->old_value_of_waiting_location = 0;
+    Routines.at(i)->waiting_on_location = 0;
   }
 }
 
-//: primitive to help compute locations to wait for
-//: only supports elements inside containers, no arrays or containers within
-//: containers yet.
+//: Primitive to help compute locations to wait on.
+//: Only supports elements immediately inside containers; no arrays or
+//: containers within containers yet.
 
 :(scenario get_location)
 def main [
