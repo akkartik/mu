@@ -62,8 +62,13 @@ def foo a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="Comment">//: be rewriting such instructions to *specializations* with the type</span>
 <span class="Comment">//: ingredients filled in.</span>
 
+<span class="Comment">//: One exception (and this makes things very ugly): we need to expand type</span>
+<span class="Comment">//: abbreviations in shape-shifting recipes because we need them types for</span>
+<span class="Comment">//: deciding which variant to specialize.</span>
+
 <span class="Delimiter">:(before &quot;End Transform Checks&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>any_type_ingredient_in_header<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">recipe_ordinal</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+r<span class="Delimiter">.</span>transformed_until = t<span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">)</span> != <span class="Normal">static_cast</span>&lt;transform_fn&gt;<span class="Delimiter">(</span>expand_type_abbreviations<span class="Delimiter">)</span> &amp;&amp; any_type_ingredient_in_header<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">recipe_ordinal</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index == <span class="Constant">0</span>

@@ -40,6 +40,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">// the first element of a type tree is always an atom, and left and right</span>
 <span class="Comment">// pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp</span>
 <span class="Comment">// parlance.</span>
+<span class="Comment">//</span>
+<span class="Comment">// For now you can't use the simpler 'colon-based' representation inside type</span>
+<span class="Comment">// trees. Once you start typing parens, keep on typing parens.</span>
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario dilated_reagent_with_nested_brackets)</span>
@@ -56,7 +59,7 @@ type_names = parse_string_tree<span class="Delimiter">(</span>type_names<span cl
 <span class="Delimiter">:(code)</span>
 string_tree* parse_string_tree<span class="Delimiter">(</span>string_tree* s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Identifier">return</span> s<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!starts_with<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> <span class="Constant">&quot;(&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> s<span class="Delimiter">;</span>
   string_tree* result = parse_string_tree<span class="Delimiter">(</span>s<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
   <span class="Normal">delete</span> s<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>

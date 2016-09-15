@@ -36,7 +36,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">## handling malformed programs</span>
 
 <span class="muData">container</span> programming-environment-data [
-  recipe-errors:address:array:character
+  recipe-errors:text
 ]
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu, save any errors</span>
@@ -44,9 +44,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
-  in:address:array:character<span class="Special"> &lt;- </span>editor-contents recipes
+  in:text<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
-  recipe-errors:address:array:character<span class="Special"> &lt;- </span>reload in
+  recipe-errors:text<span class="Special"> &lt;- </span>reload in
   *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">recipe-errors:offset</span>, recipe-errors
   <span class="Comment"># if recipe editor has errors, stop</span>
   <span class="Delimiter">{</span>
@@ -60,7 +60,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render status]</span>
-  recipe-errors:address:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
+  recipe-errors:text<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> recipe-errors
     update-status screen, <span class="Constant">[errors found     ]</span>, <span class="Constant">1/red</span>
@@ -69,7 +69,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-recipe-components-end&gt;</span> [
   <span class="Delimiter">{</span>
-    recipe-errors:address:array:character<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
+    recipe-errors:text<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
     <span class="muControl">break-unless</span> recipe-errors
     row, screen<span class="Special"> &lt;- </span>render-text screen, recipe-errors, left, right, <span class="Constant">1/red</span>, row
   <span class="Delimiter">}</span>
@@ -102,21 +102,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
     sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
-    error-index-text:address:array:character<span class="Special"> &lt;- </span>to-text error-index
-    status:address:array:character<span class="Special"> &lt;- </span>interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
+    error-index-text:text<span class="Special"> &lt;- </span>to-text error-index
+    status:text<span class="Special"> &lt;- </span>interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
     update-status screen, status, <span class="Constant">1/red</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muData">container</span> sandbox-data [
-  errors:address:array:character
+  errors:text
 ]
 
 <span class="muRecipe">def!</span> update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  response:address:array:character, errors:address:array:character, fake-screen:address:screen, trace:address:array:character, completed?:boolean<span class="Special"> &lt;- </span>run-sandboxed data
+  data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  response:text, errors:text, fake-screen:address:screen, trace:text, completed?:boolean<span class="Special"> &lt;- </span>run-sandboxed data
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response:offset</span>, response
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">errors:offset</span>, errors
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
@@ -140,7 +140,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># make sure we render any trace</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-trace-done&gt;</span> [
   <span class="Delimiter">{</span>
-    sandbox-errors:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">errors:offset</span>
+    sandbox-errors:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">errors:offset</span>
     <span class="muControl">break-unless</span> sandbox-errors
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>, <span class="Constant">0</span>  <span class="Comment"># no response</span>
     row, screen<span class="Special"> &lt;- </span>render-text screen, sandbox-errors, left, right, <span class="Constant">1/red</span>, row
@@ -152,12 +152,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-shows-errors-in-get [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  get 123:number, foo:offset</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -192,9 +192,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-updates-status-with-first-erroneous-sandbox [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 1</span>
@@ -216,9 +216,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-updates-status-with-first-erroneous-sandbox-2 [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 2</span>
@@ -243,9 +243,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-hides-errors-from-past-sandboxes [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4  <span class="Comment"># generate error</span>
   ]
@@ -278,14 +278,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># define a shape-shifting recipe with an error</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">load-ingredients</span>
 <span class="Constant">y:address:number &lt;- copy 0</span>
 <span class="Constant">z &lt;- add x, y</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -326,12 +326,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># overload a well-known shape-shifting recipe</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:address:list:_elem -&gt; n:number [</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:address:list:_elem -&gt; n:number [</span>
 <span class="Constant">]</span>]
   <span class="Comment"># call code that uses other variants of it, but not it itself</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[x:address:list:number &lt;- copy 0</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[x:address:list:number &lt;- copy 0</span>
 <span class="Constant">to-text x]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run it once</span>
   assume-console [
     press F4
@@ -385,12 +385,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-shows-missing-type-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -411,12 +411,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe is incomplete (unbalanced '[')</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo \\[</span>
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -438,14 +438,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-shows-get-on-non-container-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:address:point &lt;- new point:type</span>
 <span class="Constant">  get x:address:point, 1:offset</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -470,15 +470,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-shows-non-literal-get-argument-errors [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:number &lt;- copy 0</span>
 <span class="Constant">  y:address:point &lt;- new point:type</span>
 <span class="Constant">  get *y:address:point, x:number</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -505,13 +505,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   <span class="Comment"># try to run a file with an error</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:number &lt;- copy y:number</span>
 <span class="Constant">]</span>]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
@@ -551,10 +551,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># left editor is empty</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
@@ -614,10 +614,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># left editor is empty</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors multiple times</span>
   assume-console [
     press F4
@@ -645,14 +645,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
 <span class="Constant">  {</span>
 <span class="Constant">    loop</span>
 <span class="Constant">  }</span>
 <span class="Constant">]</span>]
   <span class="Comment"># right editor contains an instruction</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
@@ -676,7 +676,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># generate a stash and a error</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">a:number &lt;- next-ingredient</span>
 <span class="Constant">b:number &lt;- next-ingredient</span>
@@ -684,8 +684,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 _, c:number<span class="Special"> &lt;- </span>divide-with-remainder a, b
 <span class="muControl">reply</span> b
 ]]
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo 4, 0]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 4, 0]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run</span>
   assume-console [
     press F4

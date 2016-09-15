@@ -39,16 +39,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  stash [abc]</span>
 ]]
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -115,17 +115,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  stash [abc]</span>
   <span class="muControl">reply</span> <span class="Constant">4</span>
 ]]
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -162,14 +162,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> clicking-on-app-trace-does-nothing [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># create and expand the trace</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[stash 123456789]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[stash 123456789]</span>
   assume-console [
     press F4
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -204,7 +204,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muData">container</span> sandbox-data [
-  trace:address:array:character
+  trace:text
   display-trace?:boolean
 ]
 
@@ -212,8 +212,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data, env:address:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  data:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  response:address:array:character, _, fake-screen:address:screen, trace:address:array:character<span class="Special"> &lt;- </span>run-sandboxed data
+  data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
+  response:text, _, fake-screen:address:screen, trace:text<span class="Special"> &lt;- </span>run-sandboxed data
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response:offset</span>, response
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">trace:offset</span>, trace
@@ -285,7 +285,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     display-trace?:boolean<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">display-trace?:offset</span>
     <span class="muControl">break-unless</span> display-trace?
-    sandbox-trace:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">trace:offset</span>
+    sandbox-trace:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">trace:offset</span>
     <span class="muControl">break-unless</span> sandbox-trace  <span class="Comment"># nothing to print; move on</span>
     row, screen<span class="Special"> &lt;- </span>render-text screen, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
   <span class="Delimiter">}</span>

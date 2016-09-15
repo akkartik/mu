@@ -21,6 +21,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #c00000; }
+.CommentedCode { color: #6c6c6c; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -33,20 +34,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># Mu synchronizes using channels rather than locks, like Erlang and Go.</span>
-<span class="Comment">#</span>
-<span class="Comment"># The two ends of a channel will usually belong to different routines, but</span>
-<span class="Comment"># each end should (currently) only be used by a single one. Don't try to read</span>
-<span class="Comment"># from or write to it from multiple routines at once.</span>
+<span class="Comment"># Mu synchronizes between routines using channels rather than locks, like</span>
+<span class="Comment"># Erlang and Go.</span>
 <span class="Comment">#</span>
 <span class="Comment"># Key properties of channels:</span>
 <span class="Comment">#</span>
-<span class="Comment"># a) Writing to a full channel or reading from an empty one will put the</span>
-<span class="Comment"># current routine in 'waiting' state until the operation can be completed.</span>
+<span class="Comment">#   a) Writing to a full channel or reading from an empty one will put the</span>
+<span class="Comment">#   current routine in 'waiting' state until the operation can be completed.</span>
 <span class="Comment">#</span>
-<span class="Comment"># b) Writing to a channel implicitly performs a deep copy, to prevent</span>
-<span class="Comment"># addresses from being shared between routines, thereby causing race</span>
-<span class="Comment"># conditions.</span>
+<span class="Comment">#   b) Writing to a channel implicitly performs a deep copy. This prevents</span>
+<span class="Comment">#   addresses from being shared between routines, and therefore eliminates all</span>
+<span class="Comment">#   possibility of race conditions.</span>
 
 <span class="muScenario">scenario</span> channel [
   run [
@@ -62,9 +60,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muData">container</span> channel:_elem [
-  <span class="Comment"># To avoid locking, writer and reader will never write to the same location.</span>
-  <span class="Comment"># So channels will include fields in pairs, one for the writer and one for the</span>
-  <span class="Comment"># reader.</span>
+  lock:boolean  <span class="Comment"># inefficient but simple: serialize all reads as well as writes</span>
   first-full:number  <span class="Comment"># for write</span>
   first-free:number  <span class="Comment"># for read</span>
   <span class="Comment"># A circular buffer contains values from index first-full up to (but not</span>
@@ -105,13 +101,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assert out, <span class="Constant">[write to null channel]</span>
   chan:address:channel:_elem<span class="Special"> &lt;- </span>get *out, <span class="Constant">chan:offset</span>
 <span class="Constant">  &lt;channel-write-initial&gt;</span>
+  <span class="Comment"># block until lock is acquired AND queue has room</span>
+  lock:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">lock:offset</span>
+<span class="CommentedCode">#?   $print [write], 10/newline</span>
   <span class="Delimiter">{</span>
-    <span class="Comment"># block if chan is full</span>
-    full:boolean<span class="Special"> &lt;- </span>channel-full? chan
-    <span class="muControl">break-unless</span> full
-    full-address:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">first-full:offset</span>
-    wait-for-location full-address
+<span class="CommentedCode">#?     $print [trying to acquire lock for writing], 10/newline</span>
+    wait-for-reset-then-set lock
+<span class="CommentedCode">#?     $print [lock acquired for writing], 10/newline</span>
+    full?:boolean<span class="Special"> &lt;- </span>channel-full? chan
+    <span class="muControl">break-unless</span> full?
+<span class="CommentedCode">#?     $print [but channel is full; relinquishing lock], 10/newline</span>
+    <span class="Comment"># channel is full; relinquish lock and give a reader the opportunity to</span>
+    <span class="Comment"># create room on it</span>
+    reset lock
+    current-routine-is-blocked
+    switch  <span class="Comment"># avoid spinlocking</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+  current-routine-is-unblocked
+<span class="CommentedCode">#?   $print [performing write], 10/newline</span>
   <span class="Comment"># store a deep copy of val</span>
   circular-buffer:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
   free:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
@@ -128,6 +136,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># write back</span>
   *chan<span class="Special"> &lt;- </span>put *chan, <span class="Constant">first-free:offset</span>, free
+<span class="CommentedCode">#?   $print [relinquishing lock after writing], 10/newline</span>
+  reset lock
 ]
 
 <span class="muRecipe">def</span> read in:address:source:_elem<span class="muRecipe"> -&gt; </span>result:_elem, eof?:boolean, in:address:source:_elem [
@@ -136,14 +146,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assert in, <span class="Constant">[read on null channel]</span>
   eof?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>  <span class="Comment"># default result</span>
   chan:address:channel:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">chan:offset</span>
+  <span class="Comment"># block until lock is acquired AND queue has data</span>
+  lock:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">lock:offset</span>
+<span class="CommentedCode">#?   $print [read], 10/newline</span>
   <span class="Delimiter">{</span>
-    <span class="Comment"># block if chan is empty</span>
+<span class="CommentedCode">#?     $print [trying to acquire lock for reading], 10/newline</span>
+    wait-for-reset-then-set lock
+<span class="CommentedCode">#?     $print [lock acquired for reading], 10/newline</span>
     empty?:boolean<span class="Special"> &lt;- </span>channel-empty? chan
     <span class="muControl">break-unless</span> empty?
+<span class="CommentedCode">#?     $print [but channel is empty; relinquishing lock], 10/newline</span>
+    <span class="Comment"># channel is empty; relinquish lock and give a writer the opportunity to</span>
+    <span class="Comment"># add to it</span>
+    reset lock
+    current-routine-is-blocked
 <span class="Constant">    &lt;channel-read-empty&gt;</span>
-    free-address:location<span class="Special"> &lt;- </span>get-location *chan, <span class="Constant">first-free:offset</span>
-    wait-for-location free-address
+    switch  <span class="Comment"># avoid spinlocking</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+  current-routine-is-unblocked
   <span class="Comment"># pull result off</span>
   full:number<span class="Special"> &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
   circular-buffer:address:array:_elem<span class="Special"> &lt;- </span>get *chan, <span class="Constant">data:offset</span>
@@ -162,6 +183,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># write back</span>
   *chan<span class="Special"> &lt;- </span>put *chan, <span class="Constant">first-full:offset</span>, full
+<span class="CommentedCode">#?   $print [relinquishing lock after reading], 10/newline</span>
+  reset lock
 ]
 
 <span class="muRecipe">def</span> clear in:address:source:_elem<span class="muRecipe"> -&gt; </span>in:address:source:_elem [
@@ -344,6 +367,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> closed?
     empty-result:address:_elem<span class="Special"> &lt;- </span>new <span class="Constant">_elem:type</span>
+    current-routine-is-unblocked
     <span class="muControl">return</span> *empty-result, <span class="Constant">1/true</span>
   <span class="Delimiter">}</span>
 ]
@@ -424,7 +448,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Delimiter">}</span>
     <span class="Comment"># copy line into 'buffered-out'</span>
     i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    line-contents:address:array:character<span class="Special"> &lt;- </span>get *line, <span class="Constant">data:offset</span>
+    line-contents:text<span class="Special"> &lt;- </span>get *line, <span class="Constant">data:offset</span>
     max:number<span class="Special"> &lt;- </span>get *line, <span class="Constant">length:offset</span>
     <span class="Delimiter">{</span>
       done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, max

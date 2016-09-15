@@ -44,6 +44,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">:(before &quot;End is_mu_exclusive_container(type) Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
   <span class="Identifier">return</span> is_mu_exclusive_container<span class="Delimiter">(</span>root_type<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
+<span class="Comment">// a few calls to root_type() without the assertion (for better error handling)</span>
+<span class="Delimiter">:(after &quot;Update GET base_type in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> base_type = base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update GET base_type in Run&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> base_type = base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update PUT base_type in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> base_type = base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update PUT base_type in Run&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> base_type = base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+<span class="Delimiter">:(after &quot;Update MAYBE_CONVERT base_type in Check&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>!base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> base_type = base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(scenario size_of_shape_shifting_container)</span>
 container foo:_t [
@@ -187,7 +198,7 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
       raise &lt;&lt; container_name &lt;&lt; <span class="Constant">&quot;: empty type ingredients not permitted</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> != <span class="Constant">'_'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!starts_with<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> <span class="Constant">&quot;_&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
       raise &lt;&lt; container_name &lt;&lt; <span class="Constant">&quot;: type ingredient '&quot;</span> &lt;&lt; curr &lt;&lt; <span class="Constant">&quot;' must begin with an underscore</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
@@ -216,7 +227,7 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> is_type_ingredient_name<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> !type<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; type<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> == <span class="Constant">'_'</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> starts_with<span class="Delimiter">(</span>type<span class="Delimiter">,</span> <span class="Constant">&quot;_&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Container Type Checks&quot;)</span>

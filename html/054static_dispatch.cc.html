@@ -103,14 +103,16 @@ string matching_variant_name<span class="Delimiter">(</span><span class="Normal"
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!deeply_equal_type_names<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> r2<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    expand_type_abbreviations<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+    expand_type_abbreviations<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!deeply_equal_type_names<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> r2<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!deeply_equal_type_names<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> r2<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    expand_type_abbreviations<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+    expand_type_abbreviations<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!deeply_equal_type_names<span class="Delimiter">(</span>r1<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> r2<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -645,6 +647,22 @@ def foo a:boolean <span class="Delimiter">-&gt;</span> b:number [
 ]
 <span class="traceContains">+error: main: missing type for 'x' in 'y:number &lt;- foo x'</span>
 <span class="traceContains">+error: main: failed to find a matching call for 'y:number &lt;- foo x'</span>
+
+<span class="Delimiter">:(scenario override_methods_with_type_abbreviations)</span>
+type string = address:array:character
+def main [
+  local-scope
+  <span class="Normal">s</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo s
+]
+def foo a:address:array:character <span class="Delimiter">-&gt;</span> result:number [
+  <span class="Identifier">return</span> <span class="Constant">34</span>
+]
+<span class="Comment"># identical to previous variant once you take type abbreviation into account</span>
+def! foo a:string <span class="Delimiter">-&gt;</span> result:number [
+  <span class="Identifier">return</span> <span class="Constant">35</span>
+]
+<span class="traceContains">+mem: storing 35 in location 1</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="Normal">using</span> std::abs<span class="Delimiter">;</span>

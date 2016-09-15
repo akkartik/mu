@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - server-socket.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Delimiter { color: #800080; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">local-scope</span>
+  socket:number<span class="Special"> &lt;- </span>$socket <span class="Constant">8080/port</span>
+  $print <span class="Constant">[Mu socket creation returned ]</span>, socket, <span class="Constant">10/newline</span>
+  session:number<span class="Special"> &lt;- </span>$accept socket
+  <span class="Delimiter">{</span>
+    client-message:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">1024</span>
+    c:character<span class="Special"> &lt;- </span>$read-from-socket session
+    <span class="muControl">break-unless</span> c
+    $print c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  $close-socket socket, session
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

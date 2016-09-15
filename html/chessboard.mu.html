@@ -98,10 +98,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
+type board = address:array:address:array:character
+
 <span class="muRecipe">def</span> chessboard screen:address:screen, console:address:console<span class="muRecipe"> -&gt; </span>screen:address:screen, console:address:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+  board:board<span class="Special"> &lt;- </span>initial-position
   <span class="Comment"># hook up stdin</span>
   stdin-in:address:source:character, stdin-out:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
   start-running send-keys-to-channel, console, stdin-out, screen
@@ -136,7 +138,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
 
-<span class="muRecipe">def</span> new-board initial-position:address:array:character<span class="muRecipe"> -&gt; </span>board:address:array:address:array:character [
+<span class="muRecipe">def</span> new-board initial-position:address:array:character<span class="muRecipe"> -&gt; </span>board:board [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
@@ -173,7 +175,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> print-board screen:address:screen, board:address:array:address:array:character<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print-board screen:address:screen, board:board<span class="muRecipe"> -&gt; </span>screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   row:number<span class="Special"> &lt;- </span>copy <span class="Constant">7</span>  <span class="Comment"># start printing from the top of the board</span>
@@ -209,7 +211,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   cursor-to-next-line screen
 ]
 
-<span class="muRecipe">def</span> initial-position<span class="muRecipe"> -&gt; </span>board:address:array:address:array:character [
+<span class="muRecipe">def</span> initial-position<span class="muRecipe"> -&gt; </span>board:board [
   <span class="Constant">local-scope</span>
   <span class="Comment"># layout in memory (in raster order):</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
@@ -236,7 +238,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
     <span class="Constant">local-scope</span>
-    board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+    board:board<span class="Special"> &lt;- </span>initial-position
     screen:address:screen<span class="Special"> &lt;- </span>print-board screen:address:screen, board
   ]
   screen-should-contain [
@@ -406,7 +408,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'a'</span>
@@ -415,7 +417,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a']</span>
     <span class="Comment"># press '2'</span>
@@ -424,7 +426,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2']</span>
     <span class="Comment"># press '-'</span>
@@ -433,7 +435,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after hyphen 'a2-']</span>
     <span class="Comment"># press 'a'</span>
@@ -442,7 +444,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a2-a']</span>
     <span class="Comment"># press '4'</span>
@@ -451,7 +453,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2-a4']</span>
     <span class="Comment"># press 'newline'</span>
@@ -479,7 +481,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'q'</span>
@@ -507,9 +509,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
-<span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span class="Constant">F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
     restart read-move-routine
     wait-for-routine-to-block read-move-routine
@@ -529,9 +531,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
-<span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span class="Constant">F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
     restart read-move-routine
@@ -552,9 +554,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:number<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">3/waiting</span>
+    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
-<span class="Constant">F read-move-file: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span class="Constant">F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10/newline</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
     restart read-move-routine
@@ -566,7 +568,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> make-move board:address:array:address:array:character, m:address:move<span class="muRecipe"> -&gt; </span>board:address:array:address:array:character [
+<span class="muRecipe">def</span> make-move board:board, m:address:move<span class="muRecipe"> -&gt; </span>board:board [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   from-file:number<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-file:offset</span>
@@ -584,7 +586,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
     <span class="Constant">local-scope</span>
-    board:address:array:address:array:character<span class="Special"> &lt;- </span>initial-position
+    board:board<span class="Special"> &lt;- </span>initial-position
     move:address:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
     *move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
     board<span class="Special"> &lt;- </span>make-move board, move

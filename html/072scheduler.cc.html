@@ -21,9 +21,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.CommentedCode { color: #6c6c6c; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #fcb165; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -53,14 +53,23 @@ def f2 [
 <span class="traceContains">+schedule: f2</span>
 
 <span class="Comment">//: first, add a deadline to run(routine)</span>
-<span class="Comment">//: these changes are ugly and brittle; just close your nose and get through the next few lines</span>
-<span class="Delimiter">:(replace &quot;void run_current_routine()&quot;)</span>
-<span class="Normal">void</span> run_current_routine<span class="Delimiter">(</span><span class="Normal">int</span> time_slice<span class="Delimiter">)</span>
-<span class="Delimiter">:(replace &quot;while (!Current_routine-&gt;completed())&quot; following &quot;void run_current_routine(int time_slice)&quot;)</span>
-<span class="Normal">int</span> ninstrs = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Normal">while</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING &amp;&amp; ninstrs &lt; time_slice<span class="Delimiter">)</span>
-<span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
-ninstrs++<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">int</span> Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<span class="Normal">int</span> instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
+ ++Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
+<span class="Delimiter">:(replace{} &quot;bool should_continue_running(const routine* current_routine)&quot;)</span>
+<span class="Normal">bool</span> should_continue_running<span class="Delimiter">(</span><span class="Normal">const</span> routine* current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>current_routine == Current_routine<span class="Delimiter">);</span>  <span class="Comment">// argument passed in just to make caller readable above</span>
+  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING
+      &amp;&amp; Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice &lt; Scheduling_interval<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(after &quot;stop_running_current_routine:&quot;)</span>
+<span class="Comment">// Reset instructions_run_this_scheduling_slice</span>
+Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: now the rest of the scheduler is clean</span>
 
@@ -78,7 +87,6 @@ state = RUNNING<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;routine*&gt; Routines<span class="Delimiter">;</span>
 <span class="Normal">int</span> Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Normal">int</span> Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
 Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
@@ -97,7 +105,7 @@ Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
     assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_routine_label<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;schedule: &quot; &lt;&lt; current_routine_label() &lt;&lt; '\n';</span>
-    run_current_routine<span class="Delimiter">(</span>Scheduling_interval<span class="Delimiter">);</span>
+    run_current_routine<span class="Delimiter">();</span>
     <span class="Comment">// Scheduler State Transitions</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
       Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
@@ -615,11 +623,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> ninstrs<span class="Delimiter">;</span>
+<span class="Normal">int</span> instructions_run<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-ninstrs = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(after &quot;stop_running_current_routine:&quot;)</span>
-Current_routine<span class="Delimiter">-&gt;</span>ninstrs += ninstrs<span class="Delimiter">;</span>
+instructions_run = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;Reset instructions_run_this_scheduling_slice&quot;)</span>
+Current_routine<span class="Delimiter">-&gt;</span>instructions_run += Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 NUMBER_OF_INSTRUCTIONS<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
@@ -642,7 +650,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>ninstrs<span class="Delimiter">;</span>
+      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>instructions_run<span class="Delimiter">;</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>

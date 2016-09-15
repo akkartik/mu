@@ -42,8 +42,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> main [
   <span class="Constant">local-scope</span>
   open-console
-  initial-recipe:address:array:character<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
-  initial-sandbox:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  initial-recipe:text<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
+  initial-sandbox:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   hide-screen <span class="Constant">0/screen</span>
   env:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
   render-all <span class="Constant">0/screen</span>, env, render
@@ -57,7 +57,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sandbox-in-focus?:boolean  <span class="Comment"># false =&gt; cursor in recipes; true =&gt; cursor in current-sandbox</span>
 ]
 
-<span class="muRecipe">def</span> new-programming-environment screen:address:screen, initial-recipe-contents:address:array:character, initial-sandbox-contents:address:array:character<span class="muRecipe"> -&gt; </span>result:address:programming-environment-data, screen:address:screen [
+<span class="muRecipe">def</span> new-programming-environment screen:address:screen, initial-recipe-contents:text, initial-sandbox-contents:text<span class="muRecipe"> -&gt; </span>result:address:programming-environment-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   width:number<span class="Special"> &lt;- </span>screen-width screen
@@ -332,9 +332,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># focus on both sides</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
@@ -358,9 +358,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   render-all screen, <span class="Constant">3</span>:address:programming-environment-data, render
   <span class="Comment"># type one letter in each of them</span>
   assume-console [
@@ -403,9 +403,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">60/width</span>, <span class="Constant">10/height</span>
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
-    <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+    <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+    <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
     render-all screen, <span class="Constant">3</span>:address:programming-environment-data, render
   ]
   <span class="Comment"># divider isn't messed up</span>
@@ -421,9 +421,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-in-focus-keeps-cursor [
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   render-all screen, <span class="Constant">3</span>:address:programming-environment-data, render
   <span class="Comment"># initialize programming environment and highlight cursor</span>
   assume-console <span class="Constant">[]</span>
@@ -461,10 +461,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="CommentedCode">#?   trace-until 100/app  # trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize sandbox side with two lines</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   render-all screen, <span class="Constant">3</span>:address:programming-environment-data, render
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
@@ -576,7 +576,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># like 'render' for texts, but with colorization for comments like in the editor</span>
-<span class="muRecipe">def</span> render-code screen:address:screen, s:address:array:character, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen [
+<span class="muRecipe">def</span> render-code screen:address:screen, s:text, left:number, right:number, row:number<span class="muRecipe"> -&gt; </span>row:number, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> s

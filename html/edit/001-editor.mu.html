@@ -37,7 +37,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># temporary main for this layer: just render the given text at the given</span>
 <span class="Comment"># screen dimensions, then stop</span>
-<span class="muRecipe">def!</span> main text:address:array:character [
+<span class="muRecipe">def!</span> main text:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   open-console
@@ -51,8 +51,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-prints-text-to-screen [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+    <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   ]
   screen-should-contain [
     <span class="Comment"># top line of screen reserved for menu</span>
@@ -83,7 +83,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">def</span> new-editor s:address:array:character, screen:address:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:editor-data, screen:address:screen [
+<span class="muRecipe">def</span> new-editor s:text, screen:address:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:editor-data, screen:address:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -106,7 +106,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  &lt;editor-initialization&gt;</span>
 ]
 
-<span class="muRecipe">def</span> insert-text editor:address:editor-data, text:address:array:character<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
+<span class="muRecipe">def</span> insert-text editor:address:editor-data, text:text<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># early exit if text is empty</span>
@@ -292,9 +292,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-prints-multiple-lines [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -307,8 +307,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-handles-offsets [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -320,9 +320,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-prints-multiple-lines-at-offset [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -335,8 +335,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-wraps-long-lines [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -355,8 +355,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initially-wraps-barely-long-lines [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   <span class="Comment"># still wrap, even though the line would fit. We need room to click on the</span>
   <span class="Comment"># end of the line</span>
@@ -377,8 +377,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initializes-empty-text [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
     <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
@@ -398,10 +398,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> render-colors-comments [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant"># de</span>
 <span class="Constant">f]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -479,10 +479,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> render-colors-assignment [
   assume-screen <span class="Constant">8/width</span>, <span class="Constant">5/height</span>
   run [
-    s:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d &lt;- e</span>
 <span class="Constant">f]</span>
-    new-editor s:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .        .</span>

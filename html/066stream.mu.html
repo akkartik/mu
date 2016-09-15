@@ -74,7 +74,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   empty?:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
   idx:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">index:offset</span>
-  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:address:array:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   len:number<span class="Special"> &lt;- </span>length *s
   at-end?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx len
   <span class="Delimiter">{</span>
@@ -85,11 +85,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   result<span class="Special"> &lt;- </span>index *s, idx
 ]
 
-<span class="muRecipe">def</span> read-line in:address:stream:character<span class="muRecipe"> -&gt; </span>result:address:array:character, in:address:stream:character [
+<span class="muRecipe">def</span> read-line in:address:stream:character<span class="muRecipe"> -&gt; </span>result:text, in:address:stream:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   idx:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">index:offset</span>
-  s:address:array:character<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:text<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
   next-idx:number<span class="Special"> &lt;- </span>find-next s, <span class="Constant">10/newline</span>, idx
   result<span class="Special"> &lt;- </span>copy-range s, idx, next-idx
   idx<span class="Special"> &lt;- </span>add next-idx, <span class="Constant">1</span>  <span class="Comment"># skip newline</span>

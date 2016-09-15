@@ -37,7 +37,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># temporary main: interactive editor</span>
 <span class="Comment"># hit ctrl-c to exit</span>
-<span class="muRecipe">def!</span> main text:address:array:character [
+<span class="muRecipe">def!</span> main text:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   open-console
@@ -317,8 +317,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-empty-event-queue [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console <span class="Constant">[]</span>
   run [
@@ -334,8 +334,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -361,8 +361,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">7</span>  <span class="Comment"># last line, to the right of text</span>
@@ -381,9 +381,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">7</span>  <span class="Comment"># interior line, to the right of text</span>
@@ -402,9 +402,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-text-3 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">7</span>  <span class="Comment"># below text</span>
@@ -423,9 +423,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-outside-column [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   <span class="Comment"># editor occupies only left half of screen</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -452,8 +452,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-handles-mouse-clicks-in-menu-area [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -474,8 +474,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-into-empty-editor [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -495,8 +495,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># type two letters at different places</span>
@@ -519,8 +519,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -541,9 +541,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-5 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -565,8 +565,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-3 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -587,9 +587,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-4 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -611,9 +611,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-characters-at-cursor-6 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
 <span class="Constant">  $clear-trace</span>
   assume-console [
@@ -635,8 +635,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-moves-cursor-after-inserting-characters [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   assume-console [
     type <span class="Constant">[01]</span>
@@ -656,8 +656,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-wraps-line-on-insert [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># type a letter</span>
   assume-console [
@@ -694,9 +694,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-wraps-line-on-insert-2 [
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefg</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefg</span>
 <span class="Constant">defg]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   editor-render screen, <span class="Constant">2</span>:address:editor-data
   <span class="Comment"># type more text at the start</span>
   assume-console [
@@ -776,8 +776,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-wraps-cursor-after-inserting-characters-in-middle-of-line [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>  <span class="Comment"># right before the wrap icon</span>
     type <span class="Constant">[f]</span>
@@ -804,7 +804,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># create an editor containing two lines</span>
-  contents:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">xyz]</span>
   <span class="Constant">1</span>:address:editor-data/<span class="Special">raw &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   screen-should-contain [
@@ -831,8 +831,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-wraps-cursor-to-left-margin [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">2/left</span>, <span class="Constant">7/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">2/left</span>, <span class="Constant">7/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">5</span>  <span class="Comment"># line is full; no wrap icon yet</span>
     type <span class="Constant">[01]</span>
@@ -867,8 +867,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     type <span class="Constant">[0</span>
 <span class="Constant">1]</span>
@@ -973,8 +973,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline-2 [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
   assume-console [
     type <span class="Constant">[0</span>
 <span class="Constant">1]</span>
@@ -993,8 +993,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-clears-previous-line-completely-after-inserting-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     press enter
   ]
@@ -1020,10 +1020,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-inserts-indent-after-newline [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">  cd</span>
 <span class="Constant">ef]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># position cursor after 'cd' and hit 'newline'</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">8</span>
@@ -1044,10 +1044,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> editor-skips-indent-around-paste [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">  cd</span>
 <span class="Constant">ef]</span>
-  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:address:array:character, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># position cursor after 'cd' and hit 'newline' surrounded by paste markers</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">8</span>

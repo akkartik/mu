@@ -39,16 +39,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:address:array:character<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:address:array:character, <span class="Constant">2</span>:address:array:character
+  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -122,13 +122,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># this requires tracking a couple more things</span>
 <span class="muData">container</span> sandbox-data [
   response-starting-row-on-screen:number
-  expected-response:address:array:character
+  expected-response:text
 ]
 
 <span class="Comment"># include expected response when saving or restoring a sandbox</span>
 <span class="muRecipe">before</span> <span class="Constant">&lt;end-save-sandbox&gt;</span> [
   <span class="Delimiter">{</span>
-    expected-response:address:array:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
+    expected-response:text<span class="Special"> &lt;- </span>get *curr, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response
     filename<span class="Special"> &lt;- </span>append filename, <span class="Constant">[.out]</span>
     save filename, expected-response
@@ -202,7 +202,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> toggle-expected-response sandbox:address:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
+  expected-response:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if expected-response is set, reset</span>
     <span class="muControl">break-unless</span> expected-response
@@ -211,7 +211,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="Comment"># if not, set expected response to the current response</span>
     <span class="muControl">break-if</span> expected-response
-    response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
+    response:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">response:offset</span>
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">expected-response:offset</span>, response
   <span class="Delimiter">}</span>
 ]
@@ -221,7 +221,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> sandbox-response
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>, row
-    expected-response:address:array:character<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
+    expected-response:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response  <span class="Comment"># fall-through to print in grey</span>
     response-is-expected?:boolean<span class="Special"> &lt;- </span>equal expected-response, sandbox-response
     <span class="Delimiter">{</span>

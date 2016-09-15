@@ -39,11 +39,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muData">container</span> file-mapping [
-  name:address:array:character
-  contents:address:array:character
+  name:text
+  contents:text
 ]
 
-<span class="muRecipe">def</span> start-reading fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>contents:address:source:character [
+<span class="muRecipe">def</span> start-reading fs:address:filesystem, filename:text<span class="muRecipe"> -&gt; </span>contents:address:source:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -64,11 +64,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-if</span> done?
     tmp:file-mapping<span class="Special"> &lt;- </span>index *data, i
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-    curr-filename:address:array:character<span class="Special"> &lt;- </span>get tmp, <span class="Constant">name:offset</span>
+    curr-filename:text<span class="Special"> &lt;- </span>get tmp, <span class="Constant">name:offset</span>
     found?:boolean<span class="Special"> &lt;- </span>equal filename, curr-filename
     <span class="muControl">loop-unless</span> found?
     contents:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-    curr-contents:address:array:character<span class="Special"> &lt;- </span>get tmp, <span class="Constant">contents:offset</span>
+    curr-contents:text<span class="Special"> &lt;- </span>get tmp, <span class="Constant">contents:offset</span>
     start-running transmit-from-text curr-contents, sink
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
@@ -88,7 +88,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file<span class="Special"> &lt;- </span>$close-file file
 ]
 
-<span class="muRecipe">def</span> transmit-from-text contents:address:array:character, sink:address:sink:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character [
+<span class="muRecipe">def</span> transmit-from-text contents:text, sink:address:sink:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -104,7 +104,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sink<span class="Special"> &lt;- </span>close sink
 ]
 
-<span class="muRecipe">def</span> start-writing fs:address:filesystem, filename:address:array:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character, routine-id:number [
+<span class="muRecipe">def</span> start-writing fs:address:filesystem, filename:text<span class="muRecipe"> -&gt; </span>sink:address:sink:character, routine-id:number [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
@@ -133,7 +133,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file<span class="Special"> &lt;- </span>$close-file file
 ]
 
-<span class="muRecipe">def</span> transmit-to-fake-file fs:address:filesystem, filename:address:array:character, source:address:source:character<span class="muRecipe"> -&gt; </span>fs:address:filesystem, source:address:source:character [
+<span class="muRecipe">def</span> transmit-to-fake-file fs:address:filesystem, filename:text, source:address:source:character<span class="muRecipe"> -&gt; </span>fs:address:filesystem, source:address:source:character [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute new file contents</span>
@@ -144,10 +144,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     buf<span class="Special"> &lt;- </span>append buf, c
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  contents:address:array:character<span class="Special"> &lt;- </span>buffer-to-array buf
+  contents:text<span class="Special"> &lt;- </span>buffer-to-array buf
   new-file-mapping:file-mapping<span class="Special"> &lt;- </span>merge filename, contents
   <span class="Comment"># write to filesystem</span>
-  curr-filename:address:array:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  curr-filename:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   data:address:array:file-mapping<span class="Special"> &lt;- </span>get *fs, <span class="Constant">data:offset</span>
   <span class="Comment"># replace file contents if it already exists</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>

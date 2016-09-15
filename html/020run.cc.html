@@ -94,10 +94,8 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
   run_current_routine<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> run_current_routine<span class="Delimiter">()</span>
-<span class="Delimiter">{</span>  <span class="Comment">// curly on a separate line, because later layers will modify function header</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>  <span class="Comment">// later layers will modify condition</span>
-  <span class="Delimiter">{</span>
+<span class="Normal">void</span> run_current_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>should_continue_running<span class="Delimiter">(</span>Current_routine<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// beware: later layers modify Current_routine here</span>
     <span class="Comment">// Running One Instruction</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span> <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span>Initial_callstack_depth + Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -138,6 +136,11 @@ map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt
     ++current_step_index<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Normal">stop_running_current_routine</span>:<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> should_continue_running<span class="Delimiter">(</span><span class="Normal">const</span> routine* current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  assert<span class="Delimiter">(</span>current_routine == Current_routine<span class="Delimiter">);</span>  <span class="Comment">// argument passed in just to make caller readable above</span>
+  <span class="Identifier">return</span> !Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> should_copy_ingredients<span class="Delimiter">()</span> <span class="Delimiter">{</span>
