@@ -228,6 +228,14 @@ void show_rest_of_stream(istream& in) {
   exit(0);
 }
 
+:(scenario recipe_instead_of_def)
+recipe main [
+  1:number <- copy 23
+]
++parse: instruction: copy
++parse:   ingredient: {23: "literal"}
++parse:   product: {1: "number"}
+
 :(scenario parse_comment_outside_recipe)
 # this comment will be dropped by the tangler, so we need a dummy recipe to stop that
 def f1 [

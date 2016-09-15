@@ -2,7 +2,7 @@
 
 :(scenarios transform)
 :(scenario rewrite_stashes_to_text)
-recipe main [
+def main [
   local-scope
   n:number <- copy 34
   stash n
@@ -11,7 +11,7 @@ recipe main [
 +transform: stash {stash_2_0: ("address" "array" "character")}
 
 :(scenario rewrite_traces_to_text)
-recipe main [
+def main [
   local-scope
   n:number <- copy 34
   trace 2, [app], n
@@ -23,7 +23,7 @@ recipe main [
 //: passing addresses around
 
 :(scenario rewrite_stashes_of_arrays)
-recipe main [
+def main [
   local-scope
   n:address:array:number <- new number:type, 3
   stash *n
@@ -32,7 +32,7 @@ recipe main [
 +transform: stash {stash_2_0: ("address" "array" "character")}
 
 :(scenario ignore_stashes_of_static_arrays)
-recipe main [
+def main [
   local-scope
   n:array:number:3 <- create-array
   stash n
@@ -43,7 +43,7 @@ recipe main [
 container foo [
   x:number
 ]
-recipe bar -> x:foo [
+def bar -> x:foo [
   local-scope
   load-ingredients
   x <- merge 34
@@ -137,7 +137,7 @@ container foo [
   x:number
   y:number
 ]
-recipe main [
+def main [
   local-scope
   x:foo <- merge 34, 35
   stash x

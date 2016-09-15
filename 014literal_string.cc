@@ -220,6 +220,6 @@ def main [
 
 :(scenario multiple_unfinished_recipes)
 % Hide_errors = true;
-recipe f1 [
-recipe f2 [
+def f1 [
+def f2 [
 +error: unbalanced '['

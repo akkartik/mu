@@ -174,7 +174,7 @@ def main [
 container card [
   rank:number <- next-ingredient
 ]
-recipe foo [
+def foo [
   1:card <- merge 3
   2:number <- get 1:card rank:offset
 ]
