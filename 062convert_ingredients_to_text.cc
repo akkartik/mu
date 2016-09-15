@@ -1,5 +1,4 @@
-//: when encountering other types, try to convert them to strings using
-//: 'to-text'
+//: make some functions more friendly by trying to auto-convert their ingredients to text
 
 :(scenarios transform)
 :(scenario rewrite_stashes_to_text)
@@ -55,18 +54,18 @@ recipe bar -> x:foo [
 //: misplaced; should be in instruction inserting/deleting transforms, but has
 //: prerequisites: deduce_types_from_header and check_or_set_types_by_name
 :(after "Transform.push_back(deduce_types_from_header)")
-Transform.push_back(rewrite_stashes_to_text);
+Transform.push_back(convert_ingredients_to_text);
 
 :(code)
-void rewrite_stashes_to_text(recipe_ordinal r) {
+void convert_ingredients_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
-  trace(9991, "transform") << "--- rewrite 'stash' instructions in recipe " << caller.name << end();
+  trace(9991, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
   // in recipes without named locations, 'stash' is still not extensible
   if (contains_numeric_locations(caller)) return;
-  rewrite_stashes_to_text(caller);
+  convert_ingredients_to_text(caller);
 }
 
-void rewrite_stashes_to_text(recipe& caller) {
+void convert_ingredients_to_text(recipe& caller) {
   vector<instruction> new_instructions;
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     instruction& inst = caller.steps.at(i);
@@ -74,14 +73,14 @@ void rewrite_stashes_to_text(recipe& caller) {
       for (int j = 0; j < SIZE(inst.ingredients); ++j) {
         ostringstream ingredient_name;
         ingredient_name << "stash_" << i << '_' << j << ":address:array:character";
-        rewrite_stash_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
+        convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
       }
     }
     else if (inst.name == "trace") {
       for (int j = /*skip*/2; j < SIZE(inst.ingredients); ++j) {
         ostringstream ingredient_name;
         ingredient_name << "trace_" << i << '_' << j << ":address:array:character";
-        rewrite_stash_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
+        convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
       }
     }
     trace(9993, "transform") << to_string(inst) << end();
@@ -92,7 +91,7 @@ void rewrite_stashes_to_text(recipe& caller) {
 
 // add an instruction to convert reagent 'r' to text in list 'out', then
 // replace r with converted text
-void rewrite_stash_to_text(reagent& r, vector<instruction>& out, const string& tmp_var) {
+void convert_ingredient_to_text(reagent& r, vector<instruction>& out, const string& tmp_var) {
   if (!r.type) return;  // error; will be handled elsewhere
   if (is_literal(r)) return;
   if (is_mu_string(r)) return;
