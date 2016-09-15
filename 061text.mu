@@ -190,6 +190,21 @@ def append buf:address:buffer, c:character -> buf:address:buffer [
   *buf <- put *buf, length:offset, len
 ]
 
+def append buf:address:buffer, t:text -> buf:address:buffer [
+  local-scope
+  load-ingredients
+  len:number <- length *t
+  i:number <- copy 0
+  {
+    done?:boolean <- greater-or-equal i, len
+    break-if done?
+    c:character <- index *t, i
+    buf <- append buf, c
+    i <- add i, 1
+    loop
+  }
+]
+
 scenario buffer-append-works [
   run [
     local-scope
@@ -284,44 +299,18 @@ def buffer-to-array in:address:buffer -> result:text [
   }
 ]
 
-def append a:text, b:text -> result:text [
+def append -> result:text [
   local-scope
   load-ingredients
-  # handle null addresses
-  return-unless a, b
-  return-unless b, a
-  # result = new character[a.length + b.length]
-  a-len:number <- length *a
-  b-len:number <- length *b
-  result-len:number <- add a-len, b-len
-  result <- new character:type, result-len
-  # copy a into result
-  result-idx:number <- copy 0
-  i:number <- copy 0
+  buf:address:buffer <- new-buffer 30
   {
-    # while i < a.length
-    a-done?:boolean <- greater-or-equal i, a-len
-    break-if a-done?
-    # result[result-idx] = a[i]
-    in:character <- index *a, i
-    *result <- put-index *result, result-idx, in
-    i <- add i, 1
-    result-idx <- add result-idx, 1
+    arg:text, arg-found?:boolean <- next-ingredient
+    break-unless arg-found?
+    loop-unless arg
+    buf <- append buf, arg
     loop
   }
-  # copy b into result
-  i <- copy 0
-  {
-    # while i < b.length
-    b-done?:boolean <- greater-or-equal i, b-len
-    break-if b-done?
-    # result[result-idx] = a[i]
-    in:character <- index *b, i
-    *result <- put-index *result, result-idx, in
-    i <- add i, 1
-    result-idx <- add result-idx, 1
-    loop
-  }
+  result <- buffer-to-array buf
 ]
 
 scenario text-append-1 [
@@ -360,6 +349,20 @@ scenario text-append-null-2 [
   ]
   memory-should-contain [
     10:array:character <- [hello,]
+  ]
+]
+
+scenario text-append-multiary [
+  run [
+    local-scope
+    x:text <- new [hello, ]
+    y:text <- new [world]
+    z:text <- new [!]
+    z:text <- append x, y, z
+    10:array:character/raw <- copy *z
+  ]
+  memory-should-contain [
+    10:array:character <- [hello, world!]
   ]
 ]
 
