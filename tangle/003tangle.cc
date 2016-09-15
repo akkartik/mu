@@ -307,13 +307,13 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
     }
     if (lines.empty()) break;
     result.push_back(input_lines(lines));
-    if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '+')
+    if (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '+')
       result.push_back(expected_in_trace(lines));
-    while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents[0] == '-') {
+    while (!lines.empty() && !front(lines).contents.empty() && front(lines).contents.at(0) == '-') {
       result.push_back(expected_not_in_trace(front(lines)));
       lines.pop_front();
     }
-    if (!lines.empty() && front(lines).contents[0] == '$') {
+    if (!lines.empty() && front(lines).contents.at(0) == '$') {
       const string& in = front(lines).contents;
       size_t pos = in.find(": ");
       string layer = in.substr(1, pos-1);
@@ -335,7 +335,7 @@ void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
 
 bool is_input(const string& line) {
   if (line.empty()) return true;
-  return line != "===" && line[0] != '+' && line[0] != '-' && line[0] != '$' && line[0] != '?';
+  return line != "===" && line.at(0) != '+' && line.at(0) != '-' && line.at(0) != '$' && line.at(0) != '?';
 }
 
 Line input_lines(list<Line>& hunk) {
@@ -355,7 +355,7 @@ Line expected_in_trace(list<Line>& hunk) {
   Line result;
   result.line_number = hunk.front().line_number;
   result.filename = hunk.front().filename;
-  while (!hunk.empty() && !front(hunk).contents.empty() && front(hunk).contents[0] == '+') {
+  while (!hunk.empty() && !front(hunk).contents.empty() && front(hunk).contents.at(0) == '+') {
     hunk.front().contents.erase(0, 1);
     result.contents += hunk.front().contents+"";
     hunk.pop_front();
@@ -422,14 +422,14 @@ bool any_non_input_line(const list<Line>& lines) {
 // pat can't start with whitespace
 bool starts_with(const string& s, const string& pat) {
   for (size_t pos = 0; pos < s.size(); ++pos)
-    if (!isspace(s[pos]))
+    if (!isspace(s.at(pos)))
       return s.compare(pos, pat.size(), pat) == 0;
   return false;
 }
 
 string indent(const string& s) {
   for (size_t pos = 0; pos < s.size(); ++pos)
-    if (!isspace(s[pos]))
+    if (!isspace(s.at(pos)))
       return s.substr(0, pos);
   return "";
 }
