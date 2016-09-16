@@ -148,8 +148,10 @@ bool is_static_array(const reagent& x) {
 :(scenario append_other_types_to_text)
 def main [
   local-scope
-  a:text <- append [abc], 10, 11
-  expected:text <- new [abc1011]
+  n:number <- copy 11
+  c:character <- copy 111/o
+  a:text <- append [abc], 10, n, c
+  expected:text <- new [abc1011o]
   10:boolean/raw <- equal a, expected
 ]
 

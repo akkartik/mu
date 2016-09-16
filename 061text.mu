@@ -380,19 +380,6 @@ scenario text-append-multiary [
   ]
 ]
 
-scenario text-append-multiary-heterogeneous-types [
-  run [
-    local-scope
-    n:number <- copy 34
-    c:character <- copy 111/o
-    z:text <- append [abc ], n, c
-    10:array:character/raw <- copy *z
-  ]
-  memory-should-contain [
-    10:array:character <- [abc 34o]
-  ]
-]
-
 scenario replace-character-in-text [
   run [
     local-scope
