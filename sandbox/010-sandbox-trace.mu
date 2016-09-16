@@ -36,9 +36,6 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .0   edit           copy           delete          .
     .stash [abc]                                       .
     .abc                                               .
-    .6 instructions run                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
   screen-should-contain-in-color 245/grey, [
     .                                                  .
@@ -47,9 +44,6 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .                                                  .
     .                                                  .
     .abc                                               .
-    .6 instructions run                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
   # click again on the same region
   assume-console [
@@ -133,9 +127,6 @@ scenario clicking-on-app-trace-does-nothing [
     .0   edit           copy           delete          .
     .stash 123456789                                   .
     .123456789                                         .
-    .6 instructions run                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
   # click on the stash under the edit-button region (or any of the other buttons, really)
   assume-console [
@@ -152,9 +143,6 @@ scenario clicking-on-app-trace-does-nothing [
     .0   edit           copy           delete          .
     .stash 123456789                                   .
     .123456789                                         .
-    .6 instructions run                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  .
   ]
 ]
 

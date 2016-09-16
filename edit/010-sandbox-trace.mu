@@ -41,9 +41,6 @@ recipe foo [
     .  stash [abc]                                     ┊0   edit          copy            delete         .
     .]                                                 ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
-    .                                                  ┊8 instructions run                               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 245/grey, [
     .                                                                                                    .
@@ -52,9 +49,6 @@ recipe foo [
     .                                                  ┊                                                 .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
-    .                                                  ┊8 instructions run                               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
   ]
   # click again on the same region
   assume-console [
@@ -143,9 +137,6 @@ scenario clicking-on-app-trace-does-nothing [
     .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊stash 123456789                                  .
     .                                                  ┊123456789                                        .
-    .                                                  ┊6 instructions run                               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
   ]
   # click on the stash under the edit-button region (or any of the other buttons, really)
   assume-console [
@@ -162,9 +153,6 @@ scenario clicking-on-app-trace-does-nothing [
     .                                                  ┊0   edit          copy            delete         .
     .                                                  ┊stash 123456789                                  .
     .                                                  ┊123456789                                        .
-    .                                                  ┊6 instructions run                               .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
   ]
 ]
 
