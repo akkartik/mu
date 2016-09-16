@@ -60,6 +60,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   x:text<span class="Special"> &lt;- </span>array-to-text-line n
   <span class="Comment"># just ensure there were no errors</span>
 ]
+
+<span class="Comment"># finally, a specialization for single characters</span>
+<span class="muRecipe">def</span> to-text c:character<span class="muRecipe"> -&gt; </span>y:text [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  y<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">1/capacity</span>
+  *y<span class="Special"> &lt;- </span>put-index *y, <span class="Constant">0</span>, c
+]
+
+<span class="muScenario">scenario</span> character-to-text [
+  <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">111/o</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>to-text <span class="Constant">1</span>:character
+  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:text
+  memory-should-contain [
+    <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[o]</span>
+  ]
+]
 </pre>
 </body>
 </html>

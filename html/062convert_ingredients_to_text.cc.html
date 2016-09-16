@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - 062rewrite_stash.cc</title>
+<title>Mu - 062convert_ingredients_to_text.cc</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
@@ -18,8 +18,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.CommentedCode { color: #6c6c6c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -31,12 +32,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment">//: when encountering other types, try to convert them to strings using</span>
-<span class="Comment">//: 'to-text'</span>
+<span class="Comment">//: make some functions more friendly by trying to auto-convert their ingredients to text</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario rewrite_stashes_to_text)</span>
-recipe main [
+def main [
   local-scope
   <span class="Normal">n</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   stash n
@@ -45,7 +45,7 @@ recipe main [
 <span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario rewrite_traces_to_text)</span>
-recipe main [
+def main [
   local-scope
   <span class="Normal">n</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   trace <span class="Constant">2</span><span class="Delimiter">,</span> [app]<span class="Delimiter">,</span> n
@@ -57,7 +57,7 @@ recipe main [
 <span class="Comment">//: passing addresses around</span>
 
 <span class="Delimiter">:(scenario rewrite_stashes_of_arrays)</span>
-recipe main [
+def main [
   local-scope
   <span class="Normal">n</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
   stash *n
@@ -66,7 +66,7 @@ recipe main [
 <span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario ignore_stashes_of_static_arrays)</span>
-recipe main [
+def main [
   local-scope
   <span class="Normal">n</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   stash n
@@ -77,7 +77,7 @@ recipe main [
 container foo [
   <span class="Normal">x</span>:number
 ]
-recipe bar <span class="Delimiter">-&gt;</span> x:foo [
+def bar <span class="Delimiter">-&gt;</span> x:foo [
   local-scope
   load-ingredients
   x<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
@@ -88,33 +88,51 @@ recipe bar <span class="Delimiter">-&gt;</span> x:foo [
 <span class="Comment">//: misplaced; should be in instruction inserting/deleting transforms, but has</span>
 <span class="Comment">//: prerequisites: deduce_types_from_header and check_or_set_types_by_name</span>
 <span class="Delimiter">:(after &quot;Transform.push_back(deduce_types_from_header)&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_stashes_to_text<span class="Delimiter">);</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>convert_ingredients_to_text<span class="Delimiter">);</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> rewrite_stashes_to_text<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> convert_ingredients_to_text<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite 'stash' instructions in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- convert some ingredients to text in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- convert some ingredients to text in recipe &quot; &lt;&lt; caller.name &lt;&lt; '\n';</span>
   <span class="Comment">// in recipes without named locations, 'stash' is still not extensible</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  rewrite_stashes_to_text<span class="Delimiter">(</span>caller<span class="Delimiter">);</span>
+  convert_ingredients_to_text<span class="Delimiter">(</span>caller<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> rewrite_stashes_to_text<span class="Delimiter">(</span>recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> convert_ingredients_to_text<span class="Delimiter">(</span>recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;instruction&gt; new_instructions<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+    <span class="Comment">// all these cases are getting hairy. how can we make this extensible?</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;stash&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         ostringstream ingredient_name<span class="Delimiter">;</span>
         ingredient_name &lt;&lt; <span class="Constant">&quot;stash_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
-        rewrite_stash_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+        convert_ingredient_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         ostringstream ingredient_name<span class="Delimiter">;</span>
         ingredient_name &lt;&lt; <span class="Constant">&quot;trace_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
-        rewrite_stash_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+        convert_ingredient_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+      <span class="Delimiter">}</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>old_name == <span class="Constant">&quot;append&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Comment">// override only variants that try to append to a string</span>
+      <span class="Comment">// Beware: this hack restricts how much 'append' can be overridden. Any</span>
+      <span class="Comment">// new variants that match:</span>
+      <span class="Comment">//   append _:text, ___</span>
+      <span class="Comment">// will never ever get used.</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+        <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+          ostringstream ingredient_name<span class="Delimiter">;</span>
+          ingredient_name &lt;&lt; <span class="Constant">&quot;append_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
+          convert_ingredient_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+        <span class="Delimiter">}</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -125,9 +143,8 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Comment">// add an instruction to convert reagent 'r' to text in list 'out', then</span>
 <span class="Comment">// replace r with converted text</span>
-<span class="Normal">void</span> rewrite_stash_to_text<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> vector&lt;instruction&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; tmp_var<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> convert_ingredient_to_text<span class="Delimiter">(</span>reagent&amp; r<span class="Delimiter">,</span> vector&lt;instruction&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; tmp_var<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error; will be handled elsewhere</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Comment">// don't try to extend static arrays</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_static_array<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -161,17 +178,27 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Identifier">return</span> !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(scenarios run)</span>
+<span class="Delimiter">:(scenario append_other_types_to_text)</span>
+def main [
+  local-scope
+  <span class="Normal">n</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
+  <span class="Normal">c</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">111</span>/o
+  <span class="Normal">a</span>:text<span class="Special"> &lt;- </span>append [abc]<span class="Delimiter">,</span> <span class="Constant">10</span><span class="Delimiter">,</span> n<span class="Delimiter">,</span> c
+  <span class="Normal">expected</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc1011o]
+  <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> expected
+]
+
 <span class="Comment">//: Make sure that the new system is strictly better than just the 'stash'</span>
 <span class="Comment">//: primitive by itself.</span>
 
-<span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)</span>
 <span class="Comment"># type without a to-text implementation</span>
 container foo [
   <span class="Normal">x</span>:number
   <span class="Normal">y</span>:number
 ]
-recipe main [
+def main [
   local-scope
   <span class="Normal">x</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   stash x

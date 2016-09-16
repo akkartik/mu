@@ -21,6 +21,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -102,12 +103,21 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: To show results in the sandbox Mu uses a hack: it saves the products</span>
+<span class="Comment">//: returned by each instruction while Track_most_recent_products is true, and</span>
+<span class="Comment">//: keeps the most recent such result around so that it can be returned as the</span>
+<span class="Comment">//: result of a sandbox.</span>
+
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Normal">bool</span> Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
-trace_stream* Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-string Save_trace_file<span class="Delimiter">;</span>
+string Most_recent_products<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Track_most_recent_products = <span class="Constant">false</span><span class="Delimiter">;</span>
+Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+trace_stream* Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+string Save_trace_file<span class="Delimiter">;</span>
 <span class="Delimiter">:(code)</span>
 <span class="Comment">// reads a string, tries to call it as code (treating it as a test), saving</span>
 <span class="Comment">// all errors.</span>
@@ -175,6 +185,9 @@ map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; 
 <span class="Normal">void</span> run_code_end<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
   Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="CommentedCode">//?   ofstream fout(&quot;sandbox.log&quot;);</span>
+<span class="CommentedCode">//?   fout &lt;&lt; Trace_stream-&gt;readable_contents(&quot;&quot;);</span>
+<span class="CommentedCode">//?   fout.close();</span>
   <span class="Normal">delete</span> Trace_stream<span class="Delimiter">;</span>
   Trace_stream = Save_trace_stream<span class="Delimiter">;</span>
   Save_trace_stream = <span class="Constant">NULL</span><span class="Delimiter">;</span>
@@ -382,10 +395,6 @@ def main [
 <span class="Comment"># no errors</span>
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-string Most_recent_products<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Running One Instruction&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>Track_most_recent_products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   track_most_recent_products<span class="Delimiter">(</span>current_instruction<span class="Delimiter">(),</span> products<span class="Delimiter">);</span>
@@ -394,14 +403,22 @@ Most_recent_products = <span class="Constant">&quot;&quot;</span><span class="De
 <span class="Normal">void</span> track_most_recent_products<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; instruction<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt;&amp; products<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   ostringstream out<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Comment">// string</span>
+    <span class="Comment">// A sandbox can print a string result, but only if it is actually saved</span>
+    <span class="Comment">// to a variable in the sandbox, because otherwise the results are</span>
+    <span class="Comment">// reclaimed before the sandbox sees them. So you get these interactions</span>
+    <span class="Comment">// in the sandbox:</span>
+    <span class="Comment">//</span>
+    <span class="Comment">//    new [abc]</span>
+    <span class="Comment">//    =&gt; &lt;address&gt;</span>
+    <span class="Comment">//</span>
+    <span class="Comment">//    x:text &lt;- new [abc]</span>
+    <span class="Comment">//    =&gt; abc</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>i &lt; SIZE<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>instruction<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
         out &lt;&lt; read_mu_string<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
-      <span class="Comment">// End Record Product Special-cases</span>
     <span class="Delimiter">}</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span> ++j<span class="Delimiter">)</span>
       out &lt;&lt; no_scientific<span class="Delimiter">(</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span>j<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>

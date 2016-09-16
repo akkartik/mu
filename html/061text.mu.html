@@ -151,15 +151,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> result
 ]
 
-<span class="muRecipe">def</span> grow-buffer in:address:buffer<span class="muRecipe"> -&gt; </span>in:address:buffer [
+<span class="muRecipe">def</span> grow-buffer buf:address:buffer<span class="muRecipe"> -&gt; </span>buf:address:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># double buffer size</span>
-  olddata:text<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  olddata:text<span class="Special"> &lt;- </span>get *buf, <span class="Constant">data:offset</span>
   oldlen:number<span class="Special"> &lt;- </span>length *olddata
   newlen:number<span class="Special"> &lt;- </span>multiply oldlen, <span class="Constant">2</span>
   newdata:text<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, newlen
-  *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">data:offset</span>, newdata
+  *buf<span class="Special"> &lt;- </span>put *buf, <span class="Constant">data:offset</span>, newdata
   <span class="Comment"># copy old contents</span>
   i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -198,10 +198,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> append in:address:buffer, c:character<span class="muRecipe"> -&gt; </span>in:address:buffer [
+<span class="muRecipe">def</span> append buf:address:buffer, c:character<span class="muRecipe"> -&gt; </span>buf:address:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  len:number<span class="Special"> &lt;- </span>get *in, <span class="Constant">length:offset</span>
+  len:number<span class="Special"> &lt;- </span>get *buf, <span class="Constant">length:offset</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># backspace? just drop last character if it exists and return</span>
     backspace?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/backspace</span>
@@ -209,19 +209,34 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     empty?:boolean<span class="Special"> &lt;- </span>lesser-or-equal len, <span class="Constant">0</span>
     <span class="muControl">return-if</span> empty?
     len<span class="Special"> &lt;- </span>subtract len, <span class="Constant">1</span>
-    *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">length:offset</span>, len
+    *buf<span class="Special"> &lt;- </span>put *buf, <span class="Constant">length:offset</span>, len
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># grow buffer if necessary</span>
-    full?:boolean<span class="Special"> &lt;- </span>buffer-full? in
+    full?:boolean<span class="Special"> &lt;- </span>buffer-full? buf
     <span class="muControl">break-unless</span> full?
-    in<span class="Special"> &lt;- </span>grow-buffer in
+    buf<span class="Special"> &lt;- </span>grow-buffer buf
   <span class="Delimiter">}</span>
-  s:text<span class="Special"> &lt;- </span>get *in, <span class="Constant">data:offset</span>
+  s:text<span class="Special"> &lt;- </span>get *buf, <span class="Constant">data:offset</span>
   *s<span class="Special"> &lt;- </span>put-index *s, len, c
   len<span class="Special"> &lt;- </span>add len, <span class="Constant">1</span>
-  *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">length:offset</span>, len
+  *buf<span class="Special"> &lt;- </span>put *buf, <span class="Constant">length:offset</span>, len
+]
+
+<span class="muRecipe">def</span> append buf:address:buffer, t:text<span class="muRecipe"> -&gt; </span>buf:address:buffer [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  len:number<span class="Special"> &lt;- </span>length *t
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    c:character<span class="Special"> &lt;- </span>index *t, i
+    buf<span class="Special"> &lt;- </span>append buf, c
+    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
 ]
 
 <span class="muScenario">scenario</span> buffer-append-works [
@@ -318,44 +333,32 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> append a:text, b:text<span class="muRecipe"> -&gt; </span>result:text [
+<span class="Comment"># Append any number of texts together.</span>
+<span class="Comment"># A later layer also translates calls to this to implicitly call to-text, so</span>
+<span class="Comment"># append to string becomes effectively dynamically typed.</span>
+<span class="Comment">#</span>
+<span class="Comment"># Beware though: this hack restricts how much 'append' can be overridden. Any</span>
+<span class="Comment"># new variants that match:</span>
+<span class="Comment">#   append _:text, ___</span>
+<span class="Comment"># will never ever get used.</span>
+<span class="muRecipe">def</span> append first:text<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="Comment"># handle null addresses</span>
-  <span class="muControl">return-unless</span> a, b
-  <span class="muControl">return-unless</span> b, a
-  <span class="Comment"># result = new character[a.length + b.length]</span>
-  a-len:number<span class="Special"> &lt;- </span>length *a
-  b-len:number<span class="Special"> &lt;- </span>length *b
-  result-len:number<span class="Special"> &lt;- </span>add a-len, b-len
-  result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, result-len
-  <span class="Comment"># copy a into result</span>
-  result-idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  <span class="Comment"># append first ingredient</span>
   <span class="Delimiter">{</span>
-    <span class="Comment"># while i &lt; a.length</span>
-    a-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, a-len
-    <span class="muControl">break-if</span> a-done?
-    <span class="Comment"># result[result-idx] = a[i]</span>
-    in:character<span class="Special"> &lt;- </span>index *a, i
-    *result<span class="Special"> &lt;- </span>put-index *result, result-idx, in
-    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-    result-idx<span class="Special"> &lt;- </span>add result-idx, <span class="Constant">1</span>
+    <span class="muControl">break-unless</span> first
+    buf<span class="Special"> &lt;- </span>append buf, first
+  <span class="Delimiter">}</span>
+  <span class="Comment"># append remaining ingredients</span>
+  <span class="Delimiter">{</span>
+    arg:text, arg-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    <span class="muControl">break-unless</span> arg-found?
+    <span class="muControl">loop-unless</span> arg
+    buf<span class="Special"> &lt;- </span>append buf, arg
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># copy b into result</span>
-  i<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
-    <span class="Comment"># while i &lt; b.length</span>
-    b-done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, b-len
-    <span class="muControl">break-if</span> b-done?
-    <span class="Comment"># result[result-idx] = a[i]</span>
-    in:character<span class="Special"> &lt;- </span>index *b, i
-    *result<span class="Special"> &lt;- </span>put-index *result, result-idx, in
-    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-    result-idx<span class="Special"> &lt;- </span>add result-idx, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
 <span class="muScenario">scenario</span> text-append-1 [
@@ -394,6 +397,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   memory-should-contain [
     <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[hello,]</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> text-append-multiary [
+  run [
+    <span class="Constant">local-scope</span>
+    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello, ]</span>
+    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[world]</span>
+    z:text<span class="Special"> &lt;- </span>new <span class="Constant">[!]</span>
+    z:text<span class="Special"> &lt;- </span>append x, y, z
+    <span class="Constant">10</span>:array:character/<span class="Special">raw &lt;- </span>copy *z
+  ]
+  memory-should-contain [
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[hello, world!]</span>
   ]
 ]
 
