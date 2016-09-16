@@ -68,12 +68,21 @@ case RUN_SANDBOXED: {
   }
 }
 
+//: To show results in the sandbox Mu uses a hack: it saves the products
+//: returned by each instruction while Track_most_recent_products is true, and
+//: keeps the most recent such result around so that it can be returned as the
+//: result of a sandbox.
+
 :(before "End Globals")
 bool Track_most_recent_products = false;
-trace_stream* Save_trace_stream = NULL;
-string Save_trace_file;
+string Most_recent_products;
 :(before "End Setup")
 Track_most_recent_products = false;
+Most_recent_products = "";
+
+:(before "End Globals")
+trace_stream* Save_trace_stream = NULL;
+string Save_trace_file;
 :(code)
 // reads a string, tries to call it as code (treating it as a test), saving
 // all errors.
@@ -141,6 +150,9 @@ void run_code_begin(bool should_stash_snapshots) {
 void run_code_end() {
   Hide_errors = false;
   Disable_redefine_checks = false;
+//?   ofstream fout("sandbox.log");
+//?   fout << Trace_stream->readable_contents("");
+//?   fout.close();
   delete Trace_stream;
   Trace_stream = Save_trace_stream;
   Save_trace_stream = NULL;
@@ -348,10 +360,6 @@ b:number <- copy 0
 # no errors
 +mem: storing 0 in location 3
 
-:(before "End Globals")
-string Most_recent_products;
-:(before "End Setup")
-Most_recent_products = "";
 :(before "End Running One Instruction")
 if (Track_most_recent_products) {
   track_most_recent_products(current_instruction(), products);
@@ -360,14 +368,22 @@ if (Track_most_recent_products) {
 void track_most_recent_products(const instruction& instruction, const vector<vector<double> >& products) {
   ostringstream out;
   for (int i = 0; i < SIZE(products); ++i) {
-    // string
+    // A sandbox can print a string result, but only if it is actually saved
+    // to a variable in the sandbox, because otherwise the results are
+    // reclaimed before the sandbox sees them. So you get these interactions
+    // in the sandbox:
+    //
+    //    new [abc]
+    //    => <address>
+    //
+    //    x:text <- new [abc]
+    //    => abc
     if (i < SIZE(instruction.products)) {
       if (is_mu_string(instruction.products.at(i))) {
         if (!scalar(products.at(i))) continue;  // error handled elsewhere
         out << read_mu_string(products.at(i).at(0)) << '\n';
         continue;
       }
-      // End Record Product Special-cases
     }
     for (int j = 0; j < SIZE(products.at(i)); ++j)
       out << no_scientific(products.at(i).at(j)) << ' ';
