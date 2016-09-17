@@ -2,15 +2,15 @@
 # port of the Arc solution at http://arclanguage.org/item?id=19743
 
 container square [
-  rank:number
-  file:number
+  rank:num
+  file:num
 ]
 
-def nqueens n:number, queens:address:list:square -> result:number [
+def nqueens n:num, queens:address:list:square -> result:num [
   local-scope
   load-ingredients
   # if 'queens' is already long enough, print it and return
-  added-so-far:number <- length queens
+  added-so-far:num <- length queens
   {
     done?:boolean <- greater-or-equal added-so-far, n
     break-unless done?
@@ -18,15 +18,15 @@ def nqueens n:number, queens:address:list:square -> result:number [
     return 1
   }
   # still work to do
-  next-rank:number <- copy 0
+  next-rank:num <- copy 0
   {
     break-unless queens
     first:square <- first queens
-    existing-rank:number <- get first, rank:offset
+    existing-rank:num <- get first, rank:offset
     next-rank <- add existing-rank, 1
   }
   result <- copy 0
-  next-file:number <- copy 0
+  next-file:num <- copy 0
   {
     done?:boolean <- greater-or-equal next-file, n
     break-if done?
@@ -35,7 +35,7 @@ def nqueens n:number, queens:address:list:square -> result:number [
       curr-conflicts?:boolean <- conflict? curr, queens
       break-if curr-conflicts?
       new-queens:address:list:square <- push curr, queens
-      sub-result:number <- nqueens n, new-queens
+      sub-result:num <- nqueens n, new-queens
       result <- add result, sub-result
     }
     next-file <- add next-file, 1
@@ -55,11 +55,11 @@ def conflict? curr:square, queens:address:list:square -> result:boolean [
 def conflicting-file? curr:square, queens:address:list:square -> result:boolean [
   local-scope
   load-ingredients
-  curr-file:number <- get curr, file:offset
+  curr-file:num <- get curr, file:offset
   {
     break-unless queens
     q:square <- first queens
-    qfile:number <- get q, file:offset
+    qfile:num <- get q, file:offset
     file-match?:boolean <- equal curr-file, qfile
     reply-if file-match?, 1/conflict-found
     queens <- rest queens
@@ -71,15 +71,15 @@ def conflicting-file? curr:square, queens:address:list:square -> result:boolean 
 def conflicting-diagonal? curr:square, queens:address:list:square -> result:boolean [
   local-scope
   load-ingredients
-  curr-rank:number <- get curr, rank:offset
-  curr-file:number <- get curr, file:offset
+  curr-rank:num <- get curr, rank:offset
+  curr-file:num <- get curr, file:offset
   {
     break-unless queens
     q:square <- first queens
-    qrank:number <- get q, rank:offset
-    qfile:number <- get q, file:offset
-    rank-delta:number <- subtract qrank, curr-rank
-    file-delta:number <- subtract qfile, curr-file
+    qrank:num <- get q, rank:offset
+    qfile:num <- get q, file:offset
+    rank-delta:num <- subtract qrank, curr-rank
+    file-delta:num <- subtract qfile, curr-file
     rank-delta <- abs rank-delta
     file-delta <- abs file-delta
     diagonal-match?:boolean <- equal rank-delta, file-delta

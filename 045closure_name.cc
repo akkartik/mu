@@ -7,21 +7,21 @@
 def main [
   default-space:address:array:location <- new location:type, 30
   1:address:array:location/names:new-counter <- new-counter
-  2:number/raw <- increment-counter 1:address:array:location/names:new-counter
-  3:number/raw <- increment-counter 1:address:array:location/names:new-counter
+  2:num/raw <- increment-counter 1:address:array:location/names:new-counter
+  3:num/raw <- increment-counter 1:address:array:location/names:new-counter
 ]
 def new-counter [
   default-space:address:array:location <- new location:type, 30
-  x:number <- copy 23
-  y:number <- copy 3  # variable that will be incremented
+  x:num <- copy 23
+  y:num <- copy 3  # variable that will be incremented
   return default-space:address:array:location
 ]
 def increment-counter [
   default-space:address:array:location <- new location:type, 30
   0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
-  y:number/space:1 <- add y:number/space:1, 1  # increment
-  y:number <- copy 234  # dummy
-  return y:number/space:1
+  y:num/space:1 <- add y:num/space:1, 1  # increment
+  y:num <- copy 234  # dummy
+  return y:num/space:1
 ]
 +name: lexically surrounding space for recipe increment-counter comes from new-counter
 +mem: storing 5 in location 3
@@ -142,7 +142,7 @@ bool already_transformed(const reagent& r, const map<string, int>& names) {
 % Hide_errors = true;
 def f [
   local-scope
-  x:number/space:1 <- copy 34
+  x:num/space:1 <- copy 34
 ]
 +error: don't know surrounding recipe of 'f'
 +error: f: can't find a place to store 'x'
@@ -151,18 +151,18 @@ def f [
 :(scenario local_scope_ignores_nonlocal_spaces)
 def new-scope [
   new-default-space
-  x:address:number <- new number:type
-  *x:address:number <- copy 34
+  x:address:num <- new number:type
+  *x:address:num <- copy 34
   return default-space:address:array:location
 ]
 def use-scope [
   local-scope
   outer:address:array:location <- next-ingredient
   0:address:array:location/names:new-scope <- copy outer:address:array:location
-  return *x:address:number/space:1
+  return *x:address:num/space:1
 ]
 def main [
   1:address:array:location/raw <- new-scope
-  2:number/raw <- use-scope 1:address:array:location/raw
+  2:num/raw <- use-scope 1:address:array:location/raw
 ]
 +mem: storing 34 in location 2

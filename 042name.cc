@@ -4,7 +4,7 @@
 
 :(scenario transform_names)
 def main [
-  x:number <- copy 0
+  x:num <- copy 0
 ]
 +name: assign x 1
 +mem: storing 0 in location 1
@@ -13,7 +13,7 @@ def main [
 :(scenario transform_names_fails_on_use_before_define)
 % Hide_errors = true;
 def main [
-  x:number <- copy y:number
+  x:num <- copy y:num
 ]
 +error: main: use before set: 'y'
 # todo: detect conditional defines
@@ -156,7 +156,7 @@ bool is_special_name(const string& s) {
 :(scenario transform_names_supports_containers)
 def main [
   x:point <- merge 34, 35
-  y:number <- copy 3
+  y:num <- copy 3
 ]
 +name: assign x 1
 # skip location 2 because x occupies two locations
@@ -164,8 +164,8 @@ def main [
 
 :(scenario transform_names_supports_static_arrays)
 def main [
-  x:array:number:3 <- create-array
-  y:number <- copy 3
+  x:array:num:3 <- create-array
+  y:num <- copy 3
 ]
 +name: assign x 1
 # skip locations 2, 3, 4 because x occupies four locations
@@ -174,7 +174,7 @@ def main [
 :(scenario transform_names_passes_dummy)
 # _ is just a dummy result that never gets consumed
 def main [
-  _, x:number <- copy 0, 1
+  _, x:num <- copy 0, 1
 ]
 +name: assign x 1
 -name: assign _ 1
@@ -184,37 +184,37 @@ def main [
 :(scenario transform_names_passes_raw)
 % Hide_errors = true;
 def main [
-  x:number/raw <- copy 0
+  x:num/raw <- copy 0
 ]
 -name: assign x 1
-+error: can't write to location 0 in 'x:number/raw <- copy 0'
++error: can't write to location 0 in 'x:num/raw <- copy 0'
 
 :(scenarios transform)
 :(scenario transform_names_fails_when_mixing_names_and_numeric_locations)
 % Hide_errors = true;
 def main [
-  x:number <- copy 1:number
+  x:num <- copy 1:num
 ]
 +error: main: mixing variable names and numeric addresses
 
 :(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)
 % Hide_errors = true;
 def main [
-  x:number <- copy 1
-  1:number <- copy x:number
+  x:num <- copy 1
+  1:num <- copy x:num
 ]
 +error: main: mixing variable names and numeric addresses
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)
 def main [
-  x:number <- copy 1:number/raw
+  x:num <- copy 1:num/raw
 ]
 -error: main: mixing variable names and numeric addresses
 $error: 0
 
 :(scenario transform_names_does_not_fail_when_mixing_names_and_literals)
 def main [
-  x:number <- copy 1
+  x:num <- copy 1
 ]
 -error: main: mixing variable names and numeric addresses
 $error: 0
@@ -225,8 +225,8 @@ $error: 0
 :(scenario transform_names_transforms_container_elements)
 def main [
   p:address:point <- copy 0
-  a:number <- get *p:address:point, y:offset
-  b:number <- get *p:address:point, x:offset
+  a:num <- get *p:address:point, y:offset
+  b:num <- get *p:address:point, x:offset
 ]
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0
@@ -258,7 +258,7 @@ if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
 :(scenario transform_names_handles_containers)
 def main [
   a:point <- copy 0/unsafe
-  b:number <- copy 0/unsafe
+  b:num <- copy 0/unsafe
 ]
 +name: assign a 1
 +name: assign b 3
@@ -268,9 +268,9 @@ def main [
 :(scenarios run)
 :(scenario transform_names_handles_exclusive_containers)
 def main [
-  12:number <- copy 1
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 1
+  13:num <- copy 35
+  14:num <- copy 36
   20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, p:variant
 ]
 +name: variant p of type number-or-point has tag 1

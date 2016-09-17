@@ -2,8 +2,8 @@
 
 :(scenario merge)
 container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 3, 4
@@ -212,9 +212,9 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
 :(scenario merge_check_product)
 % Hide_errors = true;
 def main [
-  1:number <- merge 3
+  1:num <- merge 3
 ]
-+error: main: 'merge' should yield a container in '1:number <- merge 3'
++error: main: 'merge' should yield a container in '1:num <- merge 3'
 
 :(before "End Includes")
 #include <stack>

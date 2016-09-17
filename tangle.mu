@@ -6,7 +6,7 @@
 # This isn't a very tasteful example, just a simple demonstration of
 # possibilities.
 
-def factorial n:number -> result:number [
+def factorial n:num -> result:num [
   local-scope
   load-ingredients
   {
@@ -24,14 +24,14 @@ after <base-case> [
 
 after <recursive-case> [
   # return n * factorial(n - 1)
-  x:number <- subtract n, 1
-  subresult:number <- factorial x
+  x:num <- subtract n, 1
+  subresult:num <- factorial x
   result <- multiply subresult, n
 ]
 
 def main [
-  1:number <- factorial 5
+  1:num <- factorial 5
   # trailing space in next line is to help with syntax highlighting
-  $print [result: ], 1:number, [ 
+  $print [result: ], 1:num, [ 
 ]
 ]

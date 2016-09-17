@@ -9,7 +9,7 @@
 :(scenario transform_fails_on_reusing_name_with_different_type)
 % Hide_errors = true;
 def main [
-  x:number <- copy 1
+  x:num <- copy 1
   x:boolean <- copy 1
 ]
 +error: main: 'x' used with multiple types
@@ -68,15 +68,15 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
 
 :(scenario transform_fills_in_missing_types)
 def main [
-  x:number <- copy 1
-  y:number <- add x, 1
+  x:num <- copy 1
+  y:num <- add x, 1
 ]
 # x is in location 1, y in location 2
 +mem: storing 2 in location 2
 
 :(scenario transform_fills_in_missing_types_in_product)
 def main [
-  x:number <- copy 1
+  x:num <- copy 1
   x <- copy 2
 ]
 # x is in location 1
@@ -84,7 +84,7 @@ def main [
 
 :(scenario transform_fills_in_missing_types_in_product_and_ingredient)
 def main [
-  x:number <- copy 1
+  x:num <- copy 1
   x <- add x, 1
 ]
 # x is in location 1
@@ -94,7 +94,7 @@ def main [
 % Hide_errors = true;
 def main [
   x <- copy 1
-  x:number <- copy 2
+  x:num <- copy 2
 ]
 +error: main: missing type for 'x' in 'x <- copy 1'
 
@@ -109,7 +109,7 @@ def main [
 :(scenario array_type_without_size_fails)
 % Hide_errors = true;
 def main [
-  x:array:number <- merge 2, 12, 13
+  x:array:num <- merge 2, 12, 13
 ]
 +error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.
 
@@ -121,7 +121,7 @@ def main [
   local-scope
   0:address:array:location/names:foo <- copy 0  # specify surrounding space
   x:boolean <- copy 1/true
-  x:number/space:1 <- copy 34
+  x:num/space:1 <- copy 34
   x/space:1 <- copy 35
 ]
 $error: 0

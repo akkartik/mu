@@ -3,7 +3,7 @@
 def main [
   open-console
   print-character-to-display 97, 1/red, 2/green
-  1:number/raw, 2:number/raw <- cursor-position-on-display
+  1:num/raw, 2:num/raw <- cursor-position-on-display
   wait-for-some-interaction
   clear-display
   move-cursor-on-display 0, 4

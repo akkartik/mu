@@ -2,11 +2,11 @@
 
 def main [
   local-scope
-  x:address:number <- new number:type
+  x:address:num <- new number:type
   foo x
 ]
 
-def foo x:address:number -> x:address:number [
+def foo x:address:num -> x:address:num [
   local-scope
   load-ingredients
   *x <- copy 34

@@ -11,7 +11,7 @@ type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
 get_or_insert(Type, tmp);  // initialize
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
-get(Type, tmp).elements.push_back(reagent("i:number"));
+get(Type, tmp).elements.push_back(reagent("i:num"));
 get(Type, tmp).elements.push_back(reagent("p:point"));
 }
 
@@ -21,9 +21,9 @@ get(Type, tmp).elements.push_back(reagent("p:point"));
 :(scenario copy_exclusive_container)
 # Copying exclusive containers copies all their contents and an extra location for the tag.
 def main [
-  1:number <- copy 1  # 'point' variant
-  2:number <- copy 34
-  3:number <- copy 35
+  1:num <- copy 1  # 'point' variant
+  2:num <- copy 34
+  3:num <- copy 35
   4:number-or-point <- copy 1:number-or-point/unsafe
 ]
 +mem: storing 1 in location 4
@@ -70,9 +70,9 @@ put(Type_ordinal, "variant", 0);
 
 :(scenario maybe_convert)
 def main [
-  12:number <- copy 1
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 1
+  13:num <- copy 35
+  14:num <- copy 36
   20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 # boolean
@@ -83,10 +83,10 @@ def main [
 
 :(scenario maybe_convert_fail)
 def main [
-  12:number <- copy 1
-  13:number <- copy 35
-  14:number <- copy 36
-  20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 0:variant
+  12:num <- copy 1
+  13:num <- copy 35
+  14:num <- copy 36
+  20:num, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
 # boolean
 +mem: storing 0 in location 21
@@ -200,18 +200,18 @@ const reagent variant_type(const type_tree* type, int tag) {
 :(scenario maybe_convert_product_type_mismatch)
 % Hide_errors = true;
 def main [
-  12:number <- copy 1
-  13:number <- copy 35
-  14:number <- copy 36
-  20:number, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  12:num <- copy 1
+  13:num <- copy 35
+  14:num <- copy 36
+  20:num, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 +error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number
 
 :(scenario maybe_convert_dummy_product)
 def main [
-  12:number <- copy 1
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 1
+  13:num <- copy 35
+  14:num <- copy 36
   _, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 $error: 0
@@ -220,8 +220,8 @@ $error: 0
 
 :(scenario exclusive_container)
 exclusive-container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 +parse: --- defining exclusive-container foo
 +parse: element: {x: "number"}
@@ -237,27 +237,27 @@ else if (command == "exclusive-container") {
 
 :(scenario exclusive_container_contains_array)
 exclusive-container foo [
-  x:array:number:3
+  x:array:num:3
 ]
 $error: 0
 
 :(scenario exclusive_container_disallows_dynamic_array_element)
 % Hide_errors = true;
 exclusive-container foo [
-  x:array:number
+  x:array:num
 ]
 +error: container 'foo' cannot determine size of element 'x'
 
 //:: To construct exclusive containers out of variant types, use 'merge'.
 :(scenario lift_to_exclusive_container)
 exclusive-container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
-  1:number <- copy 34
-  2:foo <- merge 0/x, 1:number  # tag must be a literal when merging exclusive containers
-  4:foo <- merge 1/y, 1:number
+  1:num <- copy 34
+  2:foo <- merge 0/x, 1:num  # tag must be a literal when merging exclusive containers
+  4:foo <- merge 1/y, 1:num
 ]
 +mem: storing 0 in location 2
 +mem: storing 34 in location 3
@@ -268,11 +268,11 @@ def main [
 
 :(scenario merge_handles_exclusive_container)
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  z:number
+  z:num
 ]
 def main [
   1:foo <- merge 0/x, 34
@@ -284,29 +284,29 @@ $error: 0
 :(scenario merge_requires_literal_tag_for_exclusive_container)
 % Hide_errors = true;
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  z:number
+  z:num
 ]
 def main [
-  1:number <- copy 0
-  2:foo <- merge 1:number, 34
+  1:num <- copy 0
+  2:foo <- merge 1:num, 34
 ]
-+error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:number, 34'
++error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo <- merge 1:num, 34'
 
 :(scenario merge_handles_exclusive_container_inside_exclusive_container)
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 exclusive-container bar [
-  a:number
-  b:number
+  a:num
+  b:num
 ]
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   2:bar <- merge 0/a, 34
   4:foo <- merge 1/y, 2:bar
 ]
@@ -342,12 +342,12 @@ case EXCLUSIVE_CONTAINER: {
 
 :(scenario merge_check_container_containing_exclusive_container)
 container foo [
-  x:number
+  x:num
   y:bar
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 23, 1/y, 34
@@ -360,12 +360,12 @@ $error: 0
 :(scenario merge_check_container_containing_exclusive_container_2)
 % Hide_errors = true;
 container foo [
-  x:number
+  x:num
   y:bar
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 23, 1/y, 34, 35
@@ -374,12 +374,12 @@ def main [
 
 :(scenario merge_check_exclusive_container_containing_container)
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 1/y, 23, 34
@@ -391,12 +391,12 @@ $error: 0
 
 :(scenario merge_check_exclusive_container_containing_container_2)
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 0/x, 23
@@ -406,12 +406,12 @@ $error: 0
 :(scenario merge_check_exclusive_container_containing_container_3)
 % Hide_errors = true;
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 1/y, 23
@@ -420,12 +420,12 @@ def main [
 
 :(scenario merge_check_exclusive_container_containing_container_4)
 exclusive-container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  a:number
-  b:number
+  a:num
+  b:num
 ]
 def main [
   1:bar <- merge 23, 24
@@ -450,18 +450,18 @@ if (current_step_index() < SIZE(Current_routine->steps())
 
 :(scenario merge_exclusive_container_with_mismatched_sizes)
 container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 exclusive-container bar [
-  x:number
+  x:num
   y:foo
 ]
 def main [
-  1:number <- copy 34
-  2:number <- copy 35
-  3:bar <- merge 0/x, 1:number
-  6:bar <- merge 1/foo, 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 35
+  3:bar <- merge 0/x, 1:num
+  6:bar <- merge 1/foo, 1:num, 2:num
 ]
 +mem: storing 0 in location 3
 +mem: storing 34 in location 4

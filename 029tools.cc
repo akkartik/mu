@@ -74,8 +74,8 @@ def main [
 
 :(scenario stash_number)
 def main [
-  1:number <- copy 34
-  stash [foo:], 1:number
+  1:num <- copy 34
+  stash [foo:], 1:num
 ]
 +app: foo: 34
 

@@ -3,12 +3,12 @@
 
 :(scenario new_reclaim)
 def main [
-  1:address:number <- new number:type
-  2:number <- copy 1:address:number  # because 1 will get reset during abandon below
-  1:address:number <- copy 0  # abandon
-  3:address:number <- new number:type  # must be same size as abandoned memory to reuse
-  4:number <- copy 3:address:number
-  5:boolean <- equal 2:number, 4:number
+  1:address:num <- new number:type
+  2:num <- copy 1:address:num  # because 1 will get reset during abandon below
+  1:address:num <- copy 0  # abandon
+  3:address:num <- new number:type  # must be same size as abandoned memory to reuse
+  4:num <- copy 3:address:num
+  5:boolean <- equal 2:num, 4:num
 ]
 # both allocations should have returned the same address
 +mem: storing 1 in location 5
@@ -75,34 +75,34 @@ if (get_or_insert(Current_routine->free_list, size)) {
 
 :(scenario new_differing_size_no_reclaim)
 def main [
-  1:address:number <- new number:type
-  2:number <- copy 1:address:number
-  1:address:number <- copy 0  # abandon
-  3:address:array:number <- new number:type, 2  # different size
-  4:number <- copy 3:address:array:number
-  5:boolean <- equal 2:number, 4:number
+  1:address:num <- new number:type
+  2:num <- copy 1:address:num
+  1:address:num <- copy 0  # abandon
+  3:address:array:num <- new number:type, 2  # different size
+  4:num <- copy 3:address:array:num
+  5:boolean <- equal 2:num, 4:num
 ]
 # no reuse
 +mem: storing 0 in location 5
 
 :(scenario new_reclaim_array)
 def main [
-  1:address:array:number <- new number:type, 2
-  2:number <- copy 1:address:array:number
-  1:address:array:number <- copy 0  # abandon
-  3:address:array:number <- new number:type, 2  # same size
-  4:number <- copy 3:address:array:number
-  5:boolean <- equal 2:number, 4:number
+  1:address:array:num <- new number:type, 2
+  2:num <- copy 1:address:array:num
+  1:address:array:num <- copy 0  # abandon
+  3:address:array:num <- new number:type, 2  # same size
+  4:num <- copy 3:address:array:num
+  5:boolean <- equal 2:num, 4:num
 ]
 # both calls to new returned identical addresses
 +mem: storing 1 in location 5
 
 :(scenario abandon_on_overwrite)
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   # over-writing one allocation with another
-  1:address:number <- new number:type
-  1:address:number <- copy 0
+  1:address:num <- new number:type
+  1:address:num <- copy 0
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -111,15 +111,15 @@ def main [
 
 :(scenario abandon_after_call)
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   # passing in addresses to recipes increments refcount
-  foo 1:address:number
-  1:address:number <- copy 0
+  foo 1:address:num
+  1:address:num <- copy 0
 ]
 def foo [
-  2:address:number <- next-ingredient
+  2:address:num <- next-ingredient
   # return does NOT yet decrement refcount; memory must be explicitly managed
-  2:address:number <- copy 0
+  2:address:num <- copy 0
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -135,12 +135,12 @@ def foo [
 
 :(scenario abandon_on_overwrite_array)
 def main [
-  1:number <- copy 30
+  1:num <- copy 30
   # allocate an array
-  10:address:array:number <- new number:type, 20
-  11:number <- copy 10:address:array:number  # doesn't increment refcount
+  10:address:array:num <- new number:type, 20
+  11:num <- copy 10:address:array:num  # doesn't increment refcount
   # allocate another array in its place, implicitly freeing the previous allocation
-  10:address:array:number <- new number:type, 25
+  10:address:array:num <- new number:type, 25
 ]
 +run: {10: ("address" "array" "number")} <- new {number: "type"}, {25: "literal"}
 # abandoned array is of old size (20, not 25)
@@ -149,13 +149,13 @@ def main [
 :(scenario refcounts_abandon_address_in_container)
 # container containing an address
 container foo [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:address:foo <- new foo:type
-  *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
-  1:address:number <- copy 0
+  *2:address:foo <- put *2:address:foo, x:offset, 1:address:num
+  1:address:num <- copy 0
   2:address:foo <- copy 0
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
@@ -178,11 +178,11 @@ def main [
 # todo: move past dilated reagent
 :(scenario refcounts_abandon_address_in_array)
 def main [
-  1:address:number <- new number:type
-  2:address:array:address:number <- new {(address number): type}, 3
-  *2:address:array:address:number <- put-index *2:address:array:address:number, 1, 1:address:number
-  1:address:number <- copy 0
-  2:address:array:address:number <- copy 0
+  1:address:num <- new number:type
+  2:address:array:address:num <- new {(address number): type}, 3
+  *2:address:array:address:num <- put-index *2:address:array:address:num, 1, 1:address:num
+  1:address:num <- copy 0
+  2:address:array:address:num <- copy 0
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -198,14 +198,14 @@ def main [
 :(scenario refcounts_abandon_address_in_container_in_array)
 # container containing an address
 container foo [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:address:array:foo <- new foo:type, 3
-  3:foo <- merge 1:address:number
+  3:foo <- merge 1:address:num
   *2:address:array:foo <- put-index *2:address:array:foo, 1, 3:foo
-  1:address:number <- copy 0
+  1:address:num <- copy 0
   3:foo <- merge 0
   2:address:array:foo <- copy 0
 ]

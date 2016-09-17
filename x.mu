@@ -1,8 +1,8 @@
 # example program: add two numbers
 
 def main [
-  11:number <- copy 1
-  12:number <- copy 3
-  13:number <- add 11:number, 12:number
+  11:num <- copy 1
+  12:num <- copy 3
+  13:num <- add 11:num, 12:num
   $dump-memory
 ]

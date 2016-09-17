@@ -44,9 +44,9 @@ case EQUAL: {
 
 :(scenario equal)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- equal 1:num, 2:num
 ]
 +mem: location 1 is 34
 +mem: location 2 is 33
@@ -54,9 +54,9 @@ def main [
 
 :(scenario equal_2)
 def main [
-  1:number <- copy 34
-  2:number <- copy 34
-  3:boolean <- equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 34
+  3:boolean <- equal 1:num, 2:num
 ]
 +mem: location 1 is 34
 +mem: location 2 is 34
@@ -110,9 +110,9 @@ case NOT_EQUAL: {
 
 :(scenario not_equal)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- not-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- not-equal 1:num, 2:num
 ]
 +mem: location 1 is 34
 +mem: location 2 is 33
@@ -120,9 +120,9 @@ def main [
 
 :(scenario not_equal_2)
 def main [
-  1:number <- copy 34
-  2:number <- copy 34
-  3:boolean <- not-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 34
+  3:boolean <- not-equal 1:num, 2:num
 ]
 +mem: location 1 is 34
 +mem: location 2 is 34
@@ -169,17 +169,17 @@ case GREATER_THAN: {
 
 :(scenario greater_than)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- greater-than 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- greater-than 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario greater_than_2)
 def main [
-  1:number <- copy 34
-  2:number <- copy 34
-  3:boolean <- greater-than 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 34
+  3:boolean <- greater-than 1:num, 2:num
 ]
 +mem: storing 0 in location 3
 
@@ -236,17 +236,17 @@ case LESSER_THAN: {
 
 :(scenario lesser_than)
 def main [
-  1:number <- copy 32
-  2:number <- copy 33
-  3:boolean <- lesser-than 1:number, 2:number
+  1:num <- copy 32
+  2:num <- copy 33
+  3:boolean <- lesser-than 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario lesser_than_2)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- lesser-than 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- lesser-than 1:num, 2:num
 ]
 +mem: storing 0 in location 3
 
@@ -303,25 +303,25 @@ case GREATER_OR_EQUAL: {
 
 :(scenario greater_or_equal)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- greater-or-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- greater-or-equal 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal_2)
 def main [
-  1:number <- copy 34
-  2:number <- copy 34
-  3:boolean <- greater-or-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 34
+  3:boolean <- greater-or-equal 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario greater_or_equal_3)
 def main [
-  1:number <- copy 34
-  2:number <- copy 35
-  3:boolean <- greater-or-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 35
+  3:boolean <- greater-or-equal 1:num, 2:num
 ]
 +mem: storing 0 in location 3
 
@@ -378,25 +378,25 @@ case LESSER_OR_EQUAL: {
 
 :(scenario lesser_or_equal)
 def main [
-  1:number <- copy 32
-  2:number <- copy 33
-  3:boolean <- lesser-or-equal 1:number, 2:number
+  1:num <- copy 32
+  2:num <- copy 33
+  3:boolean <- lesser-or-equal 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal_2)
 def main [
-  1:number <- copy 33
-  2:number <- copy 33
-  3:boolean <- lesser-or-equal 1:number, 2:number
+  1:num <- copy 33
+  2:num <- copy 33
+  3:boolean <- lesser-or-equal 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario lesser_or_equal_3)
 def main [
-  1:number <- copy 34
-  2:number <- copy 33
-  3:boolean <- lesser-or-equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 33
+  3:boolean <- lesser-or-equal 1:num, 2:num
 ]
 +mem: storing 0 in location 3
 

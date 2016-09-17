@@ -45,7 +45,7 @@
 //:    sufficient space to hold that type, and returns an address (bookmark)
 //:    to the allocated space.
 //:
-//:      x:address:number <- new number:type
+//:      x:address:num <- new number:type
 //:
 //:                     +------------+
 //:          x -------> |  number    |
@@ -83,7 +83,7 @@
 //:    The refcount of 1 here indicates that this number has one bookmark
 //:    outstanding. If you then make a copy of x, the refcount increments:
 //:
-//:      y:address:number <- copy x
+//:      y:address:num <- copy x
 //:
 //:          x ---+     +---+------------+
 //:               +---> | 2 |  number    |
@@ -123,15 +123,15 @@
 # call 'new' two times with identical types without modifying the results; you
 # should get back different results
 def main [
-  1:address:number/raw <- new number:type
-  2:address:number/raw <- new number:type
-  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
+  1:address:num/raw <- new number:type
+  2:address:num/raw <- new number:type
+  3:boolean/raw <- equal 1:address:num/raw, 2:address:num/raw
 ]
 +mem: storing 0 in location 3
 
 :(scenario dilated_reagent_with_new)
 def main [
-  1:address:address:number <- new {(address number): type}
+  1:address:address:num <- new {(address number): type}
 ]
 +new: size of ("address" "number") is 1
 
@@ -341,15 +341,15 @@ void ensure_space(int size) {
 % Memory_allocated_until = 10;
 % put(Memory, Memory_allocated_until, 1);
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
 ]
 +mem: storing 0 in location 10
 
 :(scenario new_array)
 def main [
-  1:address:array:number/raw <- new number:type, 5
-  2:address:number/raw <- new number:type
-  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
+  1:address:array:num/raw <- new number:type, 5
+  2:address:num/raw <- new number:type
+  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
 +mem: array length is 5
@@ -358,9 +358,9 @@ def main [
 
 :(scenario new_empty_array)
 def main [
-  1:address:array:number/raw <- new number:type, 0
-  2:address:number/raw <- new number:type
-  3:number/raw <- subtract 2:address:number/raw, 1:address:array:number/raw
+  1:address:array:num/raw <- new number:type, 0
+  2:address:num/raw <- new number:type
+  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
 +mem: array length is 0
@@ -371,7 +371,7 @@ def main [
 :(scenario new_overflow)
 % Initial_memory_per_routine = 3;  // barely enough room for point allocation below
 def main [
-  1:address:number/raw <- new number:type
+  1:address:num/raw <- new number:type
   2:address:point/raw <- new point:type  # not enough room in initial page
 ]
 +new: routine allocated memory from 1000 to 1003

@@ -12,16 +12,16 @@
 :(scenario global_space)
 def main [
   # pretend address:array:location; in practice we'll use new
-  10:number <- copy 0  # refcount
-  11:number <- copy 5  # length
+  10:num <- copy 0  # refcount
+  11:num <- copy 5  # length
   # pretend address:array:location; in practice we'll use new
-  20:number <- copy 0  # refcount
-  21:number <- copy 5  # length
+  20:num <- copy 0  # refcount
+  21:num <- copy 5  # length
   # actual start of this recipe
   global-space:address:array:location <- copy 20/unsafe
   default-space:address:array:location <- copy 10/unsafe
-  1:number <- copy 23
-  1:number/space:global <- copy 24
+  1:num <- copy 23
+  1:num/space:global <- copy 24
 ]
 # store to default space: 10 + (skip refcount and length) 2 + (index) 1
 +mem: storing 23 in location 13
@@ -64,8 +64,8 @@ if (x.name == "global-space") {
 :(scenario global_space_with_names)
 def main [
   global-space:address:array:location <- new location:type, 10
-  x:number <- copy 23
-  1:number/space:global <- copy 24
+  x:num <- copy 23
+  1:num/space:global <- copy 24
 ]
 # don't complain about mixing numeric addresses and names
 $error: 0

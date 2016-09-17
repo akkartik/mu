@@ -25,7 +25,7 @@
 //:
 //: You can also read from the payload in instructions like this:
 //:
-//:     z:number <- add *x, 1
+//:     z:num <- add *x, 1
 //:
 //: After this instruction runs the value of z will be 35.
 //:
@@ -34,10 +34,10 @@
 
 :(scenario copy_indirect)
 def main [
-  1:address:number <- copy 10/unsafe
-  11:number <- copy 34
+  1:address:num <- copy 10/unsafe
+  11:num <- copy 34
   # This loads location 1 as an address and looks up *that* location.
-  2:number <- copy 1:address:number/lookup
+  2:num <- copy 1:address:num/lookup
 ]
 # 1 contains 10. Skip refcount and lookup location 11.
 +mem: storing 34 in location 2
@@ -49,8 +49,8 @@ canonize(x);
 //: 'lookup' property
 :(scenario store_indirect)
 def main [
-  1:address:number <- copy 10/unsafe
-  1:address:number/lookup <- copy 34
+  1:address:num <- copy 10/unsafe
+  1:address:num/lookup <- copy 34
 ]
 +mem: storing 34 in location 11
 
@@ -61,11 +61,11 @@ canonize(x);
 :(scenario store_to_0_fails)
 % Hide_errors = true;
 def main [
-  1:address:number <- copy 0
-  1:address:number/lookup <- copy 34
+  1:address:num <- copy 0
+  1:address:num/lookup <- copy 34
 ]
 -mem: storing 34 in location 0
-+error: can't write to location 0 in '1:address:number/lookup <- copy 34'
++error: can't write to location 0 in '1:address:num/lookup <- copy 34'
 
 :(code)
 void canonize(reagent& x) {
@@ -101,7 +101,7 @@ void lookup_memory_core(reagent& x) {
 }
 
 void test_lookup_address_skips_refcount() {
-  reagent x("*x:address:number");
+  reagent x("*x:address:num");
   x.set_value(34);  // unsafe
   put(Memory, 34, 1000);
   lookup_memory(x);
@@ -110,7 +110,7 @@ void test_lookup_address_skips_refcount() {
 }
 
 void test_lookup_zero_address_does_not_skip_refcount() {
-  reagent x("*x:address:number");
+  reagent x("*x:address:num");
   x.set_value(34);  // unsafe
   put(Memory, 34, 0);
   lookup_memory(x);
@@ -185,9 +185,9 @@ void drop_one_lookup(reagent& r) {
 def main [
   1:address:point <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
-  2:number <- get 1:address:point/lookup, 0:offset
+  11:num <- copy 34
+  12:num <- copy 35
+  2:num <- get 1:address:point/lookup, 0:offset
 ]
 +mem: storing 34 in location 2
 
@@ -195,10 +195,10 @@ def main [
 def main [
   1:address:point <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
-  2:address:number <- copy 20/unsafe
-  2:address:number/lookup <- get 1:address:point/lookup, 0:offset
+  11:num <- copy 34
+  12:num <- copy 35
+  2:address:num <- copy 20/unsafe
+  2:address:num/lookup <- get 1:address:point/lookup, 0:offset
 ]
 +mem: storing 34 in location 21
 
@@ -206,9 +206,9 @@ def main [
 def main [
   1:address:point <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
-  2:number <- get 1:address:point/lookup/foo, 0:offset
+  11:num <- copy 34
+  12:num <- copy 35
+  2:num <- get 1:address:point/lookup/foo, 0:offset
 ]
 +mem: storing 34 in location 2
 
@@ -223,8 +223,8 @@ canonize(base);
 def main [
   1:address:point <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
+  11:num <- copy 34
+  12:num <- copy 35
   1:address:point/lookup <- put 1:address:point/lookup, 0:offset, 36
 ]
 +mem: storing 36 in location 11
@@ -241,8 +241,8 @@ canonize(base);
 def main [
   1:address:point <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
+  11:num <- copy 34
+  12:num <- copy 35
   1:address:point <- put 1:address:point/lookup, x:offset, 36
 ]
 +error: main: product of 'put' must be first ingredient '1:address:point/lookup', but got '1:address:point'
@@ -260,9 +260,9 @@ if (!types_strictly_match(p, i)) {
 :(scenario new_error)
 % Hide_errors = true;
 def main [
-  1:number/raw <- new number:type
+  1:num/raw <- new number:type
 ]
-+error: main: product of 'new' has incorrect type: '1:number/raw <- new number:type'
++error: main: product of 'new' has incorrect type: '1:num/raw <- new number:type'
 
 :(after "Update NEW product in Check")
 canonize_type(product);
@@ -270,12 +270,12 @@ canonize_type(product);
 :(scenario copy_array_indirect)
 def main [
   # 10 reserved for refcount
-  11:array:number:3 <- create-array
-  12:number <- copy 14
-  13:number <- copy 15
-  14:number <- copy 16
-  1:address:array:number <- copy 10/unsafe
-  2:array:number <- copy 1:address:array:number/lookup
+  11:array:num:3 <- create-array
+  12:num <- copy 14
+  13:num <- copy 15
+  14:num <- copy 16
+  1:address:array:num <- copy 10/unsafe
+  2:array:num <- copy 1:address:array:num/lookup
 ]
 +mem: storing 3 in location 2
 +mem: storing 14 in location 3
@@ -284,9 +284,9 @@ def main [
 
 :(scenario create_array_indirect)
 def main [
-  1000:number/raw <- copy 1  # pretend refcount
-  1:address:array:number:3 <- copy 1000/unsafe  # pretend allocation
-  1:address:array:number:3/lookup <- create-array
+  1000:num/raw <- copy 1  # pretend refcount
+  1:address:array:num:3 <- copy 1000/unsafe  # pretend allocation
+  1:address:array:num:3/lookup <- create-array
 ]
 +mem: storing 3 in location 1001
 
@@ -298,12 +298,12 @@ canonize(product);
 :(scenario index_indirect)
 def main [
   # 10 reserved for refcount
-  11:array:number:3 <- create-array
-  12:number <- copy 14
-  13:number <- copy 15
-  14:number <- copy 16
-  1:address:array:number <- copy 10/unsafe
-  2:number <- index 1:address:array:number/lookup, 1
+  11:array:num:3 <- create-array
+  12:num <- copy 14
+  13:num <- copy 15
+  14:num <- copy 16
+  1:address:array:num <- copy 10/unsafe
+  2:num <- index 1:address:array:num/lookup, 1
 ]
 +mem: storing 15 in location 2
 
@@ -322,25 +322,25 @@ canonize(index);
 :(scenario put_index_indirect)
 def main [
   # 10 reserved for refcount
-  11:array:number:3 <- create-array
-  12:number <- copy 14
-  13:number <- copy 15
-  14:number <- copy 16
-  1:address:array:number <- copy 10/unsafe
-  1:address:array:number/lookup <- put-index 1:address:array:number/lookup, 1, 34
+  11:array:num:3 <- create-array
+  12:num <- copy 14
+  13:num <- copy 15
+  14:num <- copy 16
+  1:address:array:num <- copy 10/unsafe
+  1:address:array:num/lookup <- put-index 1:address:array:num/lookup, 1, 34
 ]
 +mem: storing 34 in location 13
 
 :(scenario put_index_indirect_2)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:address:number <- copy 10/unsafe
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:address:num <- copy 10/unsafe
   # 10 reserved for refcount
-  11:number <- copy 1
-  1:array:number:3 <- put-index 1:array:number:3, 5:address:number/lookup, 34
+  11:num <- copy 1
+  1:array:num:3 <- put-index 1:array:num:3, 5:address:num/lookup, 34
 ]
 +mem: storing 34 in location 3
 
@@ -348,14 +348,14 @@ def main [
 % Hide_errors = true;
 def main [
   # 10 reserved for refcount
-  11:array:number:3 <- create-array
-  12:number <- copy 14
-  13:number <- copy 15
-  14:number <- copy 16
-  1:address:array:number <- copy 10/unsafe
-  1:address:array:number <- put-index 1:address:array:number/lookup, 1, 34
+  11:array:num:3 <- create-array
+  12:num <- copy 14
+  13:num <- copy 15
+  14:num <- copy 16
+  1:address:array:num <- copy 10/unsafe
+  1:address:array:num <- put-index 1:address:array:num/lookup, 1, 34
 ]
-+error: main: product of 'put-index' must be first ingredient '1:address:array:number/lookup', but got '1:address:array:number'
++error: main: product of 'put-index' must be first ingredient '1:address:array:num/lookup', but got '1:address:array:num'
 
 :(before "End PUT_INDEX Product Checks")
 reagent/*copy*/ p = inst.products.at(0);
@@ -370,10 +370,10 @@ if (!types_strictly_match(p, i)) {
 :(scenario dilated_reagent_in_static_array)
 def main [
   {1: (array (address number) 3)} <- create-array
-  5:address:number <- new number:type
-  {1: (array (address number) 3)} <- put-index {1: (array (address number) 3)}, 0, 5:address:number
-  *5:address:number <- copy 34
-  6:number <- copy *5:address:number
+  5:address:num <- new number:type
+  {1: (array (address number) 3)} <- put-index {1: (array (address number) 3)}, 0, 5:address:num
+  *5:address:num <- copy 34
+  6:num <- copy *5:address:num
 ]
 +run: creating array of size 4
 +mem: storing 34 in location 6
@@ -393,12 +393,12 @@ canonize(index);
 :(scenario length_indirect)
 def main [
   # 10 reserved for refcount
-  11:array:number:3 <- create-array
-  12:number <- copy 14
-  13:number <- copy 15
-  14:number <- copy 16
-  1:address:array:number <- copy 10/unsafe
-  2:number <- length 1:address:array:number/lookup
+  11:array:num:3 <- create-array
+  12:num <- copy 14
+  13:num <- copy 15
+  14:num <- copy 16
+  1:address:array:num <- copy 10/unsafe
+  2:num <- length 1:address:array:num/lookup
 ]
 +mem: storing 3 in location 2
 
@@ -412,7 +412,7 @@ def main [
   # 10 reserved for refcount
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
-  2:number, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  2:num, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 3
 +mem: storing 34 in location 2
@@ -422,8 +422,8 @@ def main [
   # 10 reserved for refcount
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
-  2:address:number <- copy 20/unsafe
-  2:address:number/lookup, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  2:address:num <- copy 20/unsafe
+  2:address:num/lookup, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 3
 +mem: storing 34 in location 21
@@ -434,7 +434,7 @@ def main [
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
   2:address:boolean <- copy 20/unsafe
-  3:number, 2:address:boolean/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  3:num, 2:address:boolean/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 21
 +mem: storing 34 in location 3

@@ -2,12 +2,12 @@
 
 :(scenario return)
 def main [
-  1:number, 2:number <- f 34
+  1:num, 2:num <- f 34
 ]
 def f [
-  12:number <- next-ingredient
-  13:number <- add 1, 12:number
-  reply 12:number, 13:number
+  12:num <- next-ingredient
+  13:num <- add 1, 12:num
+  reply 12:num, 13:num
 ]
 +mem: storing 34 in location 1
 +mem: storing 35 in location 2
@@ -102,15 +102,15 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
 :(scenario return_type_mismatch)
 % Hide_errors = true;
 def main [
-  3:number <- f 2
+  3:num <- f 2
 ]
 def f [
-  12:number <- next-ingredient
-  13:number <- copy 35
+  12:num <- next-ingredient
+  13:num <- copy 35
   14:point <- copy 12:point/raw
   return 14:point
 ]
-+error: f: return ingredient '14:point' can't be saved in '3:number'
++error: f: return ingredient '14:point' can't be saved in '3:num'
 
 //: In mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
@@ -120,23 +120,23 @@ def f [
 :(scenario return_same_as_ingredient)
 % Hide_errors = true;
 def main [
-  1:number <- copy 0
-  2:number <- test1 1:number  # call with different ingredient and product
+  1:num <- copy 0
+  2:num <- test1 1:num  # call with different ingredient and product
 ]
 def test1 [
-  10:number <- next-ingredient
-  return 10:number/same-as-ingredient:0
+  10:num <- next-ingredient
+  return 10:num/same-as-ingredient:0
 ]
-+error: main: '2:number <- test1 1:number' should write to '1:number' rather than '2:number'
++error: main: '2:num <- test1 1:num' should write to '1:num' rather than '2:num'
 
 :(scenario return_same_as_ingredient_dummy)
 def main [
-  1:number <- copy 0
-  _ <- test1 1:number  # call with different ingredient and product
+  1:num <- copy 0
+  _ <- test1 1:num  # call with different ingredient and product
 ]
 def test1 [
-  10:number <- next-ingredient
-  return 10:number/same-as-ingredient:0
+  10:num <- next-ingredient
+  return 10:num/same-as-ingredient:0
 ]
 $error: 0
 

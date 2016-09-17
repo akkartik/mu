@@ -3,7 +3,7 @@
 :(scenario jump_can_skip_instructions)
 def main [
   jump 1:offset
-  1:number <- copy 1
+  1:num <- copy 1
 ]
 +run: jump {1: "offset"}
 -run: {1: "number"} <- copy {1: "literal"}
@@ -84,7 +84,7 @@ case JUMP_IF: {
 :(scenario jump_if)
 def main [
   jump-if 999, 1:offset
-  123:number <- copy 1
+  123:num <- copy 1
 ]
 +run: jump-if {999: "literal"}, {1: "offset"}
 +run: jumping to instruction 2
@@ -94,7 +94,7 @@ def main [
 :(scenario jump_if_fallthrough)
 def main [
   jump-if 0, 1:offset
-  123:number <- copy 1
+  123:num <- copy 1
 ]
 +run: jump-if {0: "literal"}, {1: "offset"}
 +run: jump-if fell through
@@ -137,7 +137,7 @@ case JUMP_UNLESS: {
 :(scenario jump_unless)
 def main [
   jump-unless 0, 1:offset
-  123:number <- copy 1
+  123:num <- copy 1
 ]
 +run: jump-unless {0: "literal"}, {1: "offset"}
 +run: jumping to instruction 2
@@ -147,7 +147,7 @@ def main [
 :(scenario jump_unless_fallthrough)
 def main [
   jump-unless 999, 1:offset
-  123:number <- copy 1
+  123:num <- copy 1
 ]
 +run: jump-unless {999: "literal"}, {1: "offset"}
 +run: jump-unless fell through

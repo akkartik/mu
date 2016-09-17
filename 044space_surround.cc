@@ -8,16 +8,16 @@
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 def main [
   # pretend address:array:location; in practice we'll use new
-  10:number <- copy 0  # refcount
-  11:number <- copy 5  # length
+  10:num <- copy 0  # refcount
+  11:num <- copy 5  # length
   # pretend address:array:location; in practice we'll use new
-  20:number <- copy 0  # refcount
-  21:number <- copy 5  # length
+  20:num <- copy 0  # refcount
+  21:num <- copy 5  # length
   # actual start of this recipe
   default-space:address:array:location <- copy 10/unsafe
   0:address:array:location/names:dummy <- copy 20/unsafe  # later layers will explain the /names: property
-  1:number <- copy 32
-  1:number/space:1 <- copy 33
+  1:num <- copy 32
+  1:num/space:1 <- copy 33
 ]
 def dummy [  # just for the /names: property above
 ]
@@ -61,5 +61,5 @@ int space_index(const reagent& x) {
 
 :(scenario permit_space_as_variable_name)
 def main [
-  space:number <- copy 0
+  space:num <- copy 0
 ]

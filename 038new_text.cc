@@ -15,7 +15,7 @@ def main [
 :(scenario new_string_handles_unicode)
 def main [
   1:text <- new [a«c]
-  2:number <- length *1:text
+  2:num <- length *1:text
   3:char <- index *1:text, 1
 ]
 +mem: storing 3 in location 2
@@ -106,7 +106,7 @@ if (!canonize_type(x)) return false;
 :(scenario new_string_overflow)
 % Initial_memory_per_routine = 3;
 def main [
-  1:address:number/raw <- new number:type
+  1:address:num/raw <- new number:type
   2:text/raw <- new [a]  # not enough room in initial page, if you take the refcount and array length into account
 ]
 +new: routine allocated memory from 1000 to 1003

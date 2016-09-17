@@ -11,15 +11,15 @@
 
 :(scenario copy_literal)
 def main [
-  1:number <- copy 23
+  1:num <- copy 23
 ]
 +run: {1: "number"} <- copy {23: "literal"}
 +mem: storing 23 in location 1
 
 :(scenario copy)
 def main [
-  1:number <- copy 23
-  2:number <- copy 1:number
+  1:num <- copy 23
+  2:num <- copy 1:num
 ]
 +run: {2: "number"} <- copy {1: "number"}
 +mem: location 1 is 23
@@ -27,7 +27,7 @@ def main [
 
 :(scenario copy_multiple)
 def main [
-  1:number, 2:number <- copy 23, 24
+  1:num, 2:num <- copy 23, 24
 ]
 +mem: storing 23 in location 1
 +mem: storing 24 in location 2
@@ -365,8 +365,8 @@ void run(const string& form) {
 :(scenario run_label)
 def main [
   +foo
-  1:number <- copy 23
-  2:number <- copy 1:number
+  1:num <- copy 23
+  2:num <- copy 1:num
 ]
 +run: {1: "number"} <- copy {23: "literal"}
 +run: {2: "number"} <- copy {1: "number"}
@@ -381,7 +381,7 @@ def main [
 :(scenario write_to_0_disallowed)
 % Hide_errors = true;
 def main [
-  0:number <- copy 34
+  0:num <- copy 34
 ]
 -mem: storing 34 in location 0
 
@@ -390,24 +390,24 @@ def main [
 
 :(scenario comma_without_space)
 def main [
-  1:number, 2:number <- copy 2,2
+  1:num, 2:num <- copy 2,2
 ]
 +mem: storing 2 in location 1
 
 :(scenario space_without_comma)
 def main [
-  1:number, 2:number <- copy 2 2
+  1:num, 2:num <- copy 2 2
 ]
 +mem: storing 2 in location 1
 
 :(scenario comma_before_space)
 def main [
-  1:number, 2:number <- copy 2, 2
+  1:num, 2:num <- copy 2, 2
 ]
 +mem: storing 2 in location 1
 
 :(scenario comma_after_space)
 def main [
-  1:number, 2:number <- copy 2 ,2
+  1:num, 2:num <- copy 2 ,2
 ]
 +mem: storing 2 in location 1

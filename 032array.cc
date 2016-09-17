@@ -9,7 +9,7 @@
 :(scenario create_array)
 def main [
   # create an array occupying locations 1 (for the size) and 2-4 (for the elements)
-  1:array:number:3 <- create-array
+  1:array:num:3 <- create-array
 ]
 +run: creating array of size 4
 
@@ -77,11 +77,11 @@ case CREATE_ARRAY: {
 # 'static' array, and one without a 'dynamic' array since it can contain
 # arrays of many different sizes.
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:array:number <- copy 1:array:number:3
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:array:num <- copy 1:array:num:3
 ]
 +mem: storing 3 in location 5
 +mem: storing 14 in location 6
@@ -90,11 +90,11 @@ def main [
 
 :(scenario stash_array)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  stash [foo:], 1:array:number:3
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  stash [foo:], 1:array:num:3
 ]
 +app: foo: 3 14 15 16
 
@@ -120,14 +120,14 @@ if (x.type && !x.type->atom && x.type->left->value == get(Type_ordinal, "array")
 
 :(scenario container_permits_static_array_element)
 container foo [
-  x:array:number:3
+  x:array:num:3
 ]
 $error: 0
 
 :(scenario container_disallows_dynamic_array_element)
 % Hide_errors = true;
 container foo [
-  x:array:number
+  x:array:num
 ]
 +error: container 'foo' cannot determine size of element 'x'
 
@@ -141,12 +141,12 @@ if (current_call().running_step_index < SIZE(get(Recipe, current_call().running_
 
 :(scenario merge_static_array_into_container)
 container foo [
-  x:number
-  y:array:number:3
+  x:num
+  y:array:num:3
 ]
 def main [
-  1:array:number:3 <- create-array
-  10:foo <- merge 34, 1:array:number:3
+  1:array:num:3 <- create-array
+  10:foo <- merge 34, 1:array:num:3
 ]
 # no errors
 
@@ -172,11 +172,11 @@ def main [
 :(scenario code_inside_container)
 % Hide_errors = true;
 container card [
-  rank:number <- next-ingredient
+  rank:num <- next-ingredient
 ]
 def foo [
   1:card <- merge 3
-  2:number <- get 1:card rank:offset
+  2:num <- get 1:card rank:offset
 ]
 # shouldn't die
 
@@ -184,32 +184,32 @@ def foo [
 
 :(scenario index)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- index 1:array:number:3, 0
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- index 1:array:num:3, 0
 ]
 +mem: storing 14 in location 5
 
 :(scenario index_compound_element)
 def main [
   {1: (array (address number) 3)} <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:address:number <- index {1: (array (address number) 3)}, 0
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:address:num <- index {1: (array (address number) 3)}, 0
 ]
 +mem: storing 14 in location 5
 
 :(scenario index_direct_offset)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 0
-  6:number <- index 1:array:number, 5:number
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 0
+  6:num <- index 1:array:num, 5:num
 ]
 +mem: storing 14 in location 6
 
@@ -278,7 +278,7 @@ case INDEX: {
 :(code)
 type_tree* copy_array_element(const type_tree* type) {
   assert(type->right);
-  // hack: don't require parens for either array:number:3 array:address:number
+  // hack: don't require parens for either array:num:3 array:address:num
   if (!type->right->atom && type->right->right && type->right->right->atom && is_integer(type->right->right->name))
     return new type_tree(*type->right->left);
   return new type_tree(*type->right);
@@ -300,7 +300,7 @@ void test_array_length_compound() {
   put(Memory, 2, 14);
   put(Memory, 3, 15);
   put(Memory, 4, 16);
-  reagent x("1:array:address:number");  // 3 types, but not a static array
+  reagent x("1:array:address:num");  // 3 types, but not a static array
   populate_value(x);
   CHECK_EQ(array_length(x), 3);
 }
@@ -308,27 +308,27 @@ void test_array_length_compound() {
 :(scenario index_out_of_bounds)
 % Hide_errors = true;
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
-  index 1:array:number:3, 4  # less than size of array in locations, but larger than its length in elements
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 14
+  6:num <- copy 15
+  7:num <- copy 16
+  index 1:array:num:3, 4  # less than size of array in locations, but larger than its length in elements
 ]
-+error: main: invalid index 4 in 'index 1:array:number:3, 4'
++error: main: invalid index 4 in 'index 1:array:num:3, 4'
 
 :(scenario index_out_of_bounds_2)
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 14
+  6:num <- copy 15
+  7:num <- copy 16
   index 1:array:point, -1
 ]
 +error: main: invalid index -1 in 'index 1:array:point, -1'
@@ -337,25 +337,25 @@ def main [
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
-  9:number <- index 1:array:point, 0
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 14
+  6:num <- copy 15
+  7:num <- copy 16
+  9:num <- index 1:array:point, 0
 ]
-+error: main: 'index' on '1:array:point' can't be saved in '9:number'; type should be 'point'
++error: main: 'index' on '1:array:point' can't be saved in '9:num'; type should be 'point'
 
 //: we might want to call 'index' without saving the results, say in a sandbox
 
 :(scenario index_without_product)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  index 1:array:number:3, 0
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  index 1:array:num:3, 0
 ]
 # just don't die
 
@@ -363,11 +363,11 @@ def main [
 
 :(scenario put_index)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  1:array:number <- put-index 1:array:number, 1, 34
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  1:array:num <- put-index 1:array:num, 1, 34
 ]
 +mem: storing 34 in location 3
 
@@ -445,12 +445,12 @@ case PUT_INDEX: {
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 14
+  6:num <- copy 15
+  7:num <- copy 16
   8:point <- merge 34, 35
   1:array:point <- put-index 1:array:point, 4, 8:point  # '4' is less than size of array in locations, but larger than its length in elements
 ]
@@ -460,12 +460,12 @@ def main [
 % Hide_errors = true;
 def main [
   1:array:point:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- copy 14
-  6:number <- copy 15
-  7:number <- copy 16
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- copy 14
+  6:num <- copy 15
+  7:num <- copy 16
   8:point <- merge 34, 35
   1:array:point <- put-index 1:array:point, -1, 8:point
 ]
@@ -476,20 +476,20 @@ def main [
 def main [
   local-scope
   load-ingredients
-  1:array:number:3 <- create-array
-  4:array:number:3 <- put-index 1:array:number:3, 0, 34
+  1:array:num:3 <- create-array
+  4:array:num:3 <- put-index 1:array:num:3, 0, 34
 ]
-+error: main: product of 'put-index' must be first ingredient '1:array:number:3', but got '4:array:number:3'
++error: main: product of 'put-index' must be first ingredient '1:array:num:3', but got '4:array:num:3'
 
 //:: compute the length of an array
 
 :(scenario array_length)
 def main [
-  1:array:number:3 <- create-array
-  2:number <- copy 14
-  3:number <- copy 15
-  4:number <- copy 16
-  5:number <- length 1:array:number:3
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- length 1:array:num:3
 ]
 +mem: storing 3 in location 5
 

@@ -6,7 +6,7 @@ def main [
   open-console
   10:char <- copy 97/a
   print 0/screen, 10:char/a, 2/red
-  1:number/raw, 2:number/raw <- cursor-position 0/screen
+  1:num/raw, 2:num/raw <- cursor-position 0/screen
   wait-for-event 0/console
   clear-screen 0/screen
   move-cursor 0/screen, 0/row, 4/column

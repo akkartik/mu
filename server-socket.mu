@@ -1,8 +1,8 @@
 def main [
   local-scope
-  socket:number <- $socket 8080/port
+  socket:num <- $socket 8080/port
   $print [Mu socket creation returned ], socket, 10/newline
-  session:number <- $accept socket
+  session:num <- $accept socket
   {
     client-message:address:buffer <- new-buffer 1024
     c:char <- $read-from-socket session

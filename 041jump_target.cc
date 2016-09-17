@@ -10,7 +10,7 @@
 :(scenario jump_to_label)
 def main [
   jump +target:label
-  1:number <- copy 0
+  1:num <- copy 0
   +target
 ]
 -mem: storing 0 in location 1
@@ -96,7 +96,7 @@ def main [
   {
     {
       break +target:label
-      1:number <- copy 0
+      1:num <- copy 0
     }
   }
   +target
@@ -108,7 +108,7 @@ def main [
   {
     {
       jump-if 1, +target:label
-      1:number <- copy 0
+      1:num <- copy 0
     }
   }
   +target
@@ -120,7 +120,7 @@ def main [
   {
     {
       loop-unless 0, +target:label  # loop/break with a label don't care about braces
-      1:number <- copy 0
+      1:num <- copy 0
     }
   }
   +target
@@ -130,13 +130,13 @@ def main [
 :(scenario jump_runs_code_after_label)
 def main [
   # first a few lines of padding to exercise the offset computation
-  1:number <- copy 0
-  2:number <- copy 0
-  3:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
+  3:num <- copy 0
   jump +target:label
-  4:number <- copy 0
+  4:num <- copy 0
   +target
-  5:number <- copy 0
+  5:num <- copy 0
 ]
 +mem: storing 0 in location 5
 -mem: storing 0 in location 4
@@ -159,9 +159,9 @@ def main [
 % Hide_errors = true;
 def main [
   +label
-  1:number <- copy 0
+  1:num <- copy 0
   +label
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 +error: main: duplicate label '+label'
 
@@ -169,12 +169,12 @@ def main [
 % Hide_errors = true;
 def main [
   # first a few lines of padding to exercise the offset computation
-  1:number <- copy 0
-  2:number <- copy 0
-  3:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
+  3:num <- copy 0
   jump $target:label
-  4:number <- copy 0
+  4:num <- copy 0
   $target
-  5:number <- copy 0
+  5:num <- copy 0
 ]
 +error: main: can't jump to label '$target'

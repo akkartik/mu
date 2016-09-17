@@ -38,8 +38,8 @@ def main [
   local-scope
   source:address:source:char, sink:address:sink:char <- new-channel 3/capacity
   # create two background 'routines' that communicate by a channel
-  routine1:number <- start-running producer, sink
-  routine2:number <- start-running consumer, source
+  routine1:num <- start-running producer, sink
+  routine2:num <- start-running consumer, source
   wait-for-routine routine1
   wait-for-routine routine2
 ]

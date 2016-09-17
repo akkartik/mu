@@ -2,12 +2,12 @@
 
 def main [
   local-scope
-  x:number <- factorial 5
+  x:num <- factorial 5
   $print [result: ], x, [ 
 ]
 ]
 
-def factorial n:number -> result:number [
+def factorial n:num -> result:num [
   local-scope
   load-ingredients
   {
@@ -17,15 +17,15 @@ def factorial n:number -> result:number [
     return 1
   }
   # return n * factorial(n-1)
-  x:number <- subtract n, 1
-  subresult:number <- factorial x
+  x:num <- subtract n, 1
+  subresult:num <- factorial x
   result <- multiply subresult, n
 ]
 
 # unit test
 scenario factorial-test [
   run [
-    1:number <- factorial 5
+    1:num <- factorial 5
   ]
   memory-should-contain [
     1 <- 120

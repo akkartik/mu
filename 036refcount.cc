@@ -3,10 +3,10 @@
 
 :(scenario refcounts)
 def main [
-  1:address:number <- copy 1000/unsafe
-  2:address:number <- copy 1:address:number
-  1:address:number <- copy 0
-  2:address:number <- copy 0
+  1:address:num <- copy 1000/unsafe
+  2:address:num <- copy 1:address:num
+  1:address:num <- copy 0
+  2:address:num <- copy 0
 ]
 +run: {1: ("address" "number")} <- copy {1000: "literal", "unsafe": ()}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -87,9 +87,9 @@ int payload_size(reagent/*copy*/ x) {
 
 :(scenario refcounts_reflexive)
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   # idempotent copies leave refcount unchanged
-  1:address:number <- copy 1:address:number
+  1:address:num <- copy 1:address:num
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -99,14 +99,14 @@ def main [
 
 :(scenario refcounts_call)
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   # passing in addresses to recipes increments refcount
-  foo 1:address:number
+  foo 1:address:num
   # return does NOT yet decrement refcount; memory must be explicitly managed
-  1:address:number <- new number:type
+  1:address:num <- new number:type
 ]
 def foo [
-  2:address:number <- next-ingredient
+  2:address:num <- next-ingredient
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -122,12 +122,12 @@ def foo [
 
 :(scenario refcounts_put)
 container foo [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:address:foo <- new foo:type
-  *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
+  *2:address:foo <- put *2:address:foo, x:offset, 1:address:num
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -145,9 +145,9 @@ update_any_refcounts(element, ingredients.at(2));
 
 :(scenario refcounts_put_index)
 def main [
-  1:address:number <- new number:type
-  2:address:array:address:number <- new {(address number): type}, 3
-  *2:address:array:address:number <- put-index *2:address:array:address:number, 0, 1:address:number
+  1:address:num <- new number:type
+  2:address:array:address:num <- new {(address number): type}, 3
+  *2:address:array:address:num <- put-index *2:address:array:address:num, 0, 1:address:num
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -162,13 +162,13 @@ update_any_refcounts(element, value);
 
 :(scenario refcounts_maybe_convert)
 exclusive-container foo [
-  x:number
-  p:address:number
+  x:num
+  p:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  2:foo <- merge 1/p, 1:address:number
-  4:address:number, 5:boolean <- maybe-convert 2:foo, 1:variant/p
+  1:address:num <- new number:type
+  2:foo <- merge 1/p, 1:address:num
+  4:address:num, 5:boolean <- maybe-convert 2:foo, 1:variant/p
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -190,12 +190,12 @@ update_any_refcounts(product, data);
 
 :(scenario refcounts_copy_nested)
 container foo [
-  x:address:number  # address inside container
+  x:address:num  # address inside container
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:address:foo <- new foo:type
-  *2:address:foo <- put *2:address:foo, x:offset, 1:address:number
+  *2:address:foo <- put *2:address:foo, x:offset, 1:address:num
   3:foo <- copy *2:address:foo
 ]
 +transform: compute address offsets for container foo
@@ -314,7 +314,7 @@ void compute_container_address_offsets(const type_tree* type) {
     }
     else if (type->left->name == "array") {
       const type_tree* element_type = type->right;
-      // hack: support both array:number:3 and array:address:number
+      // hack: support both array:num:3 and array:address:num
       if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
         element_type = element_type->left;
       compute_container_address_offsets(element_type);
@@ -428,7 +428,7 @@ void test_container_address_offsets() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0 that we have the size for
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:foo");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -460,8 +460,8 @@ void test_container_address_offsets_2() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 1 that we have the size for
   run("container foo [\n"
-      "  x:number\n"
-      "  y:address:number\n"
+      "  x:num\n"
+      "  y:address:num\n"
       "]\n");
   reagent r("x:foo");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -493,8 +493,8 @@ void test_container_address_offsets_nested() {
   int old_size = SIZE(Container_metadata);
   // define a container with a nested container containing an address
   run("container foo [\n"
-      "  x:address:number\n"
-      "  y:number\n"
+      "  x:address:num\n"
+      "  y:num\n"
       "]\n"
       "container bar [\n"
       "  p:point\n"
@@ -530,7 +530,7 @@ void test_container_address_offsets_from_address() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:address:foo");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -555,7 +555,7 @@ void test_container_address_offsets_from_array() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:array:foo");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -580,7 +580,7 @@ void test_container_address_offsets_from_address_to_array() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:address:array:foo");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -605,7 +605,7 @@ void test_container_address_offsets_from_static_array() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:array:foo:10");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -630,7 +630,7 @@ void test_container_address_offsets_from_address_to_static_array() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   reagent r("x:address:array:foo:10");
   compute_container_sizes(r);  // need to first pre-populate the metadata
@@ -655,7 +655,7 @@ void test_container_address_offsets_from_repeated_address_and_array_types() {
   int old_size = SIZE(Container_metadata);
   // define a container with an address at offset 0
   run("container foo [\n"
-      "  x:address:number\n"
+      "  x:address:num\n"
       "]\n");
   // scan a deep nest of 'address' and 'array' types modifying a container
   reagent r("x:address:array:address:address:array:foo:10");
@@ -720,11 +720,11 @@ container foo [
   a:bar  # contains an address
 ]
 container bar [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  2:bar <- merge 1:address:number
+  1:address:num <- new number:type
+  2:bar <- merge 1:address:num
   3:address:foo <- new foo:type
   *3:address:foo <- put *3:address:foo, a:offset, 2:bar
 ]
@@ -738,11 +738,11 @@ def main [
 
 :(scenario refcounts_put_index_array)
 container bar [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  2:bar <- merge 1:address:number
+  1:address:num <- new number:type
+  2:bar <- merge 1:address:num
   3:address:array:bar <- new bar:type, 3
   *3:address:array:bar <- put-index *3:address:array:bar, 0, 2:bar
 ]
@@ -756,15 +756,15 @@ def main [
 
 :(scenario refcounts_maybe_convert_container)
 exclusive-container foo [
-  a:number
+  a:num
   b:bar  # contains an address
 ]
 container bar [
-  x:address:number
+  x:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  2:bar <- merge 1:address:number
+  1:address:num <- new number:type
+  2:bar <- merge 1:address:num
   3:foo <- merge 1/b, 2:bar
   5:bar, 6:boolean <- maybe-convert 3:foo, 1:variant/b
 ]
@@ -783,17 +783,17 @@ container foo [
   b:curr  # contains addresses
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 container curr [
-  x:number
-  y:address:number  # address inside container inside container
+  x:num
+  y:address:num  # address inside container inside container
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:address:curr <- new curr:type
-  *2:address:curr <- put *2:address:curr, 1:offset/y, 1:address:number
+  *2:address:curr <- put *2:address:curr, 1:offset/y, 1:address:num
   3:address:foo <- new foo:type
   *3:address:foo <- put *3:address:foo, 1:offset/b, *2:address:curr
   4:foo <- copy *3:address:foo
@@ -815,21 +815,21 @@ def main [
 
 :(scenario refcounts_copy_exclusive_container_within_container)
 container foo [
-  a:number
+  a:num
   b:bar
 ]
 exclusive-container bar [
-  x:number
-  y:number
-  z:address:number
+  x:num
+  y:num
+  z:address:num
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:bar <- merge 0/x, 34
   3:foo <- merge 12, 2:bar
   5:bar <- merge 1/y, 35
   6:foo <- merge 13, 5:bar
-  8:bar <- merge 2/z, 1:address:number
+  8:bar <- merge 2/z, 1:address:num
   9:foo <- merge 14, 8:bar
   11:foo <- copy 9:foo
 ]
@@ -845,19 +845,19 @@ def main [
 
 :(scenario refcounts_copy_container_within_exclusive_container)
 exclusive-container foo [
-  a:number
+  a:num
   b:bar
 ]
 container bar [
-  x:number
-  y:number
-  z:address:number
+  x:num
+  y:num
+  z:address:num
 ]
 def main [
-  1:address:number <- new number:type
+  1:address:num <- new number:type
   2:foo <- merge 0/a, 34
   6:foo <- merge 0/a, 35
-  10:bar <- merge 2/x, 15/y, 1:address:number
+  10:bar <- merge 2/x, 15/y, 1:address:num
   13:foo <- merge 1/b, 10:bar
   17:foo <- copy 13:foo
 ]
@@ -873,16 +873,16 @@ def main [
 
 :(scenario refcounts_copy_exclusive_container_within_exclusive_container)
 exclusive-container foo [
-  a:number
+  a:num
   b:bar
 ]
 exclusive-container bar [
-  x:number
-  y:address:number
+  x:num
+  y:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  10:foo <- merge 1/b, 1/y, 1:address:number
+  1:address:num <- new number:type
+  10:foo <- merge 1/b, 1/y, 1:address:num
   20:foo <- copy 10:foo
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
@@ -895,13 +895,13 @@ def main [
 
 :(scenario refcounts_copy_array_within_container)
 container foo [
-  x:address:array:number
+  x:address:array:num
 ]
 def main [
-  1:address:array:number <- new number:type, 3
-  2:foo <- merge 1:address:array:number
-  3:address:array:number <- new number:type, 5
-  2:foo <- merge 3:address:array:number
+  1:address:array:num <- new number:type, 3
+  2:foo <- merge 1:address:array:num
+  3:address:array:num <- new number:type, 5
+  2:foo <- merge 3:address:array:num
 ]
 +run: {1: ("address" "array" "number")} <- new {number: "type"}, {3: "literal"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -912,24 +912,24 @@ def main [
 
 :(scenario refcounts_handle_exclusive_containers_with_different_tags)
 container foo1 [
-  x:address:number
-  y:number
+  x:address:num
+  y:num
 ]
 container foo2 [
-  x:number
-  y:address:number
+  x:num
+  y:address:num
 ]
 exclusive-container bar [
   a:foo1
   b:foo2
 ]
 def main [
-  1:address:number <- copy 12000/unsafe  # pretend allocation
-  *1:address:number <- copy 34
-  2:bar <- merge 0/foo1, 1:address:number, 97
-  5:address:number <- copy 13000/unsafe  # pretend allocation
-  *5:address:number <- copy 35
-  6:bar <- merge 1/foo2, 98, 5:address:number
+  1:address:num <- copy 12000/unsafe  # pretend allocation
+  *1:address:num <- copy 34
+  2:bar <- merge 0/foo1, 1:address:num, 97
+  5:address:num <- copy 13000/unsafe  # pretend allocation
+  *5:address:num <- copy 35
+  6:bar <- merge 1/foo2, 98, 5:address:num
   2:bar <- copy 6:bar
 ]
 +run: {2: "bar"} <- merge {0: "literal", "foo1": ()}, {1: ("address" "number")}, {97: "literal"}

@@ -46,35 +46,35 @@ void check_instruction(const recipe_ordinal r) {
 :(scenario copy_checks_reagent_count)
 % Hide_errors = true;
 def main [
-  1:number <- copy 34, 35
+  1:num <- copy 34, 35
 ]
-+error: main: ingredients and products should match in '1:number <- copy 34, 35'
++error: main: ingredients and products should match in '1:num <- copy 34, 35'
 
 :(scenario write_scalar_to_array_disallowed)
 % Hide_errors = true;
 def main [
-  1:array:number <- copy 34
+  1:array:num <- copy 34
 ]
-+error: main: can't copy '34' to '1:array:number'; types don't match
++error: main: can't copy '34' to '1:array:num'; types don't match
 
 :(scenario write_scalar_to_array_disallowed_2)
 % Hide_errors = true;
 def main [
-  1:number, 2:array:number <- copy 34, 35
+  1:num, 2:array:num <- copy 34, 35
 ]
-+error: main: can't copy '35' to '2:array:number'; types don't match
++error: main: can't copy '35' to '2:array:num'; types don't match
 
 :(scenario write_scalar_to_address_disallowed)
 % Hide_errors = true;
 def main [
-  1:address:number <- copy 34
+  1:address:num <- copy 34
 ]
-+error: main: can't copy '34' to '1:address:number'; types don't match
++error: main: can't copy '34' to '1:address:num'; types don't match
 
 :(scenario write_address_to_number_allowed)
 def main [
-  1:address:number <- copy 12/unsafe
-  2:number <- copy 1:address:number
+  1:address:num <- copy 12/unsafe
+  2:num <- copy 1:address:num
 ]
 +mem: storing 12 in location 2
 $error: 0
@@ -82,15 +82,15 @@ $error: 0
 :(scenario write_boolean_to_number_allowed)
 def main [
   1:boolean <- copy 1/true
-  2:number <- copy 1:boolean
+  2:num <- copy 1:boolean
 ]
 +mem: storing 1 in location 2
 $error: 0
 
 :(scenario write_number_to_boolean_allowed)
 def main [
-  1:number <- copy 34
-  2:boolean <- copy 1:number
+  1:num <- copy 34
+  2:boolean <- copy 1:num
 ]
 +mem: storing 34 in location 2
 $error: 0

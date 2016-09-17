@@ -6,8 +6,8 @@ type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
 get_or_insert(Type, point);  // initialize
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
-get(Type, point).elements.push_back(reagent("x:number"));
-get(Type, point).elements.push_back(reagent("y:number"));
+get(Type, point).elements.push_back(reagent("x:num"));
+get(Type, point).elements.push_back(reagent("y:num"));
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
@@ -17,8 +17,8 @@ get(Type, point).elements.push_back(reagent("y:number"));
 //: skip later checks.
 :(scenario copy_multiple_locations)
 def main [
-  1:number <- copy 34
-  2:number <- copy 35
+  1:num <- copy 34
+  2:num <- copy 35
   3:point <- copy 1:point/unsafe
 ]
 +mem: storing 34 in location 3
@@ -28,9 +28,9 @@ def main [
 :(scenario copy_checks_size)
 % Hide_errors = true;
 def main [
-  2:point <- copy 1:number
+  2:point <- copy 1:num
 ]
-+error: main: can't copy '1:number' to '2:point'; types don't match
++error: main: can't copy '1:num' to '2:point'; types don't match
 
 :(before "End Mu Types Initialization")
 // A more complex example container, containing another container as one of
@@ -40,13 +40,13 @@ get_or_insert(Type, point_number);  // initialize
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(reagent("xy:point"));
-get(Type, point_number).elements.push_back(reagent("z:number"));
+get(Type, point_number).elements.push_back(reagent("z:num"));
 
 :(scenario copy_handles_nested_container_elements)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
   15:point-number <- copy 12:point-number/unsafe
 ]
 +mem: storing 36 in location 17
@@ -57,8 +57,8 @@ def main [
   3:point <- f 2
 ]
 def f [
-  12:number <- next-ingredient
-  13:number <- copy 35
+  12:num <- next-ingredient
+  13:num <- copy 35
   return 12:point/raw
 ]
 +run: result 0 is [2, 35]
@@ -70,24 +70,24 @@ def f [
 
 :(scenario compare_multiple_locations)
 def main [
-  1:number <- copy 34  # first
-  2:number <- copy 35
-  3:number <- copy 36
-  4:number <- copy 34  # second
-  5:number <- copy 35
-  6:number <- copy 36
+  1:num <- copy 34  # first
+  2:num <- copy 35
+  3:num <- copy 36
+  4:num <- copy 34  # second
+  5:num <- copy 35
+  6:num <- copy 36
   7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 1 in location 7
 
 :(scenario compare_multiple_locations_2)
 def main [
-  1:number <- copy 34  # first
-  2:number <- copy 35
-  3:number <- copy 36
-  4:number <- copy 34  # second
-  5:number <- copy 35
-  6:number <- copy 37  # different
+  1:num <- copy 34  # first
+  2:num <- copy 35
+  3:num <- copy 36
+  4:num <- copy 34  # second
+  5:num <- copy 35
+  6:num <- copy 37  # different
   7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 0 in location 7
@@ -213,7 +213,7 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
     }
     else if (type->left->name == "array") {
       const type_tree* element_type = type->right;
-      // hack: support both array:number:3 and array:address:number
+      // hack: support both array:num:3 and array:address:num
       if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
         element_type = element_type->left;
       compute_container_sizes(element_type, pending_metadata);
@@ -274,9 +274,9 @@ bool matches(const type_tree* a, const type_tree* b) {
 
 :(scenario stash_container)
 def main [
-  1:number <- copy 34  # first
-  2:number <- copy 35
-  3:number <- copy 36
+  1:num <- copy 34  # first
+  2:num <- copy 35
+  3:num <- copy 36
   stash [foo:], 1:point-number/raw
 ]
 +app: foo: 34 35 36
@@ -313,7 +313,7 @@ void test_container_sizes_nested() {
 void test_container_sizes_recursive() {
   // define a container containing an address to itself
   run("container foo [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:address:foo\n"
       "]\n");
   reagent r("x:foo");
@@ -399,9 +399,9 @@ void test_container_sizes_from_repeated_address_and_array_types() {
 
 :(scenario get)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  15:number <- get 12:point/raw, 1:offset  # unsafe
+  12:num <- copy 34
+  13:num <- copy 35
+  15:num <- get 12:point/raw, 1:offset  # unsafe
 ]
 +mem: storing 35 in location 15
 
@@ -491,19 +491,19 @@ const reagent element_type(const type_tree* type, int offset_value) {
 
 :(scenario get_handles_nested_container_elements)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
-  15:number <- get 12:point-number/raw, 1:offset  # unsafe
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
+  15:num <- get 12:point-number/raw, 1:offset  # unsafe
 ]
 +mem: storing 36 in location 15
 
 :(scenario get_out_of_bounds)
 % Hide_errors = true;
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
   get 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
 +error: main: invalid offset '2' for 'point-number'
@@ -511,9 +511,9 @@ def main [
 :(scenario get_out_of_bounds_2)
 % Hide_errors = true;
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
   get 12:point-number/raw, -1:offset
 ]
 +error: main: invalid offset '-1' for 'point-number'
@@ -521,10 +521,10 @@ def main [
 :(scenario get_product_type_mismatch)
 % Hide_errors = true;
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
-  15:address:number <- get 12:point-number/raw, 1:offset
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
+  15:address:num <- get 12:point-number/raw, 1:offset
 ]
 +error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)
 
@@ -532,8 +532,8 @@ def main [
 
 :(scenario get_without_product)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
+  12:num <- copy 34
+  13:num <- copy 35
   get 12:point/raw, 1:offset  # unsafe
 ]
 # just don't die
@@ -542,8 +542,8 @@ def main [
 
 :(scenario put)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
+  12:num <- copy 34
+  13:num <- copy 35
   $clear-trace
   12:point <- put 12:point, 1:offset, 36
 ]
@@ -643,8 +643,8 @@ def main [
 :(scenarios load)
 :(scenario container)
 container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 +parse: --- defining container foo
 +parse: element: {x: "number"}
@@ -652,12 +652,12 @@ container foo [
 
 :(scenario container_use_before_definition)
 container foo [
-  x:number
+  x:num
   y:bar
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 +parse: --- defining container foo
 +parse: type number: 1000
@@ -675,17 +675,17 @@ container bar [
 :(scenarios run)
 :(scenario container_extend)
 container foo [
-  x:number
+  x:num
 ]
 # add to previous definition
 container foo [
-  y:number
+  y:num
 ]
 def main [
-  1:number <- copy 34
-  2:number <- copy 35
-  3:number <- get 1:foo, 0:offset
-  4:number <- get 1:foo, 1:offset
+  1:num <- copy 34
+  2:num <- copy 35
+  3:num <- get 1:foo, 0:offset
+  4:num <- get 1:foo, 1:offset
 ]
 +mem: storing 34 in location 3
 +mem: storing 35 in location 4
@@ -741,6 +741,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       break;
     }
     info.elements.push_back(reagent(element));
+    expand_type_abbreviations(info.elements.back().type);  // todo: use abbreviation before declaration
     replace_unknown_types_with_unique_ordinals(info.elements.back().type, info);
     trace(9993, "parse") << "  element: " << to_string(info.elements.back()) << end();
     // End Load Container Element Definition
@@ -777,7 +778,7 @@ void skip_bracket(istream& in, string message) {
 :(scenario multi_word_line_in_container_declaration)
 % Hide_errors = true;
 container foo [
-  x:number y:number
+  x:num y:num
 ]
 +error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.
 
@@ -789,7 +790,7 @@ container bar [
   x:foo
 ]
 def main [
-  1:number <- copy 34
+  1:num <- copy 34
   2:foo <- get 1:bar/unsafe, 0:offset
 ]
 +mem: storing 34 in location 2
@@ -817,14 +818,14 @@ assert(Next_type_ordinal < 1000);
 void test_error_on_transform_all_between_container_definition_and_extension() {
   // define a container
   run("container foo [\n"
-      "  a:number\n"
+      "  a:num\n"
       "]\n");
   // try to extend the container after transform
   transform_all();
   CHECK_TRACE_DOESNT_CONTAIN_ERROR();
   Hide_errors = true;
   run("container foo [\n"
-      "  b:number\n"
+      "  b:num\n"
       "]\n");
   CHECK_TRACE_CONTAINS_ERROR();
 }
@@ -845,7 +846,7 @@ def main [
   1:bar <- copy 0/unsafe
 ]
 container bar [
-  x:number
+  x:num
 ]
 $error: 0
 
@@ -887,16 +888,16 @@ void check_or_set_invalid_types(type_tree* type, const string& block, const stri
 :(scenario container_unknown_field)
 % Hide_errors = true;
 container foo [
-  x:number
+  x:num
   y:bar
 ]
 +error: foo: unknown type in y
 
 :(scenario read_container_with_bracket_in_comment)
 container foo [
-  x:number
+  x:num
   # ']' in comment
-  y:number
+  y:num
 ]
 +parse: --- defining container foo
 +parse: element: {x: "number"}

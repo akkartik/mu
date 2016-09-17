@@ -7,24 +7,24 @@
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
   # pretend address:array:location; in practice we'll use new
-  10:number <- copy 0  # refcount
-  11:number <- copy 5  # length
+  10:num <- copy 0  # refcount
+  11:num <- copy 5  # length
   default-space:address:array:location <- copy 10/unsafe
-  1:number <- copy 23
+  1:num <- copy 23
 ]
 +mem: storing 23 in location 13
 
 :(scenario lookup_sidesteps_default_space)
 def main [
   # pretend pointer from outside (2000 reserved for refcount)
-  2001:number <- copy 34
+  2001:num <- copy 34
   # pretend address:array:location; in practice we'll use new
-  1000:number <- copy 0  # refcount
-  1001:number <- copy 5  # length
+  1000:num <- copy 0  # refcount
+  1001:num <- copy 5  # length
   # actual start of this recipe
   default-space:address:array:location <- copy 1000/unsafe
-  1:address:number <- copy 2000/unsafe  # even local variables always contain raw addresses
-  8:number/raw <- copy *1:address:number
+  1:address:num <- copy 2000/unsafe  # even local variables always contain raw addresses
+  8:num/raw <- copy *1:address:num
 ]
 +mem: storing 34 in location 8
 
@@ -32,7 +32,7 @@ def main [
 :(scenario convert_names_passes_default_space)
 % Hide_errors = true;
 def main [
-  default-space:number, x:number <- copy 0, 1
+  default-space:num, x:num <- copy 0, 1
 ]
 +name: assign x 1
 -name: assign default-space 1
@@ -112,15 +112,15 @@ if (x.name == "default-space") {
 :(scenario lookup_sidesteps_default_space_in_get)
 def main [
   # pretend pointer to container from outside (2000 reserved for refcount)
-  2001:number <- copy 34
-  2002:number <- copy 35
+  2001:num <- copy 34
+  2002:num <- copy 35
   # pretend address:array:location; in practice we'll use new
-  1000:number <- copy 0  # refcount
-  1001:number <- copy 5  # length
+  1000:num <- copy 0  # refcount
+  1001:num <- copy 5  # length
   # actual start of this recipe
   default-space:address:array:location <- copy 1000/unsafe
   1:address:point <- copy 2000/unsafe
-  9:number/raw <- get *1:address:point, 1:offset
+  9:num/raw <- get *1:address:point, 1:offset
 ]
 +mem: storing 35 in location 9
 
@@ -132,16 +132,16 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 :(scenario lookup_sidesteps_default_space_in_index)
 def main [
   # pretend pointer to array from outside (2000 reserved for refcount)
-  2001:number <- copy 2  # length
-  2002:number <- copy 34
-  2003:number <- copy 35
+  2001:num <- copy 2  # length
+  2002:num <- copy 34
+  2003:num <- copy 35
   # pretend address:array:location; in practice we'll use new
-  1000:number <- copy 0  # refcount
-  1001:number <- copy 5  # length
+  1000:num <- copy 0  # refcount
+  1001:num <- copy 5  # length
   # actual start of this recipe
   default-space:address:array:location <- copy 1000/unsafe
-  1:address:array:number <- copy 2000/unsafe
-  9:number/raw <- index *1:address:array:number, 1
+  1:address:array:num <- copy 2000/unsafe
+  9:num/raw <- index *1:address:array:num, 1
 ]
 +mem: storing 35 in location 9
 
@@ -154,8 +154,8 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 :(scenario new_default_space)
 def main [
   new-default-space
-  x:number <- copy 0
-  y:number <- copy 3
+  x:num <- copy 0
+  y:num <- copy 3
 ]
 # allocate space for x and y, as well as the chaining slot at 0
 +mem: array length is 3
@@ -198,7 +198,7 @@ def main [
 ]
 def foo [
   local-scope
-  x:number <- copy 34
+  x:num <- copy 34
   return default-space:address:array:location
 ]
 # both calls to foo should have received the same default-space
@@ -309,16 +309,16 @@ void rewrite_default_space_instruction(instruction& curr) {
 
 :(scenario local_scope_frees_up_addresses_inside_containers)
 container foo [
-  x:number
-  y:address:number
+  x:num
+  y:address:num
 ]
 def main [
   local-scope
-  x:address:number <- new number:type
-  y:foo <- merge 34, x:address:number
+  x:address:num <- new number:type
+  y:foo <- merge 34, x:address:num
   # x and y are both cleared when main returns
 ]
-+mem: clearing x:address:number
++mem: clearing x:address:num
 +mem: decrementing refcount of 1006: 2 -> 1
 +mem: clearing y:foo
 +mem: decrementing refcount of 1006: 1 -> 0
@@ -326,24 +326,24 @@ def main [
 
 :(scenario local_scope_returns_addresses_inside_containers)
 container foo [
-  x:number
-  y:address:number
+  x:num
+  y:address:num
 ]
 def f [
   local-scope
-  x:address:number <- new number:type
-  *x:address:number <- copy 12
-  y:foo <- merge 34, x:address:number
+  x:address:num <- new number:type
+  *x:address:num <- copy 12
+  y:foo <- merge 34, x:address:num
   # since y is 'escaping' f, it should not be cleared
   return y:foo
 ]
 def main [
   1:foo <- f
-  3:number <- get 1:foo, x:offset
-  4:address:number <- get 1:foo, y:offset
-  5:number <- copy *4:address:number
+  3:num <- get 1:foo, x:offset
+  4:address:num <- get 1:foo, y:offset
+  5:num <- copy *4:address:num
   1:foo <- put 1:foo, y:offset, 0
-  4:address:number <- copy 0
+  4:address:num <- copy 0
 ]
 +mem: storing 34 in location 1
 +mem: storing 1006 in location 2
@@ -363,8 +363,8 @@ def main [
 :(scenario local_scope_claims_return_values_when_not_saved)
 def f [
   local-scope
-  x:address:number <- new number:type
-  reply x:address:number
+  x:address:num <- new number:type
+  reply x:address:num
 ]
 def main [
   f  # doesn't save result

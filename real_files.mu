@@ -5,7 +5,7 @@
 
 def main [
   local-scope
-  f:number/file <- $open-file-for-reading [/tmp/mu-x]
+  f:num/file <- $open-file-for-reading [/tmp/mu-x]
   $print [file to read from: ], f, 10/newline
   c:char, eof?:boolean <- $read-from-file f
   $print [copying ], c, 10/newline

@@ -6,8 +6,8 @@ def main [
   f 2
 ]
 def f [
-  12:number <- next-ingredient
-  13:number <- add 1, 12:number
+  12:num <- next-ingredient
+  13:num <- add 1, 12:num
 ]
 +mem: storing 3 in location 13
 
@@ -16,7 +16,7 @@ def main [
   f
 ]
 def f [
-  _, 12:number <- next-ingredient
+  _, 12:num <- next-ingredient
 ]
 +mem: storing 0 in location 12
 
@@ -91,19 +91,19 @@ def main [
   f
 ]
 def f [
-  11:number <- next-ingredient
+  11:num <- next-ingredient
 ]
-+error: f: no ingredient to save in '11:number'
++error: f: no ingredient to save in '11:num'
 
 :(scenario rewind_ingredients)
 def main [
   f 2
 ]
 def f [
-  12:number <- next-ingredient  # consume ingredient
+  12:num <- next-ingredient  # consume ingredient
   _, 1:boolean <- next-ingredient  # will not find any ingredients
   rewind-ingredients
-  13:number, 2:boolean <- next-ingredient  # will find ingredient again
+  13:num, 2:boolean <- next-ingredient  # will find ingredient again
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1
@@ -129,8 +129,8 @@ def main [
   f 1, 2
 ]
 def f [
-  12:number <- ingredient 1  # consume second ingredient first
-  13:number, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
+  12:num <- ingredient 1  # consume second ingredient first
+  13:num, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1

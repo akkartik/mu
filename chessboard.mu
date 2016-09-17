@@ -106,12 +106,12 @@ def new-board initial-position:address:array:char -> board:board [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
-  len:number <- length *initial-position
+  len:num <- length *initial-position
   correct-length?:boolean <- equal len, 64
   assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
   board <- new {(address array character): type}, 8
-  col:number <- copy 0
+  col:num <- copy 0
   {
     done?:boolean <- equal col, 8
     break-if done?
@@ -122,12 +122,12 @@ def new-board initial-position:address:array:char -> board:board [
   }
 ]
 
-def new-file position:address:array:char, index:number -> result:address:array:char [
+def new-file position:address:array:char, index:num -> result:address:array:char [
   local-scope
   load-ingredients
   index <- multiply index, 8
   result <- new character:type, 8
-  row:number <- copy 0
+  row:num <- copy 0
   {
     done?:boolean <- equal row, 8
     break-if done?
@@ -142,20 +142,20 @@ def new-file position:address:array:char, index:number -> result:address:array:c
 def print-board screen:address:screen, board:board -> screen:address:screen [
   local-scope
   load-ingredients
-  row:number <- copy 7  # start printing from the top of the board
+  row:num <- copy 7  # start printing from the top of the board
   space:char <- copy 32/space
   # print each row
   {
     done?:boolean <- lesser-than row, 0
     break-if done?
     # print rank number as a legend
-    rank:number <- add row, 1
+    rank:num <- add row, 1
     print-integer screen, rank
     print screen, [ | ]
     # print each square in the row
-    col:number <- copy 0
+    col:num <- copy 0
     {
-      done?:boolean <- equal col:number, 8
+      done?:boolean <- equal col:num, 8
       break-if done?:boolean
       f:address:array:char <- index *board, col
       c:char <- index *f, row
@@ -226,33 +226,33 @@ scenario printing-the-board [
 
 container move [
   # valid range: 0-7
-  from-file:number
-  from-rank:number
-  to-file:number
-  to-rank:number
+  from-file:num
+  from-rank:num
+  to-file:num
+  to-rank:num
 ]
 
 # prints only error messages to screen
 def read-move stdin:address:source:char, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean, stdin:address:source:char, screen:address:screen [
   local-scope
   load-ingredients
-  from-file:number, quit?:boolean, error?:boolean <- read-file stdin, screen
+  from-file:num, quit?:boolean, error?:boolean <- read-file stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
   # construct the move object
   result:address:move <- new move:type
   *result <- put *result, from-file:offset, from-file
-  from-rank:number, quit?, error? <- read-rank stdin, screen
+  from-rank:num, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
   *result <- put *result, from-rank:offset, from-rank
   error? <- expect-from-channel stdin, 45/dash, screen
   return-if error?, 0/dummy, 0/quit
-  to-file:number, quit?, error? <- read-file stdin, screen
+  to-file:num, quit?, error? <- read-file stdin, screen
   return-if quit?:boolean, 0/dummy
   return-if error?:boolean, 0/dummy
   *result <- put *result, to-file:offset, to-file
-  to-rank:number, quit?, error? <- read-rank stdin, screen
+  to-rank:num, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
   *result <- put *result, to-rank:offset, to-rank
@@ -261,7 +261,7 @@ def read-move stdin:address:source:char, screen:address:screen -> result:address
 ]
 
 # valid values for file: 0-7
-def read-file stdin:address:source:char, screen:address:screen -> file:number, quit:boolean, error:boolean, stdin:address:source:char, screen:address:screen [
+def read-file stdin:address:source:char, screen:address:screen -> file:num, quit:boolean, error:boolean, stdin:address:source:char, screen:address:screen [
   local-scope
   load-ingredients
   c:char, eof?:boolean, stdin <- read stdin
@@ -287,7 +287,7 @@ def read-file stdin:address:source:char, screen:address:screen -> file:number, q
     print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
   }
-  file:number <- subtract c, 97/a
+  file:num <- subtract c, 97/a
   # 'a' <= file <= 'h'
   {
     above-min:boolean <- greater-or-equal file, 0
@@ -308,7 +308,7 @@ def read-file stdin:address:source:char, screen:address:screen -> file:number, q
 ]
 
 # valid values for rank: 0-7
-def read-rank stdin:address:source:char, screen:address:screen -> rank:number, quit?:boolean, error?:boolean, stdin:address:source:char, screen:address:screen [
+def read-rank stdin:address:source:char, screen:address:screen -> rank:num, quit?:boolean, error?:boolean, stdin:address:source:char, screen:address:screen [
   local-scope
   load-ingredients
   c:char, eof?:boolean, stdin <- read stdin
@@ -329,7 +329,7 @@ def read-rank stdin:address:source:char, screen:address:screen -> rank:number, q
     print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
   }
-  rank:number <- subtract c, 49/'1'
+  rank:num <- subtract c, 49/'1'
   # assert'1' <= rank <= '8'
   {
     above-min:boolean <- greater-or-equal rank, 0
@@ -368,10 +368,10 @@ scenario read-move-blocking [
   run [
     local-scope
     source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:number/routine <- start-running read-move, source, screen:address:screen
+    read-move-routine:num/routine <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
-    read-move-state:number <- routine-state read-move-routine
+    read-move-state:num <- routine-state read-move-routine
     waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
@@ -441,10 +441,10 @@ scenario read-move-quit [
   run [
     local-scope
     source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:number <- start-running read-move, source, screen:address:screen
+    read-move-routine:num <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
-    read-move-state:number <- routine-state read-move-routine
+    read-move-state:num <- routine-state read-move-routine
     waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
@@ -469,10 +469,10 @@ scenario read-move-illegal-file [
   run [
     local-scope
     source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:number <- start-running read-move, source, screen:address:screen
+    read-move-routine:num <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
-    read-move-state:number <- routine-state read-move-routine
+    read-move-state:num <- routine-state read-move-routine
     waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]
@@ -491,10 +491,10 @@ scenario read-move-illegal-rank [
   run [
     local-scope
     source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:number <- start-running read-move, source, screen:address:screen
+    read-move-routine:num <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
-    read-move-state:number <- routine-state read-move-routine
+    read-move-state:num <- routine-state read-move-routine
     waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]
@@ -514,10 +514,10 @@ scenario read-move-empty [
   run [
     local-scope
     source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:number <- start-running read-move, source, screen:address:screen
+    read-move-routine:num <- start-running read-move, source, screen:address:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
-    read-move-state:number <- routine-state read-move-routine
+    read-move-state:num <- routine-state read-move-routine
     waiting?:boolean <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]
@@ -535,10 +535,10 @@ F read-move-empty: routine failed to pause after coming up (before any keys were
 def make-move board:board, m:address:move -> board:board [
   local-scope
   load-ingredients
-  from-file:number <- get *m, from-file:offset
-  from-rank:number <- get *m, from-rank:offset
-  to-file:number <- get *m, to-file:offset
-  to-rank:number <- get *m, to-rank:offset
+  from-file:num <- get *m, from-file:offset
+  from-rank:num <- get *m, from-rank:offset
+  to-file:num <- get *m, to-file:offset
+  to-rank:num <- get *m, to-rank:offset
   from-f:address:array:char <- index *board, from-file
   to-f:address:array:char <- index *board, to-file
   src:char/square <- index *from-f, from-rank

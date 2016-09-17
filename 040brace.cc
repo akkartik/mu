@@ -24,7 +24,7 @@
 def main [
   {
     break
-    1:number <- copy 0
+    1:num <- copy 0
   }
 ]
 +transform: --- transform braces for recipe main
@@ -146,10 +146,10 @@ int matching_brace(int index, const list<pair<int, int> >& braces, recipe_ordina
 
 :(scenario loop)
 def main [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
   {
-    3:number <- copy 0
+    3:num <- copy 0
     loop
   }
 ]
@@ -161,7 +161,7 @@ def main [
 
 :(scenario break_empty_block)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
     break
   }
@@ -172,7 +172,7 @@ def main [
 
 :(scenario break_cascading)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
     break
   }
@@ -187,11 +187,11 @@ def main [
 
 :(scenario break_cascading_2)
 def main [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
   {
     break
-    3:number <- copy 0
+    3:num <- copy 0
   }
   {
     break
@@ -206,11 +206,11 @@ def main [
 
 :(scenario break_if)
 def main [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
   {
-    break-if 2:number
-    3:number <- copy 0
+    break-if 2:num
+    3:num <- copy 0
   }
   {
     break
@@ -225,36 +225,36 @@ def main [
 
 :(scenario break_nested)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
-    2:number <- copy 0
+    2:num <- copy 0
     break
     {
-      3:number <- copy 0
+      3:num <- copy 0
     }
-    4:number <- copy 0
+    4:num <- copy 0
   }
 ]
 +transform: jump 4:offset
 
 :(scenario break_nested_degenerate)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
-    2:number <- copy 0
+    2:num <- copy 0
     break
     {
     }
-    4:number <- copy 0
+    4:num <- copy 0
   }
 ]
 +transform: jump 3:offset
 
 :(scenario break_nested_degenerate_2)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
-    2:number <- copy 0
+    2:num <- copy 0
     break
     {
     }
@@ -265,7 +265,7 @@ def main [
 :(scenario break_label)
 % Hide_errors = true;
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
     break +foo:offset
   }
@@ -274,11 +274,11 @@ def main [
 
 :(scenario break_unless)
 def main [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
   {
-    break-unless 2:number
-    3:number <- copy 0
+    break-unless 2:num
+    3:num <- copy 0
   }
 ]
 +transform: --- transform braces for recipe main
@@ -289,11 +289,11 @@ def main [
 
 :(scenario loop_unless)
 def main [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
   {
-    loop-unless 2:number
-    3:number <- copy 0
+    loop-unless 2:num
+    3:num <- copy 0
   }
 ]
 +transform: --- transform braces for recipe main
@@ -304,14 +304,14 @@ def main [
 
 :(scenario loop_nested)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   {
-    2:number <- copy 0
+    2:num <- copy 0
     {
-      3:number <- copy 0
+      3:num <- copy 0
     }
     loop-if 4:boolean
-    5:number <- copy 0
+    5:num <- copy 0
   }
 ]
 +transform: --- transform braces for recipe main
@@ -319,9 +319,9 @@ def main [
 
 :(scenario loop_label)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   +foo
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 +transform: --- transform braces for recipe main
 +transform: copy ...
@@ -331,17 +331,17 @@ def main [
 :(scenarios run)
 :(scenario brace_conversion_and_run)
 def test-factorial [
-  1:number <- copy 5
-  2:number <- copy 1
+  1:num <- copy 5
+  2:num <- copy 1
   {
-    3:boolean <- equal 1:number, 1
+    3:boolean <- equal 1:num, 1
     break-if 3:boolean
-#    $print 1:number
-    2:number <- multiply 2:number, 1:number
-    1:number <- subtract 1:number, 1
+#    $print 1:num
+    2:num <- multiply 2:num, 1:num
+    1:num <- subtract 1:num, 1
     loop
   }
-  4:number <- copy 2:number  # trigger a read
+  4:num <- copy 2:num  # trigger a read
 ]
 +mem: location 2 is 120
 
@@ -365,7 +365,7 @@ def main [
 
 :(scenario return_if)
 def main [
-  1:number <- test1
+  1:num <- test1
 ]
 def test1 [
   return-if 0, 34
@@ -375,7 +375,7 @@ def test1 [
 
 :(scenario return_if_2)
 def main [
-  1:number <- test1
+  1:num <- test1
 ]
 def test1 [
   return-if 1, 34
