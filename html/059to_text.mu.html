@@ -44,7 +44,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># variant for arrays (since we can't pass them around otherwise)</span>
-<span class="muRecipe">def</span> array-to-text-line x:address:array:_elem<span class="muRecipe"> -&gt; </span>y:text [
+<span class="muRecipe">def</span> array-to-text-line x:&amp;:@:_elem<span class="muRecipe"> -&gt; </span>y:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   y<span class="Special"> &lt;- </span>to-text *x
@@ -56,13 +56,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> array-to-text-line-early-warning-for-static-dispatch [
-  n:address:array:number<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
+  n:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
   x:text<span class="Special"> &lt;- </span>array-to-text-line n
   <span class="Comment"># just ensure there were no errors</span>
 ]
 
 <span class="Comment"># finally, a specialization for single characters</span>
-<span class="muRecipe">def</span> to-text c:character<span class="muRecipe"> -&gt; </span>y:text [
+<span class="muRecipe">def</span> to-text c:char<span class="muRecipe"> -&gt; </span>y:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   y<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">1/capacity</span>
@@ -70,9 +70,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> character-to-text [
-  <span class="Constant">1</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">111/o</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>to-text <span class="Constant">1</span>:character
-  <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:text
+  <span class="Constant">1</span>:char<span class="Special"> &lt;- </span>copy <span class="Constant">111/o</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>to-text <span class="Constant">1</span>:char
+  <span class="Constant">3</span>:@:char<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:text
   memory-should-contain [
     <span class="Constant">3</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[o]</span>
   ]

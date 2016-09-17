@@ -38,12 +38,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario new_reclaim)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number  <span class="Comment"># because 1 will get reset during abandon below</span>
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
-  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num  <span class="Comment"># because 1 will get reset during abandon below</span>
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type  <span class="Comment"># must be same size as abandoned memory to reuse</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="Comment"># both allocations should have returned the same address</span>
 <span class="traceContains">+mem: storing 1 in location 5</span>
@@ -110,34 +110,34 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 
 <span class="Delimiter">:(scenario new_differing_size_no_reclaim)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
-  <span class="Constant">3</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># different size</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># different size</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="Comment"># no reuse</span>
 <span class="traceContains">+mem: storing 0 in location 5</span>
 
 <span class="Delimiter">:(scenario new_reclaim_array)</span>
 def main [
-  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:number
-  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
-  <span class="Constant">3</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># same size</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">1</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:array:num
+  <span class="Constant">1</span>:address:array:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># abandon</span>
+  <span class="Constant">3</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">2</span>  <span class="Comment"># same size</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>:address:array:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="Comment"># both calls to new returned identical addresses</span>
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario abandon_on_overwrite)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># over-writing one allocation with another</span>
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -146,15 +146,15 @@ def main [
 
 <span class="Delimiter">:(scenario abandon_after_call)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># passing in addresses to recipes increments refcount</span>
-  foo <span class="Constant">1</span>:address:number
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  foo <span class="Constant">1</span>:address:num
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 def foo [
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">2</span>:address:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -170,12 +170,12 @@ def foo [
 
 <span class="Delimiter">:(scenario abandon_on_overwrite_array)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">30</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">30</span>
   <span class="Comment"># allocate an array</span>
-  <span class="Constant">10</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">20</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:address:array:number  <span class="Comment"># doesn't increment refcount</span>
+  <span class="Constant">10</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">20</span>
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:address:array:num  <span class="Comment"># doesn't increment refcount</span>
   <span class="Comment"># allocate another array in its place, implicitly freeing the previous allocation</span>
-  <span class="Constant">10</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">25</span>
+  <span class="Constant">10</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">25</span>
 ]
 <span class="traceContains">+run: {10: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}, {25: &quot;literal&quot;}</span>
 <span class="Comment"># abandoned array is of old size (20, not 25)</span>
@@ -184,13 +184,13 @@ def main [
 <span class="Delimiter">:(scenario refcounts_abandon_address_in_container)</span>
 <span class="Comment"># container containing an address</span>
 container foo [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
-  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
@@ -213,11 +213,11 @@ def main [
 <span class="Comment"># todo: move past dilated reagent</span>
 <span class="Delimiter">:(scenario refcounts_abandon_address_in_array)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
-  *<span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:number<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:array:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
+  *<span class="Constant">2</span>:address:array:address:num<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:num<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:array:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -233,14 +233,14 @@ def main [
 <span class="Delimiter">:(scenario refcounts_abandon_address_in_container_in_array)</span>
 <span class="Comment"># container containing an address</span>
 container foo [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:array:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type<span class="Delimiter">,</span> <span class="Constant">3</span>
-  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:num
   *<span class="Constant">2</span>:address:array:foo<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:foo<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">3</span>:foo
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>
   <span class="Constant">2</span>:address:array:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]

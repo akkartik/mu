@@ -41,9 +41,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario call_literal_recipe)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-def f x:number <span class="Delimiter">-&gt;</span> y:number [
+def f x:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -53,9 +53,9 @@ def f x:number <span class="Delimiter">-&gt;</span> y:number [
 <span class="Delimiter">:(scenario call_variable)</span>
 def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">34</span>
 ]
-def f x:number <span class="Delimiter">-&gt;</span> y:number [
+def f x:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -115,11 +115,11 @@ get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span
 <span class="Special">% Hide_errors = true;</span>
 def main [
   local-scope
-  <span class="Normal">a</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Identifier">break</span> <span class="Constant">0</span>
-  <span class="Normal">break</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">a</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Identifier">break</span> <span class="Constant">0</span>
+  <span class="Normal">break</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+error: main: you can't use 'break' as a recipe literal when it's also a variable</span>
-<span class="traceContains">+error: main: missing type for 'break' in 'a:boolean &lt;- equal break, 0'</span>
+<span class="traceContains">+error: main: missing type for 'break' in 'a:bool &lt;- equal break, 0'</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 CALL<span class="Delimiter">,</span>
@@ -161,29 +161,29 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario call_check_literal_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 def f x:point <span class="Delimiter">-&gt;</span> y:point [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
 ]
-<span class="traceContains">+error: main: ingredient 0 has the wrong type at '1:number &lt;- call f, 34'</span>
-<span class="traceContains">+error: main: product 0 has the wrong type at '1:number &lt;- call f, 34'</span>
+<span class="traceContains">+error: main: ingredient 0 has the wrong type at '1:num &lt;- call f, 34'</span>
+<span class="traceContains">+error: main: product 0 has the wrong type at '1:num &lt;- call f, 34'</span>
 
 <span class="Delimiter">:(scenario call_check_variable_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point <span class="Delimiter">-&gt;</span> point<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point <span class="Delimiter">-&gt;</span> point<span class="Delimiter">)},</span> <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point <span class="Delimiter">-&gt;</span> point<span class="Delimiter">)},</span> <span class="Constant">34</span>
 ]
 def f x:point <span class="Delimiter">-&gt;</span> y:point [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
 ]
-<span class="traceContains">+error: main: ingredient 0 has the wrong type at '2:number &lt;- call {1: (recipe point -&gt; point)}, 34'</span>
-<span class="traceContains">+error: main: product 0 has the wrong type at '2:number &lt;- call {1: (recipe point -&gt; point)}, 34'</span>
+<span class="traceContains">+error: main: ingredient 0 has the wrong type at '2:num &lt;- call {1: (recipe point -&gt; point)}, 34'</span>
+<span class="traceContains">+error: main: product 0 has the wrong type at '2:num &lt;- call {1: (recipe point -&gt; point)}, 34'</span>
 
 <span class="Delimiter">:(after &quot;Transform.push_back(check_instruction)&quot;)</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_indirect_calls_against_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
@@ -290,11 +290,11 @@ reagent next_recipe_reagent<span class="Delimiter">(</span><span class="Normal">
 <span class="Delimiter">:(scenario copy_typecheck_recipe_variable)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># abc def</span>
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># abc def</span>
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># store literal in a matching variable</span>
   <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>recipe boolean <span class="Delimiter">-&gt;</span> boolean<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span>  <span class="Comment"># mismatch between recipe variables</span>
 ]
-def f x:number <span class="Delimiter">-&gt;</span> y:number [
+def f x:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -306,7 +306,7 @@ def f x:number <span class="Delimiter">-&gt;</span> y:number [
 def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># mismatch with a recipe literal</span>
 ]
-def f x:boolean <span class="Delimiter">-&gt;</span> y:boolean [
+def f x:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> y:<span class="Normal">bool</span> [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -335,10 +335,10 @@ def f x:boolean <span class="Delimiter">-&gt;</span> y:boolean [
 <span class="Delimiter">:(scenario call_variable_compound_ingredient)</span>
 def main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">2</span>:address:number
+  <span class="Constant">2</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">2</span>:&amp;:num
 ]
-def f x:address:number <span class="Delimiter">-&gt;</span> y:number [
+def f x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x

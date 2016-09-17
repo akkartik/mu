@@ -39,10 +39,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario refcounts)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>/unsafe
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">1000</span>/unsafe
+  <span class="Constant">2</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- copy {1000: &quot;literal&quot;, &quot;unsafe&quot;: ()}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -123,9 +123,9 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_reflexive)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># idempotent copies leave refcount unchanged</span>
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -135,14 +135,14 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_call)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Comment"># passing in addresses to recipes increments refcount</span>
-  foo <span class="Constant">1</span>:address:number
+  foo <span class="Constant">1</span>:address:num
   <span class="Comment"># return does NOT yet decrement refcount; memory must be explicitly managed</span>
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
 ]
 def foo [
-  <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">2</span>:address:num<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -158,12 +158,12 @@ def foo [
 
 <span class="Delimiter">:(scenario refcounts_put)</span>
 container foo [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
-  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -181,9 +181,9 @@ update_any_refcounts<span class="Delimiter">(</span>element<span class="Delimite
 
 <span class="Delimiter">:(scenario refcounts_put_index)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
-  *<span class="Constant">2</span>:address:array:address:number<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:number<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:array:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
+  *<span class="Constant">2</span>:address:array:address:num<span class="Special"> &lt;- </span>put-index *<span class="Constant">2</span>:address:array:address:num<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -198,13 +198,13 @@ update_any_refcounts<span class="Delimiter">(</span>element<span class="Delimite
 
 <span class="Delimiter">:(scenario refcounts_maybe_convert)</span>
 exclusive-container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">p</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">p</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/p<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
-  <span class="Constant">4</span>:address:number<span class="Delimiter">,</span> <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">2</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/p
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/p<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
+  <span class="Constant">4</span>:address:num<span class="Delimiter">,</span> <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">2</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/p
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -226,12 +226,12 @@ update_any_refcounts<span class="Delimiter">(</span>product<span class="Delimite
 
 <span class="Delimiter">:(scenario refcounts_copy_nested)</span>
 container foo [
-  <span class="Normal">x</span>:address:number  <span class="Comment"># address inside container</span>
+  <span class="Normal">x</span>:address:num  <span class="Comment"># address inside container</span>
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
-  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  *<span class="Constant">2</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:foo<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
   <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>copy *<span class="Constant">2</span>:address:foo
 ]
 <span class="traceContains">+transform: compute address offsets for container foo</span>
@@ -350,7 +350,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;array&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">const</span> type_tree* element_type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-      <span class="Comment">// hack: support both array:number:3 and array:address:number</span>
+      <span class="Comment">// hack: support both array:num:3 and array:address:num</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!element_type<span class="Delimiter">-&gt;</span>atom &amp;&amp; element_type<span class="Delimiter">-&gt;</span>right &amp;&amp; element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom &amp;&amp; is_integer<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>name<span class="Delimiter">))</span>
         element_type = element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
       compute_container_address_offsets<span class="Delimiter">(</span>element_type<span class="Delimiter">);</span>
@@ -464,7 +464,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0 that we have the size for</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -496,8 +496,8 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 1 that we have the size for</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  y:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -529,8 +529,8 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with a nested container containing an address</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  y:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  y:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;container bar [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;  p:point</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
@@ -566,7 +566,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:foo&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -591,7 +591,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:array:foo&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -616,7 +616,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:foo&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -641,7 +641,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:array:foo:10&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -666,7 +666,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:foo:10&quot;</span><span class="Delimiter">);</span>
   compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>  <span class="Comment">// need to first pre-populate the metadata</span>
@@ -691,7 +691,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Normal">int</span> old_size = SIZE<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">);</span>
   <span class="Comment">// define a container with an address at offset 0</span>
   run<span class="Delimiter">(</span><span class="Constant">&quot;container foo [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
-      <span class="Constant">&quot;  x:address:number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
+      <span class="Constant">&quot;  x:address:num</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   <span class="Comment">// scan a deep nest of 'address' and 'array' types modifying a container</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:address:address:array:foo:10&quot;</span><span class="Delimiter">);</span>
@@ -756,11 +756,11 @@ container foo [
   <span class="Normal">a</span>:bar  <span class="Comment"># contains an address</span>
 ]
 container bar [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:num
   <span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
   *<span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">3</span>:address:foo<span class="Delimiter">,</span> a:offset<span class="Delimiter">,</span> <span class="Constant">2</span>:bar
 ]
@@ -774,11 +774,11 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_put_index_array)</span>
 container bar [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:num
   <span class="Constant">3</span>:address:array:bar<span class="Special"> &lt;- </span><span class="Normal">new</span> bar:type<span class="Delimiter">,</span> <span class="Constant">3</span>
   *<span class="Constant">3</span>:address:array:bar<span class="Special"> &lt;- </span>put-index *<span class="Constant">3</span>:address:array:bar<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">2</span>:bar
 ]
@@ -792,17 +792,17 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_maybe_convert_container)</span>
 exclusive-container foo [
-  <span class="Normal">a</span>:number
+  <span class="Normal">a</span>:num
   <span class="Normal">b</span>:bar  <span class="Comment"># contains an address</span>
 ]
 container bar [
-  <span class="Normal">x</span>:address:number
+  <span class="Normal">x</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:num
   <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">2</span>:bar
-  <span class="Constant">5</span>:bar<span class="Delimiter">,</span> <span class="Constant">6</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">3</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/b
+  <span class="Constant">5</span>:bar<span class="Delimiter">,</span> <span class="Constant">6</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">3</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:variant/b
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -819,17 +819,17 @@ container foo [
   <span class="Normal">b</span>:curr  <span class="Comment"># contains addresses</span>
 ]
 container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:num
 ]
 container curr [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:address:number  <span class="Comment"># address inside container inside container</span>
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:address:num  <span class="Comment"># address inside container inside container</span>
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:curr<span class="Special"> &lt;- </span><span class="Normal">new</span> curr:type
-  *<span class="Constant">2</span>:address:curr<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:curr<span class="Delimiter">,</span> <span class="Constant">1</span>:offset/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  *<span class="Constant">2</span>:address:curr<span class="Special"> &lt;- </span>put *<span class="Constant">2</span>:address:curr<span class="Delimiter">,</span> <span class="Constant">1</span>:offset/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
   <span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
   *<span class="Constant">3</span>:address:foo<span class="Special"> &lt;- </span>put *<span class="Constant">3</span>:address:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset/b<span class="Delimiter">,</span> *<span class="Constant">2</span>:address:curr
   <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:address:foo
@@ -851,21 +851,21 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_copy_exclusive_container_within_container)</span>
 container foo [
-  <span class="Normal">a</span>:number
+  <span class="Normal">a</span>:num
   <span class="Normal">b</span>:bar
 ]
 exclusive-container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:number
-  <span class="Normal">z</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:num
+  <span class="Normal">z</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">2</span>:bar
   <span class="Constant">5</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Constant">6</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">13</span><span class="Delimiter">,</span> <span class="Constant">5</span>:bar
-  <span class="Constant">8</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/z<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">8</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/z<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
   <span class="Constant">9</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">8</span>:bar
   <span class="Constant">11</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">9</span>:foo
 ]
@@ -881,19 +881,19 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_copy_container_within_exclusive_container)</span>
 exclusive-container foo [
-  <span class="Normal">a</span>:number
+  <span class="Normal">a</span>:num
   <span class="Normal">b</span>:bar
 ]
 container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:number
-  <span class="Normal">z</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:num
+  <span class="Normal">z</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/a<span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Constant">6</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/a<span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Constant">10</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/x<span class="Delimiter">,</span> <span class="Constant">15</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">10</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">2</span>/x<span class="Delimiter">,</span> <span class="Constant">15</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
   <span class="Constant">13</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">10</span>:bar
   <span class="Constant">17</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>:foo
 ]
@@ -909,16 +909,16 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_copy_exclusive_container_within_exclusive_container)</span>
 exclusive-container foo [
-  <span class="Normal">a</span>:number
+  <span class="Normal">a</span>:num
   <span class="Normal">b</span>:bar
 ]
 exclusive-container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:address:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">10</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">10</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/b<span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num
   <span class="Constant">20</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:foo
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}</span>
@@ -931,13 +931,13 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_copy_array_within_container)</span>
 container foo [
-  <span class="Normal">x</span>:address:array:number
+  <span class="Normal">x</span>:address:array:num
 ]
 def main [
-  <span class="Constant">1</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:array:number
-  <span class="Constant">3</span>:address:array:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>:address:array:number
+  <span class="Constant">1</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:array:num
+  <span class="Constant">3</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>:address:array:num
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}, {3: &quot;literal&quot;}</span>
 <span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
@@ -948,24 +948,24 @@ def main [
 
 <span class="Delimiter">:(scenario refcounts_handle_exclusive_containers_with_different_tags)</span>
 container foo1 [
-  <span class="Normal">x</span>:address:number
-  <span class="Normal">y</span>:number
+  <span class="Normal">x</span>:address:num
+  <span class="Normal">y</span>:num
 ]
 container foo2 [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:address:num
 ]
 exclusive-container bar [
   <span class="Normal">a</span>:foo1
   <span class="Normal">b</span>:foo2
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">12000</span>/unsafe  <span class="Comment"># pretend allocation</span>
-  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/foo1<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number<span class="Delimiter">,</span> <span class="Constant">97</span>
-  <span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">13000</span>/unsafe  <span class="Comment"># pretend allocation</span>
-  *<span class="Constant">5</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">6</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/foo2<span class="Delimiter">,</span> <span class="Constant">98</span><span class="Delimiter">,</span> <span class="Constant">5</span>:address:number
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">12000</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  *<span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/foo1<span class="Delimiter">,</span> <span class="Constant">1</span>:address:num<span class="Delimiter">,</span> <span class="Constant">97</span>
+  <span class="Constant">5</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">13000</span>/unsafe  <span class="Comment"># pretend allocation</span>
+  *<span class="Constant">5</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">6</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/foo2<span class="Delimiter">,</span> <span class="Constant">98</span><span class="Delimiter">,</span> <span class="Constant">5</span>:address:num
   <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>copy <span class="Constant">6</span>:bar
 ]
 <span class="traceContains">+run: {2: &quot;bar&quot;} &lt;- merge {0: &quot;literal&quot;, &quot;foo1&quot;: ()}, {1: (&quot;address&quot; &quot;number&quot;)}, {97: &quot;literal&quot;}</span>

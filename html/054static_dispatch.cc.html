@@ -39,12 +39,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario static_dispatch)</span>
 def main [
-  <span class="Constant">7</span>:number/<span class="Special">raw &lt;- </span>test <span class="Constant">3</span>
+  <span class="Constant">7</span>:num/<span class="Special">raw &lt;- </span>test <span class="Constant">3</span>
 ]
-def test a:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
-def test a:number<span class="Delimiter">,</span> b:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 7</span>
@@ -154,12 +154,12 @@ string next_unused_recipe_name<span class="Delimiter">(</span><span class="Norma
 
 <span class="Delimiter">:(scenario static_dispatch_picks_most_similar_variant)</span>
 def main [
-  <span class="Constant">7</span>:number/<span class="Special">raw &lt;- </span>test <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">7</span>:num/<span class="Special">raw &lt;- </span>test <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def test a:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
-def test a:number<span class="Delimiter">,</span> b:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 7</span>
@@ -421,17 +421,17 @@ vector&lt;recipe_ordinal&gt; matching_variants<span class="Delimiter">(</span><s
 
 <span class="Delimiter">:(scenario static_dispatch_disabled_in_recipe_without_variants)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>test <span class="Constant">3</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>test <span class="Constant">3</span>
 ]
 def test [
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># ensure no header</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># ensure no header</span>
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario static_dispatch_disabled_on_headerless_definition)</span>
 <span class="Special">% Hide_errors = true;</span>
-def test a:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 def test [
@@ -444,22 +444,22 @@ def test [
 def test [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def test a:number <span class="Delimiter">-&gt;</span> z:number [
+def test a:num <span class="Delimiter">-&gt;</span> z:num [
   z<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+error: redefining recipe test</span>
 
 <span class="Delimiter">:(scenario static_dispatch_on_primitive_names)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
-  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
-  <span class="Constant">6</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:boolean<span class="Delimiter">,</span> <span class="Constant">5</span>:boolean
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">3</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
+  <span class="Constant">4</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
+  <span class="Constant">6</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:<span class="Normal">bool</span><span class="Delimiter">,</span> <span class="Constant">5</span>:<span class="Normal">bool</span>
 ]
 <span class="Comment"># temporarily hardcode number equality to always fail</span>
-def equal x:number<span class="Delimiter">,</span> y:number <span class="Delimiter">-&gt;</span> z:boolean [
+def equal x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:<span class="Normal">bool</span> [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
@@ -473,12 +473,12 @@ def equal x:number<span class="Delimiter">,</span> y:number <span class="Delimit
 def main [
   _<span class="Special"> &lt;- </span>test <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
-def test a:number <span class="Delimiter">-&gt;</span> z:point [
+def test a:num <span class="Delimiter">-&gt;</span> z:point [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>merge a<span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
-def test a:number<span class="Delimiter">,</span> b:number <span class="Delimiter">-&gt;</span> z:point [
+def test a:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> z:point [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>merge a<span class="Delimiter">,</span> b
@@ -487,42 +487,42 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)</span>
 def main [
-  <span class="Normal">x</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
   test x
 ]
 container foo [
-  <span class="Normal">x</span>:number
+  <span class="Normal">x</span>:num
 ]
-def test a:address:foo <span class="Delimiter">-&gt;</span> z:number [
+def test a:&amp;:foo <span class="Delimiter">-&gt;</span> z:num [
   local-scope
   load-ingredients
-  <span class="Normal">z</span>:number<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset
+  <span class="Normal">z</span>:num<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)</span>
 def main [
-  <span class="Normal">x</span>:address:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
+  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
   test x
 ]
-def test a:address:foo <span class="Delimiter">-&gt;</span> z:number [
+def test a:&amp;:foo <span class="Delimiter">-&gt;</span> z:num [
   local-scope
   load-ingredients
-  <span class="Normal">z</span>:number<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset
+  <span class="Normal">z</span>:num<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset
 ]
 container foo [
-  <span class="Normal">x</span>:number
+  <span class="Normal">x</span>:num
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">0</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">0</span>
 ]
-def foo x:address:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:num <span class="Delimiter">-&gt;</span> y:num [
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+mem: storing 35 in location 1</span>
@@ -531,26 +531,26 @@ def foo x:number <span class="Delimiter">-&gt;</span> y:number [
 <span class="Special">% Hide_errors = true;</span>
 def main [
   local-scope
-  <span class="Normal">x</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/newline
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo x
+  <span class="Normal">x</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/newline
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo x
 ]
-def foo x:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:num <span class="Delimiter">-&gt;</span> y:num [
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-<span class="traceContains">+error: main: ingredient 0 has the wrong type at '1:number/raw &lt;- foo x'</span>
+<span class="traceContains">+error: main: ingredient 0 has the wrong type at '1:num/raw &lt;- foo x'</span>
 <span class="traceAbsent">-mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario static_dispatch_dispatches_literal_to_boolean_before_character)</span>
 def main [
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>  <span class="Comment"># valid literal for boolean</span>
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>  <span class="Comment"># valid literal for boolean</span>
 ]
-def foo x:character <span class="Delimiter">-&gt;</span> y:number [
+def foo x:<span class="Normal">char</span> <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:boolean <span class="Delimiter">-&gt;</span> y:number [
+def foo x:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -560,14 +560,14 @@ def foo x:boolean <span class="Delimiter">-&gt;</span> y:number [
 
 <span class="Delimiter">:(scenario static_dispatch_dispatches_literal_to_character_when_out_of_boolean_range)</span>
 def main [
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo <span class="Constant">97</span>  <span class="Comment"># not a valid literal for boolean</span>
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo <span class="Constant">97</span>  <span class="Comment"># not a valid literal for boolean</span>
 ]
-def foo x:character <span class="Delimiter">-&gt;</span> y:number [
+def foo x:<span class="Normal">char</span> <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:boolean <span class="Delimiter">-&gt;</span> y:number [
+def foo x:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -577,14 +577,14 @@ def foo x:boolean <span class="Delimiter">-&gt;</span> y:number [
 
 <span class="Delimiter">:(scenario static_dispatch_dispatches_literal_to_number_if_at_all_possible)</span>
 def main [
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo <span class="Constant">97</span>
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo <span class="Constant">97</span>
 ]
-def foo x:character <span class="Delimiter">-&gt;</span> y:number [
+def foo x:<span class="Normal">char</span> <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -609,20 +609,20 @@ string header_label<span class="Delimiter">(</span><span class="Normal">const</s
 
 <span class="Delimiter">:(scenario reload_variant_retains_other_variants)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:number
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:num
 ]
-def foo x:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:address:number <span class="Delimiter">-&gt;</span> y:number [
+def foo x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
-def! foo x:address:number <span class="Delimiter">-&gt;</span> y:number [
+def! foo x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">36</span>
@@ -633,33 +633,32 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario dispatch_errors_come_after_unknown_name_errors)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>foo x
+  <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>foo x
 ]
-def foo a:number <span class="Delimiter">-&gt;</span> b:number [
+def foo a:num <span class="Delimiter">-&gt;</span> b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo a:boolean <span class="Delimiter">-&gt;</span> b:number [
+def foo a:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
-<span class="traceContains">+error: main: missing type for 'x' in 'y:number &lt;- foo x'</span>
-<span class="traceContains">+error: main: failed to find a matching call for 'y:number &lt;- foo x'</span>
+<span class="traceContains">+error: main: missing type for 'x' in 'y:num &lt;- foo x'</span>
+<span class="traceContains">+error: main: failed to find a matching call for 'y:num &lt;- foo x'</span>
 
 <span class="Delimiter">:(scenario override_methods_with_type_abbreviations)</span>
-type string = address:array:character
 def main [
   local-scope
-  <span class="Normal">s</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>foo s
+  <span class="Normal">s</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo s
 ]
 def foo a:address:array:character <span class="Delimiter">-&gt;</span> result:number [
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-<span class="Comment"># identical to previous variant once you take type abbreviation into account</span>
-def! foo a:string <span class="Delimiter">-&gt;</span> result:number [
+<span class="Comment"># identical to previous variant once you take type abbreviations into account</span>
+def! foo a:text <span class="Delimiter">-&gt;</span> result:num [
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+mem: storing 35 in location 1</span>

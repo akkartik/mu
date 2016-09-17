@@ -41,7 +41,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario transform_names)</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+name: assign x 1</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -50,7 +50,7 @@ def main [
 <span class="Delimiter">:(scenario transform_names_fails_on_use_before_define)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy y:number
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy y:num
 ]
 <span class="traceContains">+error: main: use before set: 'y'</span>
 <span class="Comment"># todo: detect conditional defines</span>
@@ -193,7 +193,7 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
 <span class="Delimiter">:(scenario transform_names_supports_containers)</span>
 def main [
   <span class="Normal">x</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
 ]
 <span class="traceContains">+name: assign x 1</span>
 <span class="Comment"># skip location 2 because x occupies two locations</span>
@@ -201,8 +201,8 @@ def main [
 
 <span class="Delimiter">:(scenario transform_names_supports_static_arrays)</span>
 def main [
-  <span class="Normal">x</span>:array:number:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Normal">x</span>:@:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
 ]
 <span class="traceContains">+name: assign x 1</span>
 <span class="Comment"># skip locations 2, 3, 4 because x occupies four locations</span>
@@ -211,7 +211,7 @@ def main [
 <span class="Delimiter">:(scenario transform_names_passes_dummy)</span>
 <span class="Comment"># _ is just a dummy result that never gets consumed</span>
 def main [
-  _<span class="Delimiter">,</span> x:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>
+  _<span class="Delimiter">,</span> x:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+name: assign x 1</span>
 <span class="traceAbsent">-name: assign _ 1</span>
@@ -221,37 +221,37 @@ def main [
 <span class="Delimiter">:(scenario transform_names_passes_raw)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">x</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">x</span>:num/<span class="Special">raw &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceAbsent">-name: assign x 1</span>
-<span class="traceContains">+error: can't write to location 0 in 'x:number/raw &lt;- copy 0'</span>
+<span class="traceContains">+error: can't write to location 0 in 'x:num/raw &lt;- copy 0'</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_names_fails_when_mixing_names_and_numeric_locations)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num
 ]
 <span class="traceContains">+error: main: mixing variable names and numeric addresses</span>
 
 <span class="Delimiter">:(scenario transform_names_fails_when_mixing_names_and_numeric_locations_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy x:number
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy x:num
 ]
 <span class="traceContains">+error: main: mixing variable names and numeric addresses</span>
 
 <span class="Delimiter">:(scenario transform_names_does_not_fail_when_mixing_names_and_raw_locations)</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:number/<span class="Special">raw</span>
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num/<span class="Special">raw</span>
 ]
 <span class="traceAbsent">-error: main: mixing variable names and numeric addresses</span>
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario transform_names_does_not_fail_when_mixing_names_and_literals)</span>
 def main [
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceAbsent">-error: main: mixing variable names and numeric addresses</span>
 $error: <span class="Constant">0</span>
@@ -261,9 +261,9 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario transform_names_transforms_container_elements)</span>
 def main [
-  <span class="Normal">p</span>:address:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Normal">a</span>:number<span class="Special"> &lt;- </span>get *p:address:point<span class="Delimiter">,</span> y:offset
-  <span class="Normal">b</span>:number<span class="Special"> &lt;- </span>get *p:address:point<span class="Delimiter">,</span> x:offset
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">a</span>:num<span class="Special"> &lt;- </span>get *p:&amp;:point<span class="Delimiter">,</span> y:offset
+  <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>get *p:&amp;:point<span class="Delimiter">,</span> x:offset
 ]
 <span class="traceContains">+name: element y of type point is at offset 1</span>
 <span class="traceContains">+name: element x of type point is at offset 0</span>
@@ -295,7 +295,7 @@ def main [
 <span class="Delimiter">:(scenario transform_names_handles_containers)</span>
 def main [
   <span class="Normal">a</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
-  <span class="Normal">b</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
+  <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
 ]
 <span class="traceContains">+name: assign a 1</span>
 <span class="traceContains">+name: assign b 3</span>
@@ -305,10 +305,10 @@ def main [
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario transform_names_handles_exclusive_containers)</span>
 def main [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:boolean<span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> p:variant
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
+  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> p:variant
 ]
 <span class="traceContains">+name: variant p of type number-or-point has tag 1</span>
 <span class="traceContains">+mem: storing 1 in location 22</span>

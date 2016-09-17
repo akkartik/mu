@@ -41,12 +41,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario wait_for_location)</span>
 def f1 [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   start-running f2
   <span class="Constant">20</span>:location<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   wait-<span class="Normal">for</span>-reset-then-set <span class="Constant">20</span>:location
   <span class="Comment"># wait for f2 to run and reset location 1</span>
-  <span class="Constant">30</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:number
+  <span class="Constant">30</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:num
 ]
 def f2 [
   <span class="Constant">10</span>:location<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
@@ -176,8 +176,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario get_location)</span>
 def main [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">15</span>:location<span class="Special"> &lt;- </span>get-location <span class="Constant">12</span>:point<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
 <span class="traceContains">+mem: storing 13 in location 15</span>
@@ -259,9 +259,9 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario get_location_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   get-location <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:offset  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
 ]
 <span class="traceContains">+error: main: invalid offset 2 for 'point-number'</span>
@@ -269,9 +269,9 @@ def main [
 <span class="Delimiter">:(scenario get_location_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">14</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
   get-location <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> -<span class="Constant">1</span>:offset
 ]
 <span class="traceContains">+error: main: invalid offset -1 for 'point-number'</span>
@@ -279,35 +279,35 @@ def main [
 <span class="Delimiter">:(scenario get_location_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
 container boolbool [
-  <span class="Normal">x</span>:boolean
-  <span class="Normal">y</span>:boolean
+  <span class="Normal">x</span>:<span class="Normal">bool</span>
+  <span class="Normal">y</span>:<span class="Normal">bool</span>
 ]
 def main [
-  <span class="Constant">12</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Constant">13</span>:boolean<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">15</span>:boolean<span class="Special"> &lt;- </span>get-location <span class="Constant">12</span>:boolbool<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+  <span class="Constant">12</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">13</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">15</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>get-location <span class="Constant">12</span>:boolbool<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
 ]
 <span class="traceContains">+error: main: 'get-location 12:boolbool, 1:offset' should write to type location but '15' has type 'boolean'</span>
 
 <span class="Delimiter">:(scenario get_location_indirect)</span>
 <span class="Comment"># 'get-location' can read from container address</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   <span class="Comment"># 10 reserved for refcount</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">4</span>:location<span class="Special"> &lt;- </span>get-location <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">4</span>:location<span class="Special"> &lt;- </span>get-location <span class="Constant">1</span>:&amp;:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
 ]
 <span class="traceContains">+mem: storing 11 in location 4</span>
 
 <span class="Delimiter">:(scenario get_location_indirect_2)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   <span class="Comment"># 10 reserved for refcount</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">4</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
-  <span class="Constant">4</span>:address:location/lookup<span class="Special"> &lt;- </span>get-location <span class="Constant">1</span>:address:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">4</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+  <span class="Constant">4</span>:&amp;:location/lookup<span class="Special"> &lt;- </span>get-location <span class="Constant">1</span>:&amp;:point/lookup<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
 ]
 <span class="traceContains">+mem: storing 11 in location 21</span>
 
@@ -316,21 +316,21 @@ def main [
 <span class="Delimiter">:(scenario wait_for_routine)</span>
 def f1 [
   <span class="Comment"># add a few routines to run</span>
-  <span class="Constant">1</span>:number/routine<span class="Special"> &lt;- </span>start-running f2
-  <span class="Constant">2</span>:number/routine<span class="Special"> &lt;- </span>start-running f3
-  wait-<span class="Normal">for</span>-routine <span class="Constant">1</span>:number/routine
+  <span class="Constant">1</span>:num/routine<span class="Special"> &lt;- </span>start-running f2
+  <span class="Constant">2</span>:num/routine<span class="Special"> &lt;- </span>start-running f3
+  wait-<span class="Normal">for</span>-routine <span class="Constant">1</span>:num/routine
   <span class="Comment"># now wait for f2 to *complete* and modify location 13 before using its value</span>
-  <span class="Constant">20</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>:number
+  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>:num
 ]
 def f2 [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># just padding</span>
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># just padding</span>
   <span class="Normal">switch</span>  <span class="Comment"># simulate a block; routine f1 shouldn't restart at this point</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 def f3 [
   <span class="Comment"># padding routine just to help simulate the block in f2 using 'switch'</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+schedule: f1</span>
 <span class="traceContains">+run: waiting for routine 2</span>
@@ -459,13 +459,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario wait_for_routine_to_block)</span>
 def f1 [
-  <span class="Constant">1</span>:number/routine<span class="Special"> &lt;- </span>start-running f2
-  wait-<span class="Normal">for</span>-routine-to-block <span class="Constant">1</span>:number/routine
+  <span class="Constant">1</span>:num/routine<span class="Special"> &lt;- </span>start-running f2
+  wait-<span class="Normal">for</span>-routine-to-block <span class="Constant">1</span>:num/routine
   <span class="Comment"># now wait for f2 to run and modify location 10 before using its value</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:number
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>:num
 ]
 def f2 [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+schedule: f1</span>
 <span class="traceContains">+run: waiting for routine 2 to block</span>
@@ -598,14 +598,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Special">% Scheduling_interval = 1;</span>
 def main [
   local-scope
-  <span class="Normal">r</span>:number/routine-id<span class="Special"> &lt;- </span>start-running f
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># wait for f to be scheduled</span>
+  <span class="Normal">r</span>:num/routine-id<span class="Special"> &lt;- </span>start-running f
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># wait for f to be scheduled</span>
   <span class="Comment"># r is COMPLETED by this point</span>
   restart r  <span class="Comment"># should have no effect</span>
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># give f time to be scheduled (though it shouldn't be)</span>
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># give f time to be scheduled (though it shouldn't be)</span>
 ]
 def f [
-  <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="Comment"># shouldn't crash</span>
 
@@ -613,7 +613,7 @@ def f [
 <span class="Special">% Scheduling_interval = 1;</span>
 def main [
   local-scope
-  <span class="Normal">r</span>:number/routine-id<span class="Special"> &lt;- </span>start-running f
+  <span class="Normal">r</span>:num/routine-id<span class="Special"> &lt;- </span>start-running f
   wait-<span class="Normal">for</span>-routine-to-block r  <span class="Comment"># get past the block in f below</span>
   restart r
   wait-<span class="Normal">for</span>-routine-to-block r  <span class="Comment"># should run f to completion</span>
@@ -622,15 +622,15 @@ def main [
 def f [
   current-routine-is-blocked
   <span class="Comment"># 8 instructions of padding, many more than 'main' above</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="Comment"># make sure all of f ran</span>
 <span class="traceContains">+mem: storing 8 in location 1</span>

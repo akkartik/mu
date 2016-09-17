@@ -32,12 +32,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="Comment"># example program: communicating between routines using channels</span>
 
-<span class="muRecipe">def</span> producer sink:address:sink:character<span class="muRecipe"> -&gt; </span>sink:address:sink:character [
+<span class="muRecipe">def</span> producer sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
   <span class="Comment"># produce characters 1 to 5 on a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># n = 0</span>
-  n:character<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  n:char<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:boolean<span class="Special"> &lt;- </span>lesser-than n, <span class="Constant">5</span>
     <span class="muControl">break-unless</span> done?
@@ -51,16 +51,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   close sink
 ]
 
-<span class="muRecipe">def</span> consumer source:address:source:character<span class="muRecipe"> -&gt; </span>source:address:source:character [
+<span class="muRecipe">def</span> consumer source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
   <span class="Comment"># consume and print integers from a channel</span>
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># read an integer from the channel</span>
-    n:character, eof?:boolean, source<span class="Special"> &lt;- </span>read source
+    n:char, eof?:boolean, source<span class="Special"> &lt;- </span>read source
     <span class="muControl">break-if</span> eof?
     <span class="Comment"># other threads might get between these prints</span>
-    $print <span class="Constant">[consume: ]</span>, n:character, <span class="Constant">[ </span>
+    $print <span class="Constant">[consume: ]</span>, n:char, <span class="Constant">[ </span>
 <span class="Constant">]</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -68,10 +68,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
-  source:address:source:character, sink:address:sink:character<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
   <span class="Comment"># create two background 'routines' that communicate by a channel</span>
-  routine1:number<span class="Special"> &lt;- </span>start-running producer, sink
-  routine2:number<span class="Special"> &lt;- </span>start-running consumer, source
+  routine1:num<span class="Special"> &lt;- </span>start-running producer, sink
+  routine2:num<span class="Special"> &lt;- </span>start-running consumer, source
   wait-for-routine routine1
   wait-for-routine routine2
 ]

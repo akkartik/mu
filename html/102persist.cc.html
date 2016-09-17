@@ -45,10 +45,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   string filename<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     <span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     <span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -60,11 +60,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> RESTORE: <span class="Delimiter">{</span>
   string filename<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     filename = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    filename = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    filename = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Comment">// do nothing in tests</span>
@@ -77,7 +77,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">if</span> <span class="Delimiter">(</span>contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">else</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -103,18 +103,18 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'save' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     <span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     <span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'save' should be a string, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'save' should be an address:array:character, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'save' should be an address:@:char, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -123,14 +123,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> SAVE: <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>  <span class="Comment">// do nothing in tests</span>
   string filename<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     filename = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    filename = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    filename = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
   ofstream fout<span class="Delimiter">((</span><span class="Constant">&quot;lesson/&quot;</span>+filename<span class="Delimiter">).</span>c_str<span class="Delimiter">());</span>
-  string contents = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  string contents = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   fout &lt;&lt; contents<span class="Delimiter">;</span>
   fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!exists<span class="Delimiter">(</span><span class="Constant">&quot;lesson/.git&quot;</span><span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>

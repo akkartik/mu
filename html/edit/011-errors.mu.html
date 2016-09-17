@@ -40,10 +40,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu, save any errors</span>
-<span class="muRecipe">def!</span> update-recipes env:address:programming-environment-data, screen:address:screen<span class="muRecipe"> -&gt; </span>errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+<span class="muRecipe">def!</span> update-recipes env:&amp;:programming-environment-data, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:programming-environment-data, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  recipes:address:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+  recipes:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:text<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
   recipe-errors:text<span class="Special"> &lt;- </span>reload in
@@ -76,7 +76,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muData">container</span> programming-environment-data [
-  error-index:number  <span class="Comment"># index of first sandbox with an error (or -1 if none)</span>
+  error-index:num  <span class="Comment"># index of first sandbox with an error (or -1 if none)</span>
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;programming-environment-initialization&gt;</span> [
@@ -89,8 +89,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;run-sandboxes-end&gt;</span> [
   <span class="Delimiter">{</span>
-    error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
+    sandboxes-completed-successfully?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
     errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   <span class="Delimiter">}</span>
@@ -99,8 +99,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> recipe-errors
-    error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    sandboxes-completed-successfully?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
+    sandboxes-completed-successfully?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
     error-index-text:text<span class="Special"> &lt;- </span>to-text error-index
     status:text<span class="Special"> &lt;- </span>interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
@@ -112,26 +112,26 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   errors:text
 ]
 
-<span class="muRecipe">def!</span> update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number<span class="muRecipe"> -&gt; </span>sandbox:address:sandbox-data, env:address:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  response:text, errors:text, fake-screen:address:screen, trace:text, completed?:boolean<span class="Special"> &lt;- </span>run-sandboxed data
+  response:text, errors:text, fake-screen:&amp;:screen, trace:text, completed?:bool<span class="Special"> &lt;- </span>run-sandboxed data
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response:offset</span>, response
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">errors:offset</span>, errors
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
   *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">trace:offset</span>, trace
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> errors
-    <span class="muControl">break-if</span> completed?:boolean
+    <span class="muControl">break-if</span> completed?:bool
     errors<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
 <span class="Constant">]</span>
     *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">errors:offset</span>, errors
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> errors
-    error-index:number<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    error-not-set?:boolean<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
+    error-not-set?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
     <span class="muControl">break-unless</span> error-not-set?
     *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">error-index:offset</span>, idx
   <span class="Delimiter">}</span>
@@ -154,25 +154,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
-<span class="Constant">  get 123:number, foo:offset</span>
+<span class="Constant">  get 123:num, foo:offset</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .  get 123:number, foo:offset                      ┊                                                 .</span>
+   <span class="Constant"> .  get 123:num, foo:offset                         ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: unknown element 'foo' in container 'number'  ┊                                                 .</span>
    <span class="Constant"> .foo: first ingredient of 'get' should be a contai↩┊                                                 .</span>
-   <span class="Constant"> .ner, but got '123:number'                         ┊                                                 .</span>
+   <span class="Constant"> .ner, but got '123:num'                            ┊                                                 .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
@@ -184,7 +184,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .foo: unknown element 'foo' in container 'number'                                                    .</span>
    <span class="Constant"> .foo: first ingredient of 'get' should be a contai                                                   .</span>
-   <span class="Constant"> .ner, but got '123:number'                                                                           .</span>
+   <span class="Constant"> .ner, but got '123:num'                                                                              .</span>
    <span class="Constant"> .                                                                                                    .</span>
   ]
 ]
@@ -194,7 +194,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 1</span>
@@ -205,7 +205,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># status line shows that error is in first sandbox</span>
   screen-should-contain [
@@ -218,7 +218,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 2</span>
@@ -232,7 +232,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># status line shows that error is in second sandbox</span>
   screen-should-contain [
@@ -245,12 +245,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4  <span class="Comment"># generate error</span>
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">58</span>
@@ -259,7 +259,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4  <span class="Comment"># update sandbox</span>
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># error should disappear</span>
   screen-should-contain [
@@ -281,21 +281,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">load-ingredients</span>
-<span class="Constant">y:address:number &lt;- copy 0</span>
+<span class="Constant">y:&amp;:num &lt;- copy 0</span>
 <span class="Constant">z &lt;- add x, y</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .load-ingredients                                  ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .y:address:number &lt;- copy 0                        ┊foo 2                                            .</span>
+   <span class="Constant"> .y:&amp;:num &lt;- copy 0                                 ┊foo 2                                            .</span>
    <span class="Constant"> .z &lt;- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.</span>
    <span class="Constant"> .]                                                 ┊t 'y'                                            .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -306,7 +306,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># error should remain unchanged</span>
   screen-should-contain [
@@ -314,7 +314,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .load-ingredients                                  ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .y:address:number &lt;- copy 0                        ┊foo 2                                            .</span>
+   <span class="Constant"> .y:&amp;:num &lt;- copy 0                                 ┊foo 2                                            .</span>
    <span class="Constant"> .z &lt;- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.</span>
    <span class="Constant"> .]                                                 ┊t 'y'                                            .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -326,24 +326,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># overload a well-known shape-shifting recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:address:list:_elem -&gt; n:number [</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:&amp;:list:_elem -&gt; n:num [</span>
 <span class="Constant">]</span>]
   <span class="Comment"># call code that uses other variants of it, but not it itself</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[x:address:list:number &lt;- copy 0</span>
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
 <span class="Constant">to-text x]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run it once</span>
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   <span class="Comment"># no errors anywhere on screen (can't check anything else, since to-text will return an address)</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
-   <span class="Constant"> .                                                                         &lt;-                         .</span>
+   <span class="Constant"> .                                                                &lt;-                                  .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
@@ -360,7 +360,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># still no errors</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -368,7 +368,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
-   <span class="Constant"> .                                                                         &lt;-                         .</span>
+   <span class="Constant"> .                                                                &lt;-                                  .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
@@ -390,12 +390,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -416,12 +416,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -441,27 +441,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
-<span class="Constant">  x:address:point &lt;- new point:type</span>
-<span class="Constant">  get x:address:point, 1:offset</span>
+<span class="Constant">  x:&amp;:point &lt;- new point:type</span>
+<span class="Constant">  get x:&amp;:point, 1:offset</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
-   <span class="Constant"> .  x:address:point &lt;- new point:type               ┊                                                 .</span>
-   <span class="Constant"> .  get x:address:point, 1:offset                   ┊                                                 .</span>
+   <span class="Constant"> .  x:&amp;:point &lt;- new point:type                     ┊                                                 .</span>
+   <span class="Constant"> .  get x:&amp;:point, 1:offset                         ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: first ingredient of 'get' should be a contai↩┊                                                 .</span>
-   <span class="Constant"> .ner, but got 'x:address:point'                    ┊                                                 .</span>
+   <span class="Constant"> .ner, but got 'x:&amp;:point'                          ┊                                                 .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
@@ -473,29 +473,29 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
-<span class="Constant">  x:number &lt;- copy 0</span>
-<span class="Constant">  y:address:point &lt;- new point:type</span>
-<span class="Constant">  get *y:address:point, x:number</span>
+<span class="Constant">  x:num &lt;- copy 0</span>
+<span class="Constant">  y:&amp;:point &lt;- new point:type</span>
+<span class="Constant">  get *y:&amp;:point, x:num</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
-   <span class="Constant"> .  x:number &lt;- copy 0                              ┊                                                 .</span>
-   <span class="Constant"> .  y:address:point &lt;- new point:type               ┊                                                 .</span>
-   <span class="Constant"> .  get *y:address:point, x:number                  ┊                                                 .</span>
+   <span class="Constant"> .  x:num &lt;- copy 0                                 ┊                                                 .</span>
+   <span class="Constant"> .  y:&amp;:point &lt;- new point:type                     ┊                                                 .</span>
+   <span class="Constant"> .  get *y:&amp;:point, x:num                           ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: second ingredient of 'get' should have type ↩┊                                                 .</span>
-   <span class="Constant"> .'offset', but got 'x:number'                      ┊                                                 .</span>
+   <span class="Constant"> .'offset', but got 'x:num'                         ┊                                                 .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
@@ -508,20 +508,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
-<span class="Constant">  x:number &lt;- copy y:number</span>
+<span class="Constant">  x:num &lt;- copy y:num</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
-   <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
+   <span class="Constant"> .  x:num &lt;- copy y:num                             ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: use before set: 'y'                          ┊                                                 .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
@@ -532,14 +532,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
    <span class="Constant"> .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .  local-scope                                     ┊                                                 .</span>
-   <span class="Constant"> .  x:number &lt;- copy y:number                       ┊                                                 .</span>
+   <span class="Constant"> .  x:num &lt;- copy y:num                             ┊                                                 .</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
    <span class="Constant"> .foo: use before set: 'y'                          ┊                                                 .</span>
    <span class="Constant"> .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .</span>
@@ -553,14 +553,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># left editor is empty</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># check that screen prints error message in red</span>
   screen-should-contain [
@@ -568,10 +568,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                  ┊get 1234:num, foo:offset                         .</span>
    <span class="Constant"> .                                                  ┊unknown element 'foo' in container 'number'      .</span>
    <span class="Constant"> .                                                  ┊first ingredient of 'get' should be a container,↩.</span>
-   <span class="Constant"> .                                                  ┊ but got '1234:number'                           .</span>
+   <span class="Constant"> .                                                  ┊ but got '1234:num'                              .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
@@ -580,7 +580,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
-   <span class="Constant"> .                                                   get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                   get 1234:num, foo:offset                         .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                                                                    .</span>
@@ -593,7 +593,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                                                                    .</span>
    <span class="Constant"> .                                                   unknown element 'foo' in container 'number'      .</span>
    <span class="Constant"> .                                                   first ingredient of 'get' should be a container, .</span>
-   <span class="Constant"> .                                                    but got '1234:number'                           .</span>
+   <span class="Constant"> .                                                    but got '1234:num'                              .</span>
    <span class="Constant"> .                                                                                                    .</span>
   ]
   screen-should-contain-in-color <span class="Constant">245/grey</span>, [
@@ -616,15 +616,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># left editor is empty</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:number, foo:offset]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors multiple times</span>
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># check that screen prints error message just once</span>
   screen-should-contain [
@@ -632,10 +632,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .                                                  ┊                                                 .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ┊get 1234:number, foo:offset                      .</span>
+   <span class="Constant"> .                                                  ┊get 1234:num, foo:offset                         .</span>
    <span class="Constant"> .                                                  ┊unknown element 'foo' in container 'number'      .</span>
    <span class="Constant"> .                                                  ┊first ingredient of 'get' should be a container,↩.</span>
-   <span class="Constant"> .                                                  ┊ but got '1234:number'                           .</span>
+   <span class="Constant"> .                                                  ┊ but got '1234:num'                              .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
   ]
@@ -652,13 +652,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>]
   <span class="Comment"># right editor contains an instruction</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
@@ -678,28 +678,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># generate a stash and a error</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
 <span class="Constant">local-scope</span>
-<span class="Constant">a:number &lt;- next-ingredient</span>
-<span class="Constant">b:number &lt;- next-ingredient</span>
+<span class="Constant">a:num &lt;- next-ingredient</span>
+<span class="Constant">b:num &lt;- next-ingredient</span>
 <span class="Constant">stash [dividing by]</span>, b
-_, c:number<span class="Special"> &lt;- </span>divide-with-remainder a, b
+_, c:num<span class="Special"> &lt;- </span>divide-with-remainder a, b
 <span class="muControl">reply</span> b
 ]]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 4, 0]</span>
-  <span class="Constant">3</span>:address:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:address:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run</span>
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   <span class="Comment"># screen prints error message</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo [                                      ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .a:number &lt;- next-ingredient                       ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .b:number &lt;- next-ingredient                       ┊foo 4, 0                                         .</span>
-   <span class="Constant"> .stash [dividing by], b                            ┊foo: divide by zero in '_, c:number &lt;- divide-wi↩.</span>
-   <span class="Constant"> ._, c:number &lt;- divide-with-remainder a, b         ┊th-remainder a, b'                               .</span>
+   <span class="Constant"> .a:num &lt;- next-ingredient                          ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .b:num &lt;- next-ingredient                          ┊foo 4, 0                                         .</span>
+   <span class="Constant"> .stash [dividing by], b                            ┊foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
+   <span class="Constant"> ._, c:num &lt;- divide-with-remainder a, b            ┊remainder a, b'                                  .</span>
    <span class="Constant"> .reply b                                           ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
    <span class="Constant"> .]                                                 ┊                                                 .</span>
   ]
@@ -708,19 +708,19 @@ _, c:number<span class="Special"> &lt;- </span>divide-with-remainder a, b
     left-click <span class="Constant">4</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:address:screen, console:address:console, <span class="Constant">3</span>:address:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
   ]
   <span class="Comment"># screen should expand trace</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo [                                      ┊                                                 .</span>
    <span class="Constant"> .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
-   <span class="Constant"> .a:number &lt;- next-ingredient                       ┊0   edit          copy            delete         .</span>
-   <span class="Constant"> .b:number &lt;- next-ingredient                       ┊foo 4, 0                                         .</span>
+   <span class="Constant"> .a:num &lt;- next-ingredient                          ┊0   edit          copy            delete         .</span>
+   <span class="Constant"> .b:num &lt;- next-ingredient                          ┊foo 4, 0                                         .</span>
    <span class="Constant"> .stash [dividing by], b                            ┊dividing by 0                                    .</span>
-   <span class="Constant"> ._, c:number &lt;- divide-with-remainder a, b         ┊14 instructions run                              .</span>
-   <span class="Constant"> .reply b                                           ┊foo: divide by zero in '_, c:number &lt;- divide-wi↩.</span>
-   <span class="Constant"> .]                                                 ┊th-remainder a, b'                               .</span>
+   <span class="Constant"> ._, c:num &lt;- divide-with-remainder a, b            ┊14 instructions run                              .</span>
+   <span class="Constant"> .reply b                                           ┊foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
+   <span class="Constant"> .]                                                 ┊remainder a, b'                                  .</span>
 <span class="Constant">    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
   ]
 ]

@@ -39,23 +39,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muData">container</span> list:_elem [
   value:_elem
-  next:address:list:_elem
+  next:&amp;:list:_elem
 ]
 
-<span class="muRecipe">def</span> push x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem [
+<span class="muRecipe">def</span> push x:_elem, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
   *result<span class="Special"> &lt;- </span>merge x, in
 ]
 
-<span class="muRecipe">def</span> first in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
+<span class="muRecipe">def</span> first in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
 ]
 
-<span class="muRecipe">def</span> rest in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:address:list:_elem/contained-in:in [
+<span class="muRecipe">def</span> rest in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
@@ -64,15 +64,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> list-handling [
   run [
     <span class="Constant">local-scope</span>
-    x:address:list:number<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    x:&amp;:list:num<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     x<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, x
     x<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, x
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>first x
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>first x
     x<span class="Special"> &lt;- </span>rest x
-    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>first x
+    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>first x
     x<span class="Special"> &lt;- </span>rest x
-    <span class="Constant">12</span>:number/<span class="Special">raw &lt;- </span>first x
-    <span class="Constant">20</span>:address:list:number/<span class="Special">raw &lt;- </span>rest x
+    <span class="Constant">12</span>:num/<span class="Special">raw &lt;- </span>first x
+    <span class="Constant">20</span>:&amp;:list:num/<span class="Special">raw &lt;- </span>rest x
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
@@ -82,22 +82,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> length l:address:list:_elem<span class="muRecipe"> -&gt; </span>result:number [
+<span class="muRecipe">def</span> length l:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> l, <span class="Constant">0</span>
-  rest:address:list:_elem<span class="Special"> &lt;- </span>rest l
-  length-of-rest:number<span class="Special"> &lt;- </span>length rest
+  rest:&amp;:list:_elem<span class="Special"> &lt;- </span>rest l
+  length-of-rest:num<span class="Special"> &lt;- </span>length rest
   result<span class="Special"> &lt;- </span>add length-of-rest, <span class="Constant">1</span>
 ]
 
 <span class="Comment"># insert 'x' after 'in'</span>
-<span class="muRecipe">def</span> insert x:_elem, in:address:list:_elem<span class="muRecipe"> -&gt; </span>in:address:list:_elem [
+<span class="muRecipe">def</span> insert x:_elem, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  new-node:address:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  new-node:&amp;:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
   *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">value:offset</span>, x
-  next-node:address:list:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
+  next-node:&amp;:list:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
   *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">next:offset</span>, new-node
   *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">next:offset</span>, next-node
 ]
@@ -105,20 +105,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> inserting-into-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
-    list2:address:list:character<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
     <span class="Comment"># check structure</span>
     list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
@@ -131,21 +131,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> inserting-at-end-of-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
-    list2:address:list:character<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>rest list2  <span class="Comment"># now at end of list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
     <span class="Comment"># check structure like before</span>
     list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
@@ -158,19 +158,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> inserting-after-start-of-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list
     <span class="Comment"># check structure like before</span>
-    list2:address:list:character<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:character/<span class="Special">raw &lt;- </span>first list2
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
+    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
@@ -184,23 +184,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">#</span>
 <span class="Comment"># Returns null if and only if list is empty. Beware: in that case any other</span>
 <span class="Comment"># pointers to the head are now invalid.</span>
-<span class="muRecipe">def</span> remove x:address:list:_elem/contained-in:in, in:address:list:_elem<span class="muRecipe"> -&gt; </span>in:address:list:_elem [
+<span class="muRecipe">def</span> remove x:&amp;:list:_elem/contained-in:in, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if 'x' is null, return</span>
   <span class="muControl">return-unless</span> x
-  next-node:address:list:_elem<span class="Special"> &lt;- </span>rest x
+  next-node:&amp;:list:_elem<span class="Special"> &lt;- </span>rest x
   <span class="Comment"># clear next pointer of 'x'</span>
   *x<span class="Special"> &lt;- </span>put *x, <span class="Constant">next:offset</span>, <span class="Constant">0</span>
   <span class="Comment"># if 'x' is at the head of 'in', return the new head</span>
-  at-head?:boolean<span class="Special"> &lt;- </span>equal x, in
+  at-head?:bool<span class="Special"> &lt;- </span>equal x, in
   <span class="muControl">return-if</span> at-head?, next-node
   <span class="Comment"># compute prev-node</span>
-  prev-node:address:list:_elem<span class="Special"> &lt;- </span>copy in
-  curr:address:list:_elem<span class="Special"> &lt;- </span>rest prev-node
+  prev-node:&amp;:list:_elem<span class="Special"> &lt;- </span>copy in
+  curr:&amp;:list:_elem<span class="Special"> &lt;- </span>rest prev-node
   <span class="Delimiter">{</span>
     <span class="muControl">return-unless</span> curr
-    found?:boolean<span class="Special"> &lt;- </span>equal curr, x
+    found?:bool<span class="Special"> &lt;- </span>equal curr, x
     <span class="muControl">break-if</span> found?
     prev-node<span class="Special"> &lt;- </span>copy curr
     curr<span class="Special"> &lt;- </span>rest curr
@@ -212,18 +212,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> removing-from-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
-    list2:address:list:character<span class="Special"> &lt;- </span>rest list  <span class="Comment"># second element</span>
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># second element</span>
     list<span class="Special"> &lt;- </span>remove list2, list
-    <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
+    <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
     <span class="Comment"># check structure like before</span>
     list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:character/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:address:list:character/<span class="Special">raw &lt;- </span>rest list2
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
@@ -236,16 +236,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> removing-from-start-of-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>remove list, list
     <span class="Comment"># check structure like before</span>
-    list2:address:list:character<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:character/<span class="Special">raw &lt;- </span>first list2
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
+    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:address:list:character/<span class="Special">raw &lt;- </span>rest list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># scanning next, skipping deleted element</span>
@@ -257,20 +257,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> removing-from-end-of-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
     list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     <span class="Comment"># delete last element</span>
-    list2:address:list:character<span class="Special"> &lt;- </span>rest list
+    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list
     list2<span class="Special"> &lt;- </span>rest list2
     list<span class="Special"> &lt;- </span>remove list2, list
-    <span class="Constant">10</span>:boolean/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
+    <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
     <span class="Comment"># check structure like before</span>
     list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">11</span>:character/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
     list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:character/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:address:list:character/<span class="Special">raw &lt;- </span>rest list2
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
+    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
@@ -283,33 +283,33 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> removing-from-singleton-list [
   run [
     <span class="Constant">local-scope</span>
-    list:address:list:character<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>remove list, list
-    <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>copy list
+    <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy list
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># back to an empty list</span>
   ]
 ]
 
-<span class="muRecipe">def</span> to-text in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
+<span class="muRecipe">def</span> to-text in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
   buf<span class="Special"> &lt;- </span>to-buffer in, buf
   result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
 <span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
-<span class="muRecipe">def</span> to-text-line in:address:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
+<span class="muRecipe">def</span> to-text-line in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:address:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
+  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
   buf<span class="Special"> &lt;- </span>to-buffer in, buf, <span class="Constant">6</span>  <span class="Comment"># max elements to display</span>
   result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 
-<span class="muRecipe">def</span> to-buffer in:address:list:_elem, buf:address:buffer<span class="muRecipe"> -&gt; </span>buf:address:buffer [
+<span class="muRecipe">def</span> to-buffer in:&amp;:list:_elem, buf:&amp;:buffer<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -321,12 +321,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   val:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
   buf<span class="Special"> &lt;- </span>append buf, val
   <span class="Comment"># now prepare next</span>
-  next:address:list:_elem<span class="Special"> &lt;- </span>rest in
-  nextn:number<span class="Special"> &lt;- </span>copy next
+  next:&amp;:list:_elem<span class="Special"> &lt;- </span>rest in
+  nextn:num<span class="Special"> &lt;- </span>copy next
   <span class="muControl">return-unless</span> next
   buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ -&gt; ]</span>
   <span class="Comment"># and recurse</span>
-  remaining:number, optional-ingredient-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  remaining:num, optional-ingredient-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> optional-ingredient-found?
     <span class="Comment"># unlimited recursion</span>

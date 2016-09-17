@@ -52,7 +52,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   run [
     <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+    new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   ]
   screen-should-contain [
     <span class="Comment"># top line of screen reserved for menu</span>
@@ -64,26 +64,26 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muData">container</span> editor-data [
   <span class="Comment"># editable text: doubly linked list of characters (head contains a special sentinel)</span>
-  data:address:duplex-list:character
-  top-of-screen:address:duplex-list:character
-  bottom-of-screen:address:duplex-list:character
+  data:&amp;:duplex-list:char
+  top-of-screen:&amp;:duplex-list:char
+  bottom-of-screen:&amp;:duplex-list:char
   <span class="Comment"># location before cursor inside data</span>
-  before-cursor:address:duplex-list:character
+  before-cursor:&amp;:duplex-list:char
 
   <span class="Comment"># raw bounds of display area on screen</span>
   <span class="Comment"># always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen</span>
-  left:number
-  right:number
-  bottom:number
+  left:num
+  right:num
+  bottom:num
   <span class="Comment"># raw screen coordinates of cursor</span>
-  cursor-row:number
-  cursor-column:number
+  cursor-row:num
+  cursor-column:num
 ]
 
 <span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">def</span> new-editor s:text, screen:address:screen, left:number, right:number<span class="muRecipe"> -&gt; </span>result:address:editor-data, screen:address:screen [
+<span class="muRecipe">def</span> new-editor s:text, screen:&amp;:screen, left:num, right:num<span class="muRecipe"> -&gt; </span>result:&amp;:editor-data, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -96,7 +96,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">cursor-row:offset</span>, <span class="Constant">1/top</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">cursor-column:offset</span>, left
   <span class="Comment"># initialize empty contents</span>
-  init:address:duplex-list:character<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
+  init:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">167/§</span>, <span class="Constant">0/tail</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">data:offset</span>, init
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">top-of-screen:offset</span>, init
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">before-cursor:offset</span>, init
@@ -106,20 +106,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  &lt;editor-initialization&gt;</span>
 ]
 
-<span class="muRecipe">def</span> insert-text editor:address:editor-data, text:text<span class="muRecipe"> -&gt; </span>editor:address:editor-data [
+<span class="muRecipe">def</span> insert-text editor:&amp;:editor-data, text:text<span class="muRecipe"> -&gt; </span>editor:&amp;:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># early exit if text is empty</span>
   <span class="muControl">return-unless</span> text, editor/same-as-ingredient:<span class="Constant">0</span>
-  len:number<span class="Special"> &lt;- </span>length *text
+  len:num<span class="Special"> &lt;- </span>length *text
   <span class="muControl">return-unless</span> len, editor/same-as-ingredient:<span class="Constant">0</span>
-  idx:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Comment"># now we can start appending the rest, character by character</span>
-  curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
+  curr:&amp;:duplex-list:char<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal idx, len
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal idx, len
     <span class="muControl">break-if</span> done?
-    c:character<span class="Special"> &lt;- </span>index *text, idx
+    c:char<span class="Special"> &lt;- </span>index *text, idx
     insert c, curr
     <span class="Comment"># next iter</span>
     curr<span class="Special"> &lt;- </span>next curr
@@ -132,8 +132,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initializes-without-data [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">3/height</span>
   run [
-    <span class="Constant">1</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">0/data</span>, screen:address:screen, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
-    <span class="Constant">2</span>:editor-data<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:address:editor-data
+    <span class="Constant">1</span>:&amp;:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">0/data</span>, screen:&amp;:screen, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
+    <span class="Constant">2</span>:editor-data<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:&amp;:editor-data
   ]
   memory-should-contain [
     <span class="Comment"># 2 (data) &lt;- just the § sentinel</span>
@@ -156,52 +156,52 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># Assumes cursor should be at coordinates (cursor-row, cursor-column) and</span>
 <span class="Comment"># updates before-cursor to match. Might also move coordinates if they're</span>
 <span class="Comment"># outside text.</span>
-<span class="muRecipe">def</span> render screen:address:screen, editor:address:editor-data<span class="muRecipe"> -&gt; </span>last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
+<span class="muRecipe">def</span> render screen:&amp;:screen, editor:&amp;:editor-data<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, screen:&amp;:screen, editor:&amp;:editor-data [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
-  left:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
-  screen-height:number<span class="Special"> &lt;- </span>screen-height screen
-  right:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
+  left:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">left:offset</span>
+  screen-height:num<span class="Special"> &lt;- </span>screen-height screen
+  right:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">right:offset</span>
   <span class="Comment"># traversing editor</span>
-  curr:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
-  prev:address:duplex-list:character<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
+  curr:&amp;:duplex-list:char<span class="Special"> &lt;- </span>get *editor, <span class="Constant">top-of-screen:offset</span>
+  prev:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
   curr<span class="Special"> &lt;- </span>next curr
   <span class="Comment"># traversing screen</span>
 <span class="Constant">  +render-loop-initialization</span>
-  color:number<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
-  row:number<span class="Special"> &lt;- </span>copy <span class="Constant">1/top</span>
-  column:number<span class="Special"> &lt;- </span>copy left
-  cursor-row:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
-  cursor-column:number<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
-  before-cursor:address:duplex-list:character<span class="Special"> &lt;- </span>get *editor, <span class="Constant">before-cursor:offset</span>
+  color:num<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
+  row:num<span class="Special"> &lt;- </span>copy <span class="Constant">1/top</span>
+  column:num<span class="Special"> &lt;- </span>copy left
+  cursor-row:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
+  cursor-column:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
+  before-cursor:&amp;:duplex-list:char<span class="Special"> &lt;- </span>get *editor, <span class="Constant">before-cursor:offset</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
   <span class="Delimiter">{</span>
 <span class="Constant">    +next-character</span>
     <span class="muControl">break-unless</span> curr
-    off-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
+    off-screen?:bool<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
     <span class="muControl">break-if</span> off-screen?
     <span class="Comment"># update editor-data.before-cursor</span>
     <span class="Comment"># Doing so at the start of each iteration ensures it stays one step behind</span>
     <span class="Comment"># the current character.</span>
     <span class="Delimiter">{</span>
-      at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row, cursor-row
+      at-cursor-row?:bool<span class="Special"> &lt;- </span>equal row, cursor-row
       <span class="muControl">break-unless</span> at-cursor-row?
-      at-cursor?:boolean<span class="Special"> &lt;- </span>equal column, cursor-column
+      at-cursor?:bool<span class="Special"> &lt;- </span>equal column, cursor-column
       <span class="muControl">break-unless</span> at-cursor?
       before-cursor<span class="Special"> &lt;- </span>copy prev
     <span class="Delimiter">}</span>
-    c:character<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
+    c:char<span class="Special"> &lt;- </span>get *curr, <span class="Constant">value:offset</span>
 <span class="Constant">    &lt;character-c-received&gt;</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># newline? move to left rather than 0</span>
-      newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
+      newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
       <span class="muControl">break-unless</span> newline?
       <span class="Comment"># adjust cursor if necessary</span>
       <span class="Delimiter">{</span>
-        at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row, cursor-row
+        at-cursor-row?:bool<span class="Special"> &lt;- </span>equal row, cursor-row
         <span class="muControl">break-unless</span> at-cursor-row?
-        left-of-cursor?:boolean<span class="Special"> &lt;- </span>lesser-than column, cursor-column
+        left-of-cursor?:bool<span class="Special"> &lt;- </span>lesser-than column, cursor-column
         <span class="muControl">break-unless</span> left-of-cursor?
         cursor-column<span class="Special"> &lt;- </span>copy column
         before-cursor<span class="Special"> &lt;- </span>prev curr
@@ -219,10 +219,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Delimiter">{</span>
       <span class="Comment"># at right? wrap. even if there's only one more letter left; we need</span>
       <span class="Comment"># room for clicking on the cursor after it.</span>
-      at-right?:boolean<span class="Special"> &lt;- </span>equal column, right
+      at-right?:bool<span class="Special"> &lt;- </span>equal column, right
       <span class="muControl">break-unless</span> at-right?
       <span class="Comment"># print wrap icon</span>
-      wrap-icon:character<span class="Special"> &lt;- </span>copy <span class="Constant">8617/loop-back-to-left</span>
+      wrap-icon:char<span class="Special"> &lt;- </span>copy <span class="Constant">8617/loop-back-to-left</span>
       print screen, wrap-icon, <span class="Constant">245/grey</span>
       column<span class="Special"> &lt;- </span>copy left
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
@@ -240,11 +240,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *editor<span class="Special"> &lt;- </span>put *editor, <span class="Constant">bottom-of-screen:offset</span>, curr
   <span class="Comment"># is cursor to the right of the last line? move to end</span>
   <span class="Delimiter">{</span>
-    at-cursor-row?:boolean<span class="Special"> &lt;- </span>equal row, cursor-row
-    cursor-outside-line?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column, cursor-column
-    before-cursor-on-same-line?:boolean<span class="Special"> &lt;- </span>and at-cursor-row?, cursor-outside-line?
-    above-cursor-row?:boolean<span class="Special"> &lt;- </span>lesser-than row, cursor-row
-    before-cursor?:boolean<span class="Special"> &lt;- </span>or before-cursor-on-same-line?, above-cursor-row?
+    at-cursor-row?:bool<span class="Special"> &lt;- </span>equal row, cursor-row
+    cursor-outside-line?:bool<span class="Special"> &lt;- </span>lesser-or-equal column, cursor-column
+    before-cursor-on-same-line?:bool<span class="Special"> &lt;- </span>and at-cursor-row?, cursor-outside-line?
+    above-cursor-row?:bool<span class="Special"> &lt;- </span>lesser-than row, cursor-row
+    before-cursor?:bool<span class="Special"> &lt;- </span>or before-cursor-on-same-line?, above-cursor-row?
     <span class="muControl">break-unless</span> before-cursor?
     cursor-row<span class="Special"> &lt;- </span>copy row
     cursor-column<span class="Special"> &lt;- </span>copy column
@@ -257,7 +257,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> row, column, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
 ]
 
-<span class="muRecipe">def</span> clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> clear-screen-from screen:&amp;:screen, row:num, column:num, left:num, right:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if it's the real screen, use the optimized primitive</span>
@@ -273,14 +273,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> screen/same-as-ingredient:<span class="Constant">0</span>
 ]
 
-<span class="muRecipe">def</span> clear-rest-of-screen screen:address:screen, row:number, left:number, right:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> clear-rest-of-screen screen:&amp;:screen, row:num, left:num, right:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
-  screen-height:number<span class="Special"> &lt;- </span>screen-height screen
+  screen-height:num<span class="Special"> &lt;- </span>screen-height screen
   <span class="Delimiter">{</span>
-    at-bottom-of-screen?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
+    at-bottom-of-screen?:bool<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
     <span class="muControl">break-if</span> at-bottom-of-screen?
     screen<span class="Special"> &lt;- </span>move-cursor screen, row, left
     clear-line-until screen, right
@@ -294,7 +294,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   run [
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -308,7 +308,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -322,7 +322,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   run [
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -336,7 +336,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -356,7 +356,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   <span class="Comment"># still wrap, even though the line would fit. We need room to click on the</span>
   <span class="Comment"># end of the line</span>
@@ -378,9 +378,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
     <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:address:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-    <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:address:editor-data, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">2</span>:&amp;:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor-data, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor-data, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -401,7 +401,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant"># de</span>
 <span class="Constant">f]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -431,14 +431,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># so far the previous color is all the information we need; that may change</span>
-<span class="muRecipe">def</span> get-color color:number, c:character<span class="muRecipe"> -&gt; </span>color:number [
+<span class="muRecipe">def</span> get-color color:num, c:char<span class="muRecipe"> -&gt; </span>color:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color-is-white?:boolean<span class="Special"> &lt;- </span>equal color, <span class="Constant">7/white</span>
+  color-is-white?:bool<span class="Special"> &lt;- </span>equal color, <span class="Constant">7/white</span>
   <span class="Comment"># if color is white and next character is '#', switch color to blue</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> color-is-white?
-    starting-comment?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">35/#</span>
+    starting-comment?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">35/#</span>
     <span class="muControl">break-unless</span> starting-comment?
     trace <span class="Constant">90</span>, <span class="Constant">[app]</span>, <span class="Constant">[switch color back to blue]</span>
     color<span class="Special"> &lt;- </span>copy <span class="Constant">12/lightblue</span>
@@ -446,9 +446,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># if color is blue and next character is newline, switch color to white</span>
   <span class="Delimiter">{</span>
-    color-is-blue?:boolean<span class="Special"> &lt;- </span>equal color, <span class="Constant">12/lightblue</span>
+    color-is-blue?:bool<span class="Special"> &lt;- </span>equal color, <span class="Constant">12/lightblue</span>
     <span class="muControl">break-unless</span> color-is-blue?
-    ending-comment?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
+    ending-comment?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> ending-comment?
     trace <span class="Constant">90</span>, <span class="Constant">[app]</span>, <span class="Constant">[switch color back to white]</span>
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
@@ -457,16 +457,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># if color is white (no comments) and next character is '&lt;', switch color to red</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> color-is-white?
-    starting-assignment?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">60/&lt;</span>
+    starting-assignment?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">60/&lt;</span>
     <span class="muControl">break-unless</span> starting-assignment?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">1/red</span>
     <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if color is red and next character is space, switch color to white</span>
   <span class="Delimiter">{</span>
-    color-is-red?:boolean<span class="Special"> &lt;- </span>equal color, <span class="Constant">1/red</span>
+    color-is-red?:bool<span class="Special"> &lt;- </span>equal color, <span class="Constant">1/red</span>
     <span class="muControl">break-unless</span> color-is-red?
-    ending-assignment?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">32/space</span>
+    ending-assignment?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">32/space</span>
     <span class="muControl">break-unless</span> ending-assignment?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
     <span class="muControl">jump</span> <span class="Constant">+exit:label</span>
@@ -482,7 +482,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d &lt;- e</span>
 <span class="Constant">f]</span>
-    new-editor s:text, screen:address:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+    new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
   ]
   screen-should-contain [
    <span class="Constant"> .        .</span>

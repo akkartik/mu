@@ -37,40 +37,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># easier to test.</span>
 
 <span class="muData">container</span> screen [
-  num-rows:number
-  num-columns:number
-  cursor-row:number
-  cursor-column:number
-  data:address:array:screen-cell
+  num-rows:num
+  num-columns:num
+  cursor-row:num
+  cursor-column:num
+  data:&amp;:@:screen-cell
 ]
 
 <span class="muData">container</span> screen-cell [
-  contents:character
-  color:number
+  contents:char
+  color:num
 ]
 
-<span class="muRecipe">def</span> new-fake-screen w:number, h:number<span class="muRecipe"> -&gt; </span>result:address:screen [
+<span class="muRecipe">def</span> new-fake-screen w:num, h:num<span class="muRecipe"> -&gt; </span>result:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result<span class="Special"> &lt;- </span>new <span class="Constant">screen:type</span>
-  bufsize:number<span class="Special"> &lt;- </span>multiply w, h
-  data:address:array:screen-cell<span class="Special"> &lt;- </span>new <span class="Constant">screen-cell:type</span>, bufsize
+  bufsize:num<span class="Special"> &lt;- </span>multiply w, h
+  data:&amp;:@:screen-cell<span class="Special"> &lt;- </span>new <span class="Constant">screen-cell:type</span>, bufsize
   *result<span class="Special"> &lt;- </span>merge h/num-rows, w/num-columns, <span class="Constant">0/cursor-row</span>, <span class="Constant">0/cursor-column</span>, data
   result<span class="Special"> &lt;- </span>clear-screen result
 ]
 
-<span class="muRecipe">def</span> clear-screen screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> clear-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
     <span class="Comment"># clear fake screen</span>
-    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
-    max:number<span class="Special"> &lt;- </span>length *buf
-    i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    buf:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
+    max:num<span class="Special"> &lt;- </span>length *buf
+    i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">{</span>
-      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, max
+      done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, max
       <span class="muControl">break-if</span> done?
       curr:screen-cell<span class="Special"> &lt;- </span>merge <span class="Constant">0/empty</span>, <span class="Constant">7/white</span>
       *buf<span class="Special"> &lt;- </span>put-index *buf, i, curr
@@ -86,7 +86,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   clear-display
 ]
 
-<span class="muRecipe">def</span> sync-screen screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> sync-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -96,18 +96,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># do nothing for fake screens</span>
 ]
 
-<span class="muRecipe">def</span> fake-screen-is-empty? screen:address:screen<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> fake-screen-is-empty? screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> screen, <span class="Constant">1/true</span>
-  buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
-  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  len:number<span class="Special"> &lt;- </span>length *buf
+  buf:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
+  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  len:num<span class="Special"> &lt;- </span>length *buf
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
     curr:screen-cell<span class="Special"> &lt;- </span>index *buf, i
-    curr-contents:character<span class="Special"> &lt;- </span>get curr, <span class="Constant">contents:offset</span>
+    curr-contents:char<span class="Special"> &lt;- </span>get curr, <span class="Constant">contents:offset</span>
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop-unless</span> curr-contents
     <span class="Comment"># not 0</span>
@@ -116,35 +116,36 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> <span class="Constant">1/true</span>
 ]
 
-<span class="muRecipe">def</span> print screen:address:screen, c:character<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print screen:&amp;:screen, c:char<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:num, color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
     <span class="muControl">break-if</span> color-found?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   <span class="Delimiter">}</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
     bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
   <span class="Delimiter">}</span>
-  trace <span class="Constant">90</span>, <span class="Constant">[print-character]</span>, c
+  c2:num<span class="Special"> &lt;- </span>character-to-code c
+  trace <span class="Constant">90</span>, <span class="Constant">[print-character]</span>, c2
   <span class="Delimiter">{</span>
     <span class="Comment"># if x exists</span>
     <span class="Comment"># (handle special cases exactly like in the real screen)</span>
     <span class="muControl">break-unless</span> screen
-    width:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
-    height:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-rows:offset</span>
+    width:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
+    height:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-rows:offset</span>
     <span class="Comment"># if cursor is out of bounds, silently exit</span>
-    row:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
-    legal?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, <span class="Constant">0</span>
+    row:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
+    legal?:bool<span class="Special"> &lt;- </span>greater-or-equal row, <span class="Constant">0</span>
     <span class="muControl">return-unless</span> legal?
     legal?<span class="Special"> &lt;- </span>lesser-than row, height
     <span class="muControl">return-unless</span> legal?
-    column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
+    column:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
     legal?<span class="Special"> &lt;- </span>greater-or-equal column, <span class="Constant">0</span>
     <span class="muControl">return-unless</span> legal?
     legal?<span class="Special"> &lt;- </span>lesser-than column, width
@@ -152,12 +153,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="CommentedCode">#?     $print [print-character (], row, [, ], column, [): ], c, 10/newline</span>
     <span class="Comment"># special-case: newline</span>
     <span class="Delimiter">{</span>
-      newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
+      newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
       <span class="muControl">break-unless</span> newline?
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at bottom</span>
-        bottom:number<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
-        at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, bottom
+        bottom:num<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
+        at-bottom?:bool<span class="Special"> &lt;- </span>greater-or-equal row, bottom
         <span class="muControl">break-if</span> at-bottom?
         <span class="Comment"># move it to the next row</span>
         column<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -168,17 +169,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       <span class="muControl">return</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># save character in fake screen</span>
-    index:number<span class="Special"> &lt;- </span>multiply row, width
+    index:num<span class="Special"> &lt;- </span>multiply row, width
     index<span class="Special"> &lt;- </span>add index, column
-    buf:address:array:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
-    len:number<span class="Special"> &lt;- </span>length *buf
+    buf:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *screen, <span class="Constant">data:offset</span>
+    len:num<span class="Special"> &lt;- </span>length *buf
     <span class="Comment"># special-case: backspace</span>
     <span class="Delimiter">{</span>
-      backspace?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8</span>
+      backspace?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">8</span>
       <span class="muControl">break-unless</span> backspace?
       <span class="Delimiter">{</span>
         <span class="Comment"># unless cursor is already at left margin</span>
-        at-left?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column, <span class="Constant">0</span>
+        at-left?:bool<span class="Special"> &lt;- </span>lesser-or-equal column, <span class="Constant">0</span>
         <span class="muControl">break-if</span> at-left?
         <span class="Comment"># clear previous location</span>
         column<span class="Special"> &lt;- </span>subtract column, <span class="Constant">1</span>
@@ -193,8 +194,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     *buf<span class="Special"> &lt;- </span>put-index *buf, index, cursor
     <span class="Comment"># increment column unless it's already all the way to the right</span>
     <span class="Delimiter">{</span>
-      right:number<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
-      at-right?:boolean<span class="Special"> &lt;- </span>greater-or-equal column, right
+      right:num<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
+      at-right?:bool<span class="Special"> &lt;- </span>greater-or-equal column, right
       <span class="muControl">break-if</span> at-right?
       column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
       *screen<span class="Special"> &lt;- </span>put *screen, <span class="Constant">cursor-column:offset</span>, column
@@ -208,11 +209,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-character-at-top-left [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:character
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">1</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:char
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">1</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># width*height</span>
@@ -226,11 +227,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-character-in-color [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:character, <span class="Constant">1/red</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">1</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:char, <span class="Constant">1/red</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">1</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># width*height</span>
@@ -244,14 +245,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-backspace-character [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    backspace:character<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
+    backspace:char<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">11</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">11</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># cursor column</span>
@@ -266,15 +267,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-extra-backspace-character [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    backspace:character<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
+    backspace:char<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
-    <span class="Constant">1</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">3</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">3</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># cursor column</span>
@@ -289,16 +290,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-character-at-right-margin [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    b:character<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+    b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
-    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
+    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, c
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">11</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">11</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor column</span>
@@ -315,15 +316,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-newline-character [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    newline:character<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">12</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">12</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -339,13 +340,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-newline-at-bottom-line [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    newline:character<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -356,22 +357,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-character-at-bottom-right [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
-    newline:character<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+    newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    b:character<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+    b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
-    c:character<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
+    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, c
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    d:character<span class="Special"> &lt;- </span>copy <span class="Constant">100/d</span>
+    d:char<span class="Special"> &lt;- </span>copy <span class="Constant">100/d</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, d
-    <span class="Constant">10</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">11</span>:number/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">20</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">20</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
@@ -390,20 +391,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> clear-line screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> clear-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">0/nul</span>
+  space:char<span class="Special"> &lt;- </span>copy <span class="Constant">0/nul</span>
   <span class="Comment"># if x exists, clear line in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    width:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
-    column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
-    original-column:number<span class="Special"> &lt;- </span>copy column
+    width:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
+    column:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
+    original-column:num<span class="Special"> &lt;- </span>copy column
     <span class="Comment"># space over the entire line</span>
     <span class="Delimiter">{</span>
-      right:number<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
-      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal column, right
+      right:num<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
+      done?:bool<span class="Special"> &lt;- </span>greater-or-equal column, right
       <span class="muControl">break-if</span> done?
       print screen, space
       column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
@@ -417,19 +418,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   clear-line-on-display
 ]
 
-<span class="muRecipe">def</span> clear-line-until screen:address:screen, right:number/inclusive<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> clear-line-until screen:&amp;:screen, right:num/inclusive<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  _, column:number<span class="Special"> &lt;- </span>cursor-position screen
-  space:character<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  _, column:num<span class="Special"> &lt;- </span>cursor-position screen
+  space:char<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
     bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-than column, right
+    done?:bool<span class="Special"> &lt;- </span>greater-than column, right
     <span class="muControl">break-if</span> done?
     screen<span class="Special"> &lt;- </span>print screen, space, <span class="Constant">7/white</span>, bg-color  <span class="Comment"># foreground color is mostly unused except if the cursor shows up at this cell</span>
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
@@ -437,20 +438,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> cursor-position screen:address:screen<span class="muRecipe"> -&gt; </span>row:number, column:number [
+<span class="muRecipe">def</span> cursor-position screen:&amp;:screen<span class="muRecipe"> -&gt; </span>row:num, column:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, lookup cursor in fake screen</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> screen
-    row:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
-    column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
+    row:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
+    column:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   row, column<span class="Special"> &lt;- </span>cursor-position-on-display
 ]
 
-<span class="muRecipe">def</span> move-cursor screen:address:screen, new-row:number, new-column:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> move-cursor screen:&amp;:screen, new-row:num, new-column:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -467,16 +468,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> clear-line-erases-printed-characters [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     <span class="Comment"># print a character</span>
-    a:character<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
     <span class="Comment"># move cursor to start of line</span>
     fake-screen<span class="Special"> &lt;- </span>move-cursor fake-screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
     <span class="Comment"># clear line</span>
     fake-screen<span class="Special"> &lt;- </span>clear-line fake-screen
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">10</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">10</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   <span class="Comment"># screen should be blank</span>
   memory-should-contain [
@@ -496,7 +497,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> cursor-down screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-down screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -504,10 +505,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> screen
     <span class="Delimiter">{</span>
       <span class="Comment"># increment row unless it's already all the way down</span>
-      height:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-rows:offset</span>
-      row:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
-      max:number<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
-      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal row, max
+      height:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-rows:offset</span>
+      row:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
+      max:num<span class="Special"> &lt;- </span>subtract height, <span class="Constant">1</span>
+      at-bottom?:bool<span class="Special"> &lt;- </span>greater-or-equal row, max
       <span class="muControl">break-if</span> at-bottom?
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       *screen<span class="Special"> &lt;- </span>put *screen, <span class="Constant">cursor-row:offset</span>, row
@@ -518,7 +519,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   move-cursor-down-on-display
 ]
 
-<span class="muRecipe">def</span> cursor-up screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-up screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -526,8 +527,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> screen
     <span class="Delimiter">{</span>
       <span class="Comment"># decrement row unless it's already all the way up</span>
-      row:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
-      at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal row, <span class="Constant">0</span>
+      row:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-row:offset</span>
+      at-top?:bool<span class="Special"> &lt;- </span>lesser-or-equal row, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
       row<span class="Special"> &lt;- </span>subtract row, <span class="Constant">1</span>
       *screen<span class="Special"> &lt;- </span>put *screen, <span class="Constant">cursor-row:offset</span>, row
@@ -538,7 +539,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   move-cursor-up-on-display
 ]
 
-<span class="muRecipe">def</span> cursor-right screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-right screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -546,10 +547,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> screen
     <span class="Delimiter">{</span>
       <span class="Comment"># increment column unless it's already all the way to the right</span>
-      width:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
-      column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
-      max:number<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
-      at-bottom?:boolean<span class="Special"> &lt;- </span>greater-or-equal column, max
+      width:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">num-columns:offset</span>
+      column:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
+      max:num<span class="Special"> &lt;- </span>subtract width, <span class="Constant">1</span>
+      at-bottom?:bool<span class="Special"> &lt;- </span>greater-or-equal column, max
       <span class="muControl">break-if</span> at-bottom?
       column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
       *screen<span class="Special"> &lt;- </span>put *screen, <span class="Constant">cursor-column:offset</span>, column
@@ -560,7 +561,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   move-cursor-right-on-display
 ]
 
-<span class="muRecipe">def</span> cursor-left screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-left screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -568,8 +569,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> screen
     <span class="Delimiter">{</span>
       <span class="Comment"># decrement column unless it's already all the way to the left</span>
-      column:number<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
-      at-top?:boolean<span class="Special"> &lt;- </span>lesser-or-equal column, <span class="Constant">0</span>
+      column:num<span class="Special"> &lt;- </span>get *screen, <span class="Constant">cursor-column:offset</span>
+      at-top?:bool<span class="Special"> &lt;- </span>lesser-or-equal column, <span class="Constant">0</span>
       <span class="muControl">break-if</span> at-top?
       column<span class="Special"> &lt;- </span>subtract column, <span class="Constant">1</span>
       *screen<span class="Special"> &lt;- </span>put *screen, <span class="Constant">cursor-column:offset</span>, column
@@ -580,29 +581,29 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   move-cursor-left-on-display
 ]
 
-<span class="muRecipe">def</span> cursor-to-start-of-line screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-to-start-of-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  row:number<span class="Special"> &lt;- </span>cursor-position screen
-  column:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  row:num<span class="Special"> &lt;- </span>cursor-position screen
+  column:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
 ]
 
-<span class="muRecipe">def</span> cursor-to-next-line screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> cursor-to-next-line screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   screen<span class="Special"> &lt;- </span>cursor-down screen
   screen<span class="Special"> &lt;- </span>cursor-to-start-of-line screen
 ]
 
-<span class="muRecipe">def</span> move-cursor-to-column screen:address:screen, column:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> move-cursor-to-column screen:&amp;:screen, column:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  row:number, _<span class="Special"> &lt;- </span>cursor-position screen
+  row:num, _<span class="Special"> &lt;- </span>cursor-position screen
   move-cursor screen, row, column
 ]
 
-<span class="muRecipe">def</span> screen-width screen:address:screen<span class="muRecipe"> -&gt; </span>width:number [
+<span class="muRecipe">def</span> screen-width screen:&amp;:screen<span class="muRecipe"> -&gt; </span>width:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -615,7 +616,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   width<span class="Special"> &lt;- </span>display-width
 ]
 
-<span class="muRecipe">def</span> screen-height screen:address:screen<span class="muRecipe"> -&gt; </span>height:number [
+<span class="muRecipe">def</span> screen-height screen:&amp;:screen<span class="muRecipe"> -&gt; </span>height:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists, move cursor in fake screen</span>
@@ -628,7 +629,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   height<span class="Special"> &lt;- </span>display-height
 ]
 
-<span class="muRecipe">def</span> hide-cursor screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> hide-cursor screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
@@ -640,7 +641,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   hide-cursor-on-display
 ]
 
-<span class="muRecipe">def</span> show-cursor screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> show-cursor screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
@@ -652,7 +653,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   show-cursor-on-display
 ]
 
-<span class="muRecipe">def</span> hide-screen screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> hide-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
@@ -665,7 +666,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   hide-display
 ]
 
-<span class="muRecipe">def</span> show-screen screen:address:screen<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> show-screen screen:&amp;:screen<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if x exists (not real display), do nothing</span>
@@ -678,27 +679,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   show-display
 ]
 
-<span class="muRecipe">def</span> print screen:address:screen, s:text<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print screen:&amp;:screen, s:text<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:num, color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
     <span class="muControl">break-if</span> color-found?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   <span class="Delimiter">}</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
     bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
   <span class="Delimiter">}</span>
-  len:number<span class="Special"> &lt;- </span>length *s
-  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  len:num<span class="Special"> &lt;- </span>length *s
+  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
-    c:character<span class="Special"> &lt;- </span>index *s, i
+    c:char<span class="Special"> &lt;- </span>index *s, i
     print screen, c, color, bg-color
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop</span>
@@ -708,11 +709,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> print-text-stops-at-right-margin [
   run [
     <span class="Constant">local-scope</span>
-    fake-screen:address:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, s:text
-    cell:address:array:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
-    <span class="Constant">10</span>:array:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
+    cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
+    <span class="Constant">10</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># width*height</span>
@@ -727,16 +728,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> print-integer screen:address:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print-integer screen:&amp;:screen, n:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:num, color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
     <span class="muControl">break-if</span> color-found?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   <span class="Delimiter">}</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
@@ -748,16 +749,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># for now, we can only print integers</span>
-<span class="muRecipe">def</span> print screen:address:screen, n:number<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print screen:&amp;:screen, n:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:num, color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
     <span class="muControl">break-if</span> color-found?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   <span class="Delimiter">}</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
@@ -767,22 +768,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># addresses</span>
-<span class="muRecipe">def</span> print screen:address:screen, n:address:_elem<span class="muRecipe"> -&gt; </span>screen:address:screen [
+<span class="muRecipe">def</span> print screen:&amp;:screen, n:&amp;:_elem<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  color:number, color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  color:num, color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default color to white</span>
     <span class="muControl">break-if</span> color-found?
     color<span class="Special"> &lt;- </span>copy <span class="Constant">7/white</span>
   <span class="Delimiter">}</span>
-  bg-color:number, bg-color-found?:boolean<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  bg-color:num, bg-color-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># default bg-color to black</span>
     <span class="muControl">break-if</span> bg-color-found?
     bg-color<span class="Special"> &lt;- </span>copy <span class="Constant">0/black</span>
   <span class="Delimiter">}</span>
-  n2:number<span class="Special"> &lt;- </span>copy n
+  n2:num<span class="Special"> &lt;- </span>copy n
   screen<span class="Special"> &lt;- </span>print-integer screen, n2, color, bg-color
 ]
 </pre>

@@ -80,7 +80,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//:    sufficient space to hold that type, and returns an address (bookmark)</span>
 <span class="Comment">//:    to the allocated space.</span>
 <span class="Comment">//:</span>
-<span class="Comment">//:      x:address:number &lt;- new number:type</span>
+<span class="Comment">//:      x:address:num &lt;- new number:type</span>
 <span class="Comment">//:</span>
 <span class="Comment">//:                     +------------+</span>
 <span class="Comment">//:          x -------&gt; |  number    |</span>
@@ -118,7 +118,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//:    The refcount of 1 here indicates that this number has one bookmark</span>
 <span class="Comment">//:    outstanding. If you then make a copy of x, the refcount increments:</span>
 <span class="Comment">//:</span>
-<span class="Comment">//:      y:address:number &lt;- copy x</span>
+<span class="Comment">//:      y:address:num &lt;- copy x</span>
 <span class="Comment">//:</span>
 <span class="Comment">//:          x ---+     +---+------------+</span>
 <span class="Comment">//:               +---&gt; | 2 |  number    |</span>
@@ -158,15 +158,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># call 'new' two times with identical types without modifying the results; you</span>
 <span class="Comment"># should get back different results</span>
 def main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">3</span>:boolean/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:number/<span class="Special">raw</span>
+  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:address:num/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
 <span class="Delimiter">:(scenario dilated_reagent_with_new)</span>
 def main [
-  <span class="Constant">1</span>:address:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+  <span class="Constant">1</span>:address:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
 ]
 <span class="traceContains">+new: size of (&quot;address&quot; &quot;number&quot;) is 1</span>
 
@@ -376,15 +376,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Special">% Memory_allocated_until = 10;</span>
 <span class="Special">% put(Memory, Memory_allocated_until, 1);</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
 ]
 <span class="traceContains">+mem: storing 0 in location 10</span>
 
 <span class="Delimiter">:(scenario new_array)</span>
 def main [
-  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
+  <span class="Constant">1</span>:address:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">2</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:num/<span class="Special">raw</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {5: &quot;literal&quot;}</span>
 <span class="traceContains">+mem: array length is 5</span>
@@ -393,9 +393,9 @@ def main [
 
 <span class="Delimiter">:(scenario new_empty_array)</span>
 def main [
-  <span class="Constant">1</span>:address:array:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">0</span>
-  <span class="Constant">2</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:number/<span class="Special">raw</span>
+  <span class="Constant">1</span>:address:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Constant">2</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:num/<span class="Special">raw</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {0: &quot;literal&quot;}</span>
 <span class="traceContains">+mem: array length is 0</span>
@@ -406,7 +406,7 @@ def main [
 <span class="Delimiter">:(scenario new_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 3;  // barely enough room for point allocation below</span>
 def main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
   <span class="Constant">2</span>:address:point/<span class="Special">raw &lt;- </span><span class="Normal">new</span> point:type  <span class="Comment"># not enough room in initial page</span>
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>

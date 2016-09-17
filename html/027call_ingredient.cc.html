@@ -40,8 +40,8 @@ def main [
   f <span class="Constant">2</span>
 ]
 def f [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:number
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:num
 ]
 <span class="traceContains">+mem: storing 3 in location 13</span>
 
@@ -50,7 +50,7 @@ def main [
   f
 ]
 def f [
-  _<span class="Delimiter">,</span> <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  _<span class="Delimiter">,</span> <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+mem: storing 0 in location 12</span>
 
@@ -91,7 +91,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">()</span> == <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// no ingredient types since the call might be implicit; assume ingredients are always strings</span>
       <span class="Comment">// todo: how to test this?</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_text<span class="Delimiter">(</span>product<span class="Delimiter">))</span>
         raise &lt;&lt; <span class="Constant">&quot;main: wrong type for ingredient '&quot;</span> &lt;&lt; product<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>product<span class="Delimiter">,</span>
@@ -125,19 +125,19 @@ def main [
   f
 ]
 def f [
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>next-ingredient
 ]
-<span class="traceContains">+error: f: no ingredient to save in '11:number'</span>
+<span class="traceContains">+error: f: no ingredient to save in '11:num'</span>
 
 <span class="Delimiter">:(scenario rewind_ingredients)</span>
 def main [
   f <span class="Constant">2</span>
 ]
 def f [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
-  _<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will not find any ingredients</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
+  _<span class="Delimiter">,</span> <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will not find any ingredients</span>
   rewind-ingredients
-  <span class="Constant">13</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will find ingredient again</span>
+  <span class="Constant">13</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will find ingredient again</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 12</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -163,8 +163,8 @@ def main [
   f <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 def f [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>  <span class="Comment"># consume second ingredient first</span>
-  <span class="Constant">13</span>:number<span class="Delimiter">,</span> <span class="Constant">1</span>:boolean<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>  <span class="Comment"># consume second ingredient first</span>
+  <span class="Constant">13</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 12</span>
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -205,10 +205,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">//: a particularly common array type is the string, or address:array:character</span>
+<span class="Comment">//: a particularly common array type is the text, or address:array:character</span>
 <span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> is_mu_string<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// End Preprocess is_mu_string(reagent x)</span>
+<span class="Normal">bool</span> is_mu_text<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// End Preprocess is_mu_text(reagent x)</span>
   <span class="Identifier">return</span> x<span class="Delimiter">.</span>type
       &amp;&amp; !x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom
       &amp;&amp; x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom

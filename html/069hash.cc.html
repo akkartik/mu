@@ -68,7 +68,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(code)</span>
 <span class="Normal">size_t</span> hash<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   canonize<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span>  <span class="Comment">// optimization</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span>  <span class="Comment">// optimization</span>
     <span class="Identifier">return</span> hash_mu_string<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
     <span class="Identifier">return</span> hash_mu_address<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
@@ -101,7 +101,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Normal">size_t</span> hash_mu_string<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  string input = read_mu_string<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
+  string input = read_mu_text<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>input<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     h = hash_iter<span class="Delimiter">(</span>h<span class="Delimiter">,</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">size_t</span>&gt;<span class="Delimiter">(</span>input<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; i &lt;&lt; &quot;: &quot; &lt;&lt; h &lt;&lt; '\n';</span>
@@ -164,17 +164,17 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario hash_container_checks_all_elements)</span>
 container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:number
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
   <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">98</span>/a
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:number
-  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+  <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:num
+  <span class="Constant">7</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:num<span class="Delimiter">,</span> <span class="Constant">6</span>:num
 ]
 <span class="Comment"># hash on containers includes all elements</span>
 <span class="traceContains">+mem: storing 0 in location 7</span>
@@ -182,37 +182,37 @@ def main [
 <span class="Delimiter">:(scenario hash_exclusive_container_checks_all_elements)</span>
 exclusive-container foo [
   <span class="Normal">x</span>:bar
-  <span class="Normal">y</span>:number
+  <span class="Normal">y</span>:num
 ]
 container bar [
-  <span class="Normal">a</span>:number
-  <span class="Normal">b</span>:number
+  <span class="Normal">a</span>:num
+  <span class="Normal">b</span>:num
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
   <span class="Constant">5</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">36</span>
-  <span class="Constant">8</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">8</span>:number
-  <span class="Constant">9</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number<span class="Delimiter">,</span> <span class="Constant">8</span>:number
+  <span class="Constant">8</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">8</span>:num
+  <span class="Constant">9</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:num<span class="Delimiter">,</span> <span class="Constant">8</span>:num
 ]
 <span class="Comment"># hash on containers includes all elements</span>
 <span class="traceContains">+mem: storing 0 in location 9</span>
 
 <span class="Delimiter">:(scenario hash_can_ignore_container_elements)</span>
 container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character/ignore-<span class="Normal">for</span>-hash
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>/ignore-<span class="Normal">for</span>-hash
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:number
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
   <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">98</span>/a
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:number
-  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+  <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:num
+  <span class="Constant">7</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:num<span class="Delimiter">,</span> <span class="Constant">6</span>:num
 ]
 <span class="Comment"># hashes match even though y is different</span>
 <span class="traceContains">+mem: storing 1 in location 7</span>
@@ -222,8 +222,8 @@ def main [
 
 <span class="Delimiter">:(scenario hash_of_zero_address)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
 ]
 <span class="traceContains">+mem: storing 0 in location 2</span>
 
@@ -231,116 +231,116 @@ def main [
 <span class="Comment">//: on the precise bit pattern of a floating-point number.</span>
 <span class="Delimiter">:(scenario hash_of_numbers_ignores_fractional_part)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1.5</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>
-  <span class="Constant">3</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1.5</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>
+  <span class="Constant">3</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
 ]
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
 <span class="Delimiter">:(scenario hash_of_array_same_as_string)</span>
 def main [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
-  <span class="Constant">11</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">99</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">10</span>:array:number/unsafe
-  <span class="Identifier">return</span>-unless <span class="Constant">2</span>:number
-  <span class="Constant">3</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:array:character
-  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">99</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">10</span>:@:num/unsafe
+  <span class="Identifier">return</span>-unless <span class="Constant">2</span>:num
+  <span class="Constant">3</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:text
+  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_ignores_address_value)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
-  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
+  <span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:&amp;:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="Comment"># different addresses hash to the same result as long as the values the point to do so</span>
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_ignores_address_refcount)</span>
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:number
-  <span class="Identifier">return</span>-unless <span class="Constant">2</span>:number
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
+  <span class="Identifier">return</span>-unless <span class="Constant">2</span>:num
   <span class="Comment"># increment refcount</span>
-  <span class="Constant">3</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:number
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:address:number
-  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
-  <span class="Constant">5</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">4</span>:number
+  <span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:&amp;:num
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:&amp;:num
+  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
+  <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
 ]
 <span class="Comment"># hash doesn't change when refcount changes</span>
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements)</span>
 container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
 container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:number
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
   <span class="Constant">4</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:bar
-  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:number
-  <span class="Constant">7</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:number<span class="Delimiter">,</span> <span class="Constant">6</span>:number
+  <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">4</span>:bar
+  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:num
+  <span class="Constant">7</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">3</span>:num<span class="Delimiter">,</span> <span class="Constant">6</span>:num
 ]
 <span class="Comment"># containers with identical elements return identical hashes</span>
 <span class="traceContains">+mem: storing 1 in location 7</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements_2)</span>
 container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character
-  <span class="Normal">z</span>:address:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>
+  <span class="Normal">z</span>:&amp;:num
 ]
 def main [
-  <span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">1</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:address:number
-  <span class="Constant">5</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">2</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">5</span>:number
-  <span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *<span class="Constant">6</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:address:number
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">10</span>:number
-  <span class="Constant">11</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">5</span>:number<span class="Delimiter">,</span> <span class="Constant">10</span>:number
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:&amp;:num
+  <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">2</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">5</span>:num
+  <span class="Constant">6</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *<span class="Constant">6</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:&amp;:num
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">10</span>:num
+  <span class="Constant">11</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">5</span>:num<span class="Delimiter">,</span> <span class="Constant">10</span>:num
 ]
 <span class="Comment"># containers with identical 'leaf' elements return identical hashes</span>
 <span class="traceContains">+mem: storing 1 in location 11</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements_3)</span>
 container foo [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:character
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:<span class="Normal">char</span>
   <span class="Normal">z</span>:bar
 ]
 container bar [
-  <span class="Normal">x</span>:number
-  <span class="Normal">y</span>:number
+  <span class="Normal">x</span>:num
+  <span class="Normal">y</span>:num
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">47</span><span class="Delimiter">,</span> <span class="Constant">48</span>
-  <span class="Constant">6</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:number
+  <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">6</span>:num
   <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">47</span><span class="Delimiter">,</span> <span class="Constant">48</span>
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">12</span>:number
-  <span class="Constant">13</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">6</span>:number<span class="Delimiter">,</span> <span class="Constant">12</span>:number
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">12</span>:num
+  <span class="Constant">13</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">6</span>:num<span class="Delimiter">,</span> <span class="Constant">12</span>:num
 ]
 <span class="Comment"># containers with identical 'leaf' elements return identical hashes</span>
 <span class="traceContains">+mem: storing 1 in location 13</span>
@@ -348,20 +348,20 @@ def main [
 <span class="Delimiter">:(scenario hash_exclusive_container_ignores_tag)</span>
 exclusive-container foo [
   <span class="Normal">x</span>:bar
-  <span class="Normal">y</span>:number
+  <span class="Normal">y</span>:num
 ]
 container bar [
-  <span class="Normal">a</span>:number
-  <span class="Normal">b</span>:number
+  <span class="Normal">a</span>:num
+  <span class="Normal">b</span>:num
 ]
 def main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Constant">4</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
-  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:number
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
+  <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
   <span class="Constant">5</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Constant">7</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:bar
-  <span class="Identifier">return</span>-unless <span class="Constant">7</span>:number
-  <span class="Constant">8</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:number<span class="Delimiter">,</span> <span class="Constant">7</span>:number
+  <span class="Constant">7</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">5</span>:bar
+  <span class="Identifier">return</span>-unless <span class="Constant">7</span>:num
+  <span class="Constant">8</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">4</span>:num<span class="Delimiter">,</span> <span class="Constant">7</span>:num
 ]
 <span class="Comment"># hash on containers includes all elements</span>
 <span class="traceContains">+mem: storing 1 in location 8</span>
@@ -372,10 +372,10 @@ def main [
 
 <span class="Delimiter">:(scenario hash_matches_old_version)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:address:array:character
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:address:array:character
-  <span class="Constant">4</span>:boolean<span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:number<span class="Delimiter">,</span> <span class="Constant">3</span>:number
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:text
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:text
+  <span class="Constant">4</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">3</span>:num
 ]
 <span class="traceContains">+mem: storing 1 in location 4</span>
 
@@ -389,15 +389,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' takes exactly one ingredient rather than '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports strings (address:array:character), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'hash_old' currently only supports texts (address array character), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> HASH_OLD: <span class="Delimiter">{</span>
-  string input = read_mu_string<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  string input = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Normal">size_t</span> h = <span class="Constant">0</span> <span class="Delimiter">;</span>
 
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>input<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>

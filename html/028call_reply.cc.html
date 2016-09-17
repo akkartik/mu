@@ -36,12 +36,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario return)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>f <span class="Constant">34</span>
+  <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>f <span class="Constant">34</span>
 ]
 def f [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:number
-  reply <span class="Constant">12</span>:number<span class="Delimiter">,</span> <span class="Constant">13</span>:number
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:num
+  reply <span class="Constant">12</span>:num<span class="Delimiter">,</span> <span class="Constant">13</span>:num
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 <span class="traceContains">+mem: storing 35 in location 2</span>
@@ -136,15 +136,15 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">:(scenario return_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">3</span>:number<span class="Special"> &lt;- </span>f <span class="Constant">2</span>
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>f <span class="Constant">2</span>
 ]
 def f [
-  <span class="Constant">12</span>:number<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">13</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
+  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:point/<span class="Special">raw</span>
   <span class="Identifier">return</span> <span class="Constant">14</span>:point
 ]
-<span class="traceContains">+error: f: return ingredient '14:point' can't be saved in '3:number'</span>
+<span class="traceContains">+error: f: return ingredient '14:point' can't be saved in '3:num'</span>
 
 <span class="Comment">//: In mu we'd like to assume that any instruction doesn't modify its</span>
 <span class="Comment">//: ingredients unless they're also products. The /same-as-ingredient inside</span>
@@ -154,23 +154,23 @@ def f [
 <span class="Delimiter">:(scenario return_same_as_ingredient)</span>
 <span class="Special">% Hide_errors = true;</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:number  <span class="Comment"># call with different ingredient and product</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:num  <span class="Comment"># call with different ingredient and product</span>
 ]
 def test1 [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Identifier">return</span> <span class="Constant">10</span>:number/same-as-ingredient:<span class="Constant">0</span>
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Identifier">return</span> <span class="Constant">10</span>:num/same-as-ingredient:<span class="Constant">0</span>
 ]
-<span class="traceContains">+error: main: '2:number &lt;- test1 1:number' should write to '1:number' rather than '2:number'</span>
+<span class="traceContains">+error: main: '2:num &lt;- test1 1:num' should write to '1:num' rather than '2:num'</span>
 
 <span class="Delimiter">:(scenario return_same_as_ingredient_dummy)</span>
 def main [
-  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  _<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:number  <span class="Comment"># call with different ingredient and product</span>
+  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  _<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:num  <span class="Comment"># call with different ingredient and product</span>
 ]
 def test1 [
-  <span class="Constant">10</span>:number<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Identifier">return</span> <span class="Constant">10</span>:number/same-as-ingredient:<span class="Constant">0</span>
+  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Identifier">return</span> <span class="Constant">10</span>:num/same-as-ingredient:<span class="Constant">0</span>
 ]
 $error: <span class="Constant">0</span>
 

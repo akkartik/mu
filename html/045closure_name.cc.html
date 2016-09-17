@@ -40,23 +40,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario closure)</span>
 def main [
-  <span class="Normal">default</span>-space:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  <span class="Constant">1</span>:address:array:location/names:<span class="Normal">new</span>-counter<span class="Special"> &lt;- </span><span class="Normal">new</span>-counter
-  <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:<span class="Normal">new</span>-counter
-  <span class="Constant">3</span>:number/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:address:array:location/names:<span class="Normal">new</span>-counter
+  <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  <span class="Constant">1</span>:space/names:<span class="Normal">new</span>-counter<span class="Special"> &lt;- </span><span class="Normal">new</span>-counter
+  <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:space/names:<span class="Normal">new</span>-counter
+  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>increment-counter <span class="Constant">1</span>:space/names:<span class="Normal">new</span>-counter
 ]
 def <span class="Normal">new</span>-counter [
-  <span class="Normal">default</span>-space:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  <span class="Normal">x</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># variable that will be incremented</span>
-  <span class="Identifier">return</span> <span class="Normal">default</span>-space:address:array:location
+  <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+  <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>  <span class="Comment"># variable that will be incremented</span>
+  <span class="Identifier">return</span> <span class="Normal">default</span>-space:space
 ]
 def increment-counter [
-  <span class="Normal">default</span>-space:address:array:location<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
-  <span class="Constant">0</span>:address:array:location/names:<span class="Normal">new</span>-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'new-counter' above</span>
-  <span class="Normal">y</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:number/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>  <span class="Comment"># increment</span>
-  <span class="Normal">y</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>  <span class="Comment"># dummy</span>
-  <span class="Identifier">return</span> y:number/space:<span class="Constant">1</span>
+  <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">30</span>
+  <span class="Constant">0</span>:space/names:<span class="Normal">new</span>-counter<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># outer space must be created by 'new-counter' above</span>
+  <span class="Normal">y</span>:num/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>add y:num/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>  <span class="Comment"># increment</span>
+  <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">234</span>  <span class="Comment"># dummy</span>
+  <span class="Identifier">return</span> y:num/space:<span class="Constant">1</span>
 ]
 <span class="traceContains">+name: lexically surrounding space for recipe increment-counter comes from new-counter</span>
 <span class="traceContains">+mem: storing 5 in location 3</span>
@@ -177,7 +177,7 @@ recipe_ordinal lookup_surrounding_recipe<span class="Delimiter">(</span><span cl
 <span class="Special">% Hide_errors = true;</span>
 def f [
   local-scope
-  <span class="Normal">x</span>:number/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Normal">x</span>:num/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+error: don't know surrounding recipe of 'f'</span>
 <span class="traceContains">+error: f: can't find a place to store 'x'</span>
@@ -186,19 +186,19 @@ def f [
 <span class="Delimiter">:(scenario local_scope_ignores_nonlocal_spaces)</span>
 def <span class="Normal">new</span>-scope [
   <span class="Normal">new</span>-<span class="Normal">default</span>-space
-  <span class="Normal">x</span>:address:number<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
-  *x:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Identifier">return</span> <span class="Normal">default</span>-space:address:array:location
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  *x:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  <span class="Identifier">return</span> <span class="Normal">default</span>-space:space
 ]
 def use-scope [
   local-scope
-  <span class="Normal">outer</span>:address:array:location<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">0</span>:address:array:location/names:<span class="Normal">new</span>-scope<span class="Special"> &lt;- </span>copy outer:address:array:location
-  <span class="Identifier">return</span> *x:address:number/space:<span class="Constant">1</span>
+  <span class="Normal">outer</span>:space<span class="Special"> &lt;- </span>next-ingredient
+  <span class="Constant">0</span>:space/names:<span class="Normal">new</span>-scope<span class="Special"> &lt;- </span>copy outer:space
+  <span class="Identifier">return</span> *x:&amp;:num/space:<span class="Constant">1</span>
 ]
 def main [
-  <span class="Constant">1</span>:address:array:location/<span class="Special">raw &lt;- </span><span class="Normal">new</span>-scope
-  <span class="Constant">2</span>:number/<span class="Special">raw &lt;- </span>use-scope <span class="Constant">1</span>:address:array:location/<span class="Special">raw</span>
+  <span class="Constant">1</span>:space/<span class="Special">raw &lt;- </span><span class="Normal">new</span>-scope
+  <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>use-scope <span class="Constant">1</span>:space/<span class="Special">raw</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 2</span>
 </pre>

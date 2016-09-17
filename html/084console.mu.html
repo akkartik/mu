@@ -35,48 +35,48 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># and are thus easier to test.</span>
 
 <span class="muData">exclusive-container</span> event [
-  text:character
-  keycode:number  <span class="Comment"># keys on keyboard without a unicode representation</span>
+  text:char
+  keycode:num  <span class="Comment"># keys on keyboard without a unicode representation</span>
   touch:touch-event  <span class="Comment"># mouse, track ball, etc.</span>
   resize:resize-event
   <span class="Comment"># update the assume-console handler if you add more variants</span>
 ]
 
 <span class="muData">container</span> touch-event [
-  type:number
-  row:number
-  column:number
+  type:num
+  row:num
+  column:num
 ]
 
 <span class="muData">container</span> resize-event [
-  width:number
-  height:number
+  width:num
+  height:num
 ]
 
 <span class="muData">container</span> console [
-  current-event-index:number
-  events:address:array:event
+  current-event-index:num
+  events:&amp;:@:event
 ]
 
-<span class="muRecipe">def</span> new-fake-console events:address:array:event<span class="muRecipe"> -&gt; </span>result:address:console [
+<span class="muRecipe">def</span> new-fake-console events:&amp;:@:event<span class="muRecipe"> -&gt; </span>result:&amp;:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:address:console<span class="Special"> &lt;- </span>new <span class="Constant">console:type</span>
+  result:&amp;:console<span class="Special"> &lt;- </span>new <span class="Constant">console:type</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">events:offset</span>, events
 ]
 
-<span class="muRecipe">def</span> read-event console:address:console<span class="muRecipe"> -&gt; </span>result:event, console:address:console, found?:boolean, quit?:boolean [
+<span class="muRecipe">def</span> read-event console:&amp;:console<span class="muRecipe"> -&gt; </span>result:event, console:&amp;:console, found?:bool, quit?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> console
-    current-event-index:number<span class="Special"> &lt;- </span>get *console, <span class="Constant">current-event-index:offset</span>
-    buf:address:array:event<span class="Special"> &lt;- </span>get *console, <span class="Constant">events:offset</span>
+    current-event-index:num<span class="Special"> &lt;- </span>get *console, <span class="Constant">current-event-index:offset</span>
+    buf:&amp;:@:event<span class="Special"> &lt;- </span>get *console, <span class="Constant">events:offset</span>
     <span class="Delimiter">{</span>
-      max:number<span class="Special"> &lt;- </span>length *buf
-      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal current-event-index, max
+      max:num<span class="Special"> &lt;- </span>length *buf
+      done?:bool<span class="Special"> &lt;- </span>greater-or-equal current-event-index, max
       <span class="muControl">break-unless</span> done?
-      dummy:address:event<span class="Special"> &lt;- </span>new <span class="Constant">event:type</span>
+      dummy:&amp;:event<span class="Special"> &lt;- </span>new <span class="Constant">event:type</span>
       <span class="muControl">return</span> *dummy, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
     <span class="Delimiter">}</span>
     result<span class="Special"> &lt;- </span>index *buf, current-event-index
@@ -85,29 +85,29 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
   <span class="Delimiter">}</span>
   switch  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
-  result:event, found?:boolean<span class="Special"> &lt;- </span>check-for-interaction
+  result:event, found?:bool<span class="Special"> &lt;- </span>check-for-interaction
   <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, found?, <span class="Constant">0/quit</span>
 ]
 
 <span class="Comment"># variant of read-event for just keyboard events. Discards everything that</span>
 <span class="Comment"># isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get</span>
 <span class="Comment"># newlines, tabs, ctrl-d..</span>
-<span class="muRecipe">def</span> read-key console:address:console<span class="muRecipe"> -&gt; </span>result:character, console:address:console, found?:boolean, quit?:boolean [
+<span class="muRecipe">def</span> read-key console:&amp;:console<span class="muRecipe"> -&gt; </span>result:char, console:&amp;:console, found?:bool, quit?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  x:event, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-event console
+  x:event, console, found?:bool, quit?:bool<span class="Special"> &lt;- </span>read-event console
   <span class="muControl">return-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
   <span class="muControl">return-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
-  c:character, converted?:boolean<span class="Special"> &lt;- </span>maybe-convert x, <span class="Constant">text:variant</span>
+  c:char, converted?:bool<span class="Special"> &lt;- </span>maybe-convert x, <span class="Constant">text:variant</span>
   <span class="muControl">return-unless</span> converted?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
   <span class="muControl">return</span> c, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
 ]
 
-<span class="muRecipe">def</span> send-keys-to-channel console:address:console, chan:address:sink:character, screen:address:screen<span class="muRecipe"> -&gt; </span>console:address:console, chan:address:sink:character, screen:address:screen [
+<span class="muRecipe">def</span> send-keys-to-channel console:&amp;:console, chan:&amp;:sink:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>console:&amp;:console, chan:&amp;:sink:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    c:character, console, found?:boolean, quit?:boolean<span class="Special"> &lt;- </span>read-key console
+    c:char, console, found?:bool, quit?:bool<span class="Special"> &lt;- </span>read-key console
     <span class="muControl">loop-unless</span> found?
     <span class="muControl">break-if</span> quit?
     assert c, <span class="Constant">[invalid event, expected text]</span>
@@ -118,17 +118,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   chan<span class="Special"> &lt;- </span>close chan
 ]
 
-<span class="muRecipe">def</span> wait-for-event console:address:console<span class="muRecipe"> -&gt; </span>console:address:console [
+<span class="muRecipe">def</span> wait-for-event console:&amp;:console<span class="muRecipe"> -&gt; </span>console:&amp;:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    _, console, found?:boolean<span class="Special"> &lt;- </span>read-event console
+    _, console, found?:bool<span class="Special"> &lt;- </span>read-event console
     <span class="muControl">loop-unless</span> found?
   <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># use this helper to skip rendering if there's lots of other events queued up</span>
-<span class="muRecipe">def</span> has-more-events? console:address:console<span class="muRecipe"> -&gt; </span>result:boolean [
+<span class="muRecipe">def</span> has-more-events? console:&amp;:console<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>

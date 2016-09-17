@@ -32,40 +32,44 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Extend 'new' to handle a unicode string literal argument.</span>
+<span class="Comment">//: Extend 'new' to handle a unicode string literal argument or 'text'.</span>
+
+<span class="Comment">//: A Mu text is an address to an array of characters.</span>
+<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
+put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address:array:character&quot;</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(scenario new_string)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
-  <span class="Constant">2</span>:character<span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
+  <span class="Constant">2</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
 <span class="Comment"># number code for 'e'</span>
 <span class="traceContains">+mem: storing 101 in location 2</span>
 
 <span class="Delimiter">:(scenario new_string_handles_unicode)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
-  <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:address:array:character
-  <span class="Constant">3</span>:character<span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:address:array:character<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:text
+  <span class="Constant">3</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 2</span>
 <span class="Comment"># unicode for '«'</span>
 <span class="traceContains">+mem: storing 171 in location 3</span>
 
 <span class="Delimiter">:(before &quot;End NEW Check Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;Convert 'new' To 'allocate'&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span> &amp;&amp; is_literal_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span> &amp;&amp; is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new string alloc: &quot;</span> &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">int</span> new_mu_string<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> new_mu_text<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// allocate an array just large enough for it</span>
   <span class="Normal">int</span> string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
 <span class="CommentedCode">//?   Total_alloc += string_length+1;</span>
@@ -96,48 +100,48 @@ def main [
 
 <span class="Delimiter">:(scenario stash_string)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
 ]
 <span class="traceContains">+app: foo: abc</span>
 
 <span class="Delimiter">:(before &quot;End print Special-cases(r, data)&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_string<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
-  <span class="Identifier">return</span> read_mu_string<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Identifier">return</span> read_mu_text<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario unicode_string)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [♠]
-  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [♠]
+  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
 ]
 <span class="traceContains">+app: foo: ♠</span>
 
 <span class="Delimiter">:(scenario stash_space_after_string)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash <span class="Constant">1</span>:address:array:character<span class="Delimiter">,</span> [foo]
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  stash <span class="Constant">1</span>:text<span class="Delimiter">,</span> [foo]
 ]
 <span class="traceContains">+app: abc foo</span>
 
 <span class="Delimiter">:(scenario stash_string_as_array)</span>
 def main [
-  <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash *<span class="Constant">1</span>:address:array:character
+  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+  stash *<span class="Constant">1</span>:text
 ]
 <span class="traceContains">+app: 3 97 98 99</span>
 
 <span class="Comment">//: fixes way more than just stash</span>
-<span class="Delimiter">:(before &quot;End Preprocess is_mu_string(reagent x)&quot;)</span>
+<span class="Delimiter">:(before &quot;End Preprocess is_mu_text(reagent x)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 
 <span class="Comment">//: Allocate more to routine when initializing a literal string</span>
 <span class="Delimiter">:(scenario new_string_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 3;</span>
 def main [
-  <span class="Constant">1</span>:address:number/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
-  <span class="Constant">2</span>:address:array:character/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
+  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">2</span>:text/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>
 <span class="traceContains">+new: routine allocated memory from 1003 to 1006</span>
@@ -156,7 +160,7 @@ def main [
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-string read_mu_string<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+string read_mu_text<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   ++address<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
   <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">);</span>

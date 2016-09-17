@@ -177,11 +177,11 @@ def main [
 
 <span class="Delimiter">:(scenario abbreviations_for_address_and_array)</span>
 def main [
-  f <span class="Constant">1</span>:&amp;:number  <span class="Comment"># abbreviation for 'address:number'</span>
-  f <span class="Constant">2</span>:@:number  <span class="Comment"># abbreviation for 'array:number'</span>
-  f <span class="Constant">3</span>:&amp;:@:number  <span class="Comment"># combining '&amp;' and '@'</span>
-  f <span class="Constant">4</span>:&amp;:&amp;:@:&amp;:@:number  <span class="Comment"># ..any number of times</span>
-  f <span class="Delimiter">{</span><span class="Constant">5</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>&amp; number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span>  <span class="Comment"># support for dilated reagents and more complex parse trees</span>
+  f <span class="Constant">1</span>:&amp;:num  <span class="Comment"># abbreviation for 'address:number'</span>
+  f <span class="Constant">2</span>:@:num  <span class="Comment"># abbreviation for 'array:number'</span>
+  f <span class="Constant">3</span>:&amp;:@:num  <span class="Comment"># combining '&amp;' and '@'</span>
+  f <span class="Constant">4</span>:&amp;:&amp;:@:&amp;:@:num  <span class="Comment"># ..any number of times</span>
+  f <span class="Delimiter">{</span><span class="Constant">5</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>&amp; num<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span>  <span class="Comment"># support for dilated reagents and more complex parse trees</span>
 ]
 def f [
 ]
@@ -199,7 +199,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> expand_type_abbreviations<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  expand_type_abbreviations<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">void</span> expand_type_abbreviations<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- expand type abbreviations in recipe '&quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
