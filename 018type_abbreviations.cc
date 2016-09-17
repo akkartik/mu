@@ -142,11 +142,11 @@ def main [
 
 :(scenario abbreviations_for_address_and_array)
 def main [
-  f 1:&:number  # abbreviation for 'address:number'
-  f 2:@:number  # abbreviation for 'array:number'
-  f 3:&:@:number  # combining '&' and '@'
-  f 4:&:&:@:&:@:number  # ..any number of times
-  f {5: (array (& number) 3)}  # support for dilated reagents and more complex parse trees
+  f 1:&:num  # abbreviation for 'address:number'
+  f 2:@:num  # abbreviation for 'array:number'
+  f 3:&:@:num  # combining '&' and '@'
+  f 4:&:&:@:&:@:num  # ..any number of times
+  f {5: (array (& num) 3)}  # support for dilated reagents and more complex parse trees
 ]
 def f [
 ]
