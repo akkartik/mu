@@ -5,23 +5,23 @@
 
 container list:_elem [
   value:_elem
-  next:address:list:_elem
+  next:&:list:_elem
 ]
 
-def push x:_elem, in:address:list:_elem -> result:address:list:_elem [
+def push x:_elem, in:&:list:_elem -> result:&:list:_elem [
   local-scope
   load-ingredients
   result <- new {(list _elem): type}
   *result <- merge x, in
 ]
 
-def first in:address:list:_elem -> result:_elem [
+def first in:&:list:_elem -> result:_elem [
   local-scope
   load-ingredients
   result <- get *in, value:offset
 ]
 
-def rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
+def rest in:&:list:_elem -> result:&:list:_elem/contained-in:in [
   local-scope
   load-ingredients
   result <- get *in, next:offset
@@ -30,7 +30,7 @@ def rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
 scenario list-handling [
   run [
     local-scope
-    x:address:list:num <- push 3, 0
+    x:&:list:num <- push 3, 0
     x <- push 4, x
     x <- push 5, x
     10:num/raw <- first x
@@ -38,7 +38,7 @@ scenario list-handling [
     11:num/raw <- first x
     x <- rest x
     12:num/raw <- first x
-    20:address:list:num/raw <- rest x
+    20:&:list:num/raw <- rest x
   ]
   memory-should-contain [
     10 <- 5
@@ -48,22 +48,22 @@ scenario list-handling [
   ]
 ]
 
-def length l:address:list:_elem -> result:num [
+def length l:&:list:_elem -> result:num [
   local-scope
   load-ingredients
   return-unless l, 0
-  rest:address:list:_elem <- rest l
+  rest:&:list:_elem <- rest l
   length-of-rest:num <- length rest
   result <- add length-of-rest, 1
 ]
 
 # insert 'x' after 'in'
-def insert x:_elem, in:address:list:_elem -> in:address:list:_elem [
+def insert x:_elem, in:&:list:_elem -> in:&:list:_elem [
   local-scope
   load-ingredients
-  new-node:address:list:_elem <- new {(list _elem): type}
+  new-node:&:list:_elem <- new {(list _elem): type}
   *new-node <- put *new-node, value:offset, x
-  next-node:address:list:_elem <- get *in, next:offset
+  next-node:&:list:_elem <- get *in, next:offset
   *in <- put *in, next:offset, new-node
   *new-node <- put *new-node, next:offset, next-node
 ]
@@ -71,10 +71,10 @@ def insert x:_elem, in:address:list:_elem -> in:address:list:_elem [
 scenario inserting-into-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:char <- rest list  # inside list
+    list2:&:list:char <- rest list  # inside list
     list2 <- insert 6, list2
     # check structure
     list2 <- copy list
@@ -97,10 +97,10 @@ scenario inserting-into-list [
 scenario inserting-at-end-of-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:char <- rest list  # inside list
+    list2:&:list:char <- rest list  # inside list
     list2 <- rest list2  # now at end of list
     list2 <- insert 6, list2
     # check structure like before
@@ -124,12 +124,12 @@ scenario inserting-at-end-of-list [
 scenario inserting-after-start-of-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- insert 6, list
     # check structure like before
-    list2:address:list:char <- copy list
+    list2:&:list:char <- copy list
     10:char/raw <- first list2
     list2 <- rest list2
     11:char/raw <- first list2
@@ -150,20 +150,20 @@ scenario inserting-after-start-of-list [
 #
 # Returns null if and only if list is empty. Beware: in that case any other
 # pointers to the head are now invalid.
-def remove x:address:list:_elem/contained-in:in, in:address:list:_elem -> in:address:list:_elem [
+def remove x:&:list:_elem/contained-in:in, in:&:list:_elem -> in:&:list:_elem [
   local-scope
   load-ingredients
   # if 'x' is null, return
   return-unless x
-  next-node:address:list:_elem <- rest x
+  next-node:&:list:_elem <- rest x
   # clear next pointer of 'x'
   *x <- put *x, next:offset, 0
   # if 'x' is at the head of 'in', return the new head
   at-head?:bool <- equal x, in
   return-if at-head?, next-node
   # compute prev-node
-  prev-node:address:list:_elem <- copy in
-  curr:address:list:_elem <- rest prev-node
+  prev-node:&:list:_elem <- copy in
+  curr:&:list:_elem <- rest prev-node
   {
     return-unless curr
     found?:bool <- equal curr, x
@@ -178,10 +178,10 @@ def remove x:address:list:_elem/contained-in:in, in:address:list:_elem -> in:add
 scenario removing-from-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:char <- rest list  # second element
+    list2:&:list:char <- rest list  # second element
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
     # check structure like before
@@ -189,7 +189,7 @@ scenario removing-from-list [
     11:char/raw <- first list2
     list2 <- rest list2
     12:char/raw <- first list2
-    20:address:list:char/raw <- rest list2
+    20:&:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -202,16 +202,16 @@ scenario removing-from-list [
 scenario removing-from-start-of-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- remove list, list
     # check structure like before
-    list2:address:list:char <- copy list
+    list2:&:list:char <- copy list
     10:char/raw <- first list2
     list2 <- rest list2
     11:char/raw <- first list2
-    20:address:list:char/raw <- rest list2
+    20:&:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 4  # scanning next, skipping deleted element
@@ -223,11 +223,11 @@ scenario removing-from-start-of-list [
 scenario removing-from-end-of-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     # delete last element
-    list2:address:list:char <- rest list
+    list2:&:list:char <- rest list
     list2 <- rest list2
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
@@ -236,7 +236,7 @@ scenario removing-from-end-of-list [
     11:char/raw <- first list2
     list2 <- rest list2
     12:char/raw <- first list2
-    20:address:list:char/raw <- rest list2
+    20:&:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -249,7 +249,7 @@ scenario removing-from-end-of-list [
 scenario removing-from-singleton-list [
   run [
     local-scope
-    list:address:list:char <- push 3, 0
+    list:&:list:char <- push 3, 0
     list <- remove list, list
     1:num/raw <- copy list
   ]
@@ -258,24 +258,24 @@ scenario removing-from-singleton-list [
   ]
 ]
 
-def to-text in:address:list:_elem -> result:text [
+def to-text in:&:list:_elem -> result:text [
   local-scope
   load-ingredients
-  buf:address:buffer <- new-buffer 80
+  buf:&:buffer <- new-buffer 80
   buf <- to-buffer in, buf
   result <- buffer-to-array buf
 ]
 
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
-def to-text-line in:address:list:_elem -> result:text [
+def to-text-line in:&:list:_elem -> result:text [
   local-scope
   load-ingredients
-  buf:address:buffer <- new-buffer 80
+  buf:&:buffer <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
   result <- buffer-to-array buf
 ]
 
-def to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
+def to-buffer in:&:list:_elem, buf:&:buffer -> buf:&:buffer [
   local-scope
   load-ingredients
   {
@@ -287,7 +287,7 @@ def to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
   val:_elem <- get *in, value:offset
   buf <- append buf, val
   # now prepare next
-  next:address:list:_elem <- rest in
+  next:&:list:_elem <- rest in
   nextn:num <- copy next
   return-unless next
   buf <- append buf, [ -> ]

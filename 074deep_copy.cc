@@ -39,12 +39,12 @@ def main [
 def main [
   # avoid all memory allocations except the implicit ones inside deep-copy, so
   # that the result is deterministic
-  1:address:num <- copy 100/unsafe  # pretend allocation
-  *1:address:num <- copy 34
-  2:address:num <- deep-copy 1:address:num
-  10:bool <- equal 1:address:num, 2:address:num
-  11:bool <- equal *1:address:num, *2:address:num
-  2:address:num <- copy 0
+  1:&:num <- copy 100/unsafe  # pretend allocation
+  *1:&:num <- copy 34
+  2:&:num <- deep-copy 1:&:num
+  10:bool <- equal 1:&:num, 2:&:num
+  11:bool <- equal *1:&:num, *2:&:num
+  2:&:num <- copy 0
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
@@ -61,11 +61,11 @@ def main [
 def main [
   # avoid all memory allocations except the implicit ones inside deep-copy, so
   # that the result is deterministic
-  1:address:point <- copy 100/unsafe  # pretend allocation
-  *1:address:point <- merge 34, 35
-  2:address:point <- deep-copy 1:address:point
-  10:bool <- equal 1:address:point, 2:address:point
-  11:bool <- equal *1:address:point, *2:address:point
+  1:&:point <- copy 100/unsafe  # pretend allocation
+  *1:&:point <- merge 34, 35
+  2:&:point <- deep-copy 1:&:point
+  10:bool <- equal 1:&:point, 2:&:point
+  11:bool <- equal *1:&:point, *2:&:point
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
@@ -77,13 +77,13 @@ def main [
 def main [
   # avoid all memory allocations except the implicit ones inside deep-copy, so
   # that the result is deterministic
-  1:address:address:num <- copy 100/unsafe  # pretend allocation
-  *1:address:address:num <- copy 150/unsafe
-  **1:address:address:num <- copy 34
-  2:address:address:num <- deep-copy 1:address:address:num
-  10:bool <- equal 1:address:address:num, 2:address:address:num
-  11:bool <- equal *1:address:address:num, *2:address:address:num
-  12:bool <- equal **1:address:address:num, **2:address:address:num
+  1:&:&:num <- copy 100/unsafe  # pretend allocation
+  *1:&:&:num <- copy 150/unsafe
+  **1:&:&:num <- copy 34
+  2:&:&:num <- deep-copy 1:&:&:num
+  10:bool <- equal 1:&:&:num, 2:&:&:num
+  11:bool <- equal *1:&:&:num, *2:&:&:num
+  12:bool <- equal **1:&:&:num, **2:&:&:num
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
@@ -99,16 +99,16 @@ def main [
   # that the result is deterministic
   100:num <- copy 1  # pretend refcount
   101:num <- copy 3  # pretend array length
-  1:address:array:num <- copy 100/unsafe  # pretend allocation
-  put-index *1:address:array:num, 0, 34
-  put-index *1:address:array:num, 1, 35
-  put-index *1:address:array:num, 2, 36
-  stash [old:], *1:address:array:num
-  2:address:array:num <- deep-copy 1:address:array:num
-  stash 2:address:array:num
-  stash [new:], *2:address:array:num
-  10:bool <- equal 1:address:array:num, 2:address:array:num
-  11:bool <- equal *1:address:array:num, *2:address:array:num
+  1:&:array:num <- copy 100/unsafe  # pretend allocation
+  put-index *1:&:array:num, 0, 34
+  put-index *1:&:array:num, 1, 35
+  put-index *1:&:array:num, 2, 36
+  stash [old:], *1:&:array:num
+  2:&:array:num <- deep-copy 1:&:array:num
+  stash 2:&:array:num
+  stash [new:], *2:&:array:num
+  10:bool <- equal 1:&:array:num, 2:&:array:num
+  11:bool <- equal *1:&:array:num, *2:&:array:num
 ]
 +app: old: 3 34 35 36
 +app: new: 3 34 35 36
@@ -120,16 +120,16 @@ def main [
 :(scenario deep_copy_container_with_address)
 container foo [
   x:num
-  y:address:num
+  y:&:num
 ]
 def main [
   local-scope
-  y0:address:num <- new number:type
+  y0:&:num <- new number:type
   *y0 <- copy 35
   a:foo <- merge 34, y0
   b:foo <- deep-copy a
   10:bool/raw <- equal a, b
-  y1:address:num <- get b, y:offset
+  y1:&:num <- get b, y:offset
   11:bool/raw <- equal y0, y1
   12:num/raw <- copy *y1
 ]
@@ -142,16 +142,16 @@ def main [
 :(scenario deep_copy_exclusive_container_with_address)
 exclusive-container foo [
   x:num
-  y:address:num
+  y:&:num
 ]
 def main [
   local-scope
-  y0:address:num <- new number:type
+  y0:&:num <- new number:type
   *y0 <- copy 34
   a:foo <- merge 1/y, y0
   b:foo <- deep-copy a
   10:bool/raw <- equal a, b
-  y1:address:num, z:bool <- maybe-convert b, y:variant
+  y1:&:num, z:bool <- maybe-convert b, y:variant
   11:bool/raw <- equal y0, y1
   12:num/raw <- copy *y1
 ]
@@ -167,18 +167,18 @@ exclusive-container foo [
   y:bar  # inline
 ]
 container bar [
-  x:address:num
+  x:&:num
 ]
 def main [
   local-scope
-  y0:address:num <- new number:type
+  y0:&:num <- new number:type
   *y0 <- copy 34
   a:bar <- merge y0
   b:foo <- merge 1/y, a
   c:foo <- deep-copy b
   10:bool/raw <- equal b, c
   d:bar, z:bool <- maybe-convert c, y:variant
-  y1:address:num <- get d, x:offset
+  y1:&:num <- get d, x:offset
   11:bool/raw <- equal y0, y1
   12:num/raw <- copy *y1
 ]
@@ -302,63 +302,63 @@ int payload_address(reagent/*copy*/ x) {
 
 :(scenario deep_copy_stress_test_1)
 container foo1 [
-  p:address:num
+  p:&:num
 ]
 container foo2 [
-  p:address:foo1
+  p:&:foo1
 ]
 exclusive-container foo3 [
-  p:address:foo1
-  q:address:foo2
+  p:&:foo1
+  q:&:foo2
 ]
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   *x <- copy 34
-  a:address:foo1 <- new foo1:type
+  a:&:foo1 <- new foo1:type
   *a <- merge x
-  b:address:foo2 <- new foo2:type
+  b:&:foo2 <- new foo2:type
   *b <- merge a
   c:foo3 <- merge 1/q, b
   d:foo3 <- deep-copy c
-  e:address:foo2, z:bool <- maybe-convert d, q:variant
-  f:address:foo1 <- get *e, p:offset
-  g:address:num <- get *f, p:offset
+  e:&:foo2, z:bool <- maybe-convert d, q:variant
+  f:&:foo1 <- get *e, p:offset
+  g:&:num <- get *f, p:offset
   1:num/raw <- copy *g
 ]
 +mem: storing 34 in location 1
 
 :(scenario deep_copy_stress_test_2)
 container foo1 [
-  p:address:num
+  p:&:num
 ]
 container foo2 [
-  p:address:foo1
+  p:&:foo1
 ]
 exclusive-container foo3 [
-  p:address:foo1
-  q:address:foo2
+  p:&:foo1
+  q:&:foo2
 ]
 container foo4 [
   p:num
-  q:address:foo3
+  q:&:foo3
 ]
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   *x <- copy 34
-  a:address:foo1 <- new foo1:type
+  a:&:foo1 <- new foo1:type
   *a <- merge x
-  b:address:foo2 <- new foo2:type
+  b:&:foo2 <- new foo2:type
   *b <- merge a
-  c:address:foo3 <- new foo3:type
+  c:&:foo3 <- new foo3:type
   *c <- merge 1/q, b
   d:foo4 <- merge 35, c
   e:foo4 <- deep-copy d
-  f:address:foo3 <- get e, q:offset
-  g:address:foo2, z:bool <- maybe-convert *f, q:variant
-  h:address:foo1 <- get *g, p:offset
-  y:address:num <- get *h, p:offset
+  f:&:foo3 <- get e, q:offset
+  g:&:foo2, z:bool <- maybe-convert *f, q:variant
+  h:&:foo1 <- get *g, p:offset
+  y:&:num <- get *h, p:offset
   1:num/raw <- copy *y
 ]
 +mem: storing 34 in location 1
@@ -366,16 +366,16 @@ def main [
 :(scenario deep_copy_cycles)
 container foo [
   p:num
-  q:address:foo
+  q:&:foo
 ]
 def main [
   local-scope
-  x:address:foo <- new foo:type
+  x:&:foo <- new foo:type
   *x <- put *x, p:offset, 34
   *x <- put *x, q:offset, x  # create a cycle
-  y:address:foo <- deep-copy x
+  y:&:foo <- deep-copy x
   1:num/raw <- get *y, p:offset
-  y2:address:foo <- get *y, q:offset
+  y2:&:foo <- get *y, q:offset
   stash y [vs] y2
   2:bool/raw <- equal y, y2  # is it still a cycle?
   3:bool/raw <- equal x, y  # is it the same cycle?

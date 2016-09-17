@@ -1,10 +1,10 @@
 # new type to help incrementally scan arrays
 container stream:_elem [
   index:num
-  data:address:array:_elem
+  data:&:array:_elem
 ]
 
-def new-stream s:address:array:_elem -> result:address:stream:_elem [
+def new-stream s:&:array:_elem -> result:&:stream:_elem [
   local-scope
   load-ingredients
   result <- new {(stream _elem): type}
@@ -12,23 +12,23 @@ def new-stream s:address:array:_elem -> result:address:stream:_elem [
   *result <- put *result, data:offset, s
 ]
 
-def rewind in:address:stream:_elem -> in:address:stream:_elem [
+def rewind in:&:stream:_elem -> in:&:stream:_elem [
   local-scope
   load-ingredients
   *in <- put *in, index:offset, 0
 ]
 
-def read in:address:stream:_elem -> result:_elem, empty?:bool, in:address:stream:_elem [
+def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
   local-scope
   load-ingredients
   empty? <- copy 0/false
   idx:num <- get *in, index:offset
-  s:address:array:_elem <- get *in, data:offset
+  s:&:array:_elem <- get *in, data:offset
   len:num <- length *s
   at-end?:bool <- greater-or-equal idx len
   {
     break-unless at-end?
-    empty-result:address:_elem <- new _elem:type
+    empty-result:&:_elem <- new _elem:type
     return *empty-result, 1/true
   }
   result <- index *s, idx
@@ -36,23 +36,23 @@ def read in:address:stream:_elem -> result:_elem, empty?:bool, in:address:stream
   *in <- put *in, index:offset, idx
 ]
 
-def peek in:address:stream:_elem -> result:_elem, empty?:bool [
+def peek in:&:stream:_elem -> result:_elem, empty?:bool [
   local-scope
   load-ingredients
   empty?:bool <- copy 0/false
   idx:num <- get *in, index:offset
-  s:address:array:_elem <- get *in, data:offset
+  s:&:array:_elem <- get *in, data:offset
   len:num <- length *s
   at-end?:bool <- greater-or-equal idx len
   {
     break-unless at-end?
-    empty-result:address:_elem <- new _elem:type
+    empty-result:&:_elem <- new _elem:type
     return *empty-result, 1/true
   }
   result <- index *s, idx
 ]
 
-def read-line in:address:stream:char -> result:text, in:address:stream:char [
+def read-line in:&:stream:char -> result:text, in:&:stream:char [
   local-scope
   load-ingredients
   idx:num <- get *in, index:offset
@@ -64,11 +64,11 @@ def read-line in:address:stream:char -> result:text, in:address:stream:char [
   *in <- put *in, index:offset, idx
 ]
 
-def end-of-stream? in:address:stream:_elem -> result:bool [
+def end-of-stream? in:&:stream:_elem -> result:bool [
   local-scope
   load-ingredients
   idx:num <- get *in, index:offset
-  s:address:array:_elem <- get *in, data:offset
+  s:&:array:_elem <- get *in, data:offset
   len:num <- length *s
   result <- greater-or-equal idx, len
 ]

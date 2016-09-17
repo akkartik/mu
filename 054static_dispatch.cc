@@ -452,13 +452,13 @@ $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_first_use)
 def main [
-  x:address:foo <- new foo:type
+  x:&:foo <- new foo:type
   test x
 ]
 container foo [
   x:num
 ]
-def test a:address:foo -> z:num [
+def test a:&:foo -> z:num [
   local-scope
   load-ingredients
   z:num <- get *a, x:offset
@@ -467,10 +467,10 @@ $error: 0
 
 :(scenario static_dispatch_works_with_compound_type_containing_container_defined_after_second_use)
 def main [
-  x:address:foo <- new foo:type
+  x:&:foo <- new foo:type
   test x
 ]
-def test a:address:foo -> z:num [
+def test a:&:foo -> z:num [
   local-scope
   load-ingredients
   z:num <- get *a, x:offset
@@ -484,7 +484,7 @@ $error: 0
 def main [
   1:num <- foo 0
 ]
-def foo x:address:num -> y:num [
+def foo x:&:num -> y:num [
   return 34
 ]
 def foo x:num -> y:num [
@@ -582,12 +582,12 @@ def foo x:num -> y:num [
   load-ingredients
   return 34
 ]
-def foo x:address:num -> y:num [
+def foo x:&:num -> y:num [
   local-scope
   load-ingredients
   return 35
 ]
-def! foo x:address:num -> y:num [
+def! foo x:&:num -> y:num [
   local-scope
   load-ingredients
   return 36

@@ -4,7 +4,7 @@
 scenario table-read-write [
   run [
     local-scope
-    tab:address:table:num:num <- new-table 30
+    tab:&:table:num:num <- new-table 30
     put-index tab, 12, 34
     1:num/raw <- index tab, 12
   ]
@@ -29,7 +29,7 @@ scenario table-read-write-non-integer [
 container table:_key:_value [
   length:num
   capacity:num
-  data:address:array:table_row:_key:_value
+  data:&:array:table_row:_key:_value
 ]
 
 container table_row:_key:_value [
@@ -38,15 +38,15 @@ container table_row:_key:_value [
   value:_value
 ]
 
-def new-table capacity:num -> result:address:table:_key:_value [
+def new-table capacity:num -> result:&:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
-  data:address:array:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
+  data:&:array:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
   *result <- merge 0/length, capacity, data
 ]
 
-def put-index table:address:table:_key:_value, key:_key, value:_value -> table:address:table:_key:_value [
+def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table:_key:_value [
   local-scope
   load-ingredients
   hash:num <- hash key
@@ -54,7 +54,7 @@ def put-index table:address:table:_key:_value, key:_key, value:_value -> table:a
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:address:array:table_row:_key:_value <- get *table, data:offset
+  table-data:&:array:table_row:_key:_value <- get *table, data:offset
   x:table_row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   not-occupied?:bool <- not occupied?:bool
@@ -71,7 +71,7 @@ def abs n:num -> result:num [
   result <- multiply n, -1
 ]
 
-def index table:address:table:_key:_value, key:_key -> result:_value [
+def index table:&:table:_key:_value, key:_key -> result:_value [
   local-scope
   load-ingredients
   hash:num <- hash key
@@ -79,7 +79,7 @@ def index table:address:table:_key:_value, key:_key -> result:_value [
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:address:array:table_row:_key:_value <- get *table, data:offset
+  table-data:&:array:table_row:_key:_value <- get *table, data:offset
   x:table_row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   assert occupied?, [can't handle missing elements yet]

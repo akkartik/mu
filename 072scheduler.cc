@@ -253,12 +253,12 @@ def main [
 ]
 def create-new-routine [
   local-scope
-  n:address:num <- new number:type
+  n:&:num <- new number:type
   *n <- copy 34
   start-running new-routine, n
   # refcount of n decremented
 ]
-def new-routine n:address:num [
+def new-routine n:&:num [
   local-scope
   load-ingredients
   1:num/raw <- copy *n
@@ -281,24 +281,24 @@ if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHO
 }
 
 :(scenario next_ingredient_never_leaks_refcounts)
-def create-scope n:address:num -> default-space:address:array:location [
+def create-scope n:&:num -> default-space:&:array:location [
   default-space <- new location:type, 2
   load-ingredients
 ]
 def use-scope [
   local-scope
-  0:address:array:location/names:create-scope <- next-ingredient
-  n:address:num/space:1 <- next-ingredient  # should decrement refcount
+  0:&:array:location/names:create-scope <- next-ingredient
+  n:&:num/space:1 <- next-ingredient  # should decrement refcount
   *n/space:1 <- copy 34
   n2:num <- add *n/space:1, 1
   reply n2
 ]
 def main [
   local-scope
-  n:address:num <- copy 12000/unsafe  # pretend allocation with a known address
+  n:&:num <- copy 12000/unsafe  # pretend allocation with a known address
   *n <- copy 23
-  scope:address:array:location <- create-scope n
-  n2:address:num <- copy 13000/unsafe
+  scope:&:array:location <- create-scope n
+  n2:&:num <- copy 13000/unsafe
   n3:num <- use-scope scope, n2
 ]
 +run: {n: ("address" "number"), "space": "1"} <- next-ingredient
@@ -664,16 +664,16 @@ def f2 [
 :(scenario new_concurrent)
 def f1 [
   start-running f2
-  1:address:num/raw <- new number:type
+  1:&:num/raw <- new number:type
   # wait for f2 to complete
   {
     loop-unless 4:num/raw
   }
 ]
 def f2 [
-  2:address:num/raw <- new number:type
+  2:&:num/raw <- new number:type
   # hack: assumes scheduler implementation
-  3:bool/raw <- equal 1:address:num/raw, 2:address:num/raw
+  3:bool/raw <- equal 1:&:num/raw, 2:&:num/raw
   # signal f2 complete
   4:num/raw <- copy 1
 ]

@@ -260,7 +260,7 @@ def main [
   # 10 reserved for refcount
   11:num <- copy 34
   12:num <- copy 35
-  4:location <- get-location 1:address:point/lookup, 0:offset
+  4:location <- get-location 1:&:point/lookup, 0:offset
 ]
 +mem: storing 11 in location 4
 
@@ -270,8 +270,8 @@ def main [
   # 10 reserved for refcount
   11:num <- copy 34
   12:num <- copy 35
-  4:address:num <- copy 20/unsafe
-  4:address:location/lookup <- get-location 1:address:point/lookup, 0:offset
+  4:&:num <- copy 20/unsafe
+  4:&:location/lookup <- get-location 1:&:point/lookup, 0:offset
 ]
 +mem: storing 11 in location 21
 

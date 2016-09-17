@@ -5,8 +5,8 @@
 
 def main [
   local-scope
-  source-file:address:source:char <- start-reading 0/real-filesystem, [/tmp/mu-x]
-  sink-file:address:sink:char, write-routine:num <- start-writing 0/real-filesystem, [/tmp/mu-y]
+  source-file:&:source:char <- start-reading 0/real-filesystem, [/tmp/mu-x]
+  sink-file:&:sink:char, write-routine:num <- start-writing 0/real-filesystem, [/tmp/mu-y]
   {
     c:char, done?:boolean, source-file <- read source-file
     break-if done?

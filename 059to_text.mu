@@ -13,7 +13,7 @@ def to-text-line x:_elem -> y:text [
 ]
 
 # variant for arrays (since we can't pass them around otherwise)
-def array-to-text-line x:address:array:_elem -> y:text [
+def array-to-text-line x:&:array:_elem -> y:text [
   local-scope
   load-ingredients
   y <- to-text *x
@@ -25,7 +25,7 @@ scenario to-text-line-early-warning-for-static-dispatch [
 ]
 
 scenario array-to-text-line-early-warning-for-static-dispatch [
-  n:address:array:num <- new number:type, 3
+  n:&:array:num <- new number:type, 3
   x:text <- array-to-text-line n
   # just ensure there were no errors
 ]

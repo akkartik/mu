@@ -224,9 +224,9 @@ $error: 0
 
 :(scenario transform_names_transforms_container_elements)
 def main [
-  p:address:point <- copy 0
-  a:num <- get *p:address:point, y:offset
-  b:num <- get *p:address:point, x:offset
+  p:&:point <- copy 0
+  a:num <- get *p:&:point, y:offset
+  b:num <- get *p:&:point, x:offset
 ]
 +name: element y of type point is at offset 1
 +name: element x of type point is at offset 0

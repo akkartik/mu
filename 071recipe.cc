@@ -300,10 +300,10 @@ if (is_mu_recipe(to)) {
 :(scenario call_variable_compound_ingredient)
 def main [
   {1: (recipe (address number) -> number)} <- copy f
-  2:address:num <- copy 0
-  3:num <- call {1: (recipe (address number) -> number)}, 2:address:num
+  2:&:num <- copy 0
+  3:num <- call {1: (recipe (address number) -> number)}, 2:&:num
 ]
-def f x:address:num -> y:num [
+def f x:&:num -> y:num [
   local-scope
   load-ingredients
   y <- copy x

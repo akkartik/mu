@@ -187,8 +187,8 @@ def main [
 
 :(scenario hash_of_zero_address)
 def main [
-  1:address:num <- copy 0
-  2:num <- hash 1:address:num
+  1:&:num <- copy 0
+  2:num <- hash 1:&:num
 ]
 +mem: storing 0 in location 2
 
@@ -219,12 +219,12 @@ def main [
 
 :(scenario hash_ignores_address_value)
 def main [
-  1:address:num <- new number:type
-  *1:address:num <- copy 34
-  2:num <- hash 1:address:num
-  3:address:num <- new number:type
-  *3:address:num <- copy 34
-  4:num <- hash 3:address:num
+  1:&:num <- new number:type
+  *1:&:num <- copy 34
+  2:num <- hash 1:&:num
+  3:&:num <- new number:type
+  *3:&:num <- copy 34
+  4:num <- hash 3:&:num
   5:bool <- equal 2:num, 4:num
 ]
 # different addresses hash to the same result as long as the values the point to do so
@@ -232,13 +232,13 @@ def main [
 
 :(scenario hash_ignores_address_refcount)
 def main [
-  1:address:num <- new number:type
-  *1:address:num <- copy 34
-  2:num <- hash 1:address:num
+  1:&:num <- new number:type
+  *1:&:num <- copy 34
+  2:num <- hash 1:&:num
   return-unless 2:num
   # increment refcount
-  3:address:num <- copy 1:address:num
-  4:num <- hash 3:address:num
+  3:&:num <- copy 1:&:num
+  4:num <- hash 3:&:num
   return-unless 4:num
   5:bool <- equal 2:num, 4:num
 ]
@@ -270,17 +270,17 @@ def main [
 container foo [
   x:num
   y:char
-  z:address:num
+  z:&:num
 ]
 def main [
-  1:address:num <- new number:type
-  *1:address:num <- copy 34
-  2:foo <- merge 34, 97/a, 1:address:num
+  1:&:num <- new number:type
+  *1:&:num <- copy 34
+  2:foo <- merge 34, 97/a, 1:&:num
   5:num <- hash 2:foo
   return-unless 5:num
-  6:address:num <- new number:type
-  *6:address:num <- copy 34
-  7:foo <- merge 34, 97/a, 6:address:num
+  6:&:num <- new number:type
+  *6:&:num <- copy 34
+  7:foo <- merge 34, 97/a, 6:&:num
   10:num <- hash 7:foo
   return-unless 10:num
   11:bool <- equal 5:num, 10:num

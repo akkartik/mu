@@ -25,7 +25,7 @@ def main [
 :(scenario rewrite_stashes_of_arrays)
 def main [
   local-scope
-  n:address:array:num <- new number:type, 3
+  n:&:array:num <- new number:type, 3
   stash *n
 ]
 +transform: {stash_2_0: ("address" "array" "character")} <- array-to-text-line {n: ("address" "array" "number")}

@@ -2,11 +2,11 @@
 
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   foo x
 ]
 
-def foo x:address:num [
+def foo x:&:num [
   local-scope
   load-ingredients
   *x <- copy 34  # will cause an error because x is immutable in this function

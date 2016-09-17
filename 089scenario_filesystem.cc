@@ -20,7 +20,7 @@ scenario assume-filesystem [
       |xyz|
     ]
   ]
-  data:address:array:file-mapping <- get *filesystem:address:filesystem, data:offset
+  data:&:array:file-mapping <- get *filesystem:&:filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
   10:array:char/raw <- copy *file1-name
@@ -59,7 +59,7 @@ scenario assume-filesystem [
       |x\\\\|yz|
     ]
   ]
-  data:address:array:file-mapping <- get *filesystem:address:filesystem, data:offset
+  data:&:array:file-mapping <- get *filesystem:&:filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
   10:array:char/raw <- copy *file1-name

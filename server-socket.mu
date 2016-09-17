@@ -4,7 +4,7 @@ def main [
   $print [Mu socket creation returned ], socket, 10/newline
   session:num <- $accept socket
   {
-    client-message:address:buffer <- new-buffer 1024
+    client-message:&:buffer <- new-buffer 1024
     c:char <- $read-from-socket session
     break-unless c
     $print c

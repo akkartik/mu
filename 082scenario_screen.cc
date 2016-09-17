@@ -15,7 +15,7 @@ scenario screen-in-scenario [
   assume-screen 5/width, 3/height
   run [
     1:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:char/a
+    screen:&:screen <- print screen:&:screen, 1:char/a
   ]
   screen-should-contain [
   #  01234
@@ -31,9 +31,9 @@ scenario screen-in-scenario-unicode-color [
   assume-screen 5/width, 3/height
   run [
     1:char <- copy 955/greek-small-lambda
-    screen:address:screen <- print screen:address:screen, 1:char/lambda, 1/red
+    screen:&:screen <- print screen:&:screen, 1:char/lambda, 1/red
     2:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 2:char/a
+    screen:&:screen <- print screen:&:screen, 2:char/a
   ]
   screen-should-contain [
   #  01234
@@ -50,9 +50,9 @@ scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
     1:char <- copy 955/greek-small-lambda
-    screen:address:screen <- print screen:address:screen, 1:char/lambda, 1/red
+    screen:&:screen <- print screen:&:screen, 1:char/lambda, 1/red
     2:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 2:char/a, 7/white
+    screen:&:screen <- print screen:&:screen, 2:char/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -86,7 +86,7 @@ scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
     1:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:char/a
+    screen:&:screen <- print screen:&:screen, 1:char/a
   ]
   screen-should-contain [
   #  01234
@@ -105,7 +105,7 @@ scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
     1:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:char/a, 1/red
+    screen:&:screen <- print screen:&:screen, 1:char/a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234
@@ -157,7 +157,7 @@ if (s == "screen") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `assume-screen width, height` to
-// `screen:address:screen <- new-fake-screen width, height`
+// `screen:&:screen <- new-fake-screen width, height`
 if (curr.name == "assume-screen") {
   curr.name = "new-fake-screen";
   if (!curr.products.empty()) {
@@ -168,7 +168,7 @@ if (curr.name == "assume-screen") {
   }
   else {
     assert(curr.products.empty());
-    curr.products.push_back(reagent("screen:address:screen/raw"));
+    curr.products.push_back(reagent("screen:&:screen/raw"));
     curr.products.at(0).set_value(SCREEN);
   }
 }

@@ -1,12 +1,14 @@
 # http://rosettacode.org/wiki/N-queens_problem
 # port of the Arc solution at http://arclanguage.org/item?id=19743
+# run with tracing turned on:
+#   ./mu --trace nqueens.mu
 
 container square [
   rank:num
   file:num
 ]
 
-def nqueens n:num, queens:address:list:square -> result:num [
+def nqueens n:num, queens:&:list:square -> result:num [
   local-scope
   load-ingredients
   # if 'queens' is already long enough, print it and return
@@ -34,7 +36,7 @@ def nqueens n:num, queens:address:list:square -> result:num [
     {
       curr-conflicts?:boolean <- conflict? curr, queens
       break-if curr-conflicts?
-      new-queens:address:list:square <- push curr, queens
+      new-queens:&:list:square <- push curr, queens
       sub-result:num <- nqueens n, new-queens
       result <- add result, sub-result
     }
@@ -43,7 +45,7 @@ def nqueens n:num, queens:address:list:square -> result:num [
   }
 ]
 
-def conflict? curr:square, queens:address:list:square -> result:boolean [
+def conflict? curr:square, queens:&:list:square -> result:boolean [
   local-scope
   load-ingredients
   result1:boolean <- conflicting-file? curr, queens
@@ -52,7 +54,7 @@ def conflict? curr:square, queens:address:list:square -> result:boolean [
   reply result2
 ]
 
-def conflicting-file? curr:square, queens:address:list:square -> result:boolean [
+def conflicting-file? curr:square, queens:&:list:square -> result:boolean [
   local-scope
   load-ingredients
   curr-file:num <- get curr, file:offset
@@ -68,7 +70,7 @@ def conflicting-file? curr:square, queens:address:list:square -> result:boolean 
   reply 0/no-conflict-found
 ]
 
-def conflicting-diagonal? curr:square, queens:address:list:square -> result:boolean [
+def conflicting-diagonal? curr:square, queens:&:list:square -> result:boolean [
   local-scope
   load-ingredients
   curr-rank:num <- get curr, rank:offset
@@ -88,4 +90,9 @@ def conflicting-diagonal? curr:square, queens:address:list:square -> result:bool
     loop
   }
   reply 0/no-conflict-found
+]
+
+def main [
+  nqueens 4
+  $dump-trace [app]
 ]

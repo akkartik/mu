@@ -6,7 +6,7 @@ container screen [
   num-columns:num
   cursor-row:num
   cursor-column:num
-  data:address:array:screen-cell
+  data:&:array:screen-cell
 ]
 
 container screen-cell [
@@ -14,24 +14,24 @@ container screen-cell [
   color:num
 ]
 
-def new-fake-screen w:num, h:num -> result:address:screen [
+def new-fake-screen w:num, h:num -> result:&:screen [
   local-scope
   load-ingredients
   result <- new screen:type
   bufsize:num <- multiply w, h
-  data:address:array:screen-cell <- new screen-cell:type, bufsize
+  data:&:array:screen-cell <- new screen-cell:type, bufsize
   *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data
   result <- clear-screen result
 ]
 
-def clear-screen screen:address:screen -> screen:address:screen [
+def clear-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists
   {
     break-unless screen
     # clear fake screen
-    buf:address:array:screen-cell <- get *screen, data:offset
+    buf:&:array:screen-cell <- get *screen, data:offset
     max:num <- length *buf
     i:num <- copy 0
     {
@@ -51,7 +51,7 @@ def clear-screen screen:address:screen -> screen:address:screen [
   clear-display
 ]
 
-def sync-screen screen:address:screen -> screen:address:screen [
+def sync-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   {
@@ -61,11 +61,11 @@ def sync-screen screen:address:screen -> screen:address:screen [
   # do nothing for fake screens
 ]
 
-def fake-screen-is-empty? screen:address:screen -> result:bool [
+def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients
   return-unless screen, 1/true
-  buf:address:array:screen-cell <- get *screen, data:offset
+  buf:&:array:screen-cell <- get *screen, data:offset
   i:num <- copy 0
   len:num <- length *buf
   {
@@ -81,7 +81,7 @@ def fake-screen-is-empty? screen:address:screen -> result:bool [
   return 1/true
 ]
 
-def print screen:address:screen, c:char -> screen:address:screen [
+def print screen:&:screen, c:char -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient
@@ -136,7 +136,7 @@ def print screen:address:screen, c:char -> screen:address:screen [
     # save character in fake screen
     index:num <- multiply row, width
     index <- add index, column
-    buf:address:array:screen-cell <- get *screen, data:offset
+    buf:&:array:screen-cell <- get *screen, data:offset
     len:num <- length *buf
     # special-case: backspace
     {
@@ -174,10 +174,10 @@ def print screen:address:screen, c:char -> screen:address:screen [
 scenario print-character-at-top-left [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     1:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -192,10 +192,10 @@ scenario print-character-at-top-left [
 scenario print-character-in-color [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char, 1/red
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     1:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -210,13 +210,13 @@ scenario print-character-in-color [
 scenario print-backspace-character [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     10:num/raw <- get *fake-screen, cursor-column:offset
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     11:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -232,14 +232,14 @@ scenario print-backspace-character [
 scenario print-extra-backspace-character [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     fake-screen <- print fake-screen, backspace
     1:num/raw <- get *fake-screen, cursor-column:offset
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     3:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -255,7 +255,7 @@ scenario print-extra-backspace-character [
 scenario print-character-at-right-margin [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 2/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 2/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     b:char <- copy 98/b
@@ -263,7 +263,7 @@ scenario print-character-at-right-margin [
     c:char <- copy 99/c
     fake-screen <- print fake-screen, c
     10:num/raw <- get *fake-screen, cursor-column:offset
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     11:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -281,14 +281,14 @@ scenario print-character-at-right-margin [
 scenario print-newline-character [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     newline:char <- copy 10/newline
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     fake-screen <- print fake-screen, newline
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     12:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -305,7 +305,7 @@ scenario print-newline-character [
 scenario print-newline-at-bottom-line [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     newline:char <- copy 10/newline
     fake-screen <- print fake-screen, newline
     fake-screen <- print fake-screen, newline
@@ -322,7 +322,7 @@ scenario print-newline-at-bottom-line [
 scenario print-character-at-bottom-right [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 2/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 2/width, 2/height
     newline:char <- copy 10/newline
     fake-screen <- print fake-screen, newline
     a:char <- copy 97/a
@@ -336,7 +336,7 @@ scenario print-character-at-bottom-right [
     fake-screen <- print fake-screen, d
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     20:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -356,7 +356,7 @@ scenario print-character-at-bottom-right [
   ]
 ]
 
-def clear-line screen:address:screen -> screen:address:screen [
+def clear-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   space:char <- copy 0/nul
@@ -383,7 +383,7 @@ def clear-line screen:address:screen -> screen:address:screen [
   clear-line-on-display
 ]
 
-def clear-line-until screen:address:screen, right:num/inclusive -> screen:address:screen [
+def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
   local-scope
   load-ingredients
   _, column:num <- cursor-position screen
@@ -403,7 +403,7 @@ def clear-line-until screen:address:screen, right:num/inclusive -> screen:addres
   }
 ]
 
-def cursor-position screen:address:screen -> row:num, column:num [
+def cursor-position screen:&:screen -> row:num, column:num [
   local-scope
   load-ingredients
   # if x exists, lookup cursor in fake screen
@@ -416,7 +416,7 @@ def cursor-position screen:address:screen -> row:num, column:num [
   row, column <- cursor-position-on-display
 ]
 
-def move-cursor screen:address:screen, new-row:num, new-column:num -> screen:address:screen [
+def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -433,7 +433,7 @@ def move-cursor screen:address:screen, new-row:num, new-column:num -> screen:add
 scenario clear-line-erases-printed-characters [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     # print a character
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
@@ -441,7 +441,7 @@ scenario clear-line-erases-printed-characters [
     fake-screen <- move-cursor fake-screen, 0/row, 0/column
     # clear line
     fake-screen <- clear-line fake-screen
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     10:array:screen-cell/raw <- copy *cell
   ]
   # screen should be blank
@@ -462,7 +462,7 @@ scenario clear-line-erases-printed-characters [
   ]
 ]
 
-def cursor-down screen:address:screen -> screen:address:screen [
+def cursor-down screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -484,7 +484,7 @@ def cursor-down screen:address:screen -> screen:address:screen [
   move-cursor-down-on-display
 ]
 
-def cursor-up screen:address:screen -> screen:address:screen [
+def cursor-up screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -504,7 +504,7 @@ def cursor-up screen:address:screen -> screen:address:screen [
   move-cursor-up-on-display
 ]
 
-def cursor-right screen:address:screen -> screen:address:screen [
+def cursor-right screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -526,7 +526,7 @@ def cursor-right screen:address:screen -> screen:address:screen [
   move-cursor-right-on-display
 ]
 
-def cursor-left screen:address:screen -> screen:address:screen [
+def cursor-left screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -546,7 +546,7 @@ def cursor-left screen:address:screen -> screen:address:screen [
   move-cursor-left-on-display
 ]
 
-def cursor-to-start-of-line screen:address:screen -> screen:address:screen [
+def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   row:num <- cursor-position screen
@@ -554,21 +554,21 @@ def cursor-to-start-of-line screen:address:screen -> screen:address:screen [
   screen <- move-cursor screen, row, column
 ]
 
-def cursor-to-next-line screen:address:screen -> screen:address:screen [
+def cursor-to-next-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
 ]
 
-def move-cursor-to-column screen:address:screen, column:num -> screen:address:screen [
+def move-cursor-to-column screen:&:screen, column:num -> screen:&:screen [
   local-scope
   load-ingredients
   row:num, _ <- cursor-position screen
   move-cursor screen, row, column
 ]
 
-def screen-width screen:address:screen -> width:num [
+def screen-width screen:&:screen -> width:num [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -581,7 +581,7 @@ def screen-width screen:address:screen -> width:num [
   width <- display-width
 ]
 
-def screen-height screen:address:screen -> height:num [
+def screen-height screen:&:screen -> height:num [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -594,7 +594,7 @@ def screen-height screen:address:screen -> height:num [
   height <- display-height
 ]
 
-def hide-cursor screen:address:screen -> screen:address:screen [
+def hide-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -606,7 +606,7 @@ def hide-cursor screen:address:screen -> screen:address:screen [
   hide-cursor-on-display
 ]
 
-def show-cursor screen:address:screen -> screen:address:screen [
+def show-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -618,7 +618,7 @@ def show-cursor screen:address:screen -> screen:address:screen [
   show-cursor-on-display
 ]
 
-def hide-screen screen:address:screen -> screen:address:screen [
+def hide-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -631,7 +631,7 @@ def hide-screen screen:address:screen -> screen:address:screen [
   hide-display
 ]
 
-def show-screen screen:address:screen -> screen:address:screen [
+def show-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   # if x exists (not real display), do nothing
@@ -644,7 +644,7 @@ def show-screen screen:address:screen -> screen:address:screen [
   show-display
 ]
 
-def print screen:address:screen, s:text -> screen:address:screen [
+def print screen:&:screen, s:text -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient
@@ -674,10 +674,10 @@ def print screen:address:screen, s:text -> screen:address:screen [
 scenario print-text-stops-at-right-margin [
   run [
     local-scope
-    fake-screen:address:screen <- new-fake-screen 3/width, 2/height
+    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     s:text <- new [abcd]
     fake-screen <- print fake-screen, s:text
-    cell:address:array:screen-cell <- get *fake-screen, data:offset
+    cell:&:array:screen-cell <- get *fake-screen, data:offset
     10:array:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
@@ -693,7 +693,7 @@ scenario print-text-stops-at-right-margin [
   ]
 ]
 
-def print-integer screen:address:screen, n:num -> screen:address:screen [
+def print-integer screen:&:screen, n:num -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient
@@ -714,7 +714,7 @@ def print-integer screen:address:screen, n:num -> screen:address:screen [
 ]
 
 # for now, we can only print integers
-def print screen:address:screen, n:num -> screen:address:screen [
+def print screen:&:screen, n:num -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient
@@ -733,7 +733,7 @@ def print screen:address:screen, n:num -> screen:address:screen [
 ]
 
 # addresses
-def print screen:address:screen, n:address:_elem -> screen:address:screen [
+def print screen:&:screen, n:&:_elem -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient

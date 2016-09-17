@@ -18,8 +18,8 @@ def main [
   20:num <- copy 0  # refcount
   21:num <- copy 5  # length
   # actual start of this recipe
-  global-space:address:array:location <- copy 20/unsafe
-  default-space:address:array:location <- copy 10/unsafe
+  global-space:&:array:location <- copy 20/unsafe
+  default-space:&:array:location <- copy 10/unsafe
   1:num <- copy 23
   1:num/space:global <- copy 24
 ]
@@ -63,7 +63,7 @@ if (x.name == "global-space") {
 
 :(scenario global_space_with_names)
 def main [
-  global-space:address:array:location <- new location:type, 10
+  global-space:&:array:location <- new location:type, 10
   x:num <- copy 23
   1:num/space:global <- copy 24
 ]

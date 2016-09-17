@@ -5,20 +5,20 @@
 
 :(scenario closure)
 def main [
-  default-space:address:array:location <- new location:type, 30
-  1:address:array:location/names:new-counter <- new-counter
-  2:num/raw <- increment-counter 1:address:array:location/names:new-counter
-  3:num/raw <- increment-counter 1:address:array:location/names:new-counter
+  default-space:&:array:location <- new location:type, 30
+  1:&:array:location/names:new-counter <- new-counter
+  2:num/raw <- increment-counter 1:&:array:location/names:new-counter
+  3:num/raw <- increment-counter 1:&:array:location/names:new-counter
 ]
 def new-counter [
-  default-space:address:array:location <- new location:type, 30
+  default-space:&:array:location <- new location:type, 30
   x:num <- copy 23
   y:num <- copy 3  # variable that will be incremented
-  return default-space:address:array:location
+  return default-space:&:array:location
 ]
 def increment-counter [
-  default-space:address:array:location <- new location:type, 30
-  0:address:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
+  default-space:&:array:location <- new location:type, 30
+  0:&:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:num/space:1 <- add y:num/space:1, 1  # increment
   y:num <- copy 234  # dummy
   return y:num/space:1
@@ -151,18 +151,18 @@ def f [
 :(scenario local_scope_ignores_nonlocal_spaces)
 def new-scope [
   new-default-space
-  x:address:num <- new number:type
-  *x:address:num <- copy 34
-  return default-space:address:array:location
+  x:&:num <- new number:type
+  *x:&:num <- copy 34
+  return default-space:&:array:location
 ]
 def use-scope [
   local-scope
-  outer:address:array:location <- next-ingredient
-  0:address:array:location/names:new-scope <- copy outer:address:array:location
-  return *x:address:num/space:1
+  outer:&:array:location <- next-ingredient
+  0:&:array:location/names:new-scope <- copy outer:&:array:location
+  return *x:&:num/space:1
 ]
 def main [
-  1:address:array:location/raw <- new-scope
-  2:num/raw <- use-scope 1:address:array:location/raw
+  1:&:array:location/raw <- new-scope
+  2:num/raw <- use-scope 1:&:array:location/raw
 ]
 +mem: storing 34 in location 2

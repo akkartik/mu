@@ -9,7 +9,7 @@ def main [
   # pretend address:array:location; in practice we'll use new
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
-  default-space:address:array:location <- copy 10/unsafe
+  default-space:&:array:location <- copy 10/unsafe
   1:num <- copy 23
 ]
 +mem: storing 23 in location 13
@@ -22,9 +22,9 @@ def main [
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
-  1:address:num <- copy 2000/unsafe  # even local variables always contain raw addresses
-  8:num/raw <- copy *1:address:num
+  default-space:&:array:location <- copy 1000/unsafe
+  1:&:num <- copy 2000/unsafe  # even local variables always contain raw addresses
+  8:num/raw <- copy *1:&:num
 ]
 +mem: storing 34 in location 8
 
@@ -95,8 +95,8 @@ bool is_space(const reagent& r) {
 
 :(scenario get_default_space)
 def main [
-  default-space:address:array:location <- copy 10/unsafe
-  1:address:array:location/raw <- copy default-space:address:array:location
+  default-space:&:array:location <- copy 10/unsafe
+  1:&:array:location/raw <- copy default-space:&:array:location
 ]
 +mem: storing 10 in location 1
 
@@ -118,9 +118,9 @@ def main [
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
-  1:address:point <- copy 2000/unsafe
-  9:num/raw <- get *1:address:point, 1:offset
+  default-space:&:array:location <- copy 1000/unsafe
+  1:&:point <- copy 2000/unsafe
+  9:num/raw <- get *1:&:point, 1:offset
 ]
 +mem: storing 35 in location 9
 
@@ -139,9 +139,9 @@ def main [
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:address:array:location <- copy 1000/unsafe
-  1:address:array:num <- copy 2000/unsafe
-  9:num/raw <- index *1:address:array:num, 1
+  default-space:&:array:location <- copy 1000/unsafe
+  1:&:array:num <- copy 2000/unsafe
+  9:num/raw <- index *1:&:array:num, 1
 ]
 +mem: storing 35 in location 9
 
@@ -168,7 +168,7 @@ if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `new-default-space` to
-//   `default-space:address:array:location <- new location:type, number-of-locals:literal`
+//   `default-space:&:array:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
@@ -192,14 +192,14 @@ if (x.name == "number-of-locals") {
 
 :(scenario local_scope)
 def main [
-  1:address <- foo
-  2:address <- foo
-  3:bool <- equal 1:address, 2:address
+  1:& <- foo
+  2:& <- foo
+  3:bool <- equal 1:&, 2:&
 ]
 def foo [
   local-scope
   x:num <- copy 34
-  return default-space:address:array:location
+  return default-space:&:array:location
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
@@ -304,21 +304,21 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
     raise << "new-default-space can't take any results\n" << end();
-  curr.products.push_back(reagent("default-space:address:array:location"));
+  curr.products.push_back(reagent("default-space:&:array:location"));
 }
 
 :(scenario local_scope_frees_up_addresses_inside_containers)
 container foo [
   x:num
-  y:address:num
+  y:&:num
 ]
 def main [
   local-scope
-  x:address:num <- new number:type
-  y:foo <- merge 34, x:address:num
+  x:&:num <- new number:type
+  y:foo <- merge 34, x:&:num
   # x and y are both cleared when main returns
 ]
-+mem: clearing x:address:num
++mem: clearing x:&:num
 +mem: decrementing refcount of 1006: 2 -> 1
 +mem: clearing y:foo
 +mem: decrementing refcount of 1006: 1 -> 0
@@ -327,23 +327,23 @@ def main [
 :(scenario local_scope_returns_addresses_inside_containers)
 container foo [
   x:num
-  y:address:num
+  y:&:num
 ]
 def f [
   local-scope
-  x:address:num <- new number:type
-  *x:address:num <- copy 12
-  y:foo <- merge 34, x:address:num
+  x:&:num <- new number:type
+  *x:&:num <- copy 12
+  y:foo <- merge 34, x:&:num
   # since y is 'escaping' f, it should not be cleared
   return y:foo
 ]
 def main [
   1:foo <- f
   3:num <- get 1:foo, x:offset
-  4:address:num <- get 1:foo, y:offset
-  5:num <- copy *4:address:num
+  4:&:num <- get 1:foo, y:offset
+  5:num <- copy *4:&:num
   1:foo <- put 1:foo, y:offset, 0
-  4:address:num <- copy 0
+  4:&:num <- copy 0
 ]
 +mem: storing 34 in location 1
 +mem: storing 1006 in location 2
@@ -363,8 +363,8 @@ def main [
 :(scenario local_scope_claims_return_values_when_not_saved)
 def f [
   local-scope
-  x:address:num <- new number:type
-  reply x:address:num
+  x:&:num <- new number:type
+  reply x:&:num
 ]
 def main [
   f  # doesn't save result

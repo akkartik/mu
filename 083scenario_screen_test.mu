@@ -5,7 +5,7 @@ scenario print-character-at-top-left-2 [
   run [
     local-scope
     a:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, a
+    screen:&:screen <- print screen:&:screen, a
   ]
   screen-should-contain [
     .a  .
@@ -19,11 +19,11 @@ scenario clear-line-erases-printed-characters-2 [
     local-scope
     # print a character
     a:char <- copy 97/a
-    screen:address:screen <- print screen:address:screen, a
+    screen:&:screen <- print screen:&:screen, a
     # move cursor to start of line
-    screen:address:screen <- move-cursor screen:address:screen, 0/row, 0/column
+    screen:&:screen <- move-cursor screen:&:screen, 0/row, 0/column
     # clear line
-    screen:address:screen <- clear-line screen:address:screen
+    screen:&:screen <- clear-line screen:&:screen
   ]
   screen-should-contain [
     .     .

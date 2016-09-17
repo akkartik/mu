@@ -1,6 +1,6 @@
 # example program: communicating between routines using channels
 
-def producer sink:address:sink:char -> sink:address:sink:char [
+def producer sink:&:sink:char -> sink:&:sink:char [
   # produce characters 1 to 5 on a channel
   local-scope
   load-ingredients
@@ -19,7 +19,7 @@ def producer sink:address:sink:char -> sink:address:sink:char [
   close sink
 ]
 
-def consumer source:address:source:char -> source:address:source:char [
+def consumer source:&:source:char -> source:&:source:char [
   # consume and print integers from a channel
   local-scope
   load-ingredients
@@ -36,7 +36,7 @@ def consumer source:address:source:char -> source:address:source:char [
 
 def main [
   local-scope
-  source:address:source:char, sink:address:sink:char <- new-channel 3/capacity
+  source:&:source:char, sink:&:sink:char <- new-channel 3/capacity
   # create two background 'routines' that communicate by a channel
   routine1:num <- start-running producer, sink
   routine2:num <- start-running consumer, source

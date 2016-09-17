@@ -2,15 +2,15 @@
 
 container duplex-list:_elem [
   value:_elem
-  next:address:duplex-list:_elem
-  prev:address:duplex-list:_elem
+  next:&:duplex-list:_elem
+  prev:&:duplex-list:_elem
 ]
 
 # should I say in/contained-in:result, allow ingredients to refer to products?
-def push x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+def push x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
-  result:address:duplex-list:_elem <- new {(duplex-list _elem): type}
+  result:&:duplex-list:_elem <- new {(duplex-list _elem): type}
   *result <- merge x, in, 0
   {
     break-unless in
@@ -19,21 +19,21 @@ def push x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
   return result  # needed explicitly because we need to replace 'in' with 'result'
 ]
 
-def first in:address:duplex-list:_elem -> result:_elem [
+def first in:&:duplex-list:_elem -> result:_elem [
   local-scope
   load-ingredients
   return-unless in, 0
   result <- get *in, value:offset
 ]
 
-def next in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
+def next in:&:duplex-list:_elem -> result:&:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   return-unless in, 0
   result <- get *in, next:offset
 ]
 
-def prev in:address:duplex-list:_elem -> result:address:duplex-list:_elem/contained-in:in [
+def prev in:&:duplex-list:_elem -> result:&:duplex-list:_elem/contained-in:in [
   local-scope
   load-ingredients
   return-unless in, 0
@@ -47,19 +47,19 @@ scenario duplex-list-handling [
     # reserve locations 0-9 to check for missing null check
     10:num/raw <- copy 34
     11:num/raw <- copy 35
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:duplex-list:char <- copy list
+    list2:&:duplex-list:char <- copy list
     20:char/raw <- first list2
     list2 <- next list2
     21:char/raw <- first list2
     list2 <- next list2
     22:char/raw <- first list2
-    30:address:duplex-list:char/raw <- next list2
-    31:char/raw <- first 30:address:duplex-list:char/raw
-    32:address:duplex-list:char/raw <- next 30:address:duplex-list:char/raw
-    33:address:duplex-list:char/raw <- prev 30:address:duplex-list:char/raw
+    30:&:duplex-list:char/raw <- next list2
+    31:char/raw <- first 30:&:duplex-list:char/raw
+    32:&:duplex-list:char/raw <- next 30:&:duplex-list:char/raw
+    33:&:duplex-list:char/raw <- prev 30:&:duplex-list:char/raw
     list2 <- prev list2
     40:char/raw <- first list2
     list2 <- prev list2
@@ -84,13 +84,13 @@ scenario duplex-list-handling [
 ]
 
 # insert 'x' after 'in'
-def insert x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+def insert x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
-  new-node:address:duplex-list:_elem <- new {(duplex-list _elem): type}
+  new-node:&:duplex-list:_elem <- new {(duplex-list _elem): type}
   *new-node <- put *new-node, value:offset, x
   # save old next before changing it
-  next-node:address:duplex-list:_elem <- get *in, next:offset
+  next-node:&:duplex-list:_elem <- get *in, next:offset
   *in <- put *in, next:offset, new-node
   *new-node <- put *new-node, prev:offset, in
   *new-node <- put *new-node, next:offset, next-node
@@ -101,10 +101,10 @@ def insert x:_elem, in:address:duplex-list:_elem -> in:address:duplex-list:_elem
 scenario inserting-into-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:duplex-list:char <- next list  # inside list
+    list2:&:duplex-list:char <- next list  # inside list
     list2 <- insert 6, list2
     # check structure like before
     list2 <- copy list
@@ -138,10 +138,10 @@ scenario inserting-into-duplex-list [
 scenario inserting-at-end-of-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:duplex-list:char <- next list  # inside list
+    list2:&:duplex-list:char <- next list  # inside list
     list2 <- next list2  # now at end of list
     list2 <- insert 6, list2
     # check structure like before
@@ -176,12 +176,12 @@ scenario inserting-at-end-of-duplex-list [
 scenario inserting-after-start-of-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- insert 6, list
     # check structure like before
-    list2:address:duplex-list:char <- copy list
+    list2:&:duplex-list:char <- copy list
     10:char/raw <- first list2
     list2 <- next list2
     11:char/raw <- first list2
@@ -213,13 +213,13 @@ scenario inserting-after-start-of-duplex-list [
 #
 # Returns null if and only if list is empty. Beware: in that case any other
 # pointers to the head are now invalid.
-def remove x:address:duplex-list:_elem/contained-in:in, in:address:duplex-list:_elem -> in:address:duplex-list:_elem [
+def remove x:&:duplex-list:_elem/contained-in:in, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
   # if 'x' is null, return
   return-unless x
-  next-node:address:duplex-list:_elem <- get *x, next:offset
-  prev-node:address:duplex-list:_elem <- get *x, prev:offset
+  next-node:&:duplex-list:_elem <- get *x, next:offset
+  prev-node:&:duplex-list:_elem <- get *x, prev:offset
   # null x's pointers
   *x <- put *x, next:offset, 0
   *x <- put *x, prev:offset, 0
@@ -242,10 +242,10 @@ def remove x:address:duplex-list:_elem/contained-in:in, in:address:duplex-list:_
 scenario removing-from-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:duplex-list:char <- next list  # second element
+    list2:&:duplex-list:char <- next list  # second element
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
     # check structure like before
@@ -253,7 +253,7 @@ scenario removing-from-duplex-list [
     11:char/raw <- first list2
     list2 <- next list2
     12:char/raw <- first list2
-    20:address:duplex-list:char/raw <- next list2
+    20:&:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
     40:bool/raw <- equal list, list2
@@ -271,16 +271,16 @@ scenario removing-from-duplex-list [
 scenario removing-from-start-of-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- remove list, list
     # check structure like before
-    list2:address:duplex-list:char <- copy list
+    list2:&:duplex-list:char <- copy list
     10:char/raw <- first list2
     list2 <- next list2
     11:char/raw <- first list2
-    20:address:duplex-list:char/raw <- next list2
+    20:&:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
     40:bool/raw <- equal list, list2
@@ -297,11 +297,11 @@ scenario removing-from-start-of-duplex-list [
 scenario removing-from-end-of-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     # delete last element
-    list2:address:duplex-list:char <- next list
+    list2:&:duplex-list:char <- next list
     list2 <- next list2
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
@@ -310,7 +310,7 @@ scenario removing-from-end-of-duplex-list [
     11:char/raw <- first list2
     list2 <- next list2
     12:char/raw <- first list2
-    20:address:duplex-list:char/raw <- next list2
+    20:&:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
     40:bool/raw <- equal list, list2
@@ -328,7 +328,7 @@ scenario removing-from-end-of-duplex-list [
 scenario removing-from-singleton-duplex-list [
   run [
     local-scope
-    list:address:duplex-list:char <- push 3, 0
+    list:&:duplex-list:char <- push 3, 0
     list <- remove list, list
     1:num/raw <- copy list
   ]
@@ -342,10 +342,10 @@ scenario removing-from-singleton-duplex-list [
 # set end to 0 to delete everything past start.
 # can't set start to 0 to delete everything before end, because there's no
 # clean way to return the new head pointer.
-def remove-between start:address:duplex-list:_elem, end:address:duplex-list:_elem/contained-in:start -> start:address:duplex-list:_elem [
+def remove-between start:&:duplex-list:_elem, end:&:duplex-list:_elem/contained-in:start -> start:&:duplex-list:_elem [
   local-scope
   load-ingredients
-  next:address:duplex-list:_elem <- get *start, next:offset
+  next:&:duplex-list:_elem <- get *start, next:offset
   nothing-to-delete?:bool <- equal next, end
   return-if nothing-to-delete?
   assert next, [malformed duplex list]
@@ -356,7 +356,7 @@ def remove-between start:address:duplex-list:_elem, end:address:duplex-list:_ele
   return-unless end
   # end->prev->next = 0
   # end->prev = start
-  prev:address:duplex-list:_elem <- get *end, prev:offset
+  prev:&:duplex-list:_elem <- get *end, prev:offset
   assert prev, [malformed duplex list - 2]
   *prev <- put *prev, next:offset, 0
   *end <- put *end, prev:offset, start
@@ -365,19 +365,19 @@ def remove-between start:address:duplex-list:_elem, end:address:duplex-list:_ele
 scenario remove-range [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
   local-scope
-  list:address:duplex-list:char <- push 18, 0
+  list:&:duplex-list:char <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:address:duplex-list:char/raw <- copy list  # save list
+  1:&:duplex-list:char/raw <- copy list  # save list
   run [
     local-scope
-    list:address:duplex-list:char <- copy 1:address:duplex-list:char/raw  # restore list
+    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete 16 onwards
     # first pointer: to the third element
-    list2:address:duplex-list:char <- next list
+    list2:&:duplex-list:char <- next list
     list2 <- next list2
     list2 <- remove-between list2, 0
     # now check the list
@@ -386,7 +386,7 @@ scenario remove-range [
     11:char/raw <- get *list, value:offset
     list <- next list
     12:char/raw <- get *list, value:offset
-    20:address:duplex-list:char/raw <- next list
+    20:&:duplex-list:char/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
@@ -399,21 +399,21 @@ scenario remove-range [
 scenario remove-range-to-final [
   local-scope
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  list:address:duplex-list:char <- push 18, 0
+  list:&:duplex-list:char <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:address:duplex-list:char/raw <- copy list  # save list
+  1:&:duplex-list:char/raw <- copy list  # save list
   run [
     local-scope
-    list:address:duplex-list:char <- copy 1:address:duplex-list:char/raw  # restore list
+    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete 15, 16 and 17
     # start pointer: to the second element
-    list2:address:duplex-list:char <- next list
+    list2:&:duplex-list:char <- next list
     # end pointer: to the last (sixth) element
-    end:address:duplex-list:char <- next list2
+    end:&:duplex-list:char <- next list2
     end <- next end
     end <- next end
     end <- next end
@@ -424,7 +424,7 @@ scenario remove-range-to-final [
     11:char/raw <- get *list, value:offset
     list <- next list
     12:char/raw <- get *list, value:offset
-    20:address:duplex-list:char/raw <- next list
+    20:&:duplex-list:char/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
@@ -437,15 +437,15 @@ scenario remove-range-to-final [
 scenario remove-range-empty [
   local-scope
   # construct a duplex list with three elements [13, 14, 15]
-  list:address:duplex-list:char <- push 15, 0
+  list:&:duplex-list:char <- push 15, 0
   list <- push 14, list
   list <- push 13, list
-  1:address:duplex-list:char/raw <- copy list  # save list
+  1:&:duplex-list:char/raw <- copy list  # save list
   run [
     local-scope
-    list:address:duplex-list:char <- copy 1:address:duplex-list:char/raw  # restore list
+    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete between first and second element (i.e. nothing)
-    list2:address:duplex-list:char <- next list
+    list2:&:duplex-list:char <- next list
     remove-between list, list2
     # now check the list
     10:char/raw <- get *list, value:offset
@@ -453,7 +453,7 @@ scenario remove-range-empty [
     11:char/raw <- get *list, value:offset
     list <- next list
     12:char/raw <- get *list, value:offset
-    20:address:duplex-list:char/raw <- next list
+    20:&:duplex-list:char/raw <- next list
   ]
   # no change
   memory-should-contain [
@@ -467,24 +467,24 @@ scenario remove-range-empty [
 scenario remove-range-to-end [
   local-scope
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  list:address:duplex-list:char <- push 18, 0
+  list:&:duplex-list:char <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:address:duplex-list:char/raw <- copy list  # save list
+  1:&:duplex-list:char/raw <- copy list  # save list
   run [
     local-scope
-    list:address:duplex-list:char <- copy 1:address:duplex-list:char/raw  # restore list
+    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # remove the third element and beyond
-    list2:address:duplex-list:char <- next list
+    list2:&:duplex-list:char <- next list
     remove-between list2, 0
     # now check the list
     10:char/raw <- get *list, value:offset
     list <- next list
     11:char/raw <- get *list, value:offset
-    20:address:duplex-list:char/raw <- next list
+    20:&:duplex-list:char/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
@@ -494,19 +494,19 @@ scenario remove-range-to-end [
 ]
 
 # insert list beginning at 'new' after 'in'
-def insert-range in:address:duplex-list:_elem, start:address:duplex-list:_elem/contained-in:in -> in:address:duplex-list:_elem [
+def insert-range in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
   return-unless in
   return-unless start
-  end:address:duplex-list:_elem <- copy start
+  end:&:duplex-list:_elem <- copy start
   {
-    next:address:duplex-list:_elem <- next end/insert-range
+    next:&:duplex-list:_elem <- next end/insert-range
     break-unless next
     end <- copy next
     loop
   }
-  next:address:duplex-list:_elem <- next in
+  next:&:duplex-list:_elem <- next in
   *end <- put *end, next:offset, next
   {
     break-unless next
@@ -516,21 +516,21 @@ def insert-range in:address:duplex-list:_elem, start:address:duplex-list:_elem/c
   *start <- put *start, prev:offset, in
 ]
 
-def append in:address:duplex-list:_elem, new:address:duplex-list:_elem/contained-in:in -> in:address:duplex-list:_elem [
+def append in:&:duplex-list:_elem, new:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
-  last:address:duplex-list:_elem <- last in
+  last:&:duplex-list:_elem <- last in
   *last <- put *last, next:offset, new
   return-unless new
   *new <- put *new, prev:offset, last
 ]
 
-def last in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
+def last in:&:duplex-list:_elem -> result:&:duplex-list:_elem [
   local-scope
   load-ingredients
   result <- copy in
   {
-    next:address:duplex-list:_elem <- next result
+    next:&:duplex-list:_elem <- next result
     break-unless next
     result <- copy next
     loop
@@ -538,7 +538,7 @@ def last in:address:duplex-list:_elem -> result:address:duplex-list:_elem [
 ]
 
 # helper for debugging
-def dump-from x:address:duplex-list:_elem [
+def dump-from x:&:duplex-list:_elem [
   local-scope
   load-ingredients
   $print x, [: ]

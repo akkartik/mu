@@ -22,28 +22,28 @@ container resize-event [
 
 container console [
   current-event-index:num
-  events:address:array:event
+  events:&:array:event
 ]
 
-def new-fake-console events:address:array:event -> result:address:console [
+def new-fake-console events:&:array:event -> result:&:console [
   local-scope
   load-ingredients
-  result:address:console <- new console:type
+  result:&:console <- new console:type
   *result <- put *result, events:offset, events
 ]
 
-def read-event console:address:console -> result:event, console:address:console, found?:bool, quit?:bool [
+def read-event console:&:console -> result:event, console:&:console, found?:bool, quit?:bool [
   local-scope
   load-ingredients
   {
     break-unless console
     current-event-index:num <- get *console, current-event-index:offset
-    buf:address:array:event <- get *console, events:offset
+    buf:&:array:event <- get *console, events:offset
     {
       max:num <- length *buf
       done?:bool <- greater-or-equal current-event-index, max
       break-unless done?
-      dummy:address:event <- new event:type
+      dummy:&:event <- new event:type
       return *dummy, console/same-as-ingredient:0, 1/found, 1/quit
     }
     result <- index *buf, current-event-index
@@ -59,7 +59,7 @@ def read-event console:address:console -> result:event, console:address:console,
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-def read-key console:address:console -> result:char, console:address:console, found?:bool, quit?:bool [
+def read-key console:&:console -> result:char, console:&:console, found?:bool, quit?:bool [
   local-scope
   load-ingredients
   x:event, console, found?:bool, quit?:bool <- read-event console
@@ -70,7 +70,7 @@ def read-key console:address:console -> result:char, console:address:console, fo
   return c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-def send-keys-to-channel console:address:console, chan:address:sink:char, screen:address:screen -> console:address:console, chan:address:sink:char, screen:address:screen [
+def send-keys-to-channel console:&:console, chan:&:sink:char, screen:&:screen -> console:&:console, chan:&:sink:char, screen:&:screen [
   local-scope
   load-ingredients
   {
@@ -85,7 +85,7 @@ def send-keys-to-channel console:address:console, chan:address:sink:char, screen
   chan <- close chan
 ]
 
-def wait-for-event console:address:console -> console:address:console [
+def wait-for-event console:&:console -> console:&:console [
   local-scope
   load-ingredients
   {
@@ -95,7 +95,7 @@ def wait-for-event console:address:console -> console:address:console [
 ]
 
 # use this helper to skip rendering if there's lots of other events queued up
-def has-more-events? console:address:console -> result:bool [
+def has-more-events? console:&:console -> result:bool [
   local-scope
   load-ingredients
   {

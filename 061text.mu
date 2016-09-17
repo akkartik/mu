@@ -102,7 +102,7 @@ container buffer [
   data:text
 ]
 
-def new-buffer capacity:num -> result:address:buffer [
+def new-buffer capacity:num -> result:&:buffer [
   local-scope
   load-ingredients
   result <- new buffer:type
@@ -117,7 +117,7 @@ def new-buffer capacity:num -> result:address:buffer [
   return result
 ]
 
-def grow-buffer buf:address:buffer -> buf:address:buffer [
+def grow-buffer buf:&:buffer -> buf:&:buffer [
   local-scope
   load-ingredients
   # double buffer size
@@ -138,7 +138,7 @@ def grow-buffer buf:address:buffer -> buf:address:buffer [
   }
 ]
 
-def buffer-full? in:address:buffer -> result:bool [
+def buffer-full? in:&:buffer -> result:bool [
   local-scope
   load-ingredients
   len:num <- get *in, length:offset
@@ -148,7 +148,7 @@ def buffer-full? in:address:buffer -> result:bool [
 ]
 
 # most broadly applicable definition of append to a buffer: just call to-text
-def append buf:address:buffer, x:_elem -> buf:address:buffer [
+def append buf:&:buffer, x:_elem -> buf:&:buffer [
   local-scope
   load-ingredients
   text:text <- to-text x
@@ -164,7 +164,7 @@ def append buf:address:buffer, x:_elem -> buf:address:buffer [
   }
 ]
 
-def append buf:address:buffer, c:char -> buf:address:buffer [
+def append buf:&:buffer, c:char -> buf:&:buffer [
   local-scope
   load-ingredients
   len:num <- get *buf, length:offset
@@ -190,7 +190,7 @@ def append buf:address:buffer, c:char -> buf:address:buffer [
   *buf <- put *buf, length:offset, len
 ]
 
-def append buf:address:buffer, t:text -> buf:address:buffer [
+def append buf:&:buffer, t:text -> buf:&:buffer [
   local-scope
   load-ingredients
   len:num <- length *t
@@ -208,7 +208,7 @@ def append buf:address:buffer, t:text -> buf:address:buffer [
 scenario buffer-append-works [
   run [
     local-scope
-    x:address:buffer <- new-buffer 3
+    x:&:buffer <- new-buffer 3
     s1:text <- get *x, data:offset
     c:char <- copy 97/a
     x <- append x, c
@@ -250,7 +250,7 @@ scenario buffer-append-works [
 scenario buffer-append-to-empty [
   run [
     local-scope
-    x:address:buffer <- new-buffer
+    x:&:buffer <- new-buffer
     c:char <- copy 97/a
     x <- append x, c
   ]
@@ -259,7 +259,7 @@ scenario buffer-append-to-empty [
 scenario buffer-append-handles-backspace [
   run [
     local-scope
-    x:address:buffer <- new-buffer 3
+    x:&:buffer <- new-buffer 3
     c:char <- copy 97/a
     x <- append x, c
     c:char <- copy 98/b
@@ -276,7 +276,7 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-def buffer-to-array in:address:buffer -> result:text [
+def buffer-to-array in:&:buffer -> result:text [
   local-scope
   load-ingredients
   {
@@ -310,7 +310,7 @@ def buffer-to-array in:address:buffer -> result:text [
 def append first:text -> result:text [
   local-scope
   load-ingredients
-  buf:address:buffer <- new-buffer 30
+  buf:&:buffer <- new-buffer 30
   # append first ingredient
   {
     break-unless first
@@ -1061,7 +1061,7 @@ scenario match-at-inside-bounds-2 [
   ]
 ]
 
-def split s:text, delim:char -> result:address:array:text [
+def split s:text, delim:char -> result:&:array:text [
   local-scope
   load-ingredients
   # empty text? return empty array
@@ -1107,7 +1107,7 @@ scenario text-split-1 [
   run [
     local-scope
     x:text <- new [a/b]
-    y:address:array:text <- split x, 47/slash
+    y:&:array:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
@@ -1125,7 +1125,7 @@ scenario text-split-2 [
   run [
     local-scope
     x:text <- new [a/b/c]
-    y:address:array:text <- split x, 47/slash
+    y:&:array:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
@@ -1146,7 +1146,7 @@ scenario text-split-missing [
   run [
     local-scope
     x:text <- new [abc]
-    y:address:array:text <- split x, 47/slash
+    y:&:array:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     20:array:char/raw <- copy *a
@@ -1161,7 +1161,7 @@ scenario text-split-empty [
   run [
     local-scope
     x:text <- new []
-    y:address:array:text <- split x, 47/slash
+    y:&:array:text <- split x, 47/slash
     10:num/raw <- length *y
   ]
   memory-should-contain [
@@ -1173,7 +1173,7 @@ scenario text-split-empty-piece [
   run [
     local-scope
     x:text <- new [a/b//c]
-    y:address:array:text <- split x:text, 47/slash
+    y:&:array:text <- split x:text, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1

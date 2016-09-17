@@ -105,7 +105,7 @@ bool run_interactive(int address) {
   // call run(string) but without the scheduling
   load(string("recipe! interactive [\n") +
           "new-default-space\n" +  // disable automatic abandon so tests can see changes
-          "screen:address:screen <- next-ingredient\n" +
+          "screen:&:screen <- next-ingredient\n" +
           "$start-tracking-products\n" +
           command + "\n" +
           "$stop-tracking-products\n" +
@@ -194,7 +194,7 @@ load(string(
 "]\n" +
 "recipe sandbox [\n" +
   "local-scope\n" +
-  "screen:address:screen <- new-fake-screen 30, 5\n" +
+  "screen:&:screen <- new-fake-screen 30, 5\n" +
   "routine-id:num <- start-running interactive, screen\n" +
   "limit-time routine-id, 100000/instructions\n" +
   "wait-for-routine routine-id\n" +
@@ -352,7 +352,7 @@ get x:num, foo:offset]
 :(scenario run_interactive_with_comment)
 def main [
   # 2 instructions, with a comment after the first
-  1:address:array:num <- new [a:num <- copy 0  # abc
+  1:&:array:num <- new [a:num <- copy 0  # abc
 b:num <- copy 0
 ]
   2:text, 3:text <- run-sandboxed 1:text

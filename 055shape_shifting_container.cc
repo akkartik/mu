@@ -252,8 +252,8 @@ container foo:_t [
   y:num
 ]
 def main [
-  1:foo:address:point <- merge 34/unsafe, 48
-  3:address:point <- get 1:foo:address:point, x:offset
+  1:foo:&:point <- merge 34/unsafe, 48
+  3:&:point <- get 1:foo:&:point, x:offset
 ]
 +mem: storing 34 in location 3
 
@@ -449,7 +449,7 @@ void test_replace_middle_type_ingredient_with_multiple2() {
 
 void test_replace_middle_type_ingredient_with_multiple3() {
   run("container foo_table:_key:_value [\n"
-      "  data:address:array:foo_table_row:_key:_value\n"
+      "  data:&:array:foo_table_row:_key:_value\n"
       "]\n"
       "\n"
       "container foo_table_row:_key:_value [\n"
@@ -528,7 +528,7 @@ void test_container_sizes_compound_type_ingredient() {
       "  x:num\n"
       "  y:_t\n"
       "]\n");
-  reagent r("x:foo:address:point");
+  reagent r("x:foo:&:point");
   compute_container_sizes(r);
   CHECK_EQ(r.metadata.size, 2);
   // scan also pre-computes metadata for type ingredient
@@ -540,7 +540,7 @@ void test_container_sizes_compound_type_ingredient() {
 void test_container_sizes_recursive_shape_shifting_container() {
   run("container foo:_t [\n"
       "  x:num\n"
-      "  y:address:foo:_t\n"
+      "  y:&:foo:_t\n"
       "]\n");
   reagent r2("x:foo:num");
   compute_container_sizes(r2);
@@ -565,7 +565,7 @@ void test_container_address_offsets_in_shape_shifting_container() {
       "  x:num\n"
       "  y:_t\n"
       "]\n");
-  reagent r("x:foo:address:num");
+  reagent r("x:foo:&:num");
   compute_container_sizes(r);
   compute_container_address_offsets(r);
   CHECK_EQ(SIZE(r.metadata.address), 1);
@@ -586,7 +586,7 @@ void test_container_address_offsets_in_nested_shape_shifting_container() {
       "  x:_t\n"
       "  y:foo:_t\n"
       "]\n");
-  reagent r("x:bar:address:num");
+  reagent r("x:bar:&:num");
   CLEAR_TRACE;
   compute_container_sizes(r);
   compute_container_address_offsets(r);

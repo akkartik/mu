@@ -13,7 +13,7 @@
 scenario channel [
   run [
     local-scope
-    source:address:source:num, sink:address:sink:num <- new-channel 3/capacity
+    source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
     sink <- write sink, 34
     10:num/raw, 11:bool/raw, source <- read source
   ]
@@ -30,28 +30,28 @@ container channel:_elem [
   # A circular buffer contains values from index first-full up to (but not
   # including) index first-empty. The reader always modifies it at first-full,
   # while the writer always modifies it at first-empty.
-  data:address:array:_elem
+  data:&:array:_elem
 ]
 
 # Since channels have two ends, and since it's an error to use either end from
 # multiple routines, let's distinguish the ends.
 
 container source:_elem [
-  chan:address:channel:_elem
+  chan:&:channel:_elem
 ]
 
 container sink:_elem [
-  chan:address:channel:_elem
+  chan:&:channel:_elem
 ]
 
-def new-channel capacity:num -> in:address:source:_elem, out:address:sink:_elem [
+def new-channel capacity:num -> in:&:source:_elem, out:&:sink:_elem [
   local-scope
   load-ingredients
-  result:address:channel:_elem <- new {(channel _elem): type}
+  result:&:channel:_elem <- new {(channel _elem): type}
   *result <- put *result, first-full:offset, 0
   *result <- put *result, first-free:offset, 0
   capacity <- add capacity, 1  # unused slot for 'full?' below
-  data:address:array:_elem <- new _elem:type, capacity
+  data:&:array:_elem <- new _elem:type, capacity
   *result <- put *result, data:offset, data
   in <- new {(source _elem): type}
   *in <- put *in, chan:offset, result
@@ -59,11 +59,11 @@ def new-channel capacity:num -> in:address:source:_elem, out:address:sink:_elem 
   *out <- put *out, chan:offset, result
 ]
 
-def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
+def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   local-scope
   load-ingredients
   assert out, [write to null channel]
-  chan:address:channel:_elem <- get *out, chan:offset
+  chan:&:channel:_elem <- get *out, chan:offset
   <channel-write-initial>
   # block until lock is acquired AND queue has room
   lock:location <- get-location *chan, lock:offset
@@ -85,7 +85,7 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   current-routine-is-unblocked
 #?   $print [performing write], 10/newline
   # store a deep copy of val
-  circular-buffer:address:array:_elem <- get *chan, data:offset
+  circular-buffer:&:array:_elem <- get *chan, data:offset
   free:num <- get *chan, first-free:offset
   val-copy:_elem <- deep-copy val  # on this instruction rests all Mu's concurrency-safety
   *circular-buffer <- put-index *circular-buffer, free, val-copy
@@ -104,12 +104,12 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   reset lock
 ]
 
-def read in:address:source:_elem -> result:_elem, eof?:bool, in:address:source:_elem [
+def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   local-scope
   load-ingredients
   assert in, [read on null channel]
   eof? <- copy 0/false  # default result
-  chan:address:channel:_elem <- get *in, chan:offset
+  chan:&:channel:_elem <- get *in, chan:offset
   # block until lock is acquired AND queue has data
   lock:location <- get-location *chan, lock:offset
 #?   $print [read], 10/newline
@@ -131,10 +131,10 @@ def read in:address:source:_elem -> result:_elem, eof?:bool, in:address:source:_
   current-routine-is-unblocked
   # pull result off
   full:num <- get *chan, first-full:offset
-  circular-buffer:address:array:_elem <- get *chan, data:offset
+  circular-buffer:&:array:_elem <- get *chan, data:offset
   result <- index *circular-buffer, full
   # clear the slot
-  empty:address:_elem <- new _elem:type
+  empty:&:_elem <- new _elem:type
   *circular-buffer <- put-index *circular-buffer, full, *empty
   # mark its slot as empty
   full <- add full, 1
@@ -151,10 +151,10 @@ def read in:address:source:_elem -> result:_elem, eof?:bool, in:address:source:_
   reset lock
 ]
 
-def clear in:address:source:_elem -> in:address:source:_elem [
+def clear in:&:source:_elem -> in:&:source:_elem [
   local-scope
   load-ingredients
-  chan:address:channel:_elem <- get *in, chan:offset
+  chan:&:channel:_elem <- get *in, chan:offset
   {
     empty?:bool <- channel-empty? chan
     break-if empty?
@@ -165,8 +165,8 @@ def clear in:address:source:_elem -> in:address:source:_elem [
 scenario channel-initialization [
   run [
     local-scope
-    source:address:source:num <- new-channel 3/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num <- new-channel 3/capacity
+    chan:&:channel:num <- get *source, chan:offset
     10:num/raw <- get *chan, first-full:offset
     11:num/raw <- get *chan, first-free:offset
   ]
@@ -179,9 +179,9 @@ scenario channel-initialization [
 scenario channel-write-increments-free [
   run [
     local-scope
-    _, sink:address:sink:num <- new-channel 3/capacity
+    _, sink:&:sink:num <- new-channel 3/capacity
     sink <- write sink, 34
-    chan:address:channel:num <- get *sink, chan:offset
+    chan:&:channel:num <- get *sink, chan:offset
     10:num/raw <- get *chan, first-full:offset
     11:num/raw <- get *chan, first-free:offset
   ]
@@ -194,10 +194,10 @@ scenario channel-write-increments-free [
 scenario channel-read-increments-full [
   run [
     local-scope
-    source:address:source:num, sink:address:sink:num <- new-channel 3/capacity
+    source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
     sink <- write sink, 34
     _, _, source <- read source
-    chan:address:channel:num <- get *source, chan:offset
+    chan:&:channel:num <- get *source, chan:offset
     10:num/raw <- get *chan, first-full:offset
     11:num/raw <- get *chan, first-free:offset
   ]
@@ -211,8 +211,8 @@ scenario channel-wrap [
   run [
     local-scope
     # channel with just 1 slot
-    source:address:source:num, sink:address:sink:num <- new-channel 1/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+    chan:&:channel:num <- get *source, chan:offset
     # write and read a value
     sink <- write sink, 34
     _, _, source <- read source
@@ -237,8 +237,8 @@ scenario channel-wrap [
 scenario channel-new-empty-not-full [
   run [
     local-scope
-    source:address:source:num <- new-channel 3/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num <- new-channel 3/capacity
+    chan:&:channel:num <- get *source, chan:offset
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan
   ]
@@ -250,8 +250,8 @@ scenario channel-new-empty-not-full [
 
 scenario channel-write-not-empty [
   run [
-    source:address:source:num, sink:address:sink:num <- new-channel 3/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
+    chan:&:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan
@@ -265,8 +265,8 @@ scenario channel-write-not-empty [
 scenario channel-write-full [
   run [
     local-scope
-    source:address:source:num, sink:address:sink:num <- new-channel 1/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+    chan:&:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan
@@ -280,8 +280,8 @@ scenario channel-write-full [
 scenario channel-read-not-full [
   run [
     local-scope
-    source:address:source:num, sink:address:sink:num <- new-channel 1/capacity
-    chan:address:channel:num <- get *source, chan:offset
+    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+    chan:&:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     _, _, source <- read source
     10:bool/raw <- channel-empty? chan
@@ -303,16 +303,16 @@ container channel:_elem [
 
 # a channel can be closed from either the source or the sink
 # both routines can modify the 'closed?' bit, but they can only ever set it, so this is a benign race
-def close x:address:source:_elem -> x:address:source:_elem [
+def close x:&:source:_elem -> x:&:source:_elem [
   local-scope
   load-ingredients
-  chan:address:channel:_elem <- get *x, chan:offset
+  chan:&:channel:_elem <- get *x, chan:offset
   *chan <- put *chan, closed?:offset, 1/true
 ]
-def close x:address:sink:_elem -> x:address:sink:_elem [
+def close x:&:sink:_elem -> x:&:sink:_elem [
   local-scope
   load-ingredients
-  chan:address:channel:_elem <- get *x, chan:offset
+  chan:&:channel:_elem <- get *x, chan:offset
   *chan <- put *chan, closed?:offset, 1/true
 ]
 
@@ -330,7 +330,7 @@ after <channel-read-empty> [
   closed?:boolean <- get *chan, closed?:offset
   {
     break-unless closed?
-    empty-result:address:_elem <- new _elem:type
+    empty-result:&:_elem <- new _elem:type
     current-routine-is-unblocked
     return *empty-result, 1/true
   }
@@ -339,7 +339,7 @@ after <channel-read-empty> [
 ## helpers
 
 # An empty channel has first-empty and first-full both at the same value.
-def channel-empty? chan:address:channel:_elem -> result:bool [
+def channel-empty? chan:&:channel:_elem -> result:bool [
   local-scope
   load-ingredients
   # return chan.first-full == chan.first-free
@@ -350,7 +350,7 @@ def channel-empty? chan:address:channel:_elem -> result:bool [
 
 # A full channel has first-empty just before first-full, wasting one slot.
 # (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-def channel-full? chan:address:channel:_elem -> result:bool [
+def channel-full? chan:&:channel:_elem -> result:bool [
   local-scope
   load-ingredients
   # tmp = chan.first-free + 1
@@ -368,21 +368,21 @@ def channel-full? chan:address:channel:_elem -> result:bool [
   result <- equal full, tmp
 ]
 
-def capacity chan:address:channel:_elem -> result:num [
+def capacity chan:&:channel:_elem -> result:num [
   local-scope
   load-ingredients
-  q:address:array:_elem <- get *chan, data:offset
+  q:&:array:_elem <- get *chan, data:offset
   result <- length *q
 ]
 
 # helper for channels of characters in particular
-def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffered-out:address:sink:char, in:address:source:char [
+def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:sink:char, in:&:source:char [
   local-scope
   load-ingredients
   # repeat forever
   eof?:bool <- copy 0/false
   {
-    line:address:buffer <- new-buffer 30
+    line:&:buffer <- new-buffer 30
     # read characters from 'in' until newline, copy into line
     {
       +next-character
@@ -434,9 +434,9 @@ def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffe
 scenario buffer-lines-blocks-until-newline [
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 10/capacity
-    _, buffered-stdin:address:sink:char/buffered-stdin <- new-channel 10/capacity
-    buffered-chan:address:channel:char <- get *buffered-stdin, chan:offset
+    source:&:source:char, sink:&:sink:char <- new-channel 10/capacity
+    _, buffered-stdin:&:sink:char/buffered-stdin <- new-channel 10/capacity
+    buffered-chan:&:channel:char <- get *buffered-stdin, chan:offset
     empty?:bool <- channel-empty? buffered-chan
     assert empty?, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]

@@ -20,11 +20,11 @@ $error: 0
 :(scenario can_modify_ingredients_that_are_also_products_2)
 def main [
   local-scope
-  p:address:point <- new point:type
+  p:&:point <- new point:type
   p <- foo p
 ]
 # mutable address to container
-def foo p:address:point -> p:address:point [
+def foo p:&:point -> p:&:point [
   local-scope
   load-ingredients
   *p <- put *p, x:offset, 34
@@ -34,11 +34,11 @@ $error: 0
 :(scenario can_modify_ingredients_that_are_also_products_3)
 def main [
   local-scope
-  p:address:array:num <- new number:type, 3
+  p:&:array:num <- new number:type, 3
   p <- foo p
 ]
 # mutable address
-def foo p:address:array:num -> p:address:array:num [
+def foo p:&:array:num -> p:&:array:num [
   local-scope
   load-ingredients
   *p <- put-index *p, 0, 34
@@ -48,13 +48,13 @@ $error: 0
 :(scenario ignore_literal_ingredients_for_immutability_checks)
 def main [
   local-scope
-  p:address:d1 <- new d1:type
+  p:&:d1 <- new d1:type
   q:num <- foo p
 ]
-def foo p:address:d1 -> q:num [
+def foo p:&:d1 -> q:num [
   local-scope
   load-ingredients
-  x:address:d1 <- new d1:type
+  x:&:d1 <- new d1:type
   *x <- put *x, p:offset, 34  # ignore this 'p'
   reply 36
 ]
@@ -68,11 +68,11 @@ $error: 0
 % Hide_errors = true;
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   foo x
 ]
 # immutable address to primitive
-def foo x:address:num [
+def foo x:&:num [
   local-scope
   load-ingredients
   *x <- copy 34
@@ -102,10 +102,10 @@ def foo x:point-number [
 :(scenario can_modify_immutable_pointers)
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   foo x
 ]
-def foo x:address:num [
+def foo x:&:num [
   local-scope
   load-ingredients
   # modify the address, not the payload
@@ -117,10 +117,10 @@ $error: 0
 % Hide_errors = true;
 def main [
   local-scope
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   foo x
 ]
-def foo x:address:num [
+def foo x:&:num [
   local-scope
   load-ingredients
   # modify address; ok
@@ -135,15 +135,15 @@ def foo x:address:num [
 % Hide_errors = true;
 def main [
   local-scope
-  p:address:point <- new point:type
+  p:&:point <- new point:type
   foo p
 ]
-def foo p:address:point [
+def foo p:&:point [
   local-scope
   load-ingredients
   bar p
 ]
-def bar p:address:point -> p:address:point [
+def bar p:&:point -> p:&:point [
   local-scope
   load-ingredients
   # p could be modified here, but it doesn't have to be, it's already marked
@@ -155,13 +155,13 @@ def bar p:address:point -> p:address:point [
 % Hide_errors = true;
 def main [
   local-scope
-  p:address:point <- new point:type
+  p:&:point <- new point:type
   foo p
 ]
-def foo p:address:point [
+def foo p:&:point [
   local-scope
   load-ingredients
-  q:address:point <- copy p
+  q:&:point <- copy p
   *q <- put *q, x:offset, 34
 ]
 +error: foo: cannot modify 'q' in instruction '*q <- put *q, x:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product
@@ -169,13 +169,13 @@ def foo p:address:point [
 :(scenario can_modify_copies_of_mutable_ingredients)
 def main [
   local-scope
-  p:address:point <- new point:type
+  p:&:point <- new point:type
   foo p
 ]
-def foo p:address:point -> p:address:point [
+def foo p:&:point -> p:&:point [
   local-scope
   load-ingredients
-  q:address:point <- copy p
+  q:&:point <- copy p
   *q <- put *q, x:offset, 34
 ]
 $error: 0
@@ -183,32 +183,32 @@ $error: 0
 :(scenario cannot_modify_address_inside_immutable_ingredients)
 % Hide_errors = true;
 container foo [
-  x:address:array:num  # contains an address
+  x:&:array:num  # contains an address
 ]
 def main [
   # don't run anything
 ]
-def foo a:address:foo [
+def foo a:&:foo [
   local-scope
   load-ingredients
-  x:address:array:num <- get *a, x:offset  # just a regular get of the container
+  x:&:array:num <- get *a, x:offset  # just a regular get of the container
   *x <- put-index *x, 0, 34  # but then a put-index on the result
 ]
 +error: foo: cannot modify 'x' in instruction '*x <- put-index *x, 0, 34' because that would modify a which is an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_2)
 container foo [
-  x:address:array:num  # contains an address
+  x:&:array:num  # contains an address
 ]
 def main [
   # don't run anything
 ]
-def foo a:address:foo [
+def foo a:&:foo [
   local-scope
   load-ingredients
   b:foo <- merge 0
   # modify b, completely unrelated to immutable ingredient a
-  x:address:array:num <- get b, x:offset
+  x:&:array:num <- get b, x:offset
   *x <- put-index *x, 0, 34
 ]
 $error: 0
@@ -221,46 +221,46 @@ container foo [
 def main [
   # don't run anything
 ]
-def foo a:address:array:address:num [
+def foo a:&:array:&:num [
   local-scope
   load-ingredients
-  x:address:num <- index *a, 0  # just a regular index of the array
+  x:&:num <- index *a, 0  # just a regular index of the array
   *x <- copy 34  # but then modify the result
 ]
 +error: foo: cannot modify 'x' in instruction '*x <- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_4)
 container foo [
-  x:address:array:num  # contains an address
+  x:&:array:num  # contains an address
 ]
 def main [
   # don't run anything
 ]
-def foo a:address:array:address:num [
+def foo a:&:array:&:num [
   local-scope
   load-ingredients
-  b:address:array:address:num <- new {(address number): type}, 3
+  b:&:array:&:num <- new {(address number): type}, 3
   # modify b, completely unrelated to immutable ingredient a
-  x:address:num <- index *b, 0
+  x:&:num <- index *b, 0
   *x <- copy 34
 ]
 $error: 0
 
 :(scenario can_traverse_immutable_ingredients)
 container test-list [
-  next:address:test-list
+  next:&:test-list
 ]
 def main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:&:test-list <- new test-list:type
   foo p
 ]
-def foo p:address:test-list [
+def foo p:&:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list <- bar p
+  p2:&:test-list <- bar p
 ]
-def bar x:address:test-list -> y:address:test-list [
+def bar x:&:test-list -> y:&:test-list [
   local-scope
   load-ingredients
   y <- get *x, next:offset
@@ -269,11 +269,11 @@ $error: 0
 
 :(scenario treat_optional_ingredients_as_mutable)
 def main [
-  k:address:num <- new number:type
+  k:&:num <- new number:type
   test k
 ]
 # recipe taking an immutable address ingredient
-def test k:address:num [
+def test k:&:num [
   local-scope
   load-ingredients
   foo k
@@ -282,7 +282,7 @@ def test k:address:num [
 def foo -> [
   local-scope
   load-ingredients
-  k:address:num, found?:bool <- next-ingredient
+  k:&:num, found?:bool <- next-ingredient
   # we don't further check k for immutability, but assume it's mutable
 ]
 $error: 0
@@ -291,10 +291,10 @@ $error: 0
 % Hide_errors = true;
 def main [
   local-scope
-  p:address:point <- new point:type
+  p:&:point <- new point:type
   foo p
 ]
-def foo p:address:point [
+def foo p:&:point [
   local-scope
   load-ingredients
   bar p
@@ -302,28 +302,28 @@ def foo p:address:point [
 def bar [
   local-scope
   load-ingredients
-  p:address:point <- next-ingredient  # optional ingredient; assumed to be mutable
+  p:&:point <- next-ingredient  # optional ingredient; assumed to be mutable
 ]
 +error: foo: cannot modify 'p' in instruction 'bar p' because it's an ingredient of recipe foo but not also a product
 
 //: when checking for immutable ingredients, remember to take space into account
 :(scenario check_space_of_reagents_in_immutability_checks)
 def main [
-  a:address:array:location <- new-closure
-  b:address:num <- new number:type
-  run-closure b:address:num, a:address:array:location
+  a:&:array:location <- new-closure
+  b:&:num <- new number:type
+  run-closure b:&:num, a:&:array:location
 ]
 def new-closure [
   new-default-space
-  x:address:num <- new number:type
+  x:&:num <- new number:type
   return default-space
 ]
-def run-closure x:address:num, s:address:array:location [
+def run-closure x:&:num, s:&:array:location [
   local-scope
   load-ingredients
-  0:address:array:location/names:new-closure <- copy s
+  0:&:array:location/names:new-closure <- copy s
   # different space; always mutable
-  *x:address:num/space:1 <- copy 34
+  *x:&:num/space:1 <- copy 34
 ]
 $error: 0
 
@@ -407,20 +407,20 @@ set<int> scan_contained_in_product_indices(const instruction& inst, set<int>& in
 % Hide_errors = true;
 container test-list [
   value:num
-  next:address:test-list
+  next:&:test-list
 ]
 def main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:&:test-list <- new test-list:type
   foo p
 ]
-def foo p:address:test-list [  # p is immutable
+def foo p:&:test-list [  # p is immutable
   local-scope
   load-ingredients
-  p2:address:test-list <- test-next p  # p2 is immutable
+  p2:&:test-list <- test-next p  # p2 is immutable
   *p2 <- put *p2, value:offset, 34
 ]
-def test-next x:address:test-list -> y:address:test-list/contained-in:x [
+def test-next x:&:test-list -> y:&:test-list/contained-in:x [
   local-scope
   load-ingredients
   y <- get *x, next:offset
@@ -527,25 +527,25 @@ set<int> ingredient_indices(const instruction& inst, const set<reagent>& ingredi
 :(scenario can_modify_contained_in_addresses)
 container test-list [
   value:num
-  next:address:test-list
+  next:&:test-list
 ]
 def main [
   local-scope
-  p:address:test-list <- new test-list:type
+  p:&:test-list <- new test-list:type
   foo p
 ]
-def foo p:address:test-list -> p:address:test-list [
+def foo p:&:test-list -> p:&:test-list [
   local-scope
   load-ingredients
-  p2:address:test-list <- test-next p
+  p2:&:test-list <- test-next p
   p <- test-remove p2, p
 ]
-def test-next x:address:test-list -> y:address:test-list [
+def test-next x:&:test-list -> y:&:test-list [
   local-scope
   load-ingredients
   y <- get *x, next:offset
 ]
-def test-remove x:address:test-list/contained-in:from, from:address:test-list -> from:address:test-list [
+def test-remove x:&:test-list/contained-in:from, from:&:test-list -> from:&:test-list [
   local-scope
   load-ingredients
   *x <- put *x, value:offset, 34  # can modify x

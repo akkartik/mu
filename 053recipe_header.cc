@@ -272,7 +272,7 @@ void check_calls_against_header(const recipe_ordinal r) {
 def add2 x:num, y:num -> z:num [
   local-scope
   load-ingredients
-  z:address:num <- copy 0/unsafe
+  z:&:num <- copy 0/unsafe
   return z
 ]
 +error: add2: replied with the wrong type at 'return z'
@@ -304,7 +304,7 @@ void check_reply_instructions_against_header(const recipe_ordinal r) {
 def add2 x:num, y:num [
   local-scope
   load-ingredients
-  z:address:num <- copy 0/unsafe
+  z:&:num <- copy 0/unsafe
   return z
 ]
 +error: add2: replied with the wrong number of products at 'return z'

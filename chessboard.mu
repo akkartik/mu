@@ -29,7 +29,7 @@ scenario print-board-and-read-move [
   ]
   run [
     local-scope
-    screen:address:screen, console:address:console <- chessboard screen:address:screen, console:address:console
+    screen:&:screen, console:&:console <- chessboard screen:&:screen, console:&:console
     # icon for the cursor
     cursor-icon:char <- copy 9251/␣
     screen <- print screen, cursor-icon
@@ -62,17 +62,17 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-type board = address:array:address:array:char
+type board = address:array:&:array:char
 
-def chessboard screen:address:screen, console:address:console -> screen:address:screen, console:address:console [
+def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:console [
   local-scope
   load-ingredients
   board:board <- initial-position
   # hook up stdin
-  stdin-in:address:source:char, stdin-out:address:sink:char <- new-channel 10/capacity
+  stdin-in:&:source:char, stdin-out:&:sink:char <- new-channel 10/capacity
   start-running send-keys-to-channel, console, stdin-out, screen
   # buffer lines in stdin
-  buffered-stdin-in:address:source:char, buffered-stdin-out:address:sink:char <- new-channel 10/capacity
+  buffered-stdin-in:&:source:char, buffered-stdin-out:&:sink:char <- new-channel 10/capacity
   start-running buffer-lines, stdin-in, buffered-stdin-out
   {
     print screen, [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
@@ -88,7 +88,7 @@ def chessboard screen:address:screen, console:address:console -> screen:address:
     {
       cursor-to-next-line screen
       screen <- print screen, [move: ]
-      m:address:move, quit:boolean, error:boolean <- read-move buffered-stdin-in, screen
+      m:&:move, quit:boolean, error:boolean <- read-move buffered-stdin-in, screen
       break-if quit, +quit:label
       buffered-stdin-in <- clear buffered-stdin-in  # cleanup after error. todo: test this?
       loop-if error
@@ -102,7 +102,7 @@ def chessboard screen:address:screen, console:address:console -> screen:address:
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-def new-board initial-position:address:array:char -> board:board [
+def new-board initial-position:&:array:char -> board:board [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
@@ -115,14 +115,14 @@ def new-board initial-position:address:array:char -> board:board [
   {
     done?:boolean <- equal col, 8
     break-if done?
-    file:address:array:char <- new-file initial-position, col
+    file:&:array:char <- new-file initial-position, col
     *board <- put-index *board, col, file
     col <- add col, 1
     loop
   }
 ]
 
-def new-file position:address:array:char, index:num -> result:address:array:char [
+def new-file position:&:array:char, index:num -> result:&:array:char [
   local-scope
   load-ingredients
   index <- multiply index, 8
@@ -139,7 +139,7 @@ def new-file position:address:array:char, index:num -> result:address:array:char
   }
 ]
 
-def print-board screen:address:screen, board:board -> screen:address:screen [
+def print-board screen:&:screen, board:board -> screen:&:screen [
   local-scope
   load-ingredients
   row:num <- copy 7  # start printing from the top of the board
@@ -157,7 +157,7 @@ def print-board screen:address:screen, board:board -> screen:address:screen [
     {
       done?:boolean <- equal col:num, 8
       break-if done?:boolean
-      f:address:array:char <- index *board, col
+      f:&:array:char <- index *board, col
       c:char <- index *f, row
       print screen, c
       print screen, space
@@ -186,7 +186,7 @@ def initial-position -> board:board [
   #   B P _ _ _ _ p B
   #   N P _ _ _ _ p n
   #   R P _ _ _ _ p r
-  initial-position:address:array:char <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
+  initial-position:&:array:char <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
 #?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,
 #?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,
 #?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 
@@ -203,7 +203,7 @@ scenario printing-the-board [
   run [
     local-scope
     board:board <- initial-position
-    screen:address:screen <- print-board screen:address:screen, board
+    screen:&:screen <- print-board screen:&:screen, board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
@@ -233,14 +233,14 @@ container move [
 ]
 
 # prints only error messages to screen
-def read-move stdin:address:source:char, screen:address:screen -> result:address:move, quit?:boolean, error?:boolean, stdin:address:source:char, screen:address:screen [
+def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:boolean, error?:boolean, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
   from-file:num, quit?:boolean, error?:boolean <- read-file stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
   # construct the move object
-  result:address:move <- new move:type
+  result:&:move <- new move:type
   *result <- put *result, from-file:offset, from-file
   from-rank:num, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
@@ -261,7 +261,7 @@ def read-move stdin:address:source:char, screen:address:screen -> result:address
 ]
 
 # valid values for file: 0-7
-def read-file stdin:address:source:char, screen:address:screen -> file:num, quit:boolean, error:boolean, stdin:address:source:char, screen:address:screen [
+def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, error:boolean, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
   c:char, eof?:boolean, stdin <- read stdin
@@ -308,7 +308,7 @@ def read-file stdin:address:source:char, screen:address:screen -> file:num, quit
 ]
 
 # valid values for rank: 0-7
-def read-rank stdin:address:source:char, screen:address:screen -> rank:num, quit?:boolean, error?:boolean, stdin:address:source:char, screen:address:screen [
+def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:boolean, error?:boolean, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
   c:char, eof?:boolean, stdin <- read stdin
@@ -350,7 +350,7 @@ def read-rank stdin:address:source:char, screen:address:screen -> rank:num, quit
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-def expect-from-channel stdin:address:source:char, expected:char, screen:address:screen -> result:boolean, stdin:address:source:char, screen:address:screen [
+def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> result:boolean, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
   c:char, eof?:boolean, stdin <- read stdin
@@ -367,8 +367,8 @@ scenario read-move-blocking [
   assume-screen 20/width, 2/height
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:num/routine <- start-running read-move, source, screen:address:screen
+    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+    read-move-routine:num/routine <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -440,8 +440,8 @@ scenario read-move-quit [
   assume-screen 20/width, 2/height
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:address:screen
+    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -468,8 +468,8 @@ scenario read-move-illegal-file [
   assume-screen 20/width, 2/height
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:address:screen
+    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -490,8 +490,8 @@ scenario read-move-illegal-rank [
   assume-screen 20/width, 2/height
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:address:screen
+    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -513,8 +513,8 @@ scenario read-move-empty [
   assume-screen 20/width, 2/height
   run [
     local-scope
-    source:address:source:char, sink:address:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:address:screen
+    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -532,15 +532,15 @@ F read-move-empty: routine failed to pause after coming up (before any keys were
   ]
 ]
 
-def make-move board:board, m:address:move -> board:board [
+def make-move board:board, m:&:move -> board:board [
   local-scope
   load-ingredients
   from-file:num <- get *m, from-file:offset
   from-rank:num <- get *m, from-rank:offset
   to-file:num <- get *m, to-file:offset
   to-rank:num <- get *m, to-rank:offset
-  from-f:address:array:char <- index *board, from-file
-  to-f:address:array:char <- index *board, to-file
+  from-f:&:array:char <- index *board, from-file
+  to-f:&:array:char <- index *board, to-file
   src:char/square <- index *from-f, from-rank
   *to-f <- put-index *to-f, to-rank, src
   *from-f <- put-index *from-f, from-rank, 32/space
@@ -551,10 +551,10 @@ scenario making-a-move [
   run [
     local-scope
     board:board <- initial-position
-    move:address:move <- new move:type
+    move:&:move <- new move:type
     *move <- merge 6/g, 1/'2', 6/g, 3/'4'
     board <- make-move board, move
-    screen:address:screen <- print-board screen:address:screen, board
+    screen:&:screen <- print-board screen:&:screen, board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
