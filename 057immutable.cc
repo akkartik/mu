@@ -309,19 +309,19 @@ def bar [
 //: when checking for immutable ingredients, remember to take space into account
 :(scenario check_space_of_reagents_in_immutability_checks)
 def main [
-  a:&:@:location <- new-closure
+  a:space <- new-closure
   b:&:num <- new number:type
-  run-closure b:&:num, a:&:@:location
+  run-closure b:&:num, a:space
 ]
 def new-closure [
   new-default-space
   x:&:num <- new number:type
   return default-space
 ]
-def run-closure x:&:num, s:&:@:location [
+def run-closure x:&:num, s:space [
   local-scope
   load-ingredients
-  0:&:@:location/names:new-closure <- copy s
+  0:space/names:new-closure <- copy s
   # different space; always mutable
   *x:&:num/space:1 <- copy 34
 ]

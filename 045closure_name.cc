@@ -5,20 +5,20 @@
 
 :(scenario closure)
 def main [
-  default-space:&:@:location <- new location:type, 30
-  1:&:@:location/names:new-counter <- new-counter
-  2:num/raw <- increment-counter 1:&:@:location/names:new-counter
-  3:num/raw <- increment-counter 1:&:@:location/names:new-counter
+  default-space:space <- new location:type, 30
+  1:space/names:new-counter <- new-counter
+  2:num/raw <- increment-counter 1:space/names:new-counter
+  3:num/raw <- increment-counter 1:space/names:new-counter
 ]
 def new-counter [
-  default-space:&:@:location <- new location:type, 30
+  default-space:space <- new location:type, 30
   x:num <- copy 23
   y:num <- copy 3  # variable that will be incremented
-  return default-space:&:@:location
+  return default-space:space
 ]
 def increment-counter [
-  default-space:&:@:location <- new location:type, 30
-  0:&:@:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
+  default-space:space <- new location:type, 30
+  0:space/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:num/space:1 <- add y:num/space:1, 1  # increment
   y:num <- copy 234  # dummy
   return y:num/space:1
@@ -153,16 +153,16 @@ def new-scope [
   new-default-space
   x:&:num <- new number:type
   *x:&:num <- copy 34
-  return default-space:&:@:location
+  return default-space:space
 ]
 def use-scope [
   local-scope
-  outer:&:@:location <- next-ingredient
-  0:&:@:location/names:new-scope <- copy outer:&:@:location
+  outer:space <- next-ingredient
+  0:space/names:new-scope <- copy outer:space
   return *x:&:num/space:1
 ]
 def main [
-  1:&:@:location/raw <- new-scope
-  2:num/raw <- use-scope 1:&:@:location/raw
+  1:space/raw <- new-scope
+  2:num/raw <- use-scope 1:space/raw
 ]
 +mem: storing 34 in location 2

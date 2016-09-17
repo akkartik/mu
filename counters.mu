@@ -1,24 +1,24 @@
 # example program: maintain multiple counters with isolated lexical scopes
 # (spaces)
 
-def new-counter n:num -> default-space:&:@:location [
+def new-counter n:num -> default-space:space [
   default-space <- new location:type, 30
   load-ingredients
 ]
 
-def increment-counter outer:&:@:location/names:new-counter, x:num -> n:num/space:1 [
+def increment-counter outer:space/names:new-counter, x:num -> n:num/space:1 [
   local-scope
   load-ingredients
-  0:&:@:location/names:new-counter <- copy outer  # setup outer space; it *must* come from 'new-counter'
+  0:space/names:new-counter <- copy outer  # setup outer space; it *must* come from 'new-counter'
   n/space:1 <- add n/space:1, x
 ]
 
 def main [
   local-scope
   # counter A
-  a:&:@:location <- new-counter 34
+  a:space <- new-counter 34
   # counter B
-  b:&:@:location <- new-counter 23
+  b:space <- new-counter 23
   # increment both by 2 but in different ways
   increment-counter a, 1
   b-value:num <- increment-counter b, 2

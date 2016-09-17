@@ -14,8 +14,8 @@ def main [
   20:num <- copy 0  # refcount
   21:num <- copy 5  # length
   # actual start of this recipe
-  default-space:&:@:location <- copy 10/unsafe
-  0:&:@:location/names:dummy <- copy 20/unsafe  # later layers will explain the /names: property
+  default-space:space <- copy 10/unsafe
+  0:space/names:dummy <- copy 20/unsafe  # later layers will explain the /names: property
   1:num <- copy 32
   1:num/space:1 <- copy 33
 ]
