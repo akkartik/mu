@@ -1,4 +1,4 @@
-def random generator:address:stream:num -> result:num, fail?:boolean, generator:address:stream:num [
+def random generator:address:stream:num -> result:num, fail?:bool, generator:address:stream:num [
   local-scope
   load-ingredients
   {
@@ -17,7 +17,7 @@ def assume-random-numbers -> result:address:stream:num [
   # compute result-len, space to allocate in result
   result-len:num <- copy 0
   {
-    _, arg-received?:boolean <- next-ingredient
+    _, arg-received?:bool <- next-ingredient
     break-unless arg-received?
     result-len <- add result-len, 1
     loop
@@ -26,7 +26,7 @@ def assume-random-numbers -> result:address:stream:num [
   result-data:address:array:num <- new number:type, result-len
   idx:num <- copy 0
   {
-    curr:num, arg-received?:boolean <- next-ingredient
+    curr:num, arg-received?:bool <- next-ingredient
     break-unless arg-received?
     *result-data <- put-index *result-data, idx, curr
     idx <- add idx, 1
@@ -38,10 +38,10 @@ def assume-random-numbers -> result:address:stream:num [
 scenario random-numbers-in-scenario [
   local-scope
   source:address:stream:num <- assume-random-numbers 34, 35, 37
-  1:num/raw, 2:boolean/raw <- random source
-  3:num/raw, 4:boolean/raw <- random source
-  5:num/raw, 6:boolean/raw <- random source
-  7:num/raw, 8:boolean/raw <- random source
+  1:num/raw, 2:bool/raw <- random source
+  3:num/raw, 4:bool/raw <- random source
+  5:num/raw, 6:bool/raw <- random source
+  7:num/raw, 8:bool/raw <- random source
   memory-should-contain [
     1 <- 34
     2 <- 0  # everything went well

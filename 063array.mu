@@ -18,7 +18,7 @@ def new-array -> result:text [
   capacity:num <- copy 0
   {
     # while read curr-value
-    curr-value:char, exists?:boolean <- next-ingredient
+    curr-value:char, exists?:bool <- next-ingredient
     break-unless exists?
     capacity <- add capacity, 1
     loop
@@ -28,9 +28,9 @@ def new-array -> result:text [
   i:num <- copy 0
   {
     # while read curr-value
-    done?:boolean <- greater-or-equal i, capacity
+    done?:bool <- greater-or-equal i, capacity
     break-if done?
-    curr-value:char, exists?:boolean <- next-ingredient
+    curr-value:char, exists?:bool <- next-ingredient
     assert exists?, [error in rewinding ingredients to new-array]
     *result <- put-index *result, i, curr-value
     i <- add i, 1

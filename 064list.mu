@@ -159,14 +159,14 @@ def remove x:address:list:_elem/contained-in:in, in:address:list:_elem -> in:add
   # clear next pointer of 'x'
   *x <- put *x, next:offset, 0
   # if 'x' is at the head of 'in', return the new head
-  at-head?:boolean <- equal x, in
+  at-head?:bool <- equal x, in
   return-if at-head?, next-node
   # compute prev-node
   prev-node:address:list:_elem <- copy in
   curr:address:list:_elem <- rest prev-node
   {
     return-unless curr
-    found?:boolean <- equal curr, x
+    found?:bool <- equal curr, x
     break-if found?
     prev-node <- copy curr
     curr <- rest curr
@@ -183,7 +183,7 @@ scenario removing-from-list [
     list <- push 5, list
     list2:address:list:char <- rest list  # second element
     list <- remove list2, list
-    10:boolean/raw <- equal list2, 0
+    10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
     11:char/raw <- first list2
@@ -230,7 +230,7 @@ scenario removing-from-end-of-list [
     list2:address:list:char <- rest list
     list2 <- rest list2
     list <- remove list2, list
-    10:boolean/raw <- equal list2, 0
+    10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
     11:char/raw <- first list2
@@ -292,7 +292,7 @@ def to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
   return-unless next
   buf <- append buf, [ -> ]
   # and recurse
-  remaining:num, optional-ingredient-found?:boolean <- next-ingredient
+  remaining:num, optional-ingredient-found?:bool <- next-ingredient
   {
     break-if optional-ingredient-found?
     # unlimited recursion

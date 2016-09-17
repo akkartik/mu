@@ -64,7 +64,7 @@ scenario duplex-list-handling [
     40:char/raw <- first list2
     list2 <- prev list2
     41:char/raw <- first list2
-    50:boolean/raw <- equal list, list2
+    50:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     0 <- 0  # no modifications to null pointers
@@ -121,7 +121,7 @@ scenario inserting-into-duplex-list [
     21:char/raw <- first list2
     list2 <- prev list2
     22:char/raw <- first list2
-    30:boolean/raw <- equal list, list2
+    30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -159,7 +159,7 @@ scenario inserting-at-end-of-duplex-list [
     21:char/raw <- first list2
     list2 <- prev list2
     22:char/raw <- first list2
-    30:boolean/raw <- equal list, list2
+    30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -195,7 +195,7 @@ scenario inserting-after-start-of-duplex-list [
     21:char/raw <- first list2
     list2 <- prev list2
     22:char/raw <- first list2
-    30:boolean/raw <- equal list, list2
+    30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -247,7 +247,7 @@ scenario removing-from-duplex-list [
     list <- push 5, list
     list2:address:duplex-list:char <- next list  # second element
     list <- remove list2, list
-    10:boolean/raw <- equal list2, 0
+    10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
     11:char/raw <- first list2
@@ -256,7 +256,7 @@ scenario removing-from-duplex-list [
     20:address:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
-    40:boolean/raw <- equal list, list2
+    40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -283,7 +283,7 @@ scenario removing-from-start-of-duplex-list [
     20:address:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
-    40:boolean/raw <- equal list, list2
+    40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 4  # scanning next, skipping deleted element
@@ -304,7 +304,7 @@ scenario removing-from-end-of-duplex-list [
     list2:address:duplex-list:char <- next list
     list2 <- next list2
     list <- remove list2, list
-    10:boolean/raw <- equal list2, 0
+    10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
     11:char/raw <- first list2
@@ -313,7 +313,7 @@ scenario removing-from-end-of-duplex-list [
     20:address:duplex-list:char/raw <- next list2
     list2 <- prev list2
     30:char/raw <- first list2
-    40:boolean/raw <- equal list, list2
+    40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -346,7 +346,7 @@ def remove-between start:address:duplex-list:_elem, end:address:duplex-list:_ele
   local-scope
   load-ingredients
   next:address:duplex-list:_elem <- get *start, next:offset
-  nothing-to-delete?:boolean <- equal next, end
+  nothing-to-delete?:bool <- equal next, end
   return-if nothing-to-delete?
   assert next, [malformed duplex list]
   # start->next->prev = 0
@@ -548,7 +548,7 @@ def dump-from x:address:duplex-list:_elem [
     $print c, [ ]
     x <- next x
     {
-      is-newline?:boolean <- equal c, 10/newline
+      is-newline?:bool <- equal c, 10/newline
       break-unless is-newline?
       $print 10/newline
       $print x, [: ]

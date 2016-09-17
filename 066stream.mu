@@ -18,14 +18,14 @@ def rewind in:address:stream:_elem -> in:address:stream:_elem [
   *in <- put *in, index:offset, 0
 ]
 
-def read in:address:stream:_elem -> result:_elem, empty?:boolean, in:address:stream:_elem [
+def read in:address:stream:_elem -> result:_elem, empty?:bool, in:address:stream:_elem [
   local-scope
   load-ingredients
   empty? <- copy 0/false
   idx:num <- get *in, index:offset
   s:address:array:_elem <- get *in, data:offset
   len:num <- length *s
-  at-end?:boolean <- greater-or-equal idx len
+  at-end?:bool <- greater-or-equal idx len
   {
     break-unless at-end?
     empty-result:address:_elem <- new _elem:type
@@ -36,14 +36,14 @@ def read in:address:stream:_elem -> result:_elem, empty?:boolean, in:address:str
   *in <- put *in, index:offset, idx
 ]
 
-def peek in:address:stream:_elem -> result:_elem, empty?:boolean [
+def peek in:address:stream:_elem -> result:_elem, empty?:bool [
   local-scope
   load-ingredients
-  empty?:boolean <- copy 0/false
+  empty?:bool <- copy 0/false
   idx:num <- get *in, index:offset
   s:address:array:_elem <- get *in, data:offset
   len:num <- length *s
-  at-end?:boolean <- greater-or-equal idx len
+  at-end?:bool <- greater-or-equal idx len
   {
     break-unless at-end?
     empty-result:address:_elem <- new _elem:type
@@ -64,7 +64,7 @@ def read-line in:address:stream:char -> result:text, in:address:stream:char [
   *in <- put *in, index:offset, idx
 ]
 
-def end-of-stream? in:address:stream:_elem -> result:boolean [
+def end-of-stream? in:address:stream:_elem -> result:bool [
   local-scope
   load-ingredients
   idx:num <- get *in, index:offset
