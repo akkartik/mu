@@ -15,7 +15,7 @@ scenario channel [
     local-scope
     source:address:source:num, sink:address:sink:num <- new-channel 3/capacity
     sink <- write sink, 34
-    10:num/raw, 11:boolean/raw, source <- read source
+    10:num/raw, 11:bool/raw, source <- read source
   ]
   memory-should-contain [
     10 <- 34
@@ -24,7 +24,7 @@ scenario channel [
 ]
 
 container channel:_elem [
-  lock:boolean  # inefficient but simple: serialize all reads as well as writes
+  lock:bool  # inefficient but simple: serialize all reads as well as writes
   first-full:num  # for write
   first-free:num  # for read
   # A circular buffer contains values from index first-full up to (but not
@@ -72,7 +72,7 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
 #?     $print [trying to acquire lock for writing], 10/newline
     wait-for-reset-then-set lock
 #?     $print [lock acquired for writing], 10/newline
-    full?:boolean <- channel-full? chan
+    full?:bool <- channel-full? chan
     break-unless full?
 #?     $print [but channel is full; relinquishing lock], 10/newline
     # channel is full; relinquish lock and give a reader the opportunity to
@@ -94,7 +94,7 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   {
     # wrap free around to 0 if necessary
     len:num <- length *circular-buffer
-    at-end?:boolean <- greater-or-equal free, len
+    at-end?:bool <- greater-or-equal free, len
     break-unless at-end?
     free <- copy 0
   }
@@ -104,7 +104,7 @@ def write out:address:sink:_elem, val:_elem -> out:address:sink:_elem [
   reset lock
 ]
 
-def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:source:_elem [
+def read in:address:source:_elem -> result:_elem, eof?:bool, in:address:source:_elem [
   local-scope
   load-ingredients
   assert in, [read on null channel]
@@ -117,7 +117,7 @@ def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:sourc
 #?     $print [trying to acquire lock for reading], 10/newline
     wait-for-reset-then-set lock
 #?     $print [lock acquired for reading], 10/newline
-    empty?:boolean <- channel-empty? chan
+    empty?:bool <- channel-empty? chan
     break-unless empty?
 #?     $print [but channel is empty; relinquishing lock], 10/newline
     # channel is empty; relinquish lock and give a writer the opportunity to
@@ -141,7 +141,7 @@ def read in:address:source:_elem -> result:_elem, eof?:boolean, in:address:sourc
   {
     # wrap full around to 0 if necessary
     len:num <- length *circular-buffer
-    at-end?:boolean <- greater-or-equal full, len
+    at-end?:bool <- greater-or-equal full, len
     break-unless at-end?
     full <- copy 0
   }
@@ -156,7 +156,7 @@ def clear in:address:source:_elem -> in:address:source:_elem [
   load-ingredients
   chan:address:channel:_elem <- get *in, chan:offset
   {
-    empty?:boolean <- channel-empty? chan
+    empty?:bool <- channel-empty? chan
     break-if empty?
     _, _, in <- read in
   }
@@ -239,8 +239,8 @@ scenario channel-new-empty-not-full [
     local-scope
     source:address:source:num <- new-channel 3/capacity
     chan:address:channel:num <- get *source, chan:offset
-    10:boolean/raw <- channel-empty? chan
-    11:boolean/raw <- channel-full? chan
+    10:bool/raw <- channel-empty? chan
+    11:bool/raw <- channel-full? chan
   ]
   memory-should-contain [
     10 <- 1  # empty?
@@ -253,8 +253,8 @@ scenario channel-write-not-empty [
     source:address:source:num, sink:address:sink:num <- new-channel 3/capacity
     chan:address:channel:num <- get *source, chan:offset
     sink <- write sink, 34
-    10:boolean/raw <- channel-empty? chan
-    11:boolean/raw <- channel-full? chan
+    10:bool/raw <- channel-empty? chan
+    11:bool/raw <- channel-full? chan
   ]
   memory-should-contain [
     10 <- 0  # empty?
@@ -268,8 +268,8 @@ scenario channel-write-full [
     source:address:source:num, sink:address:sink:num <- new-channel 1/capacity
     chan:address:channel:num <- get *source, chan:offset
     sink <- write sink, 34
-    10:boolean/raw <- channel-empty? chan
-    11:boolean/raw <- channel-full? chan
+    10:bool/raw <- channel-empty? chan
+    11:bool/raw <- channel-full? chan
   ]
   memory-should-contain [
     10 <- 0  # empty?
@@ -284,8 +284,8 @@ scenario channel-read-not-full [
     chan:address:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     _, _, source <- read source
-    10:boolean/raw <- channel-empty? chan
-    11:boolean/raw <- channel-full? chan
+    10:bool/raw <- channel-empty? chan
+    11:bool/raw <- channel-full? chan
   ]
   memory-should-contain [
     10 <- 1  # empty?
@@ -298,7 +298,7 @@ scenario channel-read-not-full [
 # every channel comes with a boolean signifying if it's been closed
 # initially this boolean is false
 container channel:_elem [
-  closed?:boolean
+  closed?:bool
 ]
 
 # a channel can be closed from either the source or the sink
@@ -339,7 +339,7 @@ after <channel-read-empty> [
 ## helpers
 
 # An empty channel has first-empty and first-full both at the same value.
-def channel-empty? chan:address:channel:_elem -> result:boolean [
+def channel-empty? chan:address:channel:_elem -> result:bool [
   local-scope
   load-ingredients
   # return chan.first-full == chan.first-free
@@ -350,7 +350,7 @@ def channel-empty? chan:address:channel:_elem -> result:boolean [
 
 # A full channel has first-empty just before first-full, wasting one slot.
 # (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
-def channel-full? chan:address:channel:_elem -> result:boolean [
+def channel-full? chan:address:channel:_elem -> result:bool [
   local-scope
   load-ingredients
   # tmp = chan.first-free + 1
@@ -359,7 +359,7 @@ def channel-full? chan:address:channel:_elem -> result:boolean [
   {
     # if tmp == chan.capacity, tmp = 0
     len:num <- capacity chan
-    at-end?:boolean <- greater-or-equal tmp, len
+    at-end?:bool <- greater-or-equal tmp, len
     break-unless at-end?
     tmp <- copy 0
   }
@@ -380,23 +380,23 @@ def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffe
   local-scope
   load-ingredients
   # repeat forever
-  eof?:boolean <- copy 0/false
+  eof?:bool <- copy 0/false
   {
     line:address:buffer <- new-buffer 30
     # read characters from 'in' until newline, copy into line
     {
       +next-character
-      c:char, eof?:boolean, in <- read in
+      c:char, eof?:bool, in <- read in
       break-if eof?
       # drop a character on backspace
       {
         # special-case: if it's a backspace
-        backspace?:boolean <- equal c, 8
+        backspace?:bool <- equal c, 8
         break-unless backspace?
         # drop previous character
         {
           buffer-length:num <- get *line, length:offset
-          buffer-empty?:boolean <- equal buffer-length, 0
+          buffer-empty?:bool <- equal buffer-length, 0
           break-if buffer-empty?
           buffer-length <- subtract buffer-length, 1
           *line <- put *line, length:offset, buffer-length
@@ -406,7 +406,7 @@ def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffe
       }
       # append anything else
       line <- append line, c
-      line-done?:boolean <- equal c, 10/newline
+      line-done?:bool <- equal c, 10/newline
       break-if line-done?
       loop
     }
@@ -415,7 +415,7 @@ def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffe
     line-contents:text <- get *line, data:offset
     max:num <- get *line, length:offset
     {
-      done?:boolean <- greater-or-equal i, max
+      done?:bool <- greater-or-equal i, max
       break-if done?
       c:char <- index *line-contents, i
       buffered-out <- write buffered-out, c
@@ -437,35 +437,35 @@ scenario buffer-lines-blocks-until-newline [
     source:address:source:char, sink:address:sink:char <- new-channel 10/capacity
     _, buffered-stdin:address:sink:char/buffered-stdin <- new-channel 10/capacity
     buffered-chan:address:channel:char <- get *buffered-stdin, chan:offset
-    empty?:boolean <- channel-empty? buffered-chan
+    empty?:bool <- channel-empty? buffered-chan
     assert empty?, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]
     # buffer stdin into buffered-stdin, try to read from buffered-stdin
     buffer-routine:num <- start-running buffer-lines, source, buffered-stdin
     wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
-    assert empty?:boolean, [ 
+    assert empty?:bool, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]
     # write 'a'
     sink <- write sink, 97/a
     restart buffer-routine
     wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
-    assert empty?:boolean, [ 
+    assert empty?:bool, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']
     # write 'b'
     sink <- write sink, 98/b
     restart buffer-routine
     wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
-    assert empty?:boolean, [ 
+    assert empty?:bool, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']
     # write newline
     sink <- write sink, 10/newline
     restart buffer-routine
     wait-for-routine-to-block buffer-routine
     empty? <- channel-empty? buffered-chan
-    data-emitted?:boolean <- not empty?
+    data-emitted?:bool <- not empty?
     assert data-emitted?, [ 
 F buffer-lines-blocks-until-newline: channel should contain data after writing newline]
     trace 1, [test], [reached end]
