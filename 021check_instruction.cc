@@ -162,6 +162,8 @@ void test_unknown_type_matches_itself() {
   CHECK(types_strictly_match(a, b));
 }
 
+//: helpers
+
 bool is_unsafe(const reagent& r) {
   return has_property(r, "unsafe");
 }
@@ -170,7 +172,6 @@ bool is_mu_array(reagent/*copy*/ r) {
   // End Preprocess is_mu_array(reagent r)
   return is_mu_array(r.type);
 }
-
 bool is_mu_array(const type_tree* type) {
   if (!type) return false;
   if (is_literal(type)) return false;
@@ -183,7 +184,6 @@ bool is_mu_address(reagent/*copy*/ r) {
   // End Preprocess is_mu_address(reagent r)
   return is_mu_address(r.type);
 }
-
 bool is_mu_address(const type_tree* type) {
   if (!type) return false;
   if (is_literal(type)) return false;
@@ -226,7 +226,6 @@ bool is_mu_character(const type_tree* type) {
 bool is_mu_scalar(reagent/*copy*/ r) {
   return is_mu_scalar(r.type);
 }
-
 bool is_mu_scalar(const type_tree* type) {
   if (!type) return false;
   if (is_mu_address(type)) return true;
