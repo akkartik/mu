@@ -13,7 +13,7 @@ result <- add a t1]
   ]
 ]
 
-def lambda-to-mu in:address:array:character -> out:address:array:character [
+def lambda-to-mu in:text -> out:text [
   local-scope
   load-ingredients
   out <- copy 0
@@ -33,7 +33,7 @@ container pair [
   rest:address:cell
 ]
 
-def new-atom name:address:array:character -> result:address:cell [
+def new-atom name:text -> result:address:cell [
   local-scope
   load-ingredients
   result <- new cell:type
@@ -87,7 +87,7 @@ scenario pair-is-not-atom [
   ]
 ]
 
-def atom-match? x:address:cell, pat:address:array:character -> result:boolean [
+def atom-match? x:address:cell, pat:text -> result:boolean [
   local-scope
   load-ingredients
   s:text, is-atom?:boolean <- maybe-convert *x, atom:variant
@@ -167,7 +167,7 @@ scenario cell-operations-on-pair [
 
 ## convert lambda text to a tree of cells
 
-def parse in:address:array:character -> out:address:cell [
+def parse in:text -> out:address:cell [
   local-scope
   load-ingredients
   s:address:stream:character <- new-stream in
@@ -279,7 +279,7 @@ def skip-whitespace in:address:stream:character -> in:address:stream:character [
   }
 ]
 
-def to-text x:address:cell -> out:address:array:character [
+def to-text x:address:cell -> out:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 30
@@ -566,7 +566,7 @@ scenario parse-dotted-list-of-more-than-two-atoms [
 
 ## convert tree of cells to mu text
 
-def to-mu in:address:cell -> out:address:array:character [
+def to-mu in:address:cell -> out:text [
   local-scope
   load-ingredients
   buf:address:buffer <- new-buffer 30
@@ -574,7 +574,7 @@ def to-mu in:address:cell -> out:address:array:character [
   out <- buffer-to-array buf
 ]
 
-def to-mu in:address:cell, buf:address:buffer -> buf:address:buffer, result-name:address:array:character [
+def to-mu in:address:cell, buf:address:buffer -> buf:address:buffer, result-name:text [
   local-scope
   load-ingredients
   # null cell? no change.

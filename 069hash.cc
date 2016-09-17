@@ -210,8 +210,8 @@ def main [
   13:number <- copy 99
   2:number <- hash 10:array:number/unsafe
   return-unless 2:number
-  3:address:array:character <- new [abc]
-  4:number <- hash 3:address:array:character
+  3:text <- new [abc]
+  4:number <- hash 3:text
   return-unless 4:number
   5:boolean <- equal 2:number, 4:number
 ]
@@ -337,9 +337,9 @@ def main [
 
 :(scenario hash_matches_old_version)
 def main [
-  1:address:array:character <- new [abc]
-  2:number <- hash 1:address:array:character
-  3:number <- hash_old 1:address:array:character
+  1:text <- new [abc]
+  2:number <- hash 1:text
+  3:number <- hash_old 1:text
   4:boolean <- equal 2:number, 3:number
 ]
 +mem: storing 1 in location 4

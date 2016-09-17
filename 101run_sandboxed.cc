@@ -4,16 +4,16 @@
 :(scenario run_interactive_code)
 def main [
   1:number/raw <- copy 0
-  2:address:array:character <- new [1:number/raw <- copy 34]
-  run-sandboxed 2:address:array:character
+  2:text <- new [1:number/raw <- copy 34]
+  run-sandboxed 2:text
   3:number/raw <- copy 1:number/raw
 ]
 +mem: storing 34 in location 3
 
 :(scenario run_interactive_empty)
 def main [
-  1:address:array:character <- copy 0/unsafe
-  2:address:array:character <- run-sandboxed 1:address:array:character
+  1:text <- copy 0/unsafe
+  2:text <- run-sandboxed 1:text
 ]
 # result is null
 +mem: storing 0 in location 2
@@ -202,9 +202,9 @@ load(string(
   "stash instructions-run [instructions run]\n" +
   "sandbox-state:number <- routine-state routine-id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
-  "output:address:array:character <- $most-recent-products\n" +
-  "errors:address:array:character <- save-errors\n" +
-  "stashes:address:array:character <- save-app-trace\n" +
+  "output:text <- $most-recent-products\n" +
+  "errors:text <- save-errors\n" +
+  "stashes:text <- save-app-trace\n" +
   "$cleanup-run-sandboxed\n" +
   "return output, errors, screen, stashes, completed?\n" +
 "]\n");
@@ -215,10 +215,10 @@ load(string(
 
 :(scenario run_interactive_comments)
 def main [
-  1:address:array:character <- new [# ab
+  1:text <- new [# ab
 add 2, 2]
-  2:address:array:character <- run-sandboxed 1:address:array:character
-  3:array:character <- copy *2:address:array:character
+  2:text <- run-sandboxed 1:text
+  3:array:character <- copy *2:text
 ]
 +mem: storing 52 in location 4
 
@@ -312,9 +312,9 @@ case _CLEANUP_RUN_SANDBOXED: {
 :(scenario "run_interactive_converts_result_to_text")
 def main [
   # try to interactively add 2 and 2
-  1:address:array:character <- new [add 2, 2]
-  2:address:array:character <- run-sandboxed 1:address:array:character
-  10:array:character <- copy 2:address:array:character/lookup
+  1:text <- new [add 2, 2]
+  2:text <- run-sandboxed 1:text
+  10:array:character <- copy 2:text/lookup
 ]
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
@@ -322,13 +322,13 @@ def main [
 :(scenario "run_interactive_returns_text")
 def main [
   # try to interactively add 2 and 2
-  1:address:array:character <- new [
-    x:address:array:character <- new [a]
-    y:address:array:character <- new [b]
-    z:address:array:character <- append x:address:array:character, y:address:array:character
+  1:text <- new [
+    x:text <- new [a]
+    y:text <- new [b]
+    z:text <- append x:text, y:text
   ]
-  2:address:array:character <- run-sandboxed 1:address:array:character
-  10:array:character <- copy 2:address:array:character/lookup
+  2:text <- run-sandboxed 1:text
+  10:array:character <- copy 2:text/lookup
 ]
 # output contains "ab"
 +mem: storing 97 in location 11
@@ -337,10 +337,10 @@ def main [
 :(scenario "run_interactive_returns_errors")
 def main [
   # run a command that generates an error
-  1:address:array:character <- new [x:number <- copy 34
+  1:text <- new [x:number <- copy 34
 get x:number, foo:offset]
-  2:address:array:character, 3:address:array:character <- run-sandboxed 1:address:array:character
-  10:array:character <- copy 3:address:array:character/lookup
+  2:text, 3:text <- run-sandboxed 1:text
+  10:array:character <- copy 3:text/lookup
 ]
 # error should be "unknown element foo in container number"
 +mem: storing 117 in location 11
@@ -355,7 +355,7 @@ def main [
   1:address:array:number <- new [a:number <- copy 0  # abc
 b:number <- copy 0
 ]
-  2:address:array:character, 3:address:array:character <- run-sandboxed 1:address:array:character
+  2:text, 3:text <- run-sandboxed 1:text
 ]
 # no errors
 +mem: storing 0 in location 3
@@ -502,7 +502,7 @@ case RELOAD: {
 :(scenario reload_continues_past_error)
 def main [
   local-scope
-  x:address:array:character <- new [recipe foo [
+  x:text <- new [recipe foo [
   get 1234:number, foo:offset
 ]]
   reload x
@@ -514,7 +514,7 @@ def main [
 # define a container and try to create it (merge requires knowing container size)
 def main [
   local-scope
-  x:address:array:character <- new [
+  x:text <- new [
     container foo [
       x:number
       y:number
