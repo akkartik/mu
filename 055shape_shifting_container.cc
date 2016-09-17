@@ -52,9 +52,9 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:address:array:character <- new [abc]
+  1:text <- new [abc]
   # compound types for type ingredients
-  {2: (foo number (address array character))} <- merge 34/x, 1:address:array:character/y
+  {2: (foo number (address array character))} <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -68,8 +68,8 @@ container bar:_a:_b [
   {data: (foo _a (address _b))}
 ]
 def main [
-  1:address:array:character <- new [abc]
-  2:bar:number:array:character <- merge 34/x, 1:address:array:character/y
+  1:text <- new [abc]
+  2:bar:number:array:character <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -278,10 +278,10 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:address:array:character <- new [abc]
-  {2: (foo number (address array character))} <- merge 34/x, 1:address:array:character/y
-  3:address:array:character <- get {2: (foo number (address array character))}, y:offset
-  4:boolean <- equal 1:address:array:character, 3:address:array:character
+  1:text <- new [abc]
+  {2: (foo number (address array character))} <- merge 34/x, 1:text/y
+  3:text <- get {2: (foo number (address array character))}, y:offset
+  4:boolean <- equal 1:text, 3:text
 ]
 +mem: storing 1 in location 4
 

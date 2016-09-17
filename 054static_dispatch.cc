@@ -617,10 +617,10 @@ def foo a:boolean -> b:number [
 type string = address:array:character
 def main [
   local-scope
-  s:address:array:character <- new [abc]
+  s:text <- new [abc]
   1:number/raw <- foo s
 ]
-def foo a:address:array:character -> result:number [
+def foo a:text -> result:number [
   return 34
 ]
 # identical to previous variant once you take type abbreviation into account

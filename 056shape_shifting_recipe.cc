@@ -548,7 +548,7 @@ container c:_a:_b [
   b:_b
 ]
 def main [
-  s:address:array:character <- new [abc]
+  s:text <- new [abc]
   {x: (c (address array character) number)} <- merge s, 34
   foo x
 ]
@@ -925,10 +925,10 @@ def foo dummy:address:array:number, x:_elem -> y:number, dummy:address:array:num
 
 :(scenario specialize_most_similar_variant_3)
 def main [
-  1:address:array:character <- new [abc]
-  foo 1:address:array:character
+  1:text <- new [abc]
+  foo 1:text
 ]
-def foo x:address:array:character [
+def foo x:text [
   2:number <- copy 34
 ]
 def foo x:address:_elem [

@@ -6,17 +6,17 @@ put(Type_abbreviations, "text", new_type_tree("address:array:character"));
 
 :(scenario new_string)
 def main [
-  1:address:array:character <- new [abc def]
-  2:character <- index *1:address:array:character, 5
+  1:text <- new [abc def]
+  2:character <- index *1:text, 5
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
 
 :(scenario new_string_handles_unicode)
 def main [
-  1:address:array:character <- new [a«c]
-  2:number <- length *1:address:array:character
-  3:character <- index *1:address:array:character, 1
+  1:text <- new [a«c]
+  2:number <- length *1:text
+  3:character <- index *1:text, 1
 ]
 +mem: storing 3 in location 2
 # unicode for '«'
@@ -66,8 +66,8 @@ int new_mu_text(const string& contents) {
 
 :(scenario stash_string)
 def main [
-  1:address:array:character <- new [abc]
-  stash [foo:], 1:address:array:character
+  1:text <- new [abc]
+  stash [foo:], 1:text
 ]
 +app: foo: abc
 
@@ -79,22 +79,22 @@ if (is_mu_text(r)) {
 
 :(scenario unicode_string)
 def main [
-  1:address:array:character <- new [♠]
-  stash [foo:], 1:address:array:character
+  1:text <- new [♠]
+  stash [foo:], 1:text
 ]
 +app: foo: ♠
 
 :(scenario stash_space_after_string)
 def main [
-  1:address:array:character <- new [abc]
-  stash 1:address:array:character, [foo]
+  1:text <- new [abc]
+  stash 1:text, [foo]
 ]
 +app: abc foo
 
 :(scenario stash_string_as_array)
 def main [
-  1:address:array:character <- new [abc]
-  stash *1:address:array:character
+  1:text <- new [abc]
+  stash *1:text
 ]
 +app: 3 97 98 99
 
@@ -107,7 +107,7 @@ if (!canonize_type(x)) return false;
 % Initial_memory_per_routine = 3;
 def main [
   1:address:number/raw <- new number:type
-  2:address:array:character/raw <- new [a]  # not enough room in initial page, if you take the refcount and array length into account
+  2:text/raw <- new [a]  # not enough room in initial page, if you take the refcount and array length into account
 ]
 +new: routine allocated memory from 1000 to 1003
 +new: routine allocated memory from 1003 to 1006

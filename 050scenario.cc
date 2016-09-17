@@ -100,7 +100,7 @@ scenario foo [
 
 :(scenario read_scenario_with_bracket_in_comment_in_nested_string)
 scenario foo [
-  1:address:array:character <- new [# not a comment]
+  1:text <- new [# not a comment]
 ]
 +run: {1: ("address" "array" "character")} <- new {"# not a comment": "literal-string"}
 

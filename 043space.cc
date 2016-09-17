@@ -207,9 +207,9 @@ def foo [
 :(scenario local_scope_frees_up_addresses)
 def main [
   local-scope
-  x:address:array:character <- new [abc]
+  x:text <- new [abc]
 ]
-+mem: clearing x:address:array:character
++mem: clearing x:text
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 if (curr.name == "local-scope") {
