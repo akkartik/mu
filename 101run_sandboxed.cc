@@ -201,7 +201,7 @@ load(string(
   "instructions-run:num <- number-of-instructions routine-id\n" +
   "stash instructions-run [instructions run]\n" +
   "sandbox-state:num <- routine-state routine-id\n" +
-  "completed?:boolean <- equal sandbox-state, 1/completed\n" +
+  "completed?:bool <- equal sandbox-state, 1/completed\n" +
   "output:text <- $most-recent-products\n" +
   "errors:text <- save-errors\n" +
   "stashes:text <- save-app-trace\n" +

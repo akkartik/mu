@@ -12,7 +12,7 @@ scenario read-from-fake-file [
   2:char/raw <- read contents
   3:char/raw <- read contents
   4:char/raw <- read contents
-  _, 5:boolean/raw <- read contents
+  _, 5:bool/raw <- read contents
   memory-should-contain [
     1 <- 120  # x
     2 <- 121  # y
@@ -32,7 +32,7 @@ scenario write-to-fake-file [
   close sink
   wait-for-routine writer
   contents-read-back:text <- slurp filesystem, [a]
-  10:boolean/raw <- equal contents-read-back, [xy]
+  10:bool/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
   ]
@@ -49,7 +49,7 @@ scenario write-to-fake-file-that-exists [
   close sink
   wait-for-routine writer
   contents-read-back:text <- slurp filesystem, [a]
-  10:boolean/raw <- equal contents-read-back, [xy]
+  10:bool/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
   ]
@@ -69,9 +69,9 @@ scenario write-to-existing-file-preserves-other-files [
   close sink
   wait-for-routine writer
   contents-read-back:text <- slurp filesystem, [a]
-  10:boolean/raw <- equal contents-read-back, [xy]
+  10:bool/raw <- equal contents-read-back, [xy]
   other-file-contents:text <- slurp filesystem, [b]
-  11:boolean/raw <- equal other-file-contents, [bcd
+  11:bool/raw <- equal other-file-contents, [bcd
 ]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
@@ -85,7 +85,7 @@ def slurp fs:address:filesystem, filename:text -> contents:text [
   source:address:source:char <- start-reading fs, filename
   buf:address:buffer <- new-buffer 30/capacity
   {
-    c:char, done?:boolean, source <- read source
+    c:char, done?:bool, source <- read source
     break-if done?
     buf <- append buf, c
     loop

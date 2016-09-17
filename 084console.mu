@@ -32,7 +32,7 @@ def new-fake-console events:address:array:event -> result:address:console [
   *result <- put *result, events:offset, events
 ]
 
-def read-event console:address:console -> result:event, console:address:console, found?:boolean, quit?:boolean [
+def read-event console:address:console -> result:event, console:address:console, found?:bool, quit?:bool [
   local-scope
   load-ingredients
   {
@@ -41,7 +41,7 @@ def read-event console:address:console -> result:event, console:address:console,
     buf:address:array:event <- get *console, events:offset
     {
       max:num <- length *buf
-      done?:boolean <- greater-or-equal current-event-index, max
+      done?:bool <- greater-or-equal current-event-index, max
       break-unless done?
       dummy:address:event <- new event:type
       return *dummy, console/same-as-ingredient:0, 1/found, 1/quit
@@ -52,20 +52,20 @@ def read-event console:address:console -> result:event, console:address:console,
     return result, console/same-as-ingredient:0, 1/found, 0/quit
   }
   switch  # real event source is infrequent; avoid polling it too much
-  result:event, found?:boolean <- check-for-interaction
+  result:event, found?:bool <- check-for-interaction
   return result, console/same-as-ingredient:0, found?, 0/quit
 ]
 
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-def read-key console:address:console -> result:char, console:address:console, found?:boolean, quit?:boolean [
+def read-key console:address:console -> result:char, console:address:console, found?:bool, quit?:bool [
   local-scope
   load-ingredients
-  x:event, console, found?:boolean, quit?:boolean <- read-event console
+  x:event, console, found?:bool, quit?:bool <- read-event console
   return-if quit?, 0, console/same-as-ingredient:0, found?, quit?
   return-unless found?, 0, console/same-as-ingredient:0, found?, quit?
-  c:char, converted?:boolean <- maybe-convert x, text:variant
+  c:char, converted?:bool <- maybe-convert x, text:variant
   return-unless converted?, 0, console/same-as-ingredient:0, 0/found, 0/quit
   return c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
@@ -74,7 +74,7 @@ def send-keys-to-channel console:address:console, chan:address:sink:char, screen
   local-scope
   load-ingredients
   {
-    c:char, console, found?:boolean, quit?:boolean <- read-key console
+    c:char, console, found?:bool, quit?:bool <- read-key console
     loop-unless found?
     break-if quit?
     assert c, [invalid event, expected text]
@@ -89,13 +89,13 @@ def wait-for-event console:address:console -> console:address:console [
   local-scope
   load-ingredients
   {
-    _, console, found?:boolean <- read-event console
+    _, console, found?:bool <- read-event console
     loop-unless found?
   }
 ]
 
 # use this helper to skip rendering if there's lots of other events queued up
-def has-more-events? console:address:console -> result:boolean [
+def has-more-events? console:address:console -> result:bool [
   local-scope
   load-ingredients
   {

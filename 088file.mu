@@ -27,12 +27,12 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
   data:address:array:file-mapping <- get *fs, data:offset
   len:num <- length *data
   {
-    done?:boolean <- greater-or-equal i, len
+    done?:bool <- greater-or-equal i, len
     break-if done?
     tmp:file-mapping <- index *data, i
     i <- add i, 1
     curr-filename:text <- get tmp, name:offset
-    found?:boolean <- equal filename, curr-filename
+    found?:bool <- equal filename, curr-filename
     loop-unless found?
     contents:address:source:char, sink:address:sink:char <- new-channel 30
     curr-contents:text <- get tmp, contents:offset
@@ -46,7 +46,7 @@ def transmit-from-file file:num, sink:address:sink:char -> sink:address:sink:cha
   local-scope
   load-ingredients
   {
-    c:char, eof?:boolean <- $read-from-file file
+    c:char, eof?:bool <- $read-from-file file
     break-if eof?
     sink <- write sink, c
     loop
@@ -61,7 +61,7 @@ def transmit-from-text contents:text, sink:address:sink:char -> sink:address:sin
   i:num <- copy 0
   len:num <- length *contents
   {
-    done?:boolean <- greater-or-equal i, len
+    done?:bool <- greater-or-equal i, len
     break-if done?
     c:char <- index *contents, i
     sink <- write sink, c
@@ -92,7 +92,7 @@ def transmit-to-file file:num, source:address:source:char -> source:address:sour
   local-scope
   load-ingredients
   {
-    c:char, done?:boolean, source <- read source
+    c:char, done?:bool, source <- read source
     break-if done?
     $write-to-file file, c
     loop
@@ -106,7 +106,7 @@ def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:s
   # compute new file contents
   buf:address:buffer <- new-buffer 30
   {
-    c:char, done?:boolean, source <- read source
+    c:char, done?:bool, source <- read source
     break-if done?
     buf <- append buf, c
     loop
@@ -120,11 +120,11 @@ def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:s
   i:num <- copy 0
   len:num <- length *data
   {
-    done?:boolean <- greater-or-equal i, len
+    done?:bool <- greater-or-equal i, len
     break-if done?
     tmp:file-mapping <- index *data, i
     curr-filename <- get tmp, name:offset
-    found?:boolean <- equal filename, curr-filename
+    found?:bool <- equal filename, curr-filename
     loop-unless found?
     put-index *data, i, new-file-mapping
     reply
@@ -136,7 +136,7 @@ def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:s
   # copy over old files
   i:num <- copy 0
   {
-    done?:boolean <- greater-or-equal i, len
+    done?:bool <- greater-or-equal i, len
     break-if done?
     tmp:file-mapping <- index *data, i
     put-index *new-data, i, tmp
