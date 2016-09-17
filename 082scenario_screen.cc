@@ -14,8 +14,8 @@ recipes_taking_literal_strings.insert("screen-should-contain-in-color");
 scenario screen-in-scenario [
   assume-screen 5/width, 3/height
   run [
-    1:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:character/a
+    1:char <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:char/a
   ]
   screen-should-contain [
   #  01234
@@ -30,10 +30,10 @@ scenario screen-in-scenario [
 scenario screen-in-scenario-unicode-color [
   assume-screen 5/width, 3/height
   run [
-    1:character <- copy 955/greek-small-lambda
-    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
-    2:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 2:character/a
+    1:char <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:char/lambda, 1/red
+    2:char <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:char/a
   ]
   screen-should-contain [
   #  01234
@@ -49,10 +49,10 @@ scenario screen-in-scenario-unicode-color [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    1:character <- copy 955/greek-small-lambda
-    screen:address:screen <- print screen:address:screen, 1:character/lambda, 1/red
-    2:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 2:character/a, 7/white
+    1:char <- copy 955/greek-small-lambda
+    screen:address:screen <- print screen:address:screen, 1:char/lambda, 1/red
+    2:char <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 2:char/a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -85,8 +85,8 @@ scenario screen-in-scenario-color [
 scenario screen-in-scenario-error [
   assume-screen 5/width, 3/height
   run [
-    1:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:character/a
+    1:char <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:char/a
   ]
   screen-should-contain [
   #  01234
@@ -104,8 +104,8 @@ scenario screen-in-scenario-error [
 scenario screen-in-scenario-color [
   assume-screen 5/width, 3/height
   run [
-    1:character <- copy 97/a
-    screen:address:screen <- print screen:address:screen, 1:character/a, 1/red
+    1:char <- copy 97/a
+    screen:address:screen <- print screen:address:screen, 1:char/a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234
@@ -253,8 +253,8 @@ void check_screen(const string& expected_contents, const int color) {
   int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:array:character
-  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:array:char
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:char
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
@@ -397,8 +397,8 @@ void dump_screen() {
   int screen_height = get_or_insert(Memory, screen_location+height_offset);
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:array:character
-  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
+  int screen_data_location = screen_location+data_offset;  // type: address:array:char
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:char
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   int curr = screen_data_start+1;  // skip length
   for (int row = 0; row < screen_height; ++row) {

@@ -52,7 +52,7 @@ def peek in:address:stream:_elem -> result:_elem, empty?:boolean [
   result <- index *s, idx
 ]
 
-def read-line in:address:stream:character -> result:text, in:address:stream:character [
+def read-line in:address:stream:char -> result:text, in:address:stream:char [
   local-scope
   load-ingredients
   idx:number <- get *in, index:offset

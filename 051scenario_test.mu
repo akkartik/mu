@@ -33,9 +33,9 @@ scenario scenario_with_multiple_comments_in_mu [
 scenario check_text_in_memory [
   run [
     10:number <- copy 3
-    11:character <- copy 97  # 'a'
-    12:character <- copy 98  # 'b'
-    13:character <- copy 99  # 'c'
+    11:char <- copy 97  # 'a'
+    12:char <- copy 98  # 'b'
+    13:char <- copy 99  # 'c'
   ]
   memory-should-contain [
     10:array:character <- [abc]

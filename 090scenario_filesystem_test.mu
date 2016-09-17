@@ -7,11 +7,11 @@ scenario read-from-fake-file [
       |xyz|
     ]
   ]
-  contents:address:source:character <- start-reading filesystem:address:filesystem, [a]
-  1:character/raw <- read contents
-  2:character/raw <- read contents
-  3:character/raw <- read contents
-  4:character/raw <- read contents
+  contents:address:source:char <- start-reading filesystem:address:filesystem, [a]
+  1:char/raw <- read contents
+  2:char/raw <- read contents
+  3:char/raw <- read contents
+  4:char/raw <- read contents
   _, 5:boolean/raw <- read contents
   memory-should-contain [
     1 <- 120  # x
@@ -26,7 +26,7 @@ scenario write-to-fake-file [
   local-scope
   assume-filesystem [
   ]
-  sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -43,7 +43,7 @@ scenario write-to-fake-file-that-exists [
   assume-filesystem [
     [a] <- []
   ]
-  sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -63,7 +63,7 @@ scenario write-to-existing-file-preserves-other-files [
       |bcd|
     ]
   ]
-  sink:address:sink:character, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -82,10 +82,10 @@ scenario write-to-existing-file-preserves-other-files [
 def slurp fs:address:filesystem, filename:text -> contents:text [
   local-scope
   load-ingredients
-  source:address:source:character <- start-reading fs, filename
+  source:address:source:char <- start-reading fs, filename
   buf:address:buffer <- new-buffer 30/capacity
   {
-    c:character, done?:boolean, source <- read source
+    c:char, done?:boolean, source <- read source
     break-if done?
     buf <- append buf, c
     loop

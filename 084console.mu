@@ -2,7 +2,7 @@
 # and are thus easier to test.
 
 exclusive-container event [
-  text:character
+  text:char
   keycode:number  # keys on keyboard without a unicode representation
   touch:touch-event  # mouse, track ball, etc.
   resize:resize-event
@@ -59,22 +59,22 @@ def read-event console:address:console -> result:event, console:address:console,
 # variant of read-event for just keyboard events. Discards everything that
 # isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get
 # newlines, tabs, ctrl-d..
-def read-key console:address:console -> result:character, console:address:console, found?:boolean, quit?:boolean [
+def read-key console:address:console -> result:char, console:address:console, found?:boolean, quit?:boolean [
   local-scope
   load-ingredients
   x:event, console, found?:boolean, quit?:boolean <- read-event console
   return-if quit?, 0, console/same-as-ingredient:0, found?, quit?
   return-unless found?, 0, console/same-as-ingredient:0, found?, quit?
-  c:character, converted?:boolean <- maybe-convert x, text:variant
+  c:char, converted?:boolean <- maybe-convert x, text:variant
   return-unless converted?, 0, console/same-as-ingredient:0, 0/found, 0/quit
   return c, console/same-as-ingredient:0, 1/found, 0/quit
 ]
 
-def send-keys-to-channel console:address:console, chan:address:sink:character, screen:address:screen -> console:address:console, chan:address:sink:character, screen:address:screen [
+def send-keys-to-channel console:address:console, chan:address:sink:char, screen:address:screen -> console:address:console, chan:address:sink:char, screen:address:screen [
   local-scope
   load-ingredients
   {
-    c:character, console, found?:boolean, quit?:boolean <- read-key console
+    c:char, console, found?:boolean, quit?:boolean <- read-key console
     loop-unless found?
     break-if quit?
     assert c, [invalid event, expected text]

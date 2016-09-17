@@ -721,7 +721,7 @@ def foo x:_elem -> y:_elem [
 def main [
   local-scope
   # permit literal to map to character
-  1:character/raw <- foo 3
+  1:char/raw <- foo 3
 ]
 def foo x:_elem -> y:_elem [
   local-scope
@@ -734,7 +734,7 @@ def foo x:_elem -> y:_elem [
 def main [
   local-scope
   # permit '0' to map to address to shape-shifting type-ingredient
-  1:address:character/raw <- foo 0
+  1:address:char/raw <- foo 0
 ]
 def foo x:address:_elem -> y:address:_elem [
   local-scope
@@ -946,7 +946,7 @@ def foo x:_elem -> y:number [
   load-ingredients
   return 34
 ]
-def foo x:character -> y:number [
+def foo x:char -> y:number [
   local-scope
   load-ingredients
   return 35

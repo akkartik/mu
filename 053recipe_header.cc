@@ -145,11 +145,11 @@ if (result.has_header) {
 //: Support type abbreviations in headers.
 
 :(scenario type_abbreviations_in_recipe_headers)
-type string = address:array:character
+type string = address:array:char
 def main [
   local-scope
   a:string <- foo
-  1:character/raw <- index *a, 0
+  1:char/raw <- index *a, 0
 ]
 def foo -> a:string [
   local-scope

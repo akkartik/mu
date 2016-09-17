@@ -4,14 +4,14 @@
 # screens.
 def main [
   open-console
-  10:character <- copy 97/a
-  print 0/screen, 10:character/a, 2/red
+  10:char <- copy 97/a
+  print 0/screen, 10:char/a, 2/red
   1:number/raw, 2:number/raw <- cursor-position 0/screen
   wait-for-event 0/console
   clear-screen 0/screen
   move-cursor 0/screen, 0/row, 4/column
-  10:character <- copy 98/b
-  print 0/screen, 10:character
+  10:char <- copy 98/b
+  print 0/screen, 10:char
   wait-for-event 0/console
   move-cursor 0/screen, 0/row, 0/column
   clear-line 0/screen

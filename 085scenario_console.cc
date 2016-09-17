@@ -15,10 +15,10 @@ scenario keyboard-in-scenario [
     type [abc]
   ]
   run [
-    1:character, console:address:console, 2:boolean <- read-key console:address:console
-    3:character, console:address:console, 4:boolean <- read-key console:address:console
-    5:character, console:address:console, 6:boolean <- read-key console:address:console
-    7:character, console:address:console, 8:boolean, 9:boolean <- read-key console:address:console
+    1:char, console:address:console, 2:boolean <- read-key console:address:console
+    3:char, console:address:console, 4:boolean <- read-key console:address:console
+    5:char, console:address:console, 6:boolean <- read-key console:address:console
+    7:char, console:address:console, 8:boolean, 9:boolean <- read-key console:address:console
   ]
   memory-should-contain [
     1 <- 97  # 'a'

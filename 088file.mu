@@ -10,7 +10,7 @@ container file-mapping [
   contents:text
 ]
 
-def start-reading fs:address:filesystem, filename:text -> contents:address:source:character [
+def start-reading fs:address:filesystem, filename:text -> contents:address:source:char [
   local-scope
   load-ingredients
   {
@@ -18,7 +18,7 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
     # real file system
     file:number <- $open-file-for-reading filename
     assert file, [file not found]
-    contents:address:source:character, sink:address:sink:character <- new-channel 30
+    contents:address:source:char, sink:address:sink:char <- new-channel 30
     start-running transmit-from-file file, sink
     return
   }
@@ -34,7 +34,7 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
     curr-filename:text <- get tmp, name:offset
     found?:boolean <- equal filename, curr-filename
     loop-unless found?
-    contents:address:source:character, sink:address:sink:character <- new-channel 30
+    contents:address:source:char, sink:address:sink:char <- new-channel 30
     curr-contents:text <- get tmp, contents:offset
     start-running transmit-from-text curr-contents, sink
     return
@@ -42,11 +42,11 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
   return 0/not-found
 ]
 
-def transmit-from-file file:number, sink:address:sink:character -> sink:address:sink:character [
+def transmit-from-file file:number, sink:address:sink:char -> sink:address:sink:char [
   local-scope
   load-ingredients
   {
-    c:character, eof?:boolean <- $read-from-file file
+    c:char, eof?:boolean <- $read-from-file file
     break-if eof?
     sink <- write sink, c
     loop
@@ -55,7 +55,7 @@ def transmit-from-file file:number, sink:address:sink:character -> sink:address:
   file <- $close-file file
 ]
 
-def transmit-from-text contents:text, sink:address:sink:character -> sink:address:sink:character [
+def transmit-from-text contents:text, sink:address:sink:char -> sink:address:sink:char [
   local-scope
   load-ingredients
   i:number <- copy 0
@@ -63,7 +63,7 @@ def transmit-from-text contents:text, sink:address:sink:character -> sink:addres
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
-    c:character <- index *contents, i
+    c:char <- index *contents, i
     sink <- write sink, c
     i <- add i, 1
     loop
@@ -71,10 +71,10 @@ def transmit-from-text contents:text, sink:address:sink:character -> sink:addres
   sink <- close sink
 ]
 
-def start-writing fs:address:filesystem, filename:text -> sink:address:sink:character, routine-id:number [
+def start-writing fs:address:filesystem, filename:text -> sink:address:sink:char, routine-id:number [
   local-scope
   load-ingredients
-  source:address:source:character, sink:address:sink:character <- new-channel 30
+  source:address:source:char, sink:address:sink:char <- new-channel 30
   {
     break-if fs
     # real file system
@@ -88,11 +88,11 @@ def start-writing fs:address:filesystem, filename:text -> sink:address:sink:char
   routine-id <- start-running transmit-to-fake-file fs, filename, source
 ]
 
-def transmit-to-file file:number, source:address:source:character -> source:address:source:character [
+def transmit-to-file file:number, source:address:source:char -> source:address:source:char [
   local-scope
   load-ingredients
   {
-    c:character, done?:boolean, source <- read source
+    c:char, done?:boolean, source <- read source
     break-if done?
     $write-to-file file, c
     loop
@@ -100,13 +100,13 @@ def transmit-to-file file:number, source:address:source:character -> source:addr
   file <- $close-file file
 ]
 
-def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:source:character -> fs:address:filesystem, source:address:source:character [
+def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:source:char -> fs:address:filesystem, source:address:source:char [
   local-scope
   load-ingredients
   # compute new file contents
   buf:address:buffer <- new-buffer 30
   {
-    c:character, done?:boolean, source <- read source
+    c:char, done?:boolean, source <- read source
     break-if done?
     buf <- append buf, c
     loop

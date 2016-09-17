@@ -5,10 +5,10 @@
 
 def main [
   local-scope
-  source-file:address:source:character <- start-reading 0/real-filesystem, [/tmp/mu-x]
-  sink-file:address:sink:character, write-routine:number <- start-writing 0/real-filesystem, [/tmp/mu-y]
+  source-file:address:source:char <- start-reading 0/real-filesystem, [/tmp/mu-x]
+  sink-file:address:sink:char, write-routine:number <- start-writing 0/real-filesystem, [/tmp/mu-y]
   {
-    c:character, done?:boolean, source-file <- read source-file
+    c:char, done?:boolean, source-file <- read source-file
     break-if done?
     sink-file <- write sink-file, c
     loop

@@ -376,7 +376,7 @@ def capacity chan:address:channel:_elem -> result:number [
 ]
 
 # helper for channels of characters in particular
-def buffer-lines in:address:source:character, buffered-out:address:sink:character -> buffered-out:address:sink:character, in:address:source:character [
+def buffer-lines in:address:source:char, buffered-out:address:sink:char -> buffered-out:address:sink:char, in:address:source:char [
   local-scope
   load-ingredients
   # repeat forever
@@ -386,7 +386,7 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
     # read characters from 'in' until newline, copy into line
     {
       +next-character
-      c:character, eof?:boolean, in <- read in
+      c:char, eof?:boolean, in <- read in
       break-if eof?
       # drop a character on backspace
       {
@@ -417,7 +417,7 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
     {
       done?:boolean <- greater-or-equal i, max
       break-if done?
-      c:character <- index *line-contents, i
+      c:char <- index *line-contents, i
       buffered-out <- write buffered-out, c
       i <- add i, 1
       loop
@@ -434,9 +434,9 @@ def buffer-lines in:address:source:character, buffered-out:address:sink:characte
 scenario buffer-lines-blocks-until-newline [
   run [
     local-scope
-    source:address:source:character, sink:address:sink:character <- new-channel 10/capacity
-    _, buffered-stdin:address:sink:character/buffered-stdin <- new-channel 10/capacity
-    buffered-chan:address:channel:character <- get *buffered-stdin, chan:offset
+    source:address:source:char, sink:address:sink:char <- new-channel 10/capacity
+    _, buffered-stdin:address:sink:char/buffered-stdin <- new-channel 10/capacity
+    buffered-chan:address:channel:char <- get *buffered-stdin, chan:offset
     empty?:boolean <- channel-empty? buffered-chan
     assert empty?, [ 
 F buffer-lines-blocks-until-newline: channel should be empty after init]

@@ -5,7 +5,7 @@ def main [
   session:number <- $accept socket
   {
     client-message:address:buffer <- new-buffer 1024
-    c:character <- $read-from-socket session
+    c:char <- $read-from-socket session
     break-unless c
     $print c
     loop

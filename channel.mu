@@ -1,11 +1,11 @@
 # example program: communicating between routines using channels
 
-def producer sink:address:sink:character -> sink:address:sink:character [
+def producer sink:address:sink:char -> sink:address:sink:char [
   # produce characters 1 to 5 on a channel
   local-scope
   load-ingredients
   # n = 0
-  n:character <- copy 0
+  n:char <- copy 0
   {
     done?:boolean <- lesser-than n, 5
     break-unless done?
@@ -19,16 +19,16 @@ def producer sink:address:sink:character -> sink:address:sink:character [
   close sink
 ]
 
-def consumer source:address:source:character -> source:address:source:character [
+def consumer source:address:source:char -> source:address:source:char [
   # consume and print integers from a channel
   local-scope
   load-ingredients
   {
     # read an integer from the channel
-    n:character, eof?:boolean, source <- read source
+    n:char, eof?:boolean, source <- read source
     break-if eof?
     # other threads might get between these prints
-    $print [consume: ], n:character, [ 
+    $print [consume: ], n:char, [ 
 ]
     loop
   }
@@ -36,7 +36,7 @@ def consumer source:address:source:character -> source:address:source:character 
 
 def main [
   local-scope
-  source:address:source:character, sink:address:sink:character <- new-channel 3/capacity
+  source:address:source:char, sink:address:sink:char <- new-channel 3/capacity
   # create two background 'routines' that communicate by a channel
   routine1:number <- start-running producer, sink
   routine2:number <- start-running consumer, source

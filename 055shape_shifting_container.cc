@@ -69,7 +69,7 @@ container bar:_a:_b [
 ]
 def main [
   1:text <- new [abc]
-  2:bar:number:array:character <- merge 34/x, 1:text/y
+  2:bar:number:array:char <- merge 34/x, 1:text/y
 ]
 $error: 0
 

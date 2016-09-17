@@ -2,7 +2,7 @@ scenario array-from-args [
   run [
     local-scope
     x:text <- new-array 0, 1, 2
-    10:array:character/raw <- copy *x
+    10:array:char/raw <- copy *x
   ]
   memory-should-contain [
     10 <- 3  # array length
@@ -18,7 +18,7 @@ def new-array -> result:text [
   capacity:number <- copy 0
   {
     # while read curr-value
-    curr-value:character, exists?:boolean <- next-ingredient
+    curr-value:char, exists?:boolean <- next-ingredient
     break-unless exists?
     capacity <- add capacity, 1
     loop
@@ -30,7 +30,7 @@ def new-array -> result:text [
     # while read curr-value
     done?:boolean <- greater-or-equal i, capacity
     break-if done?
-    curr-value:character, exists?:boolean <- next-ingredient
+    curr-value:char, exists?:boolean <- next-ingredient
     assert exists?, [error in rewinding ingredients to new-array]
     *result <- put-index *result, i, curr-value
     i <- add i, 1

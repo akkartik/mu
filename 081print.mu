@@ -10,7 +10,7 @@ container screen [
 ]
 
 container screen-cell [
-  contents:character
+  contents:char
   color:number
 ]
 
@@ -72,7 +72,7 @@ def fake-screen-is-empty? screen:address:screen -> result:boolean [
     done?:boolean <- greater-or-equal i, len
     break-if done?
     curr:screen-cell <- index *buf, i
-    curr-contents:character <- get curr, contents:offset
+    curr-contents:char <- get curr, contents:offset
     i <- add i, 1
     loop-unless curr-contents
     # not 0
@@ -81,7 +81,7 @@ def fake-screen-is-empty? screen:address:screen -> result:boolean [
   return 1/true
 ]
 
-def print screen:address:screen, c:character -> screen:address:screen [
+def print screen:address:screen, c:char -> screen:address:screen [
   local-scope
   load-ingredients
   color:number, color-found?:boolean <- next-ingredient
@@ -175,8 +175,8 @@ scenario print-character-at-top-left [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    a:character <- copy 97/a
-    fake-screen <- print fake-screen, a:character
+    a:char <- copy 97/a
+    fake-screen <- print fake-screen, a:char
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     1:array:screen-cell/raw <- copy *cell
   ]
@@ -193,8 +193,8 @@ scenario print-character-in-color [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    a:character <- copy 97/a
-    fake-screen <- print fake-screen, a:character, 1/red
+    a:char <- copy 97/a
+    fake-screen <- print fake-screen, a:char, 1/red
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     1:array:screen-cell/raw <- copy *cell
   ]
@@ -211,9 +211,9 @@ scenario print-backspace-character [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    a:character <- copy 97/a
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
-    backspace:character <- copy 8/backspace
+    backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     10:number/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
@@ -233,9 +233,9 @@ scenario print-extra-backspace-character [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    a:character <- copy 97/a
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
-    backspace:character <- copy 8/backspace
+    backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     fake-screen <- print fake-screen, backspace
     1:number/raw <- get *fake-screen, cursor-column:offset
@@ -256,11 +256,11 @@ scenario print-character-at-right-margin [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 2/width, 2/height
-    a:character <- copy 97/a
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
-    b:character <- copy 98/b
+    b:char <- copy 98/b
     fake-screen <- print fake-screen, b
-    c:character <- copy 99/c
+    c:char <- copy 99/c
     fake-screen <- print fake-screen, c
     10:number/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
@@ -282,8 +282,8 @@ scenario print-newline-character [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    newline:character <- copy 10/newline
-    a:character <- copy 97/a
+    newline:char <- copy 10/newline
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     fake-screen <- print fake-screen, newline
     10:number/raw <- get *fake-screen, cursor-row:offset
@@ -306,7 +306,7 @@ scenario print-newline-at-bottom-line [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
-    newline:character <- copy 10/newline
+    newline:char <- copy 10/newline
     fake-screen <- print fake-screen, newline
     fake-screen <- print fake-screen, newline
     fake-screen <- print fake-screen, newline
@@ -323,16 +323,16 @@ scenario print-character-at-bottom-right [
   run [
     local-scope
     fake-screen:address:screen <- new-fake-screen 2/width, 2/height
-    newline:character <- copy 10/newline
+    newline:char <- copy 10/newline
     fake-screen <- print fake-screen, newline
-    a:character <- copy 97/a
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
-    b:character <- copy 98/b
+    b:char <- copy 98/b
     fake-screen <- print fake-screen, b
-    c:character <- copy 99/c
+    c:char <- copy 99/c
     fake-screen <- print fake-screen, c
     fake-screen <- print fake-screen, newline
-    d:character <- copy 100/d
+    d:char <- copy 100/d
     fake-screen <- print fake-screen, d
     10:number/raw <- get *fake-screen, cursor-row:offset
     11:number/raw <- get *fake-screen, cursor-column:offset
@@ -359,7 +359,7 @@ scenario print-character-at-bottom-right [
 def clear-line screen:address:screen -> screen:address:screen [
   local-scope
   load-ingredients
-  space:character <- copy 0/nul
+  space:char <- copy 0/nul
   # if x exists, clear line in fake screen
   {
     break-unless screen
@@ -387,7 +387,7 @@ def clear-line-until screen:address:screen, right:number/inclusive -> screen:add
   local-scope
   load-ingredients
   _, column:number <- cursor-position screen
-  space:character <- copy 32/space
+  space:char <- copy 32/space
   bg-color:number, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
@@ -435,7 +435,7 @@ scenario clear-line-erases-printed-characters [
     local-scope
     fake-screen:address:screen <- new-fake-screen 3/width, 2/height
     # print a character
-    a:character <- copy 97/a
+    a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     # move cursor to start of line
     fake-screen <- move-cursor fake-screen, 0/row, 0/column
@@ -664,7 +664,7 @@ def print screen:address:screen, s:text -> screen:address:screen [
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
-    c:character <- index *s, i
+    c:char <- index *s, i
     print screen, c, color, bg-color
     i <- add i, 1
     loop

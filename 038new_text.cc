@@ -2,12 +2,12 @@
 
 //: A Mu text is an address to an array of characters.
 :(before "End Mu Types Initialization")
-put(Type_abbreviations, "text", new_type_tree("address:array:character"));
+put(Type_abbreviations, "text", new_type_tree("address:array:char"));
 
 :(scenario new_string)
 def main [
   1:text <- new [abc def]
-  2:character <- index *1:text, 5
+  2:char <- index *1:text, 5
 ]
 # number code for 'e'
 +mem: storing 101 in location 2
@@ -16,7 +16,7 @@ def main [
 def main [
   1:text <- new [a«c]
   2:number <- length *1:text
-  3:character <- index *1:text, 1
+  3:char <- index *1:text, 1
 ]
 +mem: storing 3 in location 2
 # unicode for '«'

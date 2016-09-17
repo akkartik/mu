@@ -496,7 +496,7 @@ def foo x:number -> y:number [
 % Hide_errors = true;
 def main [
   local-scope
-  x:character <- copy 10/newline
+  x:char <- copy 10/newline
   1:number/raw <- foo x
 ]
 def foo x:number -> y:number [
@@ -510,7 +510,7 @@ def foo x:number -> y:number [
 def main [
   1:number/raw <- foo 0  # valid literal for boolean
 ]
-def foo x:character -> y:number [
+def foo x:char -> y:number [
   local-scope
   load-ingredients
   return 34
@@ -527,7 +527,7 @@ def foo x:boolean -> y:number [
 def main [
   1:number/raw <- foo 97  # not a valid literal for boolean
 ]
-def foo x:character -> y:number [
+def foo x:char -> y:number [
   local-scope
   load-ingredients
   return 34
@@ -544,7 +544,7 @@ def foo x:boolean -> y:number [
 def main [
   1:number/raw <- foo 97
 ]
-def foo x:character -> y:number [
+def foo x:char -> y:number [
   local-scope
   load-ingredients
   return 34
@@ -614,7 +614,7 @@ def foo a:boolean -> b:number [
 +error: main: failed to find a matching call for 'y:number <- foo x'
 
 :(scenario override_methods_with_type_abbreviations)
-type string = address:array:character
+type string = address:array:char
 def main [
   local-scope
   s:text <- new [abc]

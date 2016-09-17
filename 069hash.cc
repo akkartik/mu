@@ -130,7 +130,7 @@ size_t hash_iter(size_t h, size_t input) {
 :(scenario hash_container_checks_all_elements)
 container foo [
   x:number
-  y:character
+  y:char
 ]
 def main [
   1:foo <- merge 34, 97/a
@@ -168,7 +168,7 @@ def main [
 :(scenario hash_can_ignore_container_elements)
 container foo [
   x:number
-  y:character/ignore-for-hash
+  y:char/ignore-for-hash
 ]
 def main [
   1:foo <- merge 34, 97/a
@@ -248,11 +248,11 @@ def main [
 :(scenario hash_container_depends_only_on_elements)
 container foo [
   x:number
-  y:character
+  y:char
 ]
 container bar [
   x:number
-  y:character
+  y:char
 ]
 def main [
   1:foo <- merge 34, 97/a
@@ -269,7 +269,7 @@ def main [
 :(scenario hash_container_depends_only_on_elements_2)
 container foo [
   x:number
-  y:character
+  y:char
   z:address:number
 ]
 def main [
@@ -291,7 +291,7 @@ def main [
 :(scenario hash_container_depends_only_on_elements_3)
 container foo [
   x:number
-  y:character
+  y:char
   z:bar
 ]
 container bar [
@@ -355,7 +355,7 @@ case HASH_OLD: {
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:array:character), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:array:char), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   break;

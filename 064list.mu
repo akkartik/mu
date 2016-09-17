@@ -71,20 +71,20 @@ def insert x:_elem, in:address:list:_elem -> in:address:list:_elem [
 scenario inserting-into-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:character <- rest list  # inside list
+    list2:address:list:char <- rest list  # inside list
     list2 <- insert 6, list2
     # check structure
     list2 <- copy list
-    10:character/raw <- first list2
+    10:char/raw <- first list2
     list2 <- rest list2
-    11:character/raw <- first list2
+    11:char/raw <- first list2
     list2 <- rest list2
-    12:character/raw <- first list2
+    12:char/raw <- first list2
     list2 <- rest list2
-    13:character/raw <- first list2
+    13:char/raw <- first list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -97,21 +97,21 @@ scenario inserting-into-list [
 scenario inserting-at-end-of-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:character <- rest list  # inside list
+    list2:address:list:char <- rest list  # inside list
     list2 <- rest list2  # now at end of list
     list2 <- insert 6, list2
     # check structure like before
     list2 <- copy list
-    10:character/raw <- first list2
+    10:char/raw <- first list2
     list2 <- rest list2
-    11:character/raw <- first list2
+    11:char/raw <- first list2
     list2 <- rest list2
-    12:character/raw <- first list2
+    12:char/raw <- first list2
     list2 <- rest list2
-    13:character/raw <- first list2
+    13:char/raw <- first list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -124,19 +124,19 @@ scenario inserting-at-end-of-list [
 scenario inserting-after-start-of-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- insert 6, list
     # check structure like before
-    list2:address:list:character <- copy list
-    10:character/raw <- first list2
+    list2:address:list:char <- copy list
+    10:char/raw <- first list2
     list2 <- rest list2
-    11:character/raw <- first list2
+    11:char/raw <- first list2
     list2 <- rest list2
-    12:character/raw <- first list2
+    12:char/raw <- first list2
     list2 <- rest list2
-    13:character/raw <- first list2
+    13:char/raw <- first list2
   ]
   memory-should-contain [
     10 <- 5  # scanning next
@@ -178,18 +178,18 @@ def remove x:address:list:_elem/contained-in:in, in:address:list:_elem -> in:add
 scenario removing-from-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:address:list:character <- rest list  # second element
+    list2:address:list:char <- rest list  # second element
     list <- remove list2, list
     10:boolean/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
-    11:character/raw <- first list2
+    11:char/raw <- first list2
     list2 <- rest list2
-    12:character/raw <- first list2
-    20:address:list:character/raw <- rest list2
+    12:char/raw <- first list2
+    20:address:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -202,16 +202,16 @@ scenario removing-from-list [
 scenario removing-from-start-of-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     list <- remove list, list
     # check structure like before
-    list2:address:list:character <- copy list
-    10:character/raw <- first list2
+    list2:address:list:char <- copy list
+    10:char/raw <- first list2
     list2 <- rest list2
-    11:character/raw <- first list2
-    20:address:list:character/raw <- rest list2
+    11:char/raw <- first list2
+    20:address:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 4  # scanning next, skipping deleted element
@@ -223,20 +223,20 @@ scenario removing-from-start-of-list [
 scenario removing-from-end-of-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
     # delete last element
-    list2:address:list:character <- rest list
+    list2:address:list:char <- rest list
     list2 <- rest list2
     list <- remove list2, list
     10:boolean/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
-    11:character/raw <- first list2
+    11:char/raw <- first list2
     list2 <- rest list2
-    12:character/raw <- first list2
-    20:address:list:character/raw <- rest list2
+    12:char/raw <- first list2
+    20:address:list:char/raw <- rest list2
   ]
   memory-should-contain [
     10 <- 0  # remove returned non-null
@@ -249,7 +249,7 @@ scenario removing-from-end-of-list [
 scenario removing-from-singleton-list [
   run [
     local-scope
-    list:address:list:character <- push 3, 0
+    list:address:list:char <- push 3, 0
     list <- remove list, list
     1:number/raw <- copy list
   ]
