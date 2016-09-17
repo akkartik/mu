@@ -164,7 +164,7 @@ def main [
 
 :(scenario transform_names_supports_static_arrays)
 def main [
-  x:array:num:3 <- create-array
+  x:@:num:3 <- create-array
   y:num <- copy 3
 ]
 +name: assign x 1

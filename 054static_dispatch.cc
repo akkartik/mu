@@ -614,7 +614,7 @@ def foo a:bool -> b:num [
 +error: main: failed to find a matching call for 'y:num <- foo x'
 
 :(scenario override_methods_with_type_abbreviations)
-type string = address:array:char
+type string = address:@:char
 def main [
   local-scope
   s:text <- new [abc]

@@ -905,17 +905,17 @@ def foo x:&:_elem -> y:num [
 # version with headers padded with lots of unrelated concrete types
 def main [
   1:num <- copy 23
-  2:&:array:num <- copy 0
-  3:num <- foo 2:&:array:num, 1:num
+  2:&:@:num <- copy 0
+  3:num <- foo 2:&:@:num, 1:num
 ]
 # variant with concrete type
-def foo dummy:&:array:num, x:num -> y:num, dummy:&:array:num [
+def foo dummy:&:@:num, x:num -> y:num, dummy:&:@:num [
   local-scope
   load-ingredients
   return 34
 ]
 # shape-shifting variant
-def foo dummy:&:array:num, x:_elem -> y:num, dummy:&:array:num [
+def foo dummy:&:@:num, x:_elem -> y:num, dummy:&:@:num [
   local-scope
   load-ingredients
   return 35

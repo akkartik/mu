@@ -69,7 +69,7 @@ container bar:_a:_b [
 ]
 def main [
   1:text <- new [abc]
-  2:bar:num:array:char <- merge 34/x, 1:text/y
+  2:bar:num:@:char <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -449,7 +449,7 @@ void test_replace_middle_type_ingredient_with_multiple2() {
 
 void test_replace_middle_type_ingredient_with_multiple3() {
   run("container foo_table:_key:_value [\n"
-      "  data:&:array:foo_table_row:_key:_value\n"
+      "  data:&:@:foo_table_row:_key:_value\n"
       "]\n"
       "\n"
       "container foo_table_row:_key:_value [\n"

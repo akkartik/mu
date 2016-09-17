@@ -99,16 +99,16 @@ def main [
   # that the result is deterministic
   100:num <- copy 1  # pretend refcount
   101:num <- copy 3  # pretend array length
-  1:&:array:num <- copy 100/unsafe  # pretend allocation
-  put-index *1:&:array:num, 0, 34
-  put-index *1:&:array:num, 1, 35
-  put-index *1:&:array:num, 2, 36
-  stash [old:], *1:&:array:num
-  2:&:array:num <- deep-copy 1:&:array:num
-  stash 2:&:array:num
-  stash [new:], *2:&:array:num
-  10:bool <- equal 1:&:array:num, 2:&:array:num
-  11:bool <- equal *1:&:array:num, *2:&:array:num
+  1:&:@:num <- copy 100/unsafe  # pretend allocation
+  put-index *1:&:@:num, 0, 34
+  put-index *1:&:@:num, 1, 35
+  put-index *1:&:@:num, 2, 36
+  stash [old:], *1:&:@:num
+  2:&:@:num <- deep-copy 1:&:@:num
+  stash 2:&:@:num
+  stash [new:], *2:&:@:num
+  10:bool <- equal 1:&:@:num, 2:&:@:num
+  11:bool <- equal *1:&:@:num, *2:&:@:num
 ]
 +app: old: 3 34 35 36
 +app: new: 3 34 35 36

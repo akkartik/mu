@@ -82,7 +82,7 @@ case SAVE: {
     break;
   }
   if (!is_mu_text(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of 'save' should be an address:array:char, but got '" << to_string(inst.ingredients.at(1)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'save' should be an address:@:char, but got '" << to_string(inst.ingredients.at(1)) << "'\n" << end();
     break;
   }
   break;

@@ -29,7 +29,7 @@ scenario table-read-write-non-integer [
 container table:_key:_value [
   length:num
   capacity:num
-  data:&:array:table_row:_key:_value
+  data:&:@:table_row:_key:_value
 ]
 
 container table_row:_key:_value [
@@ -42,7 +42,7 @@ def new-table capacity:num -> result:&:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
-  data:&:array:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
+  data:&:@:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
   *result <- merge 0/length, capacity, data
 ]
 
@@ -54,7 +54,7 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:&:array:table_row:_key:_value <- get *table, data:offset
+  table-data:&:@:table_row:_key:_value <- get *table, data:offset
   x:table_row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   not-occupied?:bool <- not occupied?:bool
@@ -79,7 +79,7 @@ def index table:&:table:_key:_value, key:_key -> result:_value [
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:&:array:table_row:_key:_value <- get *table, data:offset
+  table-data:&:@:table_row:_key:_value <- get *table, data:offset
   x:table_row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   assert occupied?, [can't handle missing elements yet]

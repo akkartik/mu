@@ -22,10 +22,10 @@ container resize-event [
 
 container console [
   current-event-index:num
-  events:&:array:event
+  events:&:@:event
 ]
 
-def new-fake-console events:&:array:event -> result:&:console [
+def new-fake-console events:&:@:event -> result:&:console [
   local-scope
   load-ingredients
   result:&:console <- new console:type
@@ -38,7 +38,7 @@ def read-event console:&:console -> result:event, console:&:console, found?:bool
   {
     break-unless console
     current-event-index:num <- get *console, current-event-index:offset
-    buf:&:array:event <- get *console, events:offset
+    buf:&:@:event <- get *console, events:offset
     {
       max:num <- length *buf
       done?:bool <- greater-or-equal current-event-index, max

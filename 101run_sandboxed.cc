@@ -218,7 +218,7 @@ def main [
   1:text <- new [# ab
 add 2, 2]
   2:text <- run-sandboxed 1:text
-  3:array:char <- copy *2:text
+  3:@:char <- copy *2:text
 ]
 +mem: storing 52 in location 4
 
@@ -314,7 +314,7 @@ def main [
   # try to interactively add 2 and 2
   1:text <- new [add 2, 2]
   2:text <- run-sandboxed 1:text
-  10:array:char <- copy 2:text/lookup
+  10:@:char <- copy 2:text/lookup
 ]
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
@@ -328,7 +328,7 @@ def main [
     z:text <- append x:text, y:text
   ]
   2:text <- run-sandboxed 1:text
-  10:array:char <- copy 2:text/lookup
+  10:@:char <- copy 2:text/lookup
 ]
 # output contains "ab"
 +mem: storing 97 in location 11
@@ -340,7 +340,7 @@ def main [
   1:text <- new [x:num <- copy 34
 get x:num, foo:offset]
   2:text, 3:text <- run-sandboxed 1:text
-  10:array:char <- copy 3:text/lookup
+  10:@:char <- copy 3:text/lookup
 ]
 # error should be "unknown element foo in container number"
 +mem: storing 117 in location 11
@@ -352,7 +352,7 @@ get x:num, foo:offset]
 :(scenario run_interactive_with_comment)
 def main [
   # 2 instructions, with a comment after the first
-  1:&:array:num <- new [a:num <- copy 0  # abc
+  1:&:@:num <- new [a:num <- copy 0  # abc
 b:num <- copy 0
 ]
   2:text, 3:text <- run-sandboxed 1:text

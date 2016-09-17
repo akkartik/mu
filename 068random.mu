@@ -23,7 +23,7 @@ def assume-random-numbers -> result:&:stream:num [
     loop
   }
   rewind-ingredients
-  result-data:&:array:num <- new number:type, result-len
+  result-data:&:@:num <- new number:type, result-len
   idx:num <- copy 0
   {
     curr:num, arg-received?:bool <- next-ingredient

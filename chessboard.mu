@@ -62,7 +62,7 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-type board = address:array:&:array:char
+type board = address:@:&:@:char
 
 def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:console [
   local-scope
@@ -102,7 +102,7 @@ def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:
 
 ## a board is an array of files, a file is an array of characters (squares)
 
-def new-board initial-position:&:array:char -> board:board [
+def new-board initial-position:&:@:char -> board:board [
   local-scope
   load-ingredients
   # assert(length(initial-position) == 64)
@@ -115,14 +115,14 @@ def new-board initial-position:&:array:char -> board:board [
   {
     done?:boolean <- equal col, 8
     break-if done?
-    file:&:array:char <- new-file initial-position, col
+    file:&:@:char <- new-file initial-position, col
     *board <- put-index *board, col, file
     col <- add col, 1
     loop
   }
 ]
 
-def new-file position:&:array:char, index:num -> result:&:array:char [
+def new-file position:&:@:char, index:num -> result:&:@:char [
   local-scope
   load-ingredients
   index <- multiply index, 8
@@ -157,7 +157,7 @@ def print-board screen:&:screen, board:board -> screen:&:screen [
     {
       done?:boolean <- equal col:num, 8
       break-if done?:boolean
-      f:&:array:char <- index *board, col
+      f:&:@:char <- index *board, col
       c:char <- index *f, row
       print screen, c
       print screen, space
@@ -186,7 +186,7 @@ def initial-position -> board:board [
   #   B P _ _ _ _ p B
   #   N P _ _ _ _ p n
   #   R P _ _ _ _ p r
-  initial-position:&:array:char <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
+  initial-position:&:@:char <- new-array 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q, 75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k, 66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n, 82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r
 #?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,
 #?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,
 #?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, 
@@ -539,8 +539,8 @@ def make-move board:board, m:&:move -> board:board [
   from-rank:num <- get *m, from-rank:offset
   to-file:num <- get *m, to-file:offset
   to-rank:num <- get *m, to-rank:offset
-  from-f:&:array:char <- index *board, from-file
-  to-f:&:array:char <- index *board, to-file
+  from-f:&:@:char <- index *board, from-file
+  to-f:&:@:char <- index *board, to-file
   src:char/square <- index *from-f, from-rank
   *to-f <- put-index *to-f, to-rank, src
   *from-f <- put-index *from-f, from-rank, 32/space

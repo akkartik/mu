@@ -2,7 +2,7 @@
 # are thus easier to test.
 
 container filesystem [
-  data:&:array:file-mapping
+  data:&:@:file-mapping
 ]
 
 container file-mapping [
@@ -24,7 +24,7 @@ def start-reading fs:&:filesystem, filename:text -> contents:&:source:char [
   }
   # fake file system
   i:num <- copy 0
-  data:&:array:file-mapping <- get *fs, data:offset
+  data:&:@:file-mapping <- get *fs, data:offset
   len:num <- length *data
   {
     done?:bool <- greater-or-equal i, len
@@ -115,7 +115,7 @@ def transmit-to-fake-file fs:&:filesystem, filename:text, source:&:source:char -
   new-file-mapping:file-mapping <- merge filename, contents
   # write to filesystem
   curr-filename:text <- copy 0
-  data:&:array:file-mapping <- get *fs, data:offset
+  data:&:@:file-mapping <- get *fs, data:offset
   # replace file contents if it already exists
   i:num <- copy 0
   len:num <- length *data
@@ -131,7 +131,7 @@ def transmit-to-fake-file fs:&:filesystem, filename:text, source:&:source:char -
   }
   # if file didn't already exist, make room for it
   new-len:num <- add len, 1
-  new-data:&:array:file-mapping <- new file-mapping:type, new-len
+  new-data:&:@:file-mapping <- new file-mapping:type, new-len
   put *fs, data:offset, new-data
   # copy over old files
   i:num <- copy 0

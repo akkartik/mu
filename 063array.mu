@@ -2,7 +2,7 @@ scenario array-from-args [
   run [
     local-scope
     x:text <- new-array 0, 1, 2
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10 <- 3  # array length

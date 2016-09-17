@@ -208,7 +208,7 @@ def main [
   11:num <- copy 97
   12:num <- copy 98
   13:num <- copy 99
-  2:num <- hash 10:array:num/unsafe
+  2:num <- hash 10:@:num/unsafe
   return-unless 2:num
   3:text <- new [abc]
   4:num <- hash 3:text
@@ -355,7 +355,7 @@ case HASH_OLD: {
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:array:char), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:@:char), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   break;

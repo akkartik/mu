@@ -5,20 +5,20 @@
 
 :(scenario closure)
 def main [
-  default-space:&:array:location <- new location:type, 30
-  1:&:array:location/names:new-counter <- new-counter
-  2:num/raw <- increment-counter 1:&:array:location/names:new-counter
-  3:num/raw <- increment-counter 1:&:array:location/names:new-counter
+  default-space:&:@:location <- new location:type, 30
+  1:&:@:location/names:new-counter <- new-counter
+  2:num/raw <- increment-counter 1:&:@:location/names:new-counter
+  3:num/raw <- increment-counter 1:&:@:location/names:new-counter
 ]
 def new-counter [
-  default-space:&:array:location <- new location:type, 30
+  default-space:&:@:location <- new location:type, 30
   x:num <- copy 23
   y:num <- copy 3  # variable that will be incremented
-  return default-space:&:array:location
+  return default-space:&:@:location
 ]
 def increment-counter [
-  default-space:&:array:location <- new location:type, 30
-  0:&:array:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
+  default-space:&:@:location <- new location:type, 30
+  0:&:@:location/names:new-counter <- next-ingredient  # outer space must be created by 'new-counter' above
   y:num/space:1 <- add y:num/space:1, 1  # increment
   y:num <- copy 234  # dummy
   return y:num/space:1
@@ -46,7 +46,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       if (!is_space(inst.products.at(j))) {
-        raise << "slot 0 should always have type address:array:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
+        raise << "slot 0 should always have type address:@:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");
@@ -153,16 +153,16 @@ def new-scope [
   new-default-space
   x:&:num <- new number:type
   *x:&:num <- copy 34
-  return default-space:&:array:location
+  return default-space:&:@:location
 ]
 def use-scope [
   local-scope
-  outer:&:array:location <- next-ingredient
-  0:&:array:location/names:new-scope <- copy outer:&:array:location
+  outer:&:@:location <- next-ingredient
+  0:&:@:location/names:new-scope <- copy outer:&:@:location
   return *x:&:num/space:1
 ]
 def main [
-  1:&:array:location/raw <- new-scope
-  2:num/raw <- use-scope 1:&:array:location/raw
+  1:&:@:location/raw <- new-scope
+  2:num/raw <- use-scope 1:&:@:location/raw
 ]
 +mem: storing 34 in location 2

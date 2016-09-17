@@ -1,10 +1,10 @@
 # new type to help incrementally scan arrays
 container stream:_elem [
   index:num
-  data:&:array:_elem
+  data:&:@:_elem
 ]
 
-def new-stream s:&:array:_elem -> result:&:stream:_elem [
+def new-stream s:&:@:_elem -> result:&:stream:_elem [
   local-scope
   load-ingredients
   result <- new {(stream _elem): type}
@@ -23,7 +23,7 @@ def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
   load-ingredients
   empty? <- copy 0/false
   idx:num <- get *in, index:offset
-  s:&:array:_elem <- get *in, data:offset
+  s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
   at-end?:bool <- greater-or-equal idx len
   {
@@ -41,7 +41,7 @@ def peek in:&:stream:_elem -> result:_elem, empty?:bool [
   load-ingredients
   empty?:bool <- copy 0/false
   idx:num <- get *in, index:offset
-  s:&:array:_elem <- get *in, data:offset
+  s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
   at-end?:bool <- greater-or-equal idx len
   {
@@ -68,7 +68,7 @@ def end-of-stream? in:&:stream:_elem -> result:bool [
   local-scope
   load-ingredients
   idx:num <- get *in, index:offset
-  s:&:array:_elem <- get *in, data:offset
+  s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
   result <- greater-or-equal idx, len
 ]

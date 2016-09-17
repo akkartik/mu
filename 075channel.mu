@@ -30,7 +30,7 @@ container channel:_elem [
   # A circular buffer contains values from index first-full up to (but not
   # including) index first-empty. The reader always modifies it at first-full,
   # while the writer always modifies it at first-empty.
-  data:&:array:_elem
+  data:&:@:_elem
 ]
 
 # Since channels have two ends, and since it's an error to use either end from
@@ -51,7 +51,7 @@ def new-channel capacity:num -> in:&:source:_elem, out:&:sink:_elem [
   *result <- put *result, first-full:offset, 0
   *result <- put *result, first-free:offset, 0
   capacity <- add capacity, 1  # unused slot for 'full?' below
-  data:&:array:_elem <- new _elem:type, capacity
+  data:&:@:_elem <- new _elem:type, capacity
   *result <- put *result, data:offset, data
   in <- new {(source _elem): type}
   *in <- put *in, chan:offset, result
@@ -85,7 +85,7 @@ def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   current-routine-is-unblocked
 #?   $print [performing write], 10/newline
   # store a deep copy of val
-  circular-buffer:&:array:_elem <- get *chan, data:offset
+  circular-buffer:&:@:_elem <- get *chan, data:offset
   free:num <- get *chan, first-free:offset
   val-copy:_elem <- deep-copy val  # on this instruction rests all Mu's concurrency-safety
   *circular-buffer <- put-index *circular-buffer, free, val-copy
@@ -131,7 +131,7 @@ def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   current-routine-is-unblocked
   # pull result off
   full:num <- get *chan, first-full:offset
-  circular-buffer:&:array:_elem <- get *chan, data:offset
+  circular-buffer:&:@:_elem <- get *chan, data:offset
   result <- index *circular-buffer, full
   # clear the slot
   empty:&:_elem <- new _elem:type
@@ -371,7 +371,7 @@ def channel-full? chan:&:channel:_elem -> result:bool [
 def capacity chan:&:channel:_elem -> result:num [
   local-scope
   load-ingredients
-  q:&:array:_elem <- get *chan, data:offset
+  q:&:@:_elem <- get *chan, data:offset
   result <- length *q
 ]
 

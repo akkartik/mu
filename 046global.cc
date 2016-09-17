@@ -11,15 +11,15 @@
 
 :(scenario global_space)
 def main [
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   20:num <- copy 0  # refcount
   21:num <- copy 5  # length
   # actual start of this recipe
-  global-space:&:array:location <- copy 20/unsafe
-  default-space:&:array:location <- copy 10/unsafe
+  global-space:&:@:location <- copy 20/unsafe
+  default-space:&:@:location <- copy 10/unsafe
   1:num <- copy 23
   1:num/space:global <- copy 24
 ]
@@ -43,7 +43,7 @@ global_space = 0;
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "global-space") {
   if (!scalar(data) || !is_space(x))
-    raise << maybe(current_recipe_name()) << "'global-space' should be of type address:array:location, but tried to write '" << to_string(x.type) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "'global-space' should be of type address:@:location, but tried to write '" << to_string(x.type) << "'\n" << end();
   if (Current_routine->global_space)
     raise << "routine already has a global-space; you can't over-write your globals" << end();
   Current_routine->global_space = data.at(0);
@@ -63,7 +63,7 @@ if (x.name == "global-space") {
 
 :(scenario global_space_with_names)
 def main [
-  global-space:&:array:location <- new location:type, 10
+  global-space:&:@:location <- new location:type, 10
   x:num <- copy 23
   1:num/space:global <- copy 24
 ]

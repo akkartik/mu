@@ -109,7 +109,7 @@ def main [
 :(scenario array_type_without_size_fails)
 % Hide_errors = true;
 def main [
-  x:array:num <- merge 2, 12, 13
+  x:@:num <- merge 2, 12, 13
 ]
 +error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.
 
@@ -119,7 +119,7 @@ def foo [  # dummy
 ]
 def main [
   local-scope
-  0:&:array:location/names:foo <- copy 0  # specify surrounding space
+  0:&:@:location/names:foo <- copy 0  # specify surrounding space
   x:bool <- copy 1/true
   x:num/space:1 <- copy 34
   x/space:1 <- copy 35

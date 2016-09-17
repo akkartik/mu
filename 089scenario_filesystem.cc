@@ -20,22 +20,22 @@ scenario assume-filesystem [
       |xyz|
     ]
   ]
-  data:&:array:file-mapping <- get *filesystem:&:filesystem, data:offset
+  data:&:@:file-mapping <- get *filesystem:&:filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
-  10:array:char/raw <- copy *file1-name
+  10:@:char/raw <- copy *file1-name
   file1-contents:text <- get file1, contents:offset
-  100:array:char/raw <- copy *file1-contents
+  100:@:char/raw <- copy *file1-contents
   file2:file-mapping <- index *data, 1
   file2-name:text <- get file2, name:offset
-  30:array:char/raw <- copy *file2-name
+  30:@:char/raw <- copy *file2-name
   file2-contents:text <- get file2, contents:offset
-  40:array:char/raw <- copy *file2-contents
+  40:@:char/raw <- copy *file2-contents
   file3:file-mapping <- index *data, 2
   file3-name:text <- get file3, name:offset
-  50:array:char/raw <- copy *file3-name
+  50:@:char/raw <- copy *file3-name
   file3-contents:text <- get file3, contents:offset
-  60:array:char/raw <- copy *file3-contents
+  60:@:char/raw <- copy *file3-contents
   memory-should-contain [
     10:array:character <- [a]
     100:array:character <- [a bc
@@ -59,12 +59,12 @@ scenario assume-filesystem [
       |x\\\\|yz|
     ]
   ]
-  data:&:array:file-mapping <- get *filesystem:&:filesystem, data:offset
+  data:&:@:file-mapping <- get *filesystem:&:filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
-  10:array:char/raw <- copy *file1-name
+  10:@:char/raw <- copy *file1-name
   file1-contents:text <- get file1, contents:offset
-  20:array:char/raw <- copy *file1-contents
+  20:@:char/raw <- copy *file1-contents
   memory-should-contain [
     10:array:character <- [a]
     20:array:character <- [x|yz

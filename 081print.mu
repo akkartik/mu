@@ -6,7 +6,7 @@ container screen [
   num-columns:num
   cursor-row:num
   cursor-column:num
-  data:&:array:screen-cell
+  data:&:@:screen-cell
 ]
 
 container screen-cell [
@@ -19,7 +19,7 @@ def new-fake-screen w:num, h:num -> result:&:screen [
   load-ingredients
   result <- new screen:type
   bufsize:num <- multiply w, h
-  data:&:array:screen-cell <- new screen-cell:type, bufsize
+  data:&:@:screen-cell <- new screen-cell:type, bufsize
   *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data
   result <- clear-screen result
 ]
@@ -31,7 +31,7 @@ def clear-screen screen:&:screen -> screen:&:screen [
   {
     break-unless screen
     # clear fake screen
-    buf:&:array:screen-cell <- get *screen, data:offset
+    buf:&:@:screen-cell <- get *screen, data:offset
     max:num <- length *buf
     i:num <- copy 0
     {
@@ -65,7 +65,7 @@ def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients
   return-unless screen, 1/true
-  buf:&:array:screen-cell <- get *screen, data:offset
+  buf:&:@:screen-cell <- get *screen, data:offset
   i:num <- copy 0
   len:num <- length *buf
   {
@@ -136,7 +136,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
     # save character in fake screen
     index:num <- multiply row, width
     index <- add index, column
-    buf:&:array:screen-cell <- get *screen, data:offset
+    buf:&:@:screen-cell <- get *screen, data:offset
     len:num <- length *buf
     # special-case: backspace
     {
@@ -177,8 +177,8 @@ scenario print-character-at-top-left [
     fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    1:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    1:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     1 <- 6  # width*height
@@ -195,8 +195,8 @@ scenario print-character-in-color [
     fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char, 1/red
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    1:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    1:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     1 <- 6  # width*height
@@ -216,8 +216,8 @@ scenario print-backspace-character [
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     10:num/raw <- get *fake-screen, cursor-column:offset
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    11:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    11:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     10 <- 0  # cursor column
@@ -239,8 +239,8 @@ scenario print-extra-backspace-character [
     fake-screen <- print fake-screen, backspace
     fake-screen <- print fake-screen, backspace
     1:num/raw <- get *fake-screen, cursor-column:offset
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    3:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    3:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     1 <- 0  # cursor column
@@ -263,8 +263,8 @@ scenario print-character-at-right-margin [
     c:char <- copy 99/c
     fake-screen <- print fake-screen, c
     10:num/raw <- get *fake-screen, cursor-column:offset
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    11:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    11:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     10 <- 1  # cursor column
@@ -288,8 +288,8 @@ scenario print-newline-character [
     fake-screen <- print fake-screen, newline
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    12:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    12:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     10 <- 1  # cursor row
@@ -336,8 +336,8 @@ scenario print-character-at-bottom-right [
     fake-screen <- print fake-screen, d
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    20:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    20:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     10 <- 1  # cursor row
@@ -441,8 +441,8 @@ scenario clear-line-erases-printed-characters [
     fake-screen <- move-cursor fake-screen, 0/row, 0/column
     # clear line
     fake-screen <- clear-line fake-screen
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    10:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    10:@:screen-cell/raw <- copy *cell
   ]
   # screen should be blank
   memory-should-contain [
@@ -677,8 +677,8 @@ scenario print-text-stops-at-right-margin [
     fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     s:text <- new [abcd]
     fake-screen <- print fake-screen, s:text
-    cell:&:array:screen-cell <- get *fake-screen, data:offset
-    10:array:screen-cell/raw <- copy *cell
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    10:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
     10 <- 6  # width*height

@@ -218,14 +218,14 @@ scenario buffer-append-works [
     x <- append x, c
     s2:text <- get *x, data:offset
     10:bool/raw <- equal s1, s2
-    11:array:char/raw <- copy *s2
+    11:@:char/raw <- copy *s2
     +buffer-filled
     c:char <- copy 100/d
     x <- append x, c
     s3:text <- get *x, data:offset
     20:bool/raw <- equal s1, s3
     21:num/raw <- get *x, length:offset
-    30:array:char/raw <- copy *s3
+    30:@:char/raw <- copy *s3
   ]
   memory-should-contain [
     # before +buffer-filled
@@ -267,7 +267,7 @@ scenario buffer-append-handles-backspace [
     c:char <- copy 8/backspace
     x <- append x, c
     s:text <- buffer-to-array x
-    10:array:char/raw <- copy *s
+    10:@:char/raw <- copy *s
   ]
   memory-should-contain [
     10 <- 1   # length
@@ -333,7 +333,7 @@ scenario text-append-1 [
     x:text <- new [hello,]
     y:text <- new [ world!]
     z:text <- append x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [hello, world!]
@@ -346,7 +346,7 @@ scenario text-append-null [
     x:text <- copy 0
     y:text <- new [ world!]
     z:text <- append x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [ world!]
@@ -359,7 +359,7 @@ scenario text-append-null-2 [
     x:text <- new [hello,]
     y:text <- copy 0
     z:text <- append x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [hello,]
@@ -373,7 +373,7 @@ scenario text-append-multiary [
     y:text <- new [world]
     z:text <- new [!]
     z:text <- append x, y, z
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [hello, world!]
@@ -385,7 +385,7 @@ scenario replace-character-in-text [
     local-scope
     x:text <- new [abc]
     x <- replace x, 98/b, 122/z
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10:array:character <- [azc]
@@ -409,7 +409,7 @@ scenario replace-character-at-start [
     local-scope
     x:text <- new [abc]
     x <- replace x, 97/a, 122/z
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10:array:character <- [zbc]
@@ -421,7 +421,7 @@ scenario replace-character-at-end [
     local-scope
     x:text <- new [abc]
     x <- replace x, 99/c, 122/z
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10:array:character <- [abz]
@@ -433,7 +433,7 @@ scenario replace-character-missing [
     local-scope
     x:text <- new [abc]
     x <- replace x, 100/d, 122/z
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10:array:character <- [abc]
@@ -445,7 +445,7 @@ scenario replace-all-characters [
     local-scope
     x:text <- new [banana]
     x <- replace x, 97/a, 122/z
-    10:array:char/raw <- copy *x
+    10:@:char/raw <- copy *x
   ]
   memory-should-contain [
     10:array:character <- [bznznz]
@@ -532,7 +532,7 @@ scenario interpolate-works [
     x:text <- new [abc_ghi]
     y:text <- new [def]
     z:text <- interpolate x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [abcdefghi]
@@ -545,7 +545,7 @@ scenario interpolate-at-start [
     x:text <- new [_, hello!]
     y:text <- new [abc]
     z:text <- interpolate x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [abc, hello!]
@@ -558,7 +558,7 @@ scenario interpolate-at-end [
     x:text <- new [hello, _]
     y:text <- new [abc]
     z:text <- interpolate x, y
-    10:array:char/raw <- copy *z
+    10:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [hello, abc]
@@ -681,7 +681,7 @@ scenario trim-unmodified [
     local-scope
     x:text <- new [abc]
     y:text <- trim x
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [abc]
@@ -693,7 +693,7 @@ scenario trim-left [
     local-scope
     x:text <- new [  abc]
     y:text <- trim x
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [abc]
@@ -705,7 +705,7 @@ scenario trim-right [
     local-scope
     x:text <- new [abc  ]
     y:text <- trim x
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [abc]
@@ -717,7 +717,7 @@ scenario trim-left-right [
     local-scope
     x:text <- new [  abc   ]
     y:text <- trim x
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [abc]
@@ -730,7 +730,7 @@ scenario trim-newline-tab [
     x:text <- new [	abc
 ]
     y:text <- trim x
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [abc]
@@ -1061,7 +1061,7 @@ scenario match-at-inside-bounds-2 [
   ]
 ]
 
-def split s:text, delim:char -> result:&:array:text [
+def split s:text, delim:char -> result:&:@:text [
   local-scope
   load-ingredients
   # empty text? return empty array
@@ -1107,12 +1107,12 @@ scenario text-split-1 [
   run [
     local-scope
     x:text <- new [a/b]
-    y:&:array:text <- split x, 47/slash
+    y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
-    20:array:char/raw <- copy *a
-    30:array:char/raw <- copy *b
+    20:@:char/raw <- copy *a
+    30:@:char/raw <- copy *b
   ]
   memory-should-contain [
     10 <- 2  # length of result
@@ -1125,14 +1125,14 @@ scenario text-split-2 [
   run [
     local-scope
     x:text <- new [a/b/c]
-    y:&:array:text <- split x, 47/slash
+    y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
     c:text <- index *y, 2
-    20:array:char/raw <- copy *a
-    30:array:char/raw <- copy *b
-    40:array:char/raw <- copy *c
+    20:@:char/raw <- copy *a
+    30:@:char/raw <- copy *b
+    40:@:char/raw <- copy *c
   ]
   memory-should-contain [
     10 <- 3  # length of result
@@ -1146,10 +1146,10 @@ scenario text-split-missing [
   run [
     local-scope
     x:text <- new [abc]
-    y:&:array:text <- split x, 47/slash
+    y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
-    20:array:char/raw <- copy *a
+    20:@:char/raw <- copy *a
   ]
   memory-should-contain [
     10 <- 1  # length of result
@@ -1161,7 +1161,7 @@ scenario text-split-empty [
   run [
     local-scope
     x:text <- new []
-    y:&:array:text <- split x, 47/slash
+    y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
   ]
   memory-should-contain [
@@ -1173,16 +1173,16 @@ scenario text-split-empty-piece [
   run [
     local-scope
     x:text <- new [a/b//c]
-    y:&:array:text <- split x:text, 47/slash
+    y:&:@:text <- split x:text, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
     c:text <- index *y, 2
     d:text <- index *y, 3
-    20:array:char/raw <- copy *a
-    30:array:char/raw <- copy *b
-    40:array:char/raw <- copy *c
-    50:array:char/raw <- copy *d
+    20:@:char/raw <- copy *a
+    30:@:char/raw <- copy *b
+    40:@:char/raw <- copy *c
+    50:@:char/raw <- copy *d
   ]
   memory-should-contain [
     10 <- 4  # length of result
@@ -1216,8 +1216,8 @@ scenario text-split-first [
     local-scope
     x:text <- new [a/b]
     y:text, z:text <- split-first x, 47/slash
-    10:array:char/raw <- copy *y
-    20:array:char/raw <- copy *z
+    10:@:char/raw <- copy *y
+    20:@:char/raw <- copy *z
   ]
   memory-should-contain [
     10:array:character <- [a]
@@ -1253,7 +1253,7 @@ scenario text-copy-copies-partial-text [
     local-scope
     x:text <- new [abc]
     y:text <- copy-range x, 1, 3
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [bc]
@@ -1265,7 +1265,7 @@ scenario text-copy-out-of-bounds [
     local-scope
     x:text <- new [abc]
     y:text <- copy-range x, 2, 4
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- [c]
@@ -1277,7 +1277,7 @@ scenario text-copy-out-of-bounds-2 [
     local-scope
     x:text <- new [abc]
     y:text <- copy-range x, 3, 3
-    1:array:char/raw <- copy *y
+    1:@:char/raw <- copy *y
   ]
   memory-should-contain [
     1:array:character <- []

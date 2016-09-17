@@ -5,10 +5,10 @@ scenario convert-lambda [
   run [
     local-scope
     1:text/raw <- lambda-to-mu [(add a (multiply b c))]
-    2:array:char/raw <- copy *1:text/raw
+    2:@:char/raw <- copy *1:text/raw
   ]
   memory-should-contain [
-    2:array:char <- [t1 <- multiply b c
+    2:@:char <- [t1 <- multiply b c
 result <- add a t1]
   ]
 ]
@@ -318,10 +318,10 @@ scenario parse-single-letter-atom [
   s:text <- new [a]
   x:&:cell <- parse s
   s2:text, 10:boolean/raw <- maybe-convert *x, atom:variant
-  11:array:char/raw <- copy *s2
+  11:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
-    11:array:char <- [a]
+    11:@:char <- [a]
   ]
 ]
 
@@ -330,10 +330,10 @@ scenario parse-atom [
   s:text <- new [abc]
   x:&:cell <- parse s
   s2:text, 10:boolean/raw <- maybe-convert *x, atom:variant
-  11:array:char/raw <- copy *s2
+  11:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
-    11:array:char <- [abc]
+    11:@:char <- [abc]
   ]
 ]
 
@@ -352,16 +352,16 @@ scenario parse-list-of-two-atoms [
   x3:&:cell <- first x2
   s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   14:&:cell/raw <- rest x2
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 0  # result.rest.rest is nil
-    20:array:char <- [abc]  # result.first
-    30:array:char <- [def]  # result.rest.first
+    20:@:char <- [abc]  # result.first
+    30:@:char <- [def]  # result.rest.first
   ]
 ]
 
@@ -380,16 +380,16 @@ scenario parse-list-with-extra-spaces [
   x3:&:cell <- first x2
   s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   14:&:cell/raw <- rest x2
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 0  # result.rest.rest is nil
-    20:array:char <- [abc]  # result.first
-    30:array:char <- [def]  # result.rest.first
+    20:@:char <- [abc]  # result.first
+    30:@:char <- [def]  # result.rest.first
   ]
 ]
 
@@ -412,9 +412,9 @@ scenario parse-list-of-more-than-two-atoms [
   x5:&:cell <- first x4
   s3:text, 15:boolean/raw <- maybe-convert *x5, atom:variant
   16:&:cell/raw <- rest x4
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
-  40:array:char/raw <- copy *s3
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
+  40:@:char/raw <- copy *s3
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
@@ -423,9 +423,9 @@ scenario parse-list-of-more-than-two-atoms [
     14 <- 1  # result.rest.rest is a pair
     15 <- 1  # result.rest.rest.first is an atom
     16 <- 0  # result.rest.rest.rest is nil
-    20:array:char <- [abc]  # result.first
-    30:array:char <- [def]  # result.rest.first
-    40:array:char <- [ghi]  # result.rest.rest
+    20:@:char <- [abc]  # result.first
+    30:@:char <- [def]  # result.rest.first
+    40:@:char <- [ghi]  # result.rest.rest
   ]
 ]
 
@@ -443,14 +443,14 @@ scenario parse-nested-list [
   s1:text, 12:boolean/raw <- maybe-convert *x2, atom:variant
   13:&:cell/raw <- rest x1
   14:&:cell/raw <- rest x
-  20:array:char/raw <- copy *s1
+  20:@:char/raw <- copy *s1
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is a pair
     12 <- 1  # result.first.first is an atom
     13 <- 0  # result.first.rest is nil
     14 <- 0  # result.rest is nil
-    20:array:char <- [abc]  # result.first.first
+    20:@:char <- [abc]  # result.first.first
   ]
 ]
 
@@ -471,8 +471,8 @@ scenario parse-nested-list-2 [
   x4:&:cell <- first x3
   s2:text, 14:boolean/raw <- maybe-convert *x4, atom:variant
   15:&:cell/raw <- rest x3
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is a pair
@@ -480,8 +480,8 @@ scenario parse-nested-list-2 [
     13 <- 0  # result.first.rest is nil
     14 <- 1  # result.rest.first is an atom
     15 <- 0  # result.rest.rest is nil
-    20:array:char <- [abc]  # result.first.first
-    30:array:char <- [def]  # result.rest.first
+    20:@:char <- [abc]  # result.first.first
+    30:@:char <- [def]  # result.rest.first
   ]
 ]
 
@@ -521,15 +521,15 @@ scenario parse-dotted-list-of-two-atoms [
   x2:&:cell <- rest x
   s1:text, 11:boolean/raw <- maybe-convert *x1, atom:variant
   s2:text, 12:boolean/raw <- maybe-convert *x2, atom:variant
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
   memory-should-contain [
     # parses to < abc | def >
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is an atom
-    20:array:char <- [abc]  # result.first
-    30:array:char <- [def]  # result.rest
+    20:@:char <- [abc]  # result.first
+    30:@:char <- [def]  # result.rest
   ]
 ]
 
@@ -549,18 +549,18 @@ scenario parse-dotted-list-of-more-than-two-atoms [
   s2:text, 13:boolean/raw <- maybe-convert *x3, atom:variant
   x4:&:cell <- rest x2
   s3:text, 14:boolean/raw <- maybe-convert *x4, atom:variant
-  20:array:char/raw <- copy *s1
-  30:array:char/raw <- copy *s2
-  40:array:char/raw <- copy *s3
+  20:@:char/raw <- copy *s1
+  30:@:char/raw <- copy *s2
+  40:@:char/raw <- copy *s3
   memory-should-contain [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 1  # result.rest.rest is an atom
-    20:array:char <- [abc]  # result.first
-    30:array:char <- [def]  # result.rest.first
-    40:array:char <- [ghi]  # result.rest.rest
+    20:@:char <- [abc]  # result.first
+    30:@:char <- [def]  # result.rest.first
+    40:@:char <- [ghi]  # result.rest.rest
   ]
 ]
 

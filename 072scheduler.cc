@@ -281,13 +281,13 @@ if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHO
 }
 
 :(scenario next_ingredient_never_leaks_refcounts)
-def create-scope n:&:num -> default-space:&:array:location [
+def create-scope n:&:num -> default-space:&:@:location [
   default-space <- new location:type, 2
   load-ingredients
 ]
 def use-scope [
   local-scope
-  0:&:array:location/names:create-scope <- next-ingredient
+  0:&:@:location/names:create-scope <- next-ingredient
   n:&:num/space:1 <- next-ingredient  # should decrement refcount
   *n/space:1 <- copy 34
   n2:num <- add *n/space:1, 1
@@ -297,7 +297,7 @@ def main [
   local-scope
   n:&:num <- copy 12000/unsafe  # pretend allocation with a known address
   *n <- copy 23
-  scope:&:array:location <- create-scope n
+  scope:&:@:location <- create-scope n
   n2:&:num <- copy 13000/unsafe
   n3:num <- use-scope scope, n2
 ]

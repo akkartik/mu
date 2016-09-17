@@ -6,10 +6,10 @@
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
-  default-space:&:array:location <- copy 10/unsafe
+  default-space:&:@:location <- copy 10/unsafe
   1:num <- copy 23
 ]
 +mem: storing 23 in location 13
@@ -18,11 +18,11 @@ def main [
 def main [
   # pretend pointer from outside (2000 reserved for refcount)
   2001:num <- copy 34
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:&:array:location <- copy 1000/unsafe
+  default-space:&:@:location <- copy 1000/unsafe
   1:&:num <- copy 2000/unsafe  # even local variables always contain raw addresses
   8:num/raw <- copy *1:&:num
 ]
@@ -84,7 +84,7 @@ int address(int offset, int base) {
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
   if (!scalar(data) || !is_space(x))
-    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:@:location, but is " << to_string(x.type) << '\n' << end();
   current_call().default_space = data.at(0);
   return;
 }
@@ -95,8 +95,8 @@ bool is_space(const reagent& r) {
 
 :(scenario get_default_space)
 def main [
-  default-space:&:array:location <- copy 10/unsafe
-  1:&:array:location/raw <- copy default-space:&:array:location
+  default-space:&:@:location <- copy 10/unsafe
+  1:&:@:location/raw <- copy default-space:&:@:location
 ]
 +mem: storing 10 in location 1
 
@@ -114,11 +114,11 @@ def main [
   # pretend pointer to container from outside (2000 reserved for refcount)
   2001:num <- copy 34
   2002:num <- copy 35
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:&:array:location <- copy 1000/unsafe
+  default-space:&:@:location <- copy 1000/unsafe
   1:&:point <- copy 2000/unsafe
   9:num/raw <- get *1:&:point, 1:offset
 ]
@@ -135,13 +135,13 @@ def main [
   2001:num <- copy 2  # length
   2002:num <- copy 34
   2003:num <- copy 35
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:@:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
-  default-space:&:array:location <- copy 1000/unsafe
-  1:&:array:num <- copy 2000/unsafe
-  9:num/raw <- index *1:&:array:num, 1
+  default-space:&:@:location <- copy 1000/unsafe
+  1:&:@:num <- copy 2000/unsafe
+  9:num/raw <- index *1:&:@:num, 1
 ]
 +mem: storing 35 in location 9
 
@@ -168,7 +168,7 @@ if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
 // rewrite `new-default-space` to
-//   `default-space:&:array:location <- new location:type, number-of-locals:literal`
+//   `default-space:&:@:location <- new location:type, number-of-locals:literal`
 // where N is Name[recipe][""]
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
@@ -199,7 +199,7 @@ def main [
 def foo [
   local-scope
   x:num <- copy 34
-  return default-space:&:array:location
+  return default-space:&:@:location
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
@@ -304,7 +304,7 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
     raise << "new-default-space can't take any results\n" << end();
-  curr.products.push_back(reagent("default-space:&:array:location"));
+  curr.products.push_back(reagent("default-space:&:@:location"));
 }
 
 :(scenario local_scope_frees_up_addresses_inside_containers)
