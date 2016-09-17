@@ -96,7 +96,8 @@ def print screen:address:screen, c:character -> screen:address:screen [
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  trace 90, [print-character], c
+  c2:number <- character-to-code c
+  trace 90, [print-character], c2
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
