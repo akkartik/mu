@@ -249,7 +249,9 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
   // a) perform tangle *before* replacing type ingredients, just in case
   // inserted code involves type ingredients
   insert_fragments(new_recipe);
-  // b) do the work of check_types_by_name while supporting type-ingredients
+  // b) do the work of check_or_set_types_by_name (and its prerequisites)
+  // while supporting type-ingredients
+  expand_type_abbreviations(new_recipe);
   compute_type_names(new_recipe);
   // that gives enough information to replace type-ingredients with concrete types
   {
@@ -268,7 +270,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
 }
 
 void compute_type_names(recipe& variant) {
-  trace(9993, "transform") << "compute type names: " << variant.name << end();
+  trace(9993, "transform") << "-- compute type names: " << variant.name << end();
   map<string, type_tree*> type_names;
   for (int i = 0; i < SIZE(variant.ingredients); ++i)
     save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant, "");
@@ -479,6 +481,7 @@ void dump_inspect(const type_tree* x, ostream& out) {
 }
 
 void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemplar) {
+  trace(9993, "transform") << "-- ensure all concrete types in recipe " << new_recipe.name << end();
   for (int i = 0; i < SIZE(new_recipe.ingredients); ++i)
     ensure_all_concrete_types(new_recipe.ingredients.at(i), exemplar);
   for (int i = 0; i < SIZE(new_recipe.products); ++i)
@@ -1042,6 +1045,24 @@ def foo a:_elem [
 # tangle some code that refers to the type ingredient
 after <label1> [
   b:_elem <- copy a
+]
+# trigger specialization
+def main [
+  local-scope
+  foo 34
+]
+$error: 0
+
+:(scenario tangle_shape_shifting_recipe_with_type_abbreviation)
+# shape-shifting recipe
+def foo a:_elem [
+  local-scope
+  load-ingredients
+  <label1>
+]
+# tangle some code that refers to the type ingredient
+after <label1> [
+  b:bool <- copy 0  # type abbreviation
 ]
 # trigger specialization
 def main [

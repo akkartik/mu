@@ -164,7 +164,10 @@ Transform.push_back(expand_type_abbreviations);  // idempotent
 
 :(code)
 void expand_type_abbreviations(const recipe_ordinal r) {
-  const recipe& caller = get(Recipe, r);
+  expand_type_abbreviations(get(Recipe, r));
+}
+
+void expand_type_abbreviations(const recipe& caller) {
   trace(9991, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
   for (int i = 0; i < SIZE(caller.steps); ++i) {
     const instruction& inst = caller.steps.at(i);

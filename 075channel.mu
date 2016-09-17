@@ -323,11 +323,11 @@ def close x:&:sink:_elem -> x:&:sink:_elem [
 #   future reads continue until the channel empties,
 #   then the channel is also closed for reading
 after <channel-write-initial> [
-  closed?:boolean <- get *chan, closed?:offset
+  closed?:bool <- get *chan, closed?:offset
   return-if closed?
 ]
 after <channel-read-empty> [
-  closed?:boolean <- get *chan, closed?:offset
+  closed?:bool <- get *chan, closed?:offset
   {
     break-unless closed?
     empty-result:&:_elem <- new _elem:type
