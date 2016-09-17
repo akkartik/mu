@@ -6,8 +6,8 @@ type_ordinal point = put(Type_ordinal, "point", Next_type_ordinal++);
 get_or_insert(Type, point);  // initialize
 get(Type, point).kind = CONTAINER;
 get(Type, point).name = "point";
-get(Type, point).elements.push_back(reagent("x:num"));
-get(Type, point).elements.push_back(reagent("y:num"));
+get(Type, point).elements.push_back(reagent("x:number"));
+get(Type, point).elements.push_back(reagent("y:number"));
 
 //: Containers can be copied around with a single instruction just like
 //: numbers, no matter how large they are.
@@ -40,7 +40,7 @@ get_or_insert(Type, point_number);  // initialize
 get(Type, point_number).kind = CONTAINER;
 get(Type, point_number).name = "point-number";
 get(Type, point_number).elements.push_back(reagent("xy:point"));
-get(Type, point_number).elements.push_back(reagent("z:num"));
+get(Type, point_number).elements.push_back(reagent("z:number"));
 
 :(scenario copy_handles_nested_container_elements)
 def main [

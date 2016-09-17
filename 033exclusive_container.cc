@@ -11,7 +11,7 @@ type_ordinal tmp = put(Type_ordinal, "number-or-point", Next_type_ordinal++);
 get_or_insert(Type, tmp);  // initialize
 get(Type, tmp).kind = EXCLUSIVE_CONTAINER;
 get(Type, tmp).name = "number-or-point";
-get(Type, tmp).elements.push_back(reagent("i:num"));
+get(Type, tmp).elements.push_back(reagent("i:number"));
 get(Type, tmp).elements.push_back(reagent("p:point"));
 }
 
