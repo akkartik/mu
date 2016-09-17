@@ -4,7 +4,7 @@
 :(scenario rewrite_stashes_to_text)
 def main [
   local-scope
-  n:number <- copy 34
+  n:num <- copy 34
   stash n
 ]
 +transform: {stash_2_0: ("address" "array" "character")} <- to-text-line {n: "number"}
@@ -13,7 +13,7 @@ def main [
 :(scenario rewrite_traces_to_text)
 def main [
   local-scope
-  n:number <- copy 34
+  n:num <- copy 34
   trace 2, [app], n
 ]
 +transform: {trace_2_2: ("address" "array" "character")} <- to-text-line {n: "number"}
@@ -25,7 +25,7 @@ def main [
 :(scenario rewrite_stashes_of_arrays)
 def main [
   local-scope
-  n:address:array:number <- new number:type, 3
+  n:address:array:num <- new number:type, 3
   stash *n
 ]
 +transform: {stash_2_0: ("address" "array" "character")} <- array-to-text-line {n: ("address" "array" "number")}
@@ -34,14 +34,14 @@ def main [
 :(scenario ignore_stashes_of_static_arrays)
 def main [
   local-scope
-  n:array:number:3 <- create-array
+  n:array:num:3 <- create-array
   stash n
 ]
 +transform: stash {n: ("array" "number" "3")}
 
 :(scenario rewrite_stashes_of_recipe_header_products)
 container foo [
-  x:number
+  x:num
 ]
 def bar -> x:foo [
   local-scope
@@ -148,7 +148,7 @@ bool is_static_array(const reagent& x) {
 :(scenario append_other_types_to_text)
 def main [
   local-scope
-  n:number <- copy 11
+  n:num <- copy 11
   c:character <- copy 111/o
   a:text <- append [abc], 10, n, c
   expected:text <- new [abc1011o]
@@ -161,8 +161,8 @@ def main [
 :(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)
 # type without a to-text implementation
 container foo [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   local-scope

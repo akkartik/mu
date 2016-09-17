@@ -3,10 +3,10 @@
 
 :(scenario run_interactive_code)
 def main [
-  1:number/raw <- copy 0
-  2:text <- new [1:number/raw <- copy 34]
+  1:num/raw <- copy 0
+  2:text <- new [1:num/raw <- copy 34]
   run-sandboxed 2:text
-  3:number/raw <- copy 1:number/raw
+  3:num/raw <- copy 1:num/raw
 ]
 +mem: storing 34 in location 3
 
@@ -195,12 +195,12 @@ load(string(
 "recipe sandbox [\n" +
   "local-scope\n" +
   "screen:address:screen <- new-fake-screen 30, 5\n" +
-  "routine-id:number <- start-running interactive, screen\n" +
+  "routine-id:num <- start-running interactive, screen\n" +
   "limit-time routine-id, 100000/instructions\n" +
   "wait-for-routine routine-id\n" +
-  "instructions-run:number <- number-of-instructions routine-id\n" +
+  "instructions-run:num <- number-of-instructions routine-id\n" +
   "stash instructions-run [instructions run]\n" +
-  "sandbox-state:number <- routine-state routine-id\n" +
+  "sandbox-state:num <- routine-state routine-id\n" +
   "completed?:boolean <- equal sandbox-state, 1/completed\n" +
   "output:text <- $most-recent-products\n" +
   "errors:text <- save-errors\n" +
@@ -337,8 +337,8 @@ def main [
 :(scenario "run_interactive_returns_errors")
 def main [
   # run a command that generates an error
-  1:text <- new [x:number <- copy 34
-get x:number, foo:offset]
+  1:text <- new [x:num <- copy 34
+get x:num, foo:offset]
   2:text, 3:text <- run-sandboxed 1:text
   10:array:char <- copy 3:text/lookup
 ]
@@ -352,8 +352,8 @@ get x:number, foo:offset]
 :(scenario run_interactive_with_comment)
 def main [
   # 2 instructions, with a comment after the first
-  1:address:array:number <- new [a:number <- copy 0  # abc
-b:number <- copy 0
+  1:address:array:num <- new [a:num <- copy 0  # abc
+b:num <- copy 0
 ]
   2:text, 3:text <- run-sandboxed 1:text
 ]
@@ -503,10 +503,10 @@ case RELOAD: {
 def main [
   local-scope
   x:text <- new [recipe foo [
-  get 1234:number, foo:offset
+  get 1234:num, foo:offset
 ]]
   reload x
-  1:number/raw <- copy 34
+  1:num/raw <- copy 34
 ]
 +mem: storing 34 in location 1
 
@@ -516,8 +516,8 @@ def main [
   local-scope
   x:text <- new [
     container foo [
-      x:number
-      y:number
+      x:num
+      y:num
     ]
     recipe bar [
       local-scope
@@ -525,8 +525,8 @@ def main [
     ]
   ]
   # save warning addresses in locations of type 'number' to avoid spurious changes to them due to 'abandon'
-  1:number/raw <- reload x
-  2:number/raw <- reload x
+  1:num/raw <- reload x
+  2:num/raw <- reload x
 ]
 # no errors on either load
 +mem: storing 0 in location 1

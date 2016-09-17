@@ -6,11 +6,11 @@ def f1 [
   start-running f2
   # wait for f2 to run
   {
-    jump-unless 1:number, -1
+    jump-unless 1:num, -1
   }
 ]
 def f2 [
-  1:number <- copy 1
+  1:num <- copy 1
 ]
 +schedule: f1
 +schedule: f2
@@ -196,8 +196,8 @@ case START_RUNNING: {
 :(scenario scheduler_runs_single_routine)
 % Scheduling_interval = 1;
 def f1 [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
 ]
 +schedule: f1
 +run: {1: "number"} <- copy {0: "literal"}
@@ -208,12 +208,12 @@ def f1 [
 % Scheduling_interval = 1;
 def f1 [
   start-running f2
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
 ]
 def f2 [
-  3:number <- copy 0
-  4:number <- copy 0
+  3:num <- copy 0
+  4:num <- copy 0
 ]
 +schedule: f1
 +run: start-running {f2: "recipe-literal"}
@@ -231,12 +231,12 @@ def f1 [
   start-running f2, 3
   # wait for f2 to run
   {
-    jump-unless 1:number, -1
+    jump-unless 1:num, -1
   }
 ]
 def f2 [
-  1:number <- next-ingredient
-  2:number <- add 1:number, 1
+  1:num <- next-ingredient
+  2:num <- add 1:num, 1
 ]
 +mem: storing 4 in location 2
 
@@ -248,20 +248,20 @@ def main [
   local-scope
   create-new-routine
   # padding to make sure we run new-routine before returning
-  dummy:number <- copy 0
-  dummy:number <- copy 0
+  dummy:num <- copy 0
+  dummy:num <- copy 0
 ]
 def create-new-routine [
   local-scope
-  n:address:number <- new number:type
+  n:address:num <- new number:type
   *n <- copy 34
   start-running new-routine, n
   # refcount of n decremented
 ]
-def new-routine n:address:number [
+def new-routine n:address:num [
   local-scope
   load-ingredients
-  1:number/raw <- copy *n
+  1:num/raw <- copy *n
 ]
 # check that n wasn't reclaimed when create-new-routine returned
 +mem: storing 34 in location 1
@@ -281,25 +281,25 @@ if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHO
 }
 
 :(scenario next_ingredient_never_leaks_refcounts)
-def create-scope n:address:number -> default-space:address:array:location [
+def create-scope n:address:num -> default-space:address:array:location [
   default-space <- new location:type, 2
   load-ingredients
 ]
 def use-scope [
   local-scope
   0:address:array:location/names:create-scope <- next-ingredient
-  n:address:number/space:1 <- next-ingredient  # should decrement refcount
+  n:address:num/space:1 <- next-ingredient  # should decrement refcount
   *n/space:1 <- copy 34
-  n2:number <- add *n/space:1, 1
+  n2:num <- add *n/space:1, 1
   reply n2
 ]
 def main [
   local-scope
-  n:address:number <- copy 12000/unsafe  # pretend allocation with a known address
+  n:address:num <- copy 12000/unsafe  # pretend allocation with a known address
   *n <- copy 23
   scope:address:array:location <- create-scope n
-  n2:address:number <- copy 13000/unsafe
-  n3:number <- use-scope scope, n2
+  n2:address:num <- copy 13000/unsafe
+  n3:num <- use-scope scope, n2
 ]
 +run: {n: ("address" "number"), "space": "1"} <- next-ingredient
 +mem: decrementing refcount of 12000: 2 -> 1
@@ -309,24 +309,24 @@ def main [
 
 :(scenario start_running_returns_routine_id)
 def f1 [
-  1:number <- start-running f2
+  1:num <- start-running f2
 ]
 def f2 [
-  12:number <- copy 44
+  12:num <- copy 44
 ]
 +mem: storing 2 in location 1
 
 //: this scenario will require some careful setup in escaped C++
 //: (straining our tangle capabilities to near-breaking point)
 :(scenario scheduler_skips_completed_routines)
-% recipe_ordinal f1 = load("recipe f1 [\n1:number <- copy 0\n]\n").front();
-% recipe_ordinal f2 = load("recipe f2 [\n2:number <- copy 0\n]\n").front();
+% recipe_ordinal f1 = load("recipe f1 [\n1:num <- copy 0\n]\n").front();
+% recipe_ordinal f2 = load("recipe f2 [\n2:num <- copy 0\n]\n").front();
 % Routines.push_back(new routine(f1));  // f1 meant to run
 % Routines.push_back(new routine(f2));
 % Routines.back()->state = COMPLETED;  // f2 not meant to run
 # must have at least one routine without escaping
 def f3 [
-  3:number <- copy 0
+  3:num <- copy 0
 ]
 # by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order
 +schedule: f1
@@ -340,8 +340,8 @@ def f3 [
 % Routines.push_back(new routine(COPY));
 % Routines.back()->state = COMPLETED;
 def f1 [
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
 ]
 +schedule: f1
 -run: idle
@@ -353,17 +353,17 @@ def f1 [
 % Scheduling_interval = 2;
 def f1 [
   start-running f2
-  1:number <- copy 0
-  2:number <- copy 0
+  1:num <- copy 0
+  2:num <- copy 0
 ]
 def f2 [
   # divide by 0 twice
-  3:number <- divide-with-remainder 4, 0
-  4:number <- divide-with-remainder 4, 0
+  3:num <- divide-with-remainder 4, 0
+  4:num <- divide-with-remainder 4, 0
 ]
 # f2 should stop after first divide by 0
-+error: f2: divide by zero in '3:number <- divide-with-remainder 4, 0'
--error: f2: divide by zero in '4:number <- divide-with-remainder 4, 0'
++error: f2: divide by zero in '3:num <- divide-with-remainder 4, 0'
+-error: f2: divide by zero in '4:num <- divide-with-remainder 4, 0'
 
 :(after "operator<<(ostream& os, unused end)")
   if (Trace_stream && Trace_stream->curr_label == "error" && Current_routine) {
@@ -378,7 +378,7 @@ def main [
   # f1 never actually runs because its parent completes without waiting for it
 ]
 def f1 [
-  1:number <- copy 0
+  1:num <- copy 0
 ]
 -schedule: f1
 
@@ -406,13 +406,13 @@ bool has_completed_parent(int routine_index) {
 :(scenario routine_state_test)
 % Scheduling_interval = 2;
 def f1 [
-  1:number/child-id <- start-running f2
-  12:number <- copy 0  # race condition since we don't care about location 12
+  1:num/child-id <- start-running f2
+  12:num <- copy 0  # race condition since we don't care about location 12
   # thanks to Scheduling_interval, f2's one instruction runs in between here and completes
-  2:number/state <- routine-state 1:number/child-id
+  2:num/state <- routine-state 1:num/child-id
 ]
 def f2 [
-  12:number <- copy 0
+  12:num <- copy 0
   # trying to run a second instruction marks routine as completed
 ]
 # recipe f2 should be in state COMPLETED
@@ -500,12 +500,12 @@ case _DUMP_ROUTINES: {
 :(scenario routine_discontinues_past_limit)
 % Scheduling_interval = 2;
 def f1 [
-  1:number/child-id <- start-running f2
-  limit-time 1:number/child-id, 10
+  1:num/child-id <- start-running f2
+  limit-time 1:num/child-id, 10
   # padding loop just to make sure f2 has time to completed
-  2:number <- copy 20
-  2:number <- subtract 2:number, 1
-  jump-if 2:number, -2:offset
+  2:num <- copy 20
+  2:num <- subtract 2:num, 1
+  jump-if 2:num, -2:offset
 ]
 def f2 [
   jump -1:offset  # run forever
@@ -624,16 +624,16 @@ case NUMBER_OF_INSTRUCTIONS: {
 
 :(scenario number_of_instructions)
 def f1 [
-  10:number/child-id <- start-running f2
+  10:num/child-id <- start-running f2
   {
-    loop-unless 20:number
+    loop-unless 20:num
   }
-  11:number <- number-of-instructions 10:number
+  11:num <- number-of-instructions 10:num
 ]
 def f2 [
   # 2 instructions worth of work
-  1:number <- copy 34
-  20:number <- copy 1
+  1:num <- copy 34
+  20:num <- copy 1
 ]
 # f2 runs an extra instruction for the implicit return added by the
 # fill_in_reply_ingredients transform
@@ -642,18 +642,18 @@ def f2 [
 :(scenario number_of_instructions_across_multiple_scheduling_intervals)
 % Scheduling_interval = 1;
 def f1 [
-  10:number/child-id <- start-running f2
+  10:num/child-id <- start-running f2
   {
-    loop-unless 20:number
+    loop-unless 20:num
   }
-  11:number <- number-of-instructions 10:number
+  11:num <- number-of-instructions 10:num
 ]
 def f2 [
   # 4 instructions worth of work
-  1:number <- copy 34
-  2:number <- copy 1
-  2:number <- copy 3
-  20:number <- copy 1
+  1:num <- copy 34
+  2:num <- copy 1
+  2:num <- copy 3
+  20:num <- copy 1
 ]
 # f2 runs an extra instruction for the implicit return added by the
 # fill_in_reply_ingredients transform
@@ -664,17 +664,17 @@ def f2 [
 :(scenario new_concurrent)
 def f1 [
   start-running f2
-  1:address:number/raw <- new number:type
+  1:address:num/raw <- new number:type
   # wait for f2 to complete
   {
-    loop-unless 4:number/raw
+    loop-unless 4:num/raw
   }
 ]
 def f2 [
-  2:address:number/raw <- new number:type
+  2:address:num/raw <- new number:type
   # hack: assumes scheduler implementation
-  3:bool/raw <- equal 1:address:number/raw, 2:address:number/raw
+  3:bool/raw <- equal 1:address:num/raw, 2:address:num/raw
   # signal f2 complete
-  4:number/raw <- copy 1
+  4:num/raw <- copy 1
 ]
 +mem: storing 0 in location 3

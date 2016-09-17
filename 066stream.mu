@@ -1,6 +1,6 @@
 # new type to help incrementally scan arrays
 container stream:_elem [
-  index:number
+  index:num
   data:address:array:_elem
 ]
 
@@ -22,9 +22,9 @@ def read in:address:stream:_elem -> result:_elem, empty?:boolean, in:address:str
   local-scope
   load-ingredients
   empty? <- copy 0/false
-  idx:number <- get *in, index:offset
+  idx:num <- get *in, index:offset
   s:address:array:_elem <- get *in, data:offset
-  len:number <- length *s
+  len:num <- length *s
   at-end?:boolean <- greater-or-equal idx len
   {
     break-unless at-end?
@@ -40,9 +40,9 @@ def peek in:address:stream:_elem -> result:_elem, empty?:boolean [
   local-scope
   load-ingredients
   empty?:boolean <- copy 0/false
-  idx:number <- get *in, index:offset
+  idx:num <- get *in, index:offset
   s:address:array:_elem <- get *in, data:offset
-  len:number <- length *s
+  len:num <- length *s
   at-end?:boolean <- greater-or-equal idx len
   {
     break-unless at-end?
@@ -55,9 +55,9 @@ def peek in:address:stream:_elem -> result:_elem, empty?:boolean [
 def read-line in:address:stream:char -> result:text, in:address:stream:char [
   local-scope
   load-ingredients
-  idx:number <- get *in, index:offset
+  idx:num <- get *in, index:offset
   s:text <- get *in, data:offset
-  next-idx:number <- find-next s, 10/newline, idx
+  next-idx:num <- find-next s, 10/newline, idx
   result <- copy-range s, idx, next-idx
   idx <- add next-idx, 1  # skip newline
   # write back
@@ -67,8 +67,8 @@ def read-line in:address:stream:char -> result:text, in:address:stream:char [
 def end-of-stream? in:address:stream:_elem -> result:boolean [
   local-scope
   load-ingredients
-  idx:number <- get *in, index:offset
+  idx:num <- get *in, index:offset
   s:address:array:_elem <- get *in, data:offset
-  len:number <- length *s
+  len:num <- length *s
   result <- greater-or-equal idx, len
 ]

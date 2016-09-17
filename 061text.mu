@@ -3,8 +3,8 @@
 def equal a:text, b:text -> result:boolean [
   local-scope
   load-ingredients
-  a-len:number <- length *a
-  b-len:number <- length *b
+  a-len:num <- length *a
+  b-len:num <- length *b
   # compare lengths
   {
     trace 99, [text-equal], [comparing lengths]
@@ -14,7 +14,7 @@ def equal a:text, b:text -> result:boolean [
   }
   # compare each corresponding character
   trace 99, [text-equal], [comparing characters]
-  i:number <- copy 0
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, a-len
     break-if done?
@@ -98,11 +98,11 @@ scenario text-equal-common-lengths-but-distinct [
 
 # A new type to help incrementally construct texts.
 container buffer [
-  length:number
+  length:num
   data:text
 ]
 
-def new-buffer capacity:number -> result:address:buffer [
+def new-buffer capacity:num -> result:address:buffer [
   local-scope
   load-ingredients
   result <- new buffer:type
@@ -122,12 +122,12 @@ def grow-buffer buf:address:buffer -> buf:address:buffer [
   load-ingredients
   # double buffer size
   olddata:text <- get *buf, data:offset
-  oldlen:number <- length *olddata
-  newlen:number <- multiply oldlen, 2
+  oldlen:num <- length *olddata
+  newlen:num <- multiply oldlen, 2
   newdata:text <- new character:type, newlen
   *buf <- put *buf, data:offset, newdata
   # copy old contents
-  i:number <- copy 0
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, oldlen
     break-if done?
@@ -141,9 +141,9 @@ def grow-buffer buf:address:buffer -> buf:address:buffer [
 def buffer-full? in:address:buffer -> result:boolean [
   local-scope
   load-ingredients
-  len:number <- get *in, length:offset
+  len:num <- get *in, length:offset
   s:text <- get *in, data:offset
-  capacity:number <- length *s
+  capacity:num <- length *s
   result <- greater-or-equal len, capacity
 ]
 
@@ -152,8 +152,8 @@ def append buf:address:buffer, x:_elem -> buf:address:buffer [
   local-scope
   load-ingredients
   text:text <- to-text x
-  len:number <- length *text
-  i:number <- copy 0
+  len:num <- length *text
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -167,7 +167,7 @@ def append buf:address:buffer, x:_elem -> buf:address:buffer [
 def append buf:address:buffer, c:char -> buf:address:buffer [
   local-scope
   load-ingredients
-  len:number <- get *buf, length:offset
+  len:num <- get *buf, length:offset
   {
     # backspace? just drop last character if it exists and return
     backspace?:boolean <- equal c, 8/backspace
@@ -193,8 +193,8 @@ def append buf:address:buffer, c:char -> buf:address:buffer [
 def append buf:address:buffer, t:text -> buf:address:buffer [
   local-scope
   load-ingredients
-  len:number <- length *t
-  i:number <- copy 0
+  len:num <- length *t
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -224,7 +224,7 @@ scenario buffer-append-works [
     x <- append x, c
     s3:text <- get *x, data:offset
     20:boolean/raw <- equal s1, s3
-    21:number/raw <- get *x, length:offset
+    21:num/raw <- get *x, length:offset
     30:array:char/raw <- copy *s3
   ]
   memory-should-contain [
@@ -284,11 +284,11 @@ def buffer-to-array in:address:buffer -> result:text [
     break-if in
     return 0
   }
-  len:number <- get *in, length:offset
+  len:num <- get *in, length:offset
   s:text <- get *in, data:offset
   # we can't just return s because it is usually the wrong length
   result <- new character:type, len
-  i:number <- copy 0
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -392,11 +392,11 @@ scenario replace-character-in-text [
   ]
 ]
 
-def replace s:text, oldc:char, newc:char, from:number/optional -> s:text [
+def replace s:text, oldc:char, newc:char, from:num/optional -> s:text [
   local-scope
   load-ingredients
-  len:number <- length *s
-  i:number <- find-next s, oldc, from
+  len:num <- length *s
+  i:num <- find-next s, oldc, from
   done?:boolean <- greater-or-equal i, len
   return-if done?, s/same-as-ingredient:0
   *s <- put-index *s, i, newc
@@ -457,14 +457,14 @@ def interpolate template:text -> result:text [
   local-scope
   load-ingredients  # consume just the template
   # compute result-len, space to allocate for result
-  tem-len:number <- length *template
-  result-len:number <- copy tem-len
+  tem-len:num <- length *template
+  result-len:num <- copy tem-len
   {
     # while ingredients remain
     a:text, arg-received?:boolean <- next-ingredient
     break-unless arg-received?
     # result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
-    a-len:number <- length *a
+    a-len:num <- length *a
     result-len <- add result-len, a-len
     result-len <- subtract result-len, 1
     loop
@@ -473,8 +473,8 @@ def interpolate template:text -> result:text [
   _ <- next-ingredient  # skip template
   result <- new character:type, result-len
   # repeatedly copy sections of template and 'holes' into result
-  result-idx:number <- copy 0
-  i:number <- copy 0
+  result-idx:num <- copy 0
+  i:num <- copy 0
   {
     # while arg received
     a:text, arg-received?:boolean <- next-ingredient
@@ -495,7 +495,7 @@ def interpolate template:text -> result:text [
       loop
     }
     # copy 'a' into result
-    j:number <- copy 0
+    j:num <- copy 0
     {
       # while j < a.length
       arg-done?:boolean <- greater-or-equal j, a-len
@@ -630,9 +630,9 @@ def space? c:char -> result:boolean [
 def trim s:text -> result:text [
   local-scope
   load-ingredients
-  len:number <- length *s
+  len:num <- length *s
   # left trim: compute start
-  start:number <- copy 0
+  start:num <- copy 0
   {
     {
       at-end?:boolean <- greater-or-equal start, len
@@ -647,7 +647,7 @@ def trim s:text -> result:text [
     loop
   }
   # right trim: compute end
-  end:number <- subtract len, 1
+  end:num <- subtract len, 1
   {
     not-at-start?:boolean <- greater-than end, start
     assert not-at-start?, [end ran up against start]
@@ -658,11 +658,11 @@ def trim s:text -> result:text [
     loop
   }
   # result = new character[end+1 - start]
-  new-len:number <- subtract end, start, -1
+  new-len:num <- subtract end, start, -1
   result:text <- new character:type, new-len
   # copy the untrimmed parts between start and end
-  i:number <- copy start
-  j:number <- copy 0
+  i:num <- copy start
+  j:num <- copy 0
   {
     # while i <= end
     done?:boolean <- greater-than i, end
@@ -737,10 +737,10 @@ scenario trim-newline-tab [
   ]
 ]
 
-def find-next text:text, pattern:char, idx:number -> next-index:number [
+def find-next text:text, pattern:char, idx:num -> next-index:num [
   local-scope
   load-ingredients
-  len:number <- length *text
+  len:num <- length *text
   {
     eof?:boolean <- greater-or-equal idx, len
     break-if eof?
@@ -757,7 +757,7 @@ scenario text-find-next [
   run [
     local-scope
     x:text <- new [a/b]
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 1
@@ -768,7 +768,7 @@ scenario text-find-next-empty [
   run [
     local-scope
     x:text <- new []
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 0
@@ -779,7 +779,7 @@ scenario text-find-next-initial [
   run [
     local-scope
     x:text <- new [/abc]
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 0  # prefix match
@@ -790,7 +790,7 @@ scenario text-find-next-final [
   run [
     local-scope
     x:text <- new [abc/]
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 3  # suffix match
@@ -801,7 +801,7 @@ scenario text-find-next-missing [
   run [
     local-scope
     x:text <- new [abcd]
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 4  # no match
@@ -812,7 +812,7 @@ scenario text-find-next-invalid-index [
   run [
     local-scope
     x:text <- new [abc]
-    10:number/raw <- find-next x, 47/slash, 4/start-index
+    10:num/raw <- find-next x, 47/slash, 4/start-index
   ]
   memory-should-contain [
     10 <- 4  # no change
@@ -823,7 +823,7 @@ scenario text-find-next-first [
   run [
     local-scope
     x:text <- new [ab/c/]
-    10:number/raw <- find-next x, 47/slash, 0/start-index
+    10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
     10 <- 2  # first '/' of multiple
@@ -834,7 +834,7 @@ scenario text-find-next-second [
   run [
     local-scope
     x:text <- new [ab/c/]
-    10:number/raw <- find-next x, 47/slash, 3/start-index
+    10:num/raw <- find-next x, 47/slash, 3/start-index
   ]
   memory-should-contain [
     10 <- 4  # second '/' of multiple
@@ -843,12 +843,12 @@ scenario text-find-next-second [
 
 # search for a pattern of multiple characters
 # fairly dumb algorithm
-def find-next text:text, pattern:text, idx:number -> next-index:number [
+def find-next text:text, pattern:text, idx:num -> next-index:num [
   local-scope
   load-ingredients
   first:char <- index *pattern, 0
   # repeatedly check for match at current idx
-  len:number <- length *text
+  len:num <- length *text
   {
     # does some unnecessary work checking even when there isn't enough of text left
     done?:boolean <- greater-or-equal idx, len
@@ -868,7 +868,7 @@ scenario find-next-text-1 [
     local-scope
     x:text <- new [abc]
     y:text <- new [bc]
-    10:number/raw <- find-next x, y, 0
+    10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
     10 <- 1
@@ -880,7 +880,7 @@ scenario find-next-text-2 [
     local-scope
     x:text <- new [abcd]
     y:text <- new [bc]
-    10:number/raw <- find-next x, y, 1
+    10:num/raw <- find-next x, y, 1
   ]
   memory-should-contain [
     10 <- 1
@@ -892,7 +892,7 @@ scenario find-next-no-match [
     local-scope
     x:text <- new [abc]
     y:text <- new [bd]
-    10:number/raw <- find-next x, y, 0
+    10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
     10 <- 3  # not found
@@ -904,7 +904,7 @@ scenario find-next-suffix-match [
     local-scope
     x:text <- new [abcd]
     y:text <- new [cd]
-    10:number/raw <- find-next x, y, 0
+    10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
     10 <- 2
@@ -916,7 +916,7 @@ scenario find-next-suffix-match-2 [
     local-scope
     x:text <- new [abcd]
     y:text <- new [cde]
-    10:number/raw <- find-next x, y, 0
+    10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
     10 <- 4  # not found
@@ -924,20 +924,20 @@ scenario find-next-suffix-match-2 [
 ]
 
 # checks if pattern matches at index 'idx'
-def match-at text:text, pattern:text, idx:number -> result:boolean [
+def match-at text:text, pattern:text, idx:num -> result:boolean [
   local-scope
   load-ingredients
-  pattern-len:number <- length *pattern
+  pattern-len:num <- length *pattern
   # check that there's space left for the pattern
   {
-    x:number <- length *text
+    x:num <- length *text
     x <- subtract x, pattern-len
     enough-room?:boolean <- lesser-or-equal idx, x
     break-if enough-room?
     return 0/not-found
   }
   # check each character of pattern
-  pattern-idx:number <- copy 0
+  pattern-idx:num <- copy 0
   {
     done?:boolean <- greater-or-equal pattern-idx, pattern-len
     break-if done?
@@ -1065,7 +1065,7 @@ def split s:text, delim:char -> result:address:array:text [
   local-scope
   load-ingredients
   # empty text? return empty array
-  len:number <- length *s
+  len:num <- length *s
   {
     empty?:boolean <- equal len, 0
     break-unless empty?
@@ -1073,8 +1073,8 @@ def split s:text, delim:char -> result:address:array:text [
     return
   }
   # count #pieces we need room for
-  count:number <- copy 1  # n delimiters = n+1 pieces
-  idx:number <- copy 0
+  count:num <- copy 1  # n delimiters = n+1 pieces
+  idx:num <- copy 0
   {
     idx <- find-next s, delim, idx
     done?:boolean <- greater-or-equal idx, len
@@ -1086,13 +1086,13 @@ def split s:text, delim:char -> result:address:array:text [
   # allocate space
   result <- new {(address array character): type}, count
   # repeatedly copy slices start..end until delimiter into result[curr-result]
-  curr-result:number <- copy 0
-  start:number <- copy 0
+  curr-result:num <- copy 0
+  start:num <- copy 0
   {
     # while next delim exists
     done?:boolean <- greater-or-equal start, len
     break-if done?
-    end:number <- find-next s, delim, start
+    end:num <- find-next s, delim, start
     # copy start..end into result[curr-result]
     dest:text <- copy-range s, start, end
     *result <- put-index *result, curr-result, dest
@@ -1108,7 +1108,7 @@ scenario text-split-1 [
     local-scope
     x:text <- new [a/b]
     y:address:array:text <- split x, 47/slash
-    10:number/raw <- length *y
+    10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
     20:array:char/raw <- copy *a
@@ -1126,7 +1126,7 @@ scenario text-split-2 [
     local-scope
     x:text <- new [a/b/c]
     y:address:array:text <- split x, 47/slash
-    10:number/raw <- length *y
+    10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
     c:text <- index *y, 2
@@ -1147,7 +1147,7 @@ scenario text-split-missing [
     local-scope
     x:text <- new [abc]
     y:address:array:text <- split x, 47/slash
-    10:number/raw <- length *y
+    10:num/raw <- length *y
     a:text <- index *y, 0
     20:array:char/raw <- copy *a
   ]
@@ -1162,7 +1162,7 @@ scenario text-split-empty [
     local-scope
     x:text <- new []
     y:address:array:text <- split x, 47/slash
-    10:number/raw <- length *y
+    10:num/raw <- length *y
   ]
   memory-should-contain [
     10 <- 0  # empty result
@@ -1174,7 +1174,7 @@ scenario text-split-empty-piece [
     local-scope
     x:text <- new [a/b//c]
     y:address:array:text <- split x:text, 47/slash
-    10:number/raw <- length *y
+    10:num/raw <- length *y
     a:text <- index *y, 0
     b:text <- index *y, 1
     c:text <- index *y, 2
@@ -1197,7 +1197,7 @@ def split-first text:text, delim:char -> x:text, y:text [
   local-scope
   load-ingredients
   # empty text? return empty texts
-  len:number <- length *text
+  len:num <- length *text
   {
     empty?:boolean <- equal len, 0
     break-unless empty?
@@ -1205,7 +1205,7 @@ def split-first text:text, delim:char -> x:text, y:text [
     y:text <- new []
     return
   }
-  idx:number <- find-next text, delim, 0
+  idx:num <- find-next text, delim, 0
   x:text <- copy-range text, 0, idx
   idx <- add idx, 1
   y:text <- copy-range text, idx, len
@@ -1225,18 +1225,18 @@ scenario text-split-first [
   ]
 ]
 
-def copy-range buf:text, start:number, end:number -> result:text [
+def copy-range buf:text, start:num, end:num -> result:text [
   local-scope
   load-ingredients
   # if end is out of bounds, trim it
-  len:number <- length *buf
-  end:number <- min len, end
+  len:num <- length *buf
+  end:num <- min len, end
   # allocate space for result
   len <- subtract end, start
   result:text <- new character:type, len
   # copy start..end into result[curr-result]
-  src-idx:number <- copy start
-  dest-idx:number <- copy 0
+  src-idx:num <- copy start
+  dest-idx:num <- copy 0
   {
     done?:boolean <- greater-or-equal src-idx, end
     break-if done?

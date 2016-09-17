@@ -8,12 +8,12 @@
 
 :(scenario tangle_before)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   <label1>
-  3:number <- copy 0
+  3:num <- copy 0
 ]
 before <label1> [
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -159,15 +159,15 @@ void check_insert_fragments() {
 
 :(scenario tangle_before_and_after)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   <label1>
-  4:number <- copy 0
+  4:num <- copy 0
 ]
 before <label1> [
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 after <label1> [
-  3:number <- copy 0
+  3:num <- copy 0
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -180,33 +180,33 @@ $mem: 4
 :(scenario tangle_ignores_jump_target)
 % Hide_errors = true;
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   +label1
-  4:number <- copy 0
+  4:num <- copy 0
 ]
 before +label1 [
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 +error: can't tangle before label +label1
 
 :(scenario tangle_keeps_labels_separate)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   <label1>
   <label2>
-  6:number <- copy 0
+  6:num <- copy 0
 ]
 before <label1> [
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 after <label1> [
-  3:number <- copy 0
+  3:num <- copy 0
 ]
 before <label2> [
-  4:number <- copy 0
+  4:num <- copy 0
 ]
 after <label2> [
-  5:number <- copy 0
+  5:num <- copy 0
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -222,21 +222,21 @@ $mem: 6
 
 :(scenario tangle_stacks_multiple_fragments)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   <label1>
-  6:number <- copy 0
+  6:num <- copy 0
 ]
 before <label1> [
-  2:number <- copy 0
+  2:num <- copy 0
 ]
 after <label1> [
-  3:number <- copy 0
+  3:num <- copy 0
 ]
 before <label1> [
-  4:number <- copy 0
+  4:num <- copy 0
 ]
 after <label1> [
-  5:number <- copy 0
+  5:num <- copy 0
 ]
 +mem: storing 0 in location 1
 # 'before' fragments stack in order
@@ -252,17 +252,17 @@ $mem: 6
 
 :(scenario tangle_supports_fragments_with_multiple_instructions)
 def main [
-  1:number <- copy 0
+  1:num <- copy 0
   <label1>
-  6:number <- copy 0
+  6:num <- copy 0
 ]
 before <label1> [
-  2:number <- copy 0
-  3:number <- copy 0
+  2:num <- copy 0
+  3:num <- copy 0
 ]
 after <label1> [
-  4:number <- copy 0
-  5:number <- copy 0
+  4:num <- copy 0
+  5:num <- copy 0
 ]
 +mem: storing 0 in location 1
 +mem: storing 0 in location 2
@@ -276,21 +276,21 @@ $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
-  4:number <- copy 10
+  4:num <- copy 10
   recipe2
 ]
 def recipe2 [
-  1:number <- copy 11
+  1:num <- copy 11
   <label1>
-  4:number <- copy 11
+  4:num <- copy 11
 ]
 before <label1> [
-  2:number <- copy 12
+  2:num <- copy 12
 ]
 after <label1> [
-  3:number <- copy 12
+  3:num <- copy 12
 ]
 +mem: storing 10 in location 1
 +mem: storing 12 in location 2
@@ -308,16 +308,16 @@ $mem: 8
 
 :(scenario tangle_tangles_into_all_labels_with_same_name_2)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
   <label1>
-  4:number <- copy 10
+  4:num <- copy 10
 ]
 before <label1> [
-  2:number <- copy 12
+  2:num <- copy 12
 ]
 after <label1> [
-  3:number <- copy 12
+  3:num <- copy 12
 ]
 +mem: storing 10 in location 1
 +mem: storing 12 in location 2
@@ -332,16 +332,16 @@ $mem: 6
 
 :(scenario tangle_tangles_into_all_labels_with_same_name_3)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
   <foo>
-  4:number <- copy 10
+  4:num <- copy 10
 ]
 before <label1> [
-  2:number <- copy 12
+  2:num <- copy 12
 ]
 after <label1> [
-  3:number <- copy 12
+  3:num <- copy 12
 ]
 after <foo> [
   <label1>
@@ -359,15 +359,15 @@ $mem: 6
 
 :(scenario tangle_handles_jump_target_inside_fragment)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
-  4:number <- copy 10
+  4:num <- copy 10
 ]
 before <label1> [
   jump +label2:label
-  2:number <- copy 12
+  2:num <- copy 12
   +label2
-  3:number <- copy 12
+  3:num <- copy 12
 ]
 +mem: storing 10 in location 1
 # label1
@@ -380,16 +380,16 @@ $mem: 3
 
 :(scenario tangle_renames_jump_target)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
   +label2
-  4:number <- copy 10
+  4:num <- copy 10
 ]
 before <label1> [
   jump +label2:label
-  2:number <- copy 12
+  2:num <- copy 12
   +label2  # renamed
-  3:number <- copy 12
+  3:num <- copy 12
 ]
 +mem: storing 10 in location 1
 # label1
@@ -402,15 +402,15 @@ $mem: 3
 
 :(scenario tangle_jump_to_base_recipe)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   <label1>
   +label2
-  4:number <- copy 10
+  4:num <- copy 10
 ]
 before <label1> [
   jump +label2:label
-  2:number <- copy 12
-  3:number <- copy 12
+  2:num <- copy 12
+  3:num <- copy 12
 ]
 +mem: storing 10 in location 1
 # label1
@@ -431,14 +431,14 @@ void test_new_fragment_after_tangle() {
        "  <label>\n"
        "]\n"
        "after <label> [\n"
-       "  1:number/raw <- copy 34\n"
+       "  1:num/raw <- copy 34\n"
        "]\n");
   transform_all();
   CHECK_TRACE_DOESNT_CONTAIN_ERROR();
   Hide_errors = true;
   // try to tangle into recipe foo after transform
   load("before <label> [\n"
-       "  2:number/raw <- copy 35\n"
+       "  2:num/raw <- copy 35\n"
        "]\n");
   CHECK_TRACE_CONTAINS_ERROR();
 }

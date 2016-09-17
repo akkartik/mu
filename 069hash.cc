@@ -129,17 +129,17 @@ size_t hash_iter(size_t h, size_t input) {
 
 :(scenario hash_container_checks_all_elements)
 container foo [
-  x:number
+  x:num
   y:char
 ]
 def main [
   1:foo <- merge 34, 97/a
-  3:number <- hash 1:foo
-  return-unless 3:number
+  3:num <- hash 1:foo
+  return-unless 3:num
   4:foo <- merge 34, 98/a
-  6:number <- hash 4:foo
-  return-unless 6:number
-  7:bool <- equal 3:number, 6:number
+  6:num <- hash 4:foo
+  return-unless 6:num
+  7:bool <- equal 3:num, 6:num
 ]
 # hash on containers includes all elements
 +mem: storing 0 in location 7
@@ -147,37 +147,37 @@ def main [
 :(scenario hash_exclusive_container_checks_all_elements)
 exclusive-container foo [
   x:bar
-  y:number
+  y:num
 ]
 container bar [
-  a:number
-  b:number
+  a:num
+  b:num
 ]
 def main [
   1:foo <- merge 0/x, 34, 35
-  4:number <- hash 1:foo
-  return-unless 4:number
+  4:num <- hash 1:foo
+  return-unless 4:num
   5:foo <- merge 0/x, 34, 36
-  8:number <- hash 5:foo
-  return-unless 8:number
-  9:bool <- equal 4:number, 8:number
+  8:num <- hash 5:foo
+  return-unless 8:num
+  9:bool <- equal 4:num, 8:num
 ]
 # hash on containers includes all elements
 +mem: storing 0 in location 9
 
 :(scenario hash_can_ignore_container_elements)
 container foo [
-  x:number
+  x:num
   y:char/ignore-for-hash
 ]
 def main [
   1:foo <- merge 34, 97/a
-  3:number <- hash 1:foo
-  return-unless 3:number
+  3:num <- hash 1:foo
+  return-unless 3:num
   4:foo <- merge 34, 98/a
-  6:number <- hash 4:foo
-  return-unless 6:number
-  7:bool <- equal 3:number, 6:number
+  6:num <- hash 4:foo
+  return-unless 6:num
+  7:bool <- equal 3:num, 6:num
 ]
 # hashes match even though y is different
 +mem: storing 1 in location 7
@@ -187,8 +187,8 @@ def main [
 
 :(scenario hash_of_zero_address)
 def main [
-  1:address:number <- copy 0
-  2:number <- hash 1:address:number
+  1:address:num <- copy 0
+  2:num <- hash 1:address:num
 ]
 +mem: storing 0 in location 2
 
@@ -196,116 +196,116 @@ def main [
 //: on the precise bit pattern of a floating-point number.
 :(scenario hash_of_numbers_ignores_fractional_part)
 def main [
-  1:number <- hash 1.5
-  2:number <- hash 1
-  3:bool <- equal 1:number, 2:number
+  1:num <- hash 1.5
+  2:num <- hash 1
+  3:bool <- equal 1:num, 2:num
 ]
 +mem: storing 1 in location 3
 
 :(scenario hash_of_array_same_as_string)
 def main [
-  10:number <- copy 3
-  11:number <- copy 97
-  12:number <- copy 98
-  13:number <- copy 99
-  2:number <- hash 10:array:number/unsafe
-  return-unless 2:number
+  10:num <- copy 3
+  11:num <- copy 97
+  12:num <- copy 98
+  13:num <- copy 99
+  2:num <- hash 10:array:num/unsafe
+  return-unless 2:num
   3:text <- new [abc]
-  4:number <- hash 3:text
-  return-unless 4:number
-  5:bool <- equal 2:number, 4:number
+  4:num <- hash 3:text
+  return-unless 4:num
+  5:bool <- equal 2:num, 4:num
 ]
 +mem: storing 1 in location 5
 
 :(scenario hash_ignores_address_value)
 def main [
-  1:address:number <- new number:type
-  *1:address:number <- copy 34
-  2:number <- hash 1:address:number
-  3:address:number <- new number:type
-  *3:address:number <- copy 34
-  4:number <- hash 3:address:number
-  5:bool <- equal 2:number, 4:number
+  1:address:num <- new number:type
+  *1:address:num <- copy 34
+  2:num <- hash 1:address:num
+  3:address:num <- new number:type
+  *3:address:num <- copy 34
+  4:num <- hash 3:address:num
+  5:bool <- equal 2:num, 4:num
 ]
 # different addresses hash to the same result as long as the values the point to do so
 +mem: storing 1 in location 5
 
 :(scenario hash_ignores_address_refcount)
 def main [
-  1:address:number <- new number:type
-  *1:address:number <- copy 34
-  2:number <- hash 1:address:number
-  return-unless 2:number
+  1:address:num <- new number:type
+  *1:address:num <- copy 34
+  2:num <- hash 1:address:num
+  return-unless 2:num
   # increment refcount
-  3:address:number <- copy 1:address:number
-  4:number <- hash 3:address:number
-  return-unless 4:number
-  5:bool <- equal 2:number, 4:number
+  3:address:num <- copy 1:address:num
+  4:num <- hash 3:address:num
+  return-unless 4:num
+  5:bool <- equal 2:num, 4:num
 ]
 # hash doesn't change when refcount changes
 +mem: storing 1 in location 5
 
 :(scenario hash_container_depends_only_on_elements)
 container foo [
-  x:number
+  x:num
   y:char
 ]
 container bar [
-  x:number
+  x:num
   y:char
 ]
 def main [
   1:foo <- merge 34, 97/a
-  3:number <- hash 1:foo
-  return-unless 3:number
+  3:num <- hash 1:foo
+  return-unless 3:num
   4:bar <- merge 34, 97/a
-  6:number <- hash 4:bar
-  return-unless 6:number
-  7:bool <- equal 3:number, 6:number
+  6:num <- hash 4:bar
+  return-unless 6:num
+  7:bool <- equal 3:num, 6:num
 ]
 # containers with identical elements return identical hashes
 +mem: storing 1 in location 7
 
 :(scenario hash_container_depends_only_on_elements_2)
 container foo [
-  x:number
+  x:num
   y:char
-  z:address:number
+  z:address:num
 ]
 def main [
-  1:address:number <- new number:type
-  *1:address:number <- copy 34
-  2:foo <- merge 34, 97/a, 1:address:number
-  5:number <- hash 2:foo
-  return-unless 5:number
-  6:address:number <- new number:type
-  *6:address:number <- copy 34
-  7:foo <- merge 34, 97/a, 6:address:number
-  10:number <- hash 7:foo
-  return-unless 10:number
-  11:bool <- equal 5:number, 10:number
+  1:address:num <- new number:type
+  *1:address:num <- copy 34
+  2:foo <- merge 34, 97/a, 1:address:num
+  5:num <- hash 2:foo
+  return-unless 5:num
+  6:address:num <- new number:type
+  *6:address:num <- copy 34
+  7:foo <- merge 34, 97/a, 6:address:num
+  10:num <- hash 7:foo
+  return-unless 10:num
+  11:bool <- equal 5:num, 10:num
 ]
 # containers with identical 'leaf' elements return identical hashes
 +mem: storing 1 in location 11
 
 :(scenario hash_container_depends_only_on_elements_3)
 container foo [
-  x:number
+  x:num
   y:char
   z:bar
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo <- merge 34, 97/a, 47, 48
-  6:number <- hash 1:foo
-  return-unless 6:number
+  6:num <- hash 1:foo
+  return-unless 6:num
   7:foo <- merge 34, 97/a, 47, 48
-  12:number <- hash 7:foo
-  return-unless 12:number
-  13:bool <- equal 6:number, 12:number
+  12:num <- hash 7:foo
+  return-unless 12:num
+  13:bool <- equal 6:num, 12:num
 ]
 # containers with identical 'leaf' elements return identical hashes
 +mem: storing 1 in location 13
@@ -313,20 +313,20 @@ def main [
 :(scenario hash_exclusive_container_ignores_tag)
 exclusive-container foo [
   x:bar
-  y:number
+  y:num
 ]
 container bar [
-  a:number
-  b:number
+  a:num
+  b:num
 ]
 def main [
   1:foo <- merge 0/x, 34, 35
-  4:number <- hash 1:foo
-  return-unless 4:number
+  4:num <- hash 1:foo
+  return-unless 4:num
   5:bar <- merge 34, 35
-  7:number <- hash 5:bar
-  return-unless 7:number
-  8:bool <- equal 4:number, 7:number
+  7:num <- hash 5:bar
+  return-unless 7:num
+  8:bool <- equal 4:num, 7:num
 ]
 # hash on containers includes all elements
 +mem: storing 1 in location 8
@@ -338,9 +338,9 @@ def main [
 :(scenario hash_matches_old_version)
 def main [
   1:text <- new [abc]
-  2:number <- hash 1:text
-  3:number <- hash_old 1:text
-  4:bool <- equal 2:number, 3:number
+  2:num <- hash 1:text
+  3:num <- hash_old 1:text
+  4:bool <- equal 2:num, 3:num
 ]
 +mem: storing 1 in location 4
 

@@ -6,9 +6,9 @@
 
 :(scenario call_literal_recipe)
 def main [
-  1:number <- call f, 34
+  1:num <- call f, 34
 ]
-def f x:number -> y:number [
+def f x:num -> y:num [
   local-scope
   load-ingredients
   y <- copy x
@@ -18,9 +18,9 @@ def f x:number -> y:number [
 :(scenario call_variable)
 def main [
   {1: (recipe number -> number)} <- copy f
-  2:number <- call {1: (recipe number -> number)}, 34
+  2:num <- call {1: (recipe number -> number)}, 34
 ]
-def f x:number -> y:number [
+def f x:num -> y:num [
   local-scope
   load-ingredients
   y <- copy x
@@ -126,29 +126,29 @@ case CALL: {
 :(scenario call_check_literal_recipe)
 % Hide_errors = true;
 def main [
-  1:number <- call f, 34
+  1:num <- call f, 34
 ]
 def f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
 ]
-+error: main: ingredient 0 has the wrong type at '1:number <- call f, 34'
-+error: main: product 0 has the wrong type at '1:number <- call f, 34'
++error: main: ingredient 0 has the wrong type at '1:num <- call f, 34'
++error: main: product 0 has the wrong type at '1:num <- call f, 34'
 
 :(scenario call_check_variable_recipe)
 % Hide_errors = true;
 def main [
   {1: (recipe point -> point)} <- copy f
-  2:number <- call {1: (recipe point -> point)}, 34
+  2:num <- call {1: (recipe point -> point)}, 34
 ]
 def f x:point -> y:point [
   local-scope
   load-ingredients
   y <- copy x
 ]
-+error: main: ingredient 0 has the wrong type at '2:number <- call {1: (recipe point -> point)}, 34'
-+error: main: product 0 has the wrong type at '2:number <- call {1: (recipe point -> point)}, 34'
++error: main: ingredient 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
++error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
 
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_indirect_calls_against_header);  // idempotent
@@ -255,11 +255,11 @@ bool is_mu_recipe(const reagent& r) {
 :(scenario copy_typecheck_recipe_variable)
 % Hide_errors = true;
 def main [
-  3:number <- copy 34  # abc def
+  3:num <- copy 34  # abc def
   {1: (recipe number -> number)} <- copy f  # store literal in a matching variable
   {2: (recipe boolean -> boolean)} <- copy {1: (recipe number -> number)}  # mismatch between recipe variables
 ]
-def f x:number -> y:number [
+def f x:num -> y:num [
   local-scope
   load-ingredients
   y <- copy x
@@ -300,10 +300,10 @@ if (is_mu_recipe(to)) {
 :(scenario call_variable_compound_ingredient)
 def main [
   {1: (recipe (address number) -> number)} <- copy f
-  2:address:number <- copy 0
-  3:number <- call {1: (recipe (address number) -> number)}, 2:address:number
+  2:address:num <- copy 0
+  3:num <- call {1: (recipe (address number) -> number)}, 2:address:num
 ]
-def f x:address:number -> y:number [
+def f x:address:num -> y:num [
   local-scope
   load-ingredients
   y <- copy x

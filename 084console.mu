@@ -3,25 +3,25 @@
 
 exclusive-container event [
   text:char
-  keycode:number  # keys on keyboard without a unicode representation
+  keycode:num  # keys on keyboard without a unicode representation
   touch:touch-event  # mouse, track ball, etc.
   resize:resize-event
   # update the assume-console handler if you add more variants
 ]
 
 container touch-event [
-  type:number
-  row:number
-  column:number
+  type:num
+  row:num
+  column:num
 ]
 
 container resize-event [
-  width:number
-  height:number
+  width:num
+  height:num
 ]
 
 container console [
-  current-event-index:number
+  current-event-index:num
   events:address:array:event
 ]
 
@@ -37,10 +37,10 @@ def read-event console:address:console -> result:event, console:address:console,
   load-ingredients
   {
     break-unless console
-    current-event-index:number <- get *console, current-event-index:offset
+    current-event-index:num <- get *console, current-event-index:offset
     buf:address:array:event <- get *console, events:offset
     {
-      max:number <- length *buf
+      max:num <- length *buf
       done?:boolean <- greater-or-equal current-event-index, max
       break-unless done?
       dummy:address:event <- new event:type

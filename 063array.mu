@@ -15,7 +15,7 @@ scenario array-from-args [
 # create an array out of a list of scalar args
 def new-array -> result:text [
   local-scope
-  capacity:number <- copy 0
+  capacity:num <- copy 0
   {
     # while read curr-value
     curr-value:char, exists?:boolean <- next-ingredient
@@ -25,7 +25,7 @@ def new-array -> result:text [
   }
   result <- new character:type, capacity
   rewind-ingredients
-  i:number <- copy 0
+  i:num <- copy 0
   {
     # while read curr-value
     done?:boolean <- greater-or-equal i, capacity

@@ -120,7 +120,7 @@ scenario screen-in-scenario-color [
 :(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
 % Scenario_testing_scenario = true;
 def main [
-  screen:number <- copy 1:number
+  screen:num <- copy 1:num
 ]
 -error: mixing variable names and numeric addresses in main
 $error: 0

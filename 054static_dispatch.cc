@@ -4,12 +4,12 @@
 
 :(scenario static_dispatch)
 def main [
-  7:number/raw <- test 3
+  7:num/raw <- test 3
 ]
-def test a:number -> z:number [
+def test a:num -> z:num [
   z <- copy 1
 ]
-def test a:number, b:number -> z:number [
+def test a:num, b:num -> z:num [
   z <- copy 2
 ]
 +mem: storing 1 in location 7
@@ -119,12 +119,12 @@ string next_unused_recipe_name(const string& recipe_name) {
 
 :(scenario static_dispatch_picks_most_similar_variant)
 def main [
-  7:number/raw <- test 3, 4, 5
+  7:num/raw <- test 3, 4, 5
 ]
-def test a:number -> z:number [
+def test a:num -> z:num [
   z <- copy 1
 ]
-def test a:number, b:number -> z:number [
+def test a:num, b:num -> z:num [
   z <- copy 2
 ]
 +mem: storing 2 in location 7
@@ -386,17 +386,17 @@ bool next_stash(const call& c, instruction* stash_inst) {
 
 :(scenario static_dispatch_disabled_in_recipe_without_variants)
 def main [
-  1:number <- test 3
+  1:num <- test 3
 ]
 def test [
-  2:number <- next-ingredient  # ensure no header
+  2:num <- next-ingredient  # ensure no header
   return 34
 ]
 +mem: storing 34 in location 1
 
 :(scenario static_dispatch_disabled_on_headerless_definition)
 % Hide_errors = true;
-def test a:number -> z:number [
+def test a:num -> z:num [
   z <- copy 1
 ]
 def test [
@@ -409,22 +409,22 @@ def test [
 def test [
   return 34
 ]
-def test a:number -> z:number [
+def test a:num -> z:num [
   z <- copy 1
 ]
 +error: redefining recipe test
 
 :(scenario static_dispatch_on_primitive_names)
 def main [
-  1:number <- copy 34
-  2:number <- copy 34
-  3:bool <- equal 1:number, 2:number
+  1:num <- copy 34
+  2:num <- copy 34
+  3:bool <- equal 1:num, 2:num
   4:bool <- copy 0/false
   5:bool <- copy 0/false
   6:bool <- equal 4:bool, 5:bool
 ]
 # temporarily hardcode number equality to always fail
-def equal x:number, y:number -> z:bool [
+def equal x:num, y:num -> z:bool [
   local-scope
   load-ingredients
   z <- copy 0/false
@@ -438,12 +438,12 @@ def equal x:number, y:number -> z:bool [
 def main [
   _ <- test 3, 4
 ]
-def test a:number -> z:point [
+def test a:num -> z:point [
   local-scope
   load-ingredients
   z <- merge a, 0
 ]
-def test a:number, b:number -> z:point [
+def test a:num, b:num -> z:point [
   local-scope
   load-ingredients
   z <- merge a, b
@@ -456,12 +456,12 @@ def main [
   test x
 ]
 container foo [
-  x:number
+  x:num
 ]
-def test a:address:foo -> z:number [
+def test a:address:foo -> z:num [
   local-scope
   load-ingredients
-  z:number <- get *a, x:offset
+  z:num <- get *a, x:offset
 ]
 $error: 0
 
@@ -470,24 +470,24 @@ def main [
   x:address:foo <- new foo:type
   test x
 ]
-def test a:address:foo -> z:number [
+def test a:address:foo -> z:num [
   local-scope
   load-ingredients
-  z:number <- get *a, x:offset
+  z:num <- get *a, x:offset
 ]
 container foo [
-  x:number
+  x:num
 ]
 $error: 0
 
 :(scenario static_dispatch_prefers_literals_to_be_numbers_rather_than_addresses)
 def main [
-  1:number <- foo 0
+  1:num <- foo 0
 ]
-def foo x:address:number -> y:number [
+def foo x:address:num -> y:num [
   return 34
 ]
-def foo x:number -> y:number [
+def foo x:num -> y:num [
   return 35
 ]
 +mem: storing 35 in location 1
@@ -497,25 +497,25 @@ def foo x:number -> y:number [
 def main [
   local-scope
   x:char <- copy 10/newline
-  1:number/raw <- foo x
+  1:num/raw <- foo x
 ]
-def foo x:number -> y:number [
+def foo x:num -> y:num [
   load-ingredients
   return 34
 ]
-+error: main: ingredient 0 has the wrong type at '1:number/raw <- foo x'
++error: main: ingredient 0 has the wrong type at '1:num/raw <- foo x'
 -mem: storing 34 in location 1
 
 :(scenario static_dispatch_dispatches_literal_to_boolean_before_character)
 def main [
-  1:number/raw <- foo 0  # valid literal for boolean
+  1:num/raw <- foo 0  # valid literal for boolean
 ]
-def foo x:char -> y:number [
+def foo x:char -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:bool -> y:number [
+def foo x:bool -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -525,14 +525,14 @@ def foo x:bool -> y:number [
 
 :(scenario static_dispatch_dispatches_literal_to_character_when_out_of_boolean_range)
 def main [
-  1:number/raw <- foo 97  # not a valid literal for boolean
+  1:num/raw <- foo 97  # not a valid literal for boolean
 ]
-def foo x:char -> y:number [
+def foo x:char -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:bool -> y:number [
+def foo x:bool -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -542,14 +542,14 @@ def foo x:bool -> y:number [
 
 :(scenario static_dispatch_dispatches_literal_to_number_if_at_all_possible)
 def main [
-  1:number/raw <- foo 97
+  1:num/raw <- foo 97
 ]
-def foo x:char -> y:number [
+def foo x:char -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:number -> y:number [
+def foo x:num -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -574,20 +574,20 @@ string header_label(const recipe& caller) {
 
 :(scenario reload_variant_retains_other_variants)
 def main [
-  1:number <- copy 34
-  2:number <- foo 1:number
+  1:num <- copy 34
+  2:num <- foo 1:num
 ]
-def foo x:number -> y:number [
+def foo x:num -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:address:number -> y:number [
+def foo x:address:num -> y:num [
   local-scope
   load-ingredients
   return 35
 ]
-def! foo x:address:number -> y:number [
+def! foo x:address:num -> y:num [
   local-scope
   load-ingredients
   return 36
@@ -598,33 +598,33 @@ $error: 0
 :(scenario dispatch_errors_come_after_unknown_name_errors)
 % Hide_errors = true;
 def main [
-  y:number <- foo x
+  y:num <- foo x
 ]
-def foo a:number -> b:number [
+def foo a:num -> b:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo a:bool -> b:number [
+def foo a:bool -> b:num [
   local-scope
   load-ingredients
   return 35
 ]
-+error: main: missing type for 'x' in 'y:number <- foo x'
-+error: main: failed to find a matching call for 'y:number <- foo x'
++error: main: missing type for 'x' in 'y:num <- foo x'
++error: main: failed to find a matching call for 'y:num <- foo x'
 
 :(scenario override_methods_with_type_abbreviations)
 type string = address:array:char
 def main [
   local-scope
   s:text <- new [abc]
-  1:number/raw <- foo s
+  1:num/raw <- foo s
 ]
-def foo a:text -> result:number [
+def foo a:text -> result:num [
   return 34
 ]
 # identical to previous variant once you take type abbreviation into account
-def! foo a:string -> result:number [
+def! foo a:string -> result:num [
   return 35
 ]
 +mem: storing 35 in location 1

@@ -1,4 +1,4 @@
-def random generator:address:stream:number -> result:number, fail?:boolean, generator:address:stream:number [
+def random generator:address:stream:num -> result:num, fail?:boolean, generator:address:stream:num [
   local-scope
   load-ingredients
   {
@@ -11,11 +11,11 @@ def random generator:address:stream:number -> result:number, fail?:boolean, gene
 ]
 
 # helper for tests
-def assume-random-numbers -> result:address:stream:number [
+def assume-random-numbers -> result:address:stream:num [
   local-scope
   load-ingredients
   # compute result-len, space to allocate in result
-  result-len:number <- copy 0
+  result-len:num <- copy 0
   {
     _, arg-received?:boolean <- next-ingredient
     break-unless arg-received?
@@ -23,10 +23,10 @@ def assume-random-numbers -> result:address:stream:number [
     loop
   }
   rewind-ingredients
-  result-data:address:array:number <- new number:type, result-len
-  idx:number <- copy 0
+  result-data:address:array:num <- new number:type, result-len
+  idx:num <- copy 0
   {
-    curr:number, arg-received?:boolean <- next-ingredient
+    curr:num, arg-received?:boolean <- next-ingredient
     break-unless arg-received?
     *result-data <- put-index *result-data, idx, curr
     idx <- add idx, 1
@@ -37,11 +37,11 @@ def assume-random-numbers -> result:address:stream:number [
 
 scenario random-numbers-in-scenario [
   local-scope
-  source:address:stream:number <- assume-random-numbers 34, 35, 37
-  1:number/raw, 2:boolean/raw <- random source
-  3:number/raw, 4:boolean/raw <- random source
-  5:number/raw, 6:boolean/raw <- random source
-  7:number/raw, 8:boolean/raw <- random source
+  source:address:stream:num <- assume-random-numbers 34, 35, 37
+  1:num/raw, 2:boolean/raw <- random source
+  3:num/raw, 4:boolean/raw <- random source
+  5:num/raw, 6:boolean/raw <- random source
+  7:num/raw, 8:boolean/raw <- random source
   memory-should-contain [
     1 <- 34
     2 <- 0  # everything went well

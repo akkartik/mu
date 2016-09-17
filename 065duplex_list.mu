@@ -45,8 +45,8 @@ scenario duplex-list-handling [
   run [
     local-scope
     # reserve locations 0-9 to check for missing null check
-    10:number/raw <- copy 34
-    11:number/raw <- copy 35
+    10:num/raw <- copy 34
+    11:num/raw <- copy 35
     list:address:duplex-list:char <- push 3, 0
     list <- push 4, list
     list <- push 5, list
@@ -330,7 +330,7 @@ scenario removing-from-singleton-duplex-list [
     local-scope
     list:address:duplex-list:char <- push 3, 0
     list <- remove list, list
-    1:number/raw <- copy list
+    1:num/raw <- copy list
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list

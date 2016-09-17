@@ -5,12 +5,12 @@
 
 :(scenario wait_for_location)
 def f1 [
-  10:number <- copy 34
+  10:num <- copy 34
   start-running f2
   20:location <- copy 10/unsafe
   wait-for-reset-then-set 20:location
   # wait for f2 to run and reset location 1
-  30:number <- copy 10:number
+  30:num <- copy 10:num
 ]
 def f2 [
   10:location <- copy 0/unsafe
@@ -140,8 +140,8 @@ for (int i = 0; i < SIZE(Routines); ++i) {
 
 :(scenario get_location)
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
+  12:num <- copy 34
+  13:num <- copy 35
   15:location <- get-location 12:point, 1:offset
 ]
 +mem: storing 13 in location 15
@@ -223,9 +223,9 @@ bool is_mu_location(reagent/*copy*/ x) {
 :(scenario get_location_out_of_bounds)
 % Hide_errors = true;
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
   get-location 12:point-number/raw, 2:offset  # point-number occupies 3 locations but has only 2 fields; out of bounds
 ]
 +error: main: invalid offset 2 for 'point-number'
@@ -233,9 +233,9 @@ def main [
 :(scenario get_location_out_of_bounds_2)
 % Hide_errors = true;
 def main [
-  12:number <- copy 34
-  13:number <- copy 35
-  14:number <- copy 36
+  12:num <- copy 34
+  13:num <- copy 35
+  14:num <- copy 36
   get-location 12:point-number/raw, -1:offset
 ]
 +error: main: invalid offset -1 for 'point-number'
@@ -256,21 +256,21 @@ def main [
 :(scenario get_location_indirect)
 # 'get-location' can read from container address
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
+  11:num <- copy 34
+  12:num <- copy 35
   4:location <- get-location 1:address:point/lookup, 0:offset
 ]
 +mem: storing 11 in location 4
 
 :(scenario get_location_indirect_2)
 def main [
-  1:number <- copy 10
+  1:num <- copy 10
   # 10 reserved for refcount
-  11:number <- copy 34
-  12:number <- copy 35
-  4:address:number <- copy 20/unsafe
+  11:num <- copy 34
+  12:num <- copy 35
+  4:address:num <- copy 20/unsafe
   4:address:location/lookup <- get-location 1:address:point/lookup, 0:offset
 ]
 +mem: storing 11 in location 21
@@ -280,21 +280,21 @@ def main [
 :(scenario wait_for_routine)
 def f1 [
   # add a few routines to run
-  1:number/routine <- start-running f2
-  2:number/routine <- start-running f3
-  wait-for-routine 1:number/routine
+  1:num/routine <- start-running f2
+  2:num/routine <- start-running f3
+  wait-for-routine 1:num/routine
   # now wait for f2 to *complete* and modify location 13 before using its value
-  20:number <- copy 13:number
+  20:num <- copy 13:num
 ]
 def f2 [
-  10:number <- copy 0  # just padding
+  10:num <- copy 0  # just padding
   switch  # simulate a block; routine f1 shouldn't restart at this point
-  13:number <- copy 34
+  13:num <- copy 34
 ]
 def f3 [
   # padding routine just to help simulate the block in f2 using 'switch'
-  11:number <- copy 0
-  12:number <- copy 0
+  11:num <- copy 0
+  12:num <- copy 0
 ]
 +schedule: f1
 +run: waiting for routine 2
@@ -423,13 +423,13 @@ case CURRENT_ROUTINE_IS_UNBLOCKED: {
 
 :(scenario wait_for_routine_to_block)
 def f1 [
-  1:number/routine <- start-running f2
-  wait-for-routine-to-block 1:number/routine
+  1:num/routine <- start-running f2
+  wait-for-routine-to-block 1:num/routine
   # now wait for f2 to run and modify location 10 before using its value
-  11:number <- copy 10:number
+  11:num <- copy 10:num
 ]
 def f2 [
-  10:number <- copy 34
+  10:num <- copy 34
 ]
 +schedule: f1
 +run: waiting for routine 2 to block
@@ -562,14 +562,14 @@ case RESTART: {
 % Scheduling_interval = 1;
 def main [
   local-scope
-  r:number/routine-id <- start-running f
-  x:number <- copy 0  # wait for f to be scheduled
+  r:num/routine-id <- start-running f
+  x:num <- copy 0  # wait for f to be scheduled
   # r is COMPLETED by this point
   restart r  # should have no effect
-  x:number <- copy 0  # give f time to be scheduled (though it shouldn't be)
+  x:num <- copy 0  # give f time to be scheduled (though it shouldn't be)
 ]
 def f [
-  1:number/raw <- copy 1
+  1:num/raw <- copy 1
 ]
 # shouldn't crash
 
@@ -577,7 +577,7 @@ def f [
 % Scheduling_interval = 1;
 def main [
   local-scope
-  r:number/routine-id <- start-running f
+  r:num/routine-id <- start-running f
   wait-for-routine-to-block r  # get past the block in f below
   restart r
   wait-for-routine-to-block r  # should run f to completion
@@ -586,15 +586,15 @@ def main [
 def f [
   current-routine-is-blocked
   # 8 instructions of padding, many more than 'main' above
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
-  1:number <- add 1:number, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
+  1:num <- add 1:num, 1
 ]
 # make sure all of f ran
 +mem: storing 8 in location 1

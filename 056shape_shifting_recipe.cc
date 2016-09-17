@@ -6,7 +6,7 @@ def main [
   11:point <- foo 10:point
 ]
 # non-matching variant
-def foo a:number -> result:number [
+def foo a:num -> result:num [
   local-scope
   load-ingredients
   result <- copy 34
@@ -510,7 +510,7 @@ def main [
   11:point <- foo 10:point
 ]
 # non-matching shape-shifting variant
-def foo a:_t, b:_t -> result:number [
+def foo a:_t, b:_t -> result:num [
   local-scope
   load-ingredients
   result <- copy 34
@@ -537,7 +537,7 @@ def bar a:foo:_t -> result:_t [
 ]
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
@@ -566,12 +566,12 @@ def main [
 def bar a:foo:_t -> result:_t [
   local-scope
   load-ingredients
-  x:number <- copy 1
+  x:num <- copy 1
   result <- get a, x:offset  # shouldn't collide with other variable
 ]
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 +mem: storing 14 in location 20
 +mem: storing 15 in location 21
@@ -592,9 +592,9 @@ def main [
 ]
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
-def bar x:number -> result:address:foo:_t [
+def bar x:num -> result:address:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -609,7 +609,7 @@ def main [
   1:address:foo:point <- bar 3
   11:foo:point <- copy *1:address:foo:point
 ]
-def bar x:number -> result:address:foo:_t [
+def bar x:num -> result:address:foo:_t [
   local-scope
   load-ingredients
   # new refers to _t in its ingredient *value*
@@ -618,7 +618,7 @@ def bar x:number -> result:address:foo:_t [
 # container defined after use
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 +mem: storing 0 in location 11
 +mem: storing 0 in location 12
@@ -642,7 +642,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
   transform("def barz x:_elem [\n"
             "  local-scope\n"
             "  load-ingredients\n"
-            "  y:address:number <- new _elem:type\n"
+            "  y:address:num <- new _elem:type\n"
             "]\n"
             "def fooz [\n"
             "  local-scope\n"
@@ -652,7 +652,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
   // type-ingredient
   run("container foo:_elem [\n"
       "  x:_elem\n"
-      "  y:number\n"
+      "  y:num\n"
       "]\n");
   // then it should work as usual
   reagent callsite("x:foo:point");
@@ -679,14 +679,14 @@ def bar a:_t -> result:_t [
 :(scenario shape_shifting_recipe_error)
 % Hide_errors = true;
 def main [
-  a:number <- copy 3
-  b:address:number <- foo a
+  a:num <- copy 3
+  b:address:num <- foo a
 ]
 def foo a:_t -> b:_t [
   load-ingredients
   b <- copy a
 ]
-+error: main: no call found for 'b:address:number <- foo a'
++error: main: no call found for 'b:address:num <- foo a'
 
 :(scenario specialize_inside_recipe_without_header)
 def main [
@@ -694,8 +694,8 @@ def main [
 ]
 def foo [
   local-scope
-  x:number <- next-ingredient  # ensure no header
-  1:number/raw <- bar x  # call a shape-shifting recipe
+  x:num <- next-ingredient  # ensure no header
+  1:num/raw <- bar x  # call a shape-shifting recipe
 ]
 def bar x:_elem -> y:_elem [
   local-scope
@@ -708,7 +708,7 @@ def bar x:_elem -> y:_elem [
 def main [
   local-scope
   # permit literal to map to number
-  1:number/raw <- foo 3
+  1:num/raw <- foo 3
 ]
 def foo x:_elem -> y:_elem [
   local-scope
@@ -765,25 +765,25 @@ def main [
 def foo x:_elem, y:_elem [
   local-scope
   load-ingredients
-  1:number/raw <- add x, y
+  1:num/raw <- add x, y
 ]
 +mem: storing 7 in location 1
 
 :(scenario multiple_shape_shifting_variants)
 # try to call two different shape-shifting recipes with the same name
 def main [
-  e1:d1:number <- merge 3
-  e2:d2:number <- merge 4, 5
-  1:number/raw <- foo e1
-  2:number/raw <- foo e2
+  e1:d1:num <- merge 3
+  e2:d2:num <- merge 4, 5
+  1:num/raw <- foo e1
+  2:num/raw <- foo e2
 ]
 # the two shape-shifting definitions
-def foo a:d1:_elem -> b:number [
+def foo a:d1:_elem -> b:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo a:d2:_elem -> b:number [
+def foo a:d2:_elem -> b:num [
   local-scope
   load-ingredients
   return 35
@@ -793,7 +793,7 @@ container d1:_elem [
   x:_elem
 ]
 container d2:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 +mem: storing 34 in location 1
@@ -802,17 +802,17 @@ container d2:_elem [
 :(scenario multiple_shape_shifting_variants_2)
 # static dispatch between shape-shifting variants, _including pointer lookups_
 def main [
-  e1:d1:number <- merge 3
-  e2:address:d2:number <- new {(d2 number): type}
-  1:number/raw <- foo e1
-  2:number/raw <- foo *e2  # different from previous scenario
+  e1:d1:num <- merge 3
+  e2:address:d2:num <- new {(d2 number): type}
+  1:num/raw <- foo e1
+  2:num/raw <- foo *e2  # different from previous scenario
 ]
-def foo a:d1:_elem -> b:number [
+def foo a:d1:_elem -> b:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo a:d2:_elem -> b:number [
+def foo a:d2:_elem -> b:num [
   local-scope
   load-ingredients
   return 35
@@ -821,7 +821,7 @@ container d1:_elem [
   x:_elem
 ]
 container d2:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 +mem: storing 34 in location 1
@@ -830,10 +830,10 @@ container d2:_elem [
 :(scenario missing_type_in_shape_shifting_recipe)
 % Hide_errors = true;
 def main [
-  a:d1:number <- merge 3
+  a:d1:num <- merge 3
   foo a
 ]
-def foo a:d1:_elem -> b:number [
+def foo a:d1:_elem -> b:num [
   local-scope
   load-ingredients
   copy e  # no such variable
@@ -849,10 +849,10 @@ container d1:_elem [
 :(scenario missing_type_in_shape_shifting_recipe_2)
 % Hide_errors = true;
 def main [
-  a:d1:number <- merge 3
+  a:d1:num <- merge 3
   foo a
 ]
-def foo a:d1:_elem -> b:number [
+def foo a:d1:_elem -> b:num [
   local-scope
   load-ingredients
   get e, x:offset  # unknown variable in a 'get', which does some extra checking
@@ -868,15 +868,15 @@ container d1:_elem [
 :(scenarios transform)
 :(scenario specialize_recursive_shape_shifting_recipe)
 def main [
-  1:number <- copy 34
-  2:number <- foo 1:number
+  1:num <- copy 34
+  2:num <- foo 1:num
 ]
-def foo x:_elem -> y:number [
+def foo x:_elem -> y:num [
   local-scope
   load-ingredients
   {
     break
-    y:number <- foo x
+    y:num <- foo x
   }
   return y
 ]
@@ -886,15 +886,15 @@ def foo x:_elem -> y:number [
 :(scenarios run)
 :(scenario specialize_most_similar_variant)
 def main [
-  1:address:number <- new number:type
-  2:number <- foo 1:address:number
+  1:address:num <- new number:type
+  2:num <- foo 1:address:num
 ]
-def foo x:_elem -> y:number [
+def foo x:_elem -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:address:_elem -> y:number [
+def foo x:address:_elem -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -904,18 +904,18 @@ def foo x:address:_elem -> y:number [
 :(scenario specialize_most_similar_variant_2)
 # version with headers padded with lots of unrelated concrete types
 def main [
-  1:number <- copy 23
-  2:address:array:number <- copy 0
-  3:number <- foo 2:address:array:number, 1:number
+  1:num <- copy 23
+  2:address:array:num <- copy 0
+  3:num <- foo 2:address:array:num, 1:num
 ]
 # variant with concrete type
-def foo dummy:address:array:number, x:number -> y:number, dummy:address:array:number [
+def foo dummy:address:array:num, x:num -> y:num, dummy:address:array:num [
   local-scope
   load-ingredients
   return 34
 ]
 # shape-shifting variant
-def foo dummy:address:array:number, x:_elem -> y:number, dummy:address:array:number [
+def foo dummy:address:array:num, x:_elem -> y:num, dummy:address:array:num [
   local-scope
   load-ingredients
   return 35
@@ -929,24 +929,24 @@ def main [
   foo 1:text
 ]
 def foo x:text [
-  2:number <- copy 34
+  2:num <- copy 34
 ]
 def foo x:address:_elem [
-  2:number <- copy 35
+  2:num <- copy 35
 ]
 # make sure the more precise version was used
 +mem: storing 34 in location 2
 
 :(scenario specialize_literal_as_number)
 def main [
-  1:number <- foo 23
+  1:num <- foo 23
 ]
-def foo x:_elem -> y:number [
+def foo x:_elem -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
-def foo x:char -> y:number [
+def foo x:char -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -956,16 +956,16 @@ def foo x:char -> y:number [
 :(scenario specialize_literal_as_number_2)
 # version calling with literal
 def main [
-  1:number <- foo 0
+  1:num <- foo 0
 ]
 # variant with concrete type
-def foo x:number -> y:number [
+def foo x:num -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
 # shape-shifting variant
-def foo x:address:_elem -> y:number [
+def foo x:address:_elem -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -975,16 +975,16 @@ def foo x:address:_elem -> y:number [
 
 :(scenario specialize_literal_as_address)
 def main [
-  1:number <- foo 0
+  1:num <- foo 0
 ]
 # variant with concrete address type
-def foo x:address:number -> y:number [
+def foo x:address:num -> y:num [
   local-scope
   load-ingredients
   return 34
 ]
 # shape-shifting variant
-def foo x:address:_elem -> y:number [
+def foo x:address:_elem -> y:num [
   local-scope
   load-ingredients
   return 35
@@ -999,14 +999,14 @@ def foo a:_elem [
 ]
 # define a container with field 'z'
 container foo2 [
-  z:number
+  z:num
 ]
 def main [
   local-scope
   x:foo2 <- merge 34
-  y:number <- get x, z:offse  # typo in 'offset'
+  y:num <- get x, z:offse  # typo in 'offset'
   # define a variable with the same name 'z'
-  z:number <- copy 34
+  z:num <- copy 34
   # trigger specialization of the shape-shifting recipe
   foo z
 ]
@@ -1019,14 +1019,14 @@ def foo a:_elem [
 ]
 # define a container with field 'z'
 container foo2 [
-  z:number
+  z:num
 ]
 def main [
   local-scope
   x:foo2 <- merge 34
-  y:number <- get x, z:offse  # typo in 'offset'
+  y:num <- get x, z:offse  # typo in 'offset'
   # define a variable with the same name 'z'
-  z:address:number <- copy 34
+  z:address:num <- copy 34
   # trigger specialization of the shape-shifting recipe
   foo *z
 ]

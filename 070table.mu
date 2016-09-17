@@ -4,9 +4,9 @@
 scenario table-read-write [
   run [
     local-scope
-    tab:address:table:number:number <- new-table 30
+    tab:address:table:num:num <- new-table 30
     put-index tab, 12, 34
-    1:number/raw <- index tab, 12
+    1:num/raw <- index tab, 12
   ]
   memory-should-contain [
     1 <- 34
@@ -19,7 +19,7 @@ scenario table-read-write-non-integer [
     key:text <- new [abc def]
     {tab: (address table text number)} <- new-table 30
     put-index tab, key, 34
-    1:number/raw <- index tab, key
+    1:num/raw <- index tab, key
   ]
   memory-should-contain [
     1 <- 34
@@ -27,8 +27,8 @@ scenario table-read-write-non-integer [
 ]
 
 container table:_key:_value [
-  length:number
-  capacity:number
+  length:num
+  capacity:num
   data:address:array:table_row:_key:_value
 ]
 
@@ -38,7 +38,7 @@ container table_row:_key:_value [
   value:_value
 ]
 
-def new-table capacity:number -> result:address:table:_key:_value [
+def new-table capacity:num -> result:address:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
@@ -49,9 +49,9 @@ def new-table capacity:number -> result:address:table:_key:_value [
 def put-index table:address:table:_key:_value, key:_key, value:_value -> table:address:table:_key:_value [
   local-scope
   load-ingredients
-  hash:number <- hash key
+  hash:num <- hash key
   hash <- abs hash
-  capacity:number <- get *table, capacity:offset
+  capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
   table-data:address:array:table_row:_key:_value <- get *table, data:offset
@@ -63,7 +63,7 @@ def put-index table:address:table:_key:_value, key:_key, value:_value -> table:a
   *table-data <- put-index *table-data, hash, new-row
 ]
 
-def abs n:number -> result:number [
+def abs n:num -> result:num [
   local-scope
   load-ingredients
   positive?:boolean <- greater-or-equal n, 0
@@ -74,9 +74,9 @@ def abs n:number -> result:number [
 def index table:address:table:_key:_value, key:_key -> result:_value [
   local-scope
   load-ingredients
-  hash:number <- hash key
+  hash:num <- hash key
   hash <- abs hash
-  capacity:number <- get *table, capacity:offset
+  capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
   table-data:address:array:table_row:_key:_value <- get *table, data:offset

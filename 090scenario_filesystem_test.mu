@@ -26,7 +26,7 @@ scenario write-to-fake-file [
   local-scope
   assume-filesystem [
   ]
-  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:num/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -43,7 +43,7 @@ scenario write-to-fake-file-that-exists [
   assume-filesystem [
     [a] <- []
   ]
-  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:num/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -63,7 +63,7 @@ scenario write-to-existing-file-preserves-other-files [
       |bcd|
     ]
   ]
-  sink:address:sink:char, writer:number/routine <- start-writing filesystem:address:filesystem, [a]
+  sink:address:sink:char, writer:num/routine <- start-writing filesystem:address:filesystem, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink

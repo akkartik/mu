@@ -25,7 +25,7 @@ scenario to-text-line-early-warning-for-static-dispatch [
 ]
 
 scenario array-to-text-line-early-warning-for-static-dispatch [
-  n:address:array:number <- new number:type, 3
+  n:address:array:num <- new number:type, 3
   x:text <- array-to-text-line n
   # just ensure there were no errors
 ]

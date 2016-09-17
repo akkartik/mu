@@ -2,9 +2,9 @@
 
 :(scenario passing_literals_to_recipes)
 def main [
-  1:number/raw <- foo [abc]
+  1:num/raw <- foo [abc]
 ]
-def foo x:text -> n:number [
+def foo x:text -> n:num [
   local-scope
   load-ingredients
   n <- length *x

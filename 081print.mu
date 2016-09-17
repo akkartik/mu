@@ -2,23 +2,23 @@
 # easier to test.
 
 container screen [
-  num-rows:number
-  num-columns:number
-  cursor-row:number
-  cursor-column:number
+  num-rows:num
+  num-columns:num
+  cursor-row:num
+  cursor-column:num
   data:address:array:screen-cell
 ]
 
 container screen-cell [
   contents:char
-  color:number
+  color:num
 ]
 
-def new-fake-screen w:number, h:number -> result:address:screen [
+def new-fake-screen w:num, h:num -> result:address:screen [
   local-scope
   load-ingredients
   result <- new screen:type
-  bufsize:number <- multiply w, h
+  bufsize:num <- multiply w, h
   data:address:array:screen-cell <- new screen-cell:type, bufsize
   *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data
   result <- clear-screen result
@@ -32,8 +32,8 @@ def clear-screen screen:address:screen -> screen:address:screen [
     break-unless screen
     # clear fake screen
     buf:address:array:screen-cell <- get *screen, data:offset
-    max:number <- length *buf
-    i:number <- copy 0
+    max:num <- length *buf
+    i:num <- copy 0
     {
       done?:boolean <- greater-or-equal i, max
       break-if done?
@@ -66,8 +66,8 @@ def fake-screen-is-empty? screen:address:screen -> result:boolean [
   load-ingredients
   return-unless screen, 1/true
   buf:address:array:screen-cell <- get *screen, data:offset
-  i:number <- copy 0
-  len:number <- length *buf
+  i:num <- copy 0
+  len:num <- length *buf
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -84,33 +84,33 @@ def fake-screen-is-empty? screen:address:screen -> result:boolean [
 def print screen:address:screen, c:char -> screen:address:screen [
   local-scope
   load-ingredients
-  color:number, color-found?:boolean <- next-ingredient
+  color:num, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  c2:number <- character-to-code c
+  c2:num <- character-to-code c
   trace 90, [print-character], c2
   {
     # if x exists
     # (handle special cases exactly like in the real screen)
     break-unless screen
-    width:number <- get *screen, num-columns:offset
-    height:number <- get *screen, num-rows:offset
+    width:num <- get *screen, num-columns:offset
+    height:num <- get *screen, num-rows:offset
     # if cursor is out of bounds, silently exit
-    row:number <- get *screen, cursor-row:offset
+    row:num <- get *screen, cursor-row:offset
     legal?:boolean <- greater-or-equal row, 0
     return-unless legal?
     legal? <- lesser-than row, height
     return-unless legal?
-    column:number <- get *screen, cursor-column:offset
+    column:num <- get *screen, cursor-column:offset
     legal? <- greater-or-equal column, 0
     return-unless legal?
     legal? <- lesser-than column, width
@@ -122,7 +122,7 @@ def print screen:address:screen, c:char -> screen:address:screen [
       break-unless newline?
       {
         # unless cursor is already at bottom
-        bottom:number <- subtract height, 1
+        bottom:num <- subtract height, 1
         at-bottom?:boolean <- greater-or-equal row, bottom
         break-if at-bottom?
         # move it to the next row
@@ -134,10 +134,10 @@ def print screen:address:screen, c:char -> screen:address:screen [
       return
     }
     # save character in fake screen
-    index:number <- multiply row, width
+    index:num <- multiply row, width
     index <- add index, column
     buf:address:array:screen-cell <- get *screen, data:offset
-    len:number <- length *buf
+    len:num <- length *buf
     # special-case: backspace
     {
       backspace?:boolean <- equal c, 8
@@ -159,7 +159,7 @@ def print screen:address:screen, c:char -> screen:address:screen [
     *buf <- put-index *buf, index, cursor
     # increment column unless it's already all the way to the right
     {
-      right:number <- subtract width, 1
+      right:num <- subtract width, 1
       at-right?:boolean <- greater-or-equal column, right
       break-if at-right?
       column <- add column, 1
@@ -215,7 +215,7 @@ scenario print-backspace-character [
     fake-screen <- print fake-screen, a
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
-    10:number/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     11:array:screen-cell/raw <- copy *cell
   ]
@@ -238,7 +238,7 @@ scenario print-extra-backspace-character [
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     fake-screen <- print fake-screen, backspace
-    1:number/raw <- get *fake-screen, cursor-column:offset
+    1:num/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     3:array:screen-cell/raw <- copy *cell
   ]
@@ -262,7 +262,7 @@ scenario print-character-at-right-margin [
     fake-screen <- print fake-screen, b
     c:char <- copy 99/c
     fake-screen <- print fake-screen, c
-    10:number/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     11:array:screen-cell/raw <- copy *cell
   ]
@@ -286,8 +286,8 @@ scenario print-newline-character [
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a
     fake-screen <- print fake-screen, newline
-    10:number/raw <- get *fake-screen, cursor-row:offset
-    11:number/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-row:offset
+    11:num/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     12:array:screen-cell/raw <- copy *cell
   ]
@@ -310,8 +310,8 @@ scenario print-newline-at-bottom-line [
     fake-screen <- print fake-screen, newline
     fake-screen <- print fake-screen, newline
     fake-screen <- print fake-screen, newline
-    10:number/raw <- get *fake-screen, cursor-row:offset
-    11:number/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-row:offset
+    11:num/raw <- get *fake-screen, cursor-column:offset
   ]
   memory-should-contain [
     10 <- 1  # cursor row
@@ -334,8 +334,8 @@ scenario print-character-at-bottom-right [
     fake-screen <- print fake-screen, newline
     d:char <- copy 100/d
     fake-screen <- print fake-screen, d
-    10:number/raw <- get *fake-screen, cursor-row:offset
-    11:number/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-row:offset
+    11:num/raw <- get *fake-screen, cursor-column:offset
     cell:address:array:screen-cell <- get *fake-screen, data:offset
     20:array:screen-cell/raw <- copy *cell
   ]
@@ -363,12 +363,12 @@ def clear-line screen:address:screen -> screen:address:screen [
   # if x exists, clear line in fake screen
   {
     break-unless screen
-    width:number <- get *screen, num-columns:offset
-    column:number <- get *screen, cursor-column:offset
-    original-column:number <- copy column
+    width:num <- get *screen, num-columns:offset
+    column:num <- get *screen, cursor-column:offset
+    original-column:num <- copy column
     # space over the entire line
     {
-      right:number <- subtract width, 1
+      right:num <- subtract width, 1
       done?:boolean <- greater-or-equal column, right
       break-if done?
       print screen, space
@@ -383,12 +383,12 @@ def clear-line screen:address:screen -> screen:address:screen [
   clear-line-on-display
 ]
 
-def clear-line-until screen:address:screen, right:number/inclusive -> screen:address:screen [
+def clear-line-until screen:address:screen, right:num/inclusive -> screen:address:screen [
   local-scope
   load-ingredients
-  _, column:number <- cursor-position screen
+  _, column:num <- cursor-position screen
   space:char <- copy 32/space
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -403,20 +403,20 @@ def clear-line-until screen:address:screen, right:number/inclusive -> screen:add
   }
 ]
 
-def cursor-position screen:address:screen -> row:number, column:number [
+def cursor-position screen:address:screen -> row:num, column:num [
   local-scope
   load-ingredients
   # if x exists, lookup cursor in fake screen
   {
     break-unless screen
-    row:number <- get *screen, cursor-row:offset
-    column:number <- get *screen, cursor-column:offset
+    row:num <- get *screen, cursor-row:offset
+    column:num <- get *screen, cursor-column:offset
     return
   }
   row, column <- cursor-position-on-display
 ]
 
-def move-cursor screen:address:screen, new-row:number, new-column:number -> screen:address:screen [
+def move-cursor screen:address:screen, new-row:num, new-column:num -> screen:address:screen [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -470,9 +470,9 @@ def cursor-down screen:address:screen -> screen:address:screen [
     break-unless screen
     {
       # increment row unless it's already all the way down
-      height:number <- get *screen, num-rows:offset
-      row:number <- get *screen, cursor-row:offset
-      max:number <- subtract height, 1
+      height:num <- get *screen, num-rows:offset
+      row:num <- get *screen, cursor-row:offset
+      max:num <- subtract height, 1
       at-bottom?:boolean <- greater-or-equal row, max
       break-if at-bottom?
       row <- add row, 1
@@ -492,7 +492,7 @@ def cursor-up screen:address:screen -> screen:address:screen [
     break-unless screen
     {
       # decrement row unless it's already all the way up
-      row:number <- get *screen, cursor-row:offset
+      row:num <- get *screen, cursor-row:offset
       at-top?:boolean <- lesser-or-equal row, 0
       break-if at-top?
       row <- subtract row, 1
@@ -512,9 +512,9 @@ def cursor-right screen:address:screen -> screen:address:screen [
     break-unless screen
     {
       # increment column unless it's already all the way to the right
-      width:number <- get *screen, num-columns:offset
-      column:number <- get *screen, cursor-column:offset
-      max:number <- subtract width, 1
+      width:num <- get *screen, num-columns:offset
+      column:num <- get *screen, cursor-column:offset
+      max:num <- subtract width, 1
       at-bottom?:boolean <- greater-or-equal column, max
       break-if at-bottom?
       column <- add column, 1
@@ -534,7 +534,7 @@ def cursor-left screen:address:screen -> screen:address:screen [
     break-unless screen
     {
       # decrement column unless it's already all the way to the left
-      column:number <- get *screen, cursor-column:offset
+      column:num <- get *screen, cursor-column:offset
       at-top?:boolean <- lesser-or-equal column, 0
       break-if at-top?
       column <- subtract column, 1
@@ -549,8 +549,8 @@ def cursor-left screen:address:screen -> screen:address:screen [
 def cursor-to-start-of-line screen:address:screen -> screen:address:screen [
   local-scope
   load-ingredients
-  row:number <- cursor-position screen
-  column:number <- copy 0
+  row:num <- cursor-position screen
+  column:num <- copy 0
   screen <- move-cursor screen, row, column
 ]
 
@@ -561,14 +561,14 @@ def cursor-to-next-line screen:address:screen -> screen:address:screen [
   screen <- cursor-to-start-of-line screen
 ]
 
-def move-cursor-to-column screen:address:screen, column:number -> screen:address:screen [
+def move-cursor-to-column screen:address:screen, column:num -> screen:address:screen [
   local-scope
   load-ingredients
-  row:number, _ <- cursor-position screen
+  row:num, _ <- cursor-position screen
   move-cursor screen, row, column
 ]
 
-def screen-width screen:address:screen -> width:number [
+def screen-width screen:address:screen -> width:num [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -581,7 +581,7 @@ def screen-width screen:address:screen -> width:number [
   width <- display-width
 ]
 
-def screen-height screen:address:screen -> height:number [
+def screen-height screen:address:screen -> height:num [
   local-scope
   load-ingredients
   # if x exists, move cursor in fake screen
@@ -647,20 +647,20 @@ def show-screen screen:address:screen -> screen:address:screen [
 def print screen:address:screen, s:text -> screen:address:screen [
   local-scope
   load-ingredients
-  color:number, color-found?:boolean <- next-ingredient
+  color:num, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  len:number <- length *s
-  i:number <- copy 0
+  len:num <- length *s
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -693,16 +693,16 @@ scenario print-text-stops-at-right-margin [
   ]
 ]
 
-def print-integer screen:address:screen, n:number -> screen:address:screen [
+def print-integer screen:address:screen, n:num -> screen:address:screen [
   local-scope
   load-ingredients
-  color:number, color-found?:boolean <- next-ingredient
+  color:num, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -714,16 +714,16 @@ def print-integer screen:address:screen, n:number -> screen:address:screen [
 ]
 
 # for now, we can only print integers
-def print screen:address:screen, n:number -> screen:address:screen [
+def print screen:address:screen, n:num -> screen:address:screen [
   local-scope
   load-ingredients
-  color:number, color-found?:boolean <- next-ingredient
+  color:num, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -736,18 +736,18 @@ def print screen:address:screen, n:number -> screen:address:screen [
 def print screen:address:screen, n:address:_elem -> screen:address:screen [
   local-scope
   load-ingredients
-  color:number, color-found?:boolean <- next-ingredient
+  color:num, color-found?:boolean <- next-ingredient
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:number, bg-color-found?:boolean <- next-ingredient
+  bg-color:num, bg-color-found?:boolean <- next-ingredient
   {
     # default bg-color to black
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  n2:number <- copy n
+  n2:num <- copy n
   screen <- print-integer screen, n2, color, bg-color
 ]

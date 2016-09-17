@@ -16,16 +16,16 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
   {
     break-if fs
     # real file system
-    file:number <- $open-file-for-reading filename
+    file:num <- $open-file-for-reading filename
     assert file, [file not found]
     contents:address:source:char, sink:address:sink:char <- new-channel 30
     start-running transmit-from-file file, sink
     return
   }
   # fake file system
-  i:number <- copy 0
+  i:num <- copy 0
   data:address:array:file-mapping <- get *fs, data:offset
-  len:number <- length *data
+  len:num <- length *data
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -42,7 +42,7 @@ def start-reading fs:address:filesystem, filename:text -> contents:address:sourc
   return 0/not-found
 ]
 
-def transmit-from-file file:number, sink:address:sink:char -> sink:address:sink:char [
+def transmit-from-file file:num, sink:address:sink:char -> sink:address:sink:char [
   local-scope
   load-ingredients
   {
@@ -58,8 +58,8 @@ def transmit-from-file file:number, sink:address:sink:char -> sink:address:sink:
 def transmit-from-text contents:text, sink:address:sink:char -> sink:address:sink:char [
   local-scope
   load-ingredients
-  i:number <- copy 0
-  len:number <- length *contents
+  i:num <- copy 0
+  len:num <- length *contents
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -71,14 +71,14 @@ def transmit-from-text contents:text, sink:address:sink:char -> sink:address:sin
   sink <- close sink
 ]
 
-def start-writing fs:address:filesystem, filename:text -> sink:address:sink:char, routine-id:number [
+def start-writing fs:address:filesystem, filename:text -> sink:address:sink:char, routine-id:num [
   local-scope
   load-ingredients
   source:address:source:char, sink:address:sink:char <- new-channel 30
   {
     break-if fs
     # real file system
-    file:number <- $open-file-for-writing filename
+    file:num <- $open-file-for-writing filename
     assert file, [no such file]
     routine-id <- start-running transmit-to-file file, source
     reply
@@ -88,7 +88,7 @@ def start-writing fs:address:filesystem, filename:text -> sink:address:sink:char
   routine-id <- start-running transmit-to-fake-file fs, filename, source
 ]
 
-def transmit-to-file file:number, source:address:source:char -> source:address:source:char [
+def transmit-to-file file:num, source:address:source:char -> source:address:source:char [
   local-scope
   load-ingredients
   {
@@ -117,8 +117,8 @@ def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:s
   curr-filename:text <- copy 0
   data:address:array:file-mapping <- get *fs, data:offset
   # replace file contents if it already exists
-  i:number <- copy 0
-  len:number <- length *data
+  i:num <- copy 0
+  len:num <- length *data
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?
@@ -130,11 +130,11 @@ def transmit-to-fake-file fs:address:filesystem, filename:text, source:address:s
     reply
   }
   # if file didn't already exist, make room for it
-  new-len:number <- add len, 1
+  new-len:num <- add len, 1
   new-data:address:array:file-mapping <- new file-mapping:type, new-len
   put *fs, data:offset, new-data
   # copy over old files
-  i:number <- copy 0
+  i:num <- copy 0
   {
     done?:boolean <- greater-or-equal i, len
     break-if done?

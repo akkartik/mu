@@ -30,15 +30,15 @@ def rest in:address:list:_elem -> result:address:list:_elem/contained-in:in [
 scenario list-handling [
   run [
     local-scope
-    x:address:list:number <- push 3, 0
+    x:address:list:num <- push 3, 0
     x <- push 4, x
     x <- push 5, x
-    10:number/raw <- first x
+    10:num/raw <- first x
     x <- rest x
-    11:number/raw <- first x
+    11:num/raw <- first x
     x <- rest x
-    12:number/raw <- first x
-    20:address:list:number/raw <- rest x
+    12:num/raw <- first x
+    20:address:list:num/raw <- rest x
   ]
   memory-should-contain [
     10 <- 5
@@ -48,12 +48,12 @@ scenario list-handling [
   ]
 ]
 
-def length l:address:list:_elem -> result:number [
+def length l:address:list:_elem -> result:num [
   local-scope
   load-ingredients
   return-unless l, 0
   rest:address:list:_elem <- rest l
-  length-of-rest:number <- length rest
+  length-of-rest:num <- length rest
   result <- add length-of-rest, 1
 ]
 
@@ -251,7 +251,7 @@ scenario removing-from-singleton-list [
     local-scope
     list:address:list:char <- push 3, 0
     list <- remove list, list
-    1:number/raw <- copy list
+    1:num/raw <- copy list
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list
@@ -288,11 +288,11 @@ def to-buffer in:address:list:_elem, buf:address:buffer -> buf:address:buffer [
   buf <- append buf, val
   # now prepare next
   next:address:list:_elem <- rest in
-  nextn:number <- copy next
+  nextn:num <- copy next
   return-unless next
   buf <- append buf, [ -> ]
   # and recurse
-  remaining:number, optional-ingredient-found?:boolean <- next-ingredient
+  remaining:num, optional-ingredient-found?:boolean <- next-ingredient
   {
     break-if optional-ingredient-found?
     # unlimited recursion

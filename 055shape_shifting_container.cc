@@ -23,10 +23,10 @@ if (!base_type->atom) base_type = base_type->left;
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
-  1:foo:number <- merge 12, 13
+  1:foo:num <- merge 12, 13
   3:foo:point <- merge 14, 15, 16
 ]
 +mem: storing 12 in location 1
@@ -42,7 +42,7 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:foo:number:bool <- merge 34, 1/true
+  1:foo:num:bool <- merge 34, 1/true
 ]
 $error: 0
 
@@ -69,7 +69,7 @@ container bar:_a:_b [
 ]
 def main [
   1:text <- new [abc]
-  2:bar:number:array:char <- merge 34/x, 1:text/y
+  2:bar:num:array:char <- merge 34/x, 1:text/y
 ]
 $error: 0
 
@@ -95,7 +95,7 @@ container foo:_b [
 :(scenario type_ingredient_must_start_with_underscore)
 % Hide_errors = true;
 container foo:t [
-  x:number
+  x:num
 ]
 +error: foo: type ingredient 't' must begin with an underscore
 
@@ -202,10 +202,10 @@ if (type->value >= START_TYPE_INGREDIENTS
 :(scenario size_of_shape_shifting_exclusive_container)
 exclusive-container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
-  1:foo:number <- merge 0/x, 34
+  1:foo:num <- merge 0/x, 34
   3:foo:point <- merge 0/x, 15, 16
   6:foo:point <- merge 1/y, 23
 ]
@@ -226,18 +226,18 @@ def main [
 :(scenario get_on_shape_shifting_container)
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
   1:foo:point <- merge 14, 15, 16
-  2:number <- get 1:foo:point, y:offset
+  2:num <- get 1:foo:point, y:offset
 ]
 +mem: storing 16 in location 2
 
 :(scenario get_on_shape_shifting_container_2)
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
   1:foo:point <- merge 14, 15, 16
@@ -249,7 +249,7 @@ def main [
 :(scenario get_on_shape_shifting_container_3)
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
   1:foo:address:point <- merge 34/unsafe, 48
@@ -260,15 +260,15 @@ def main [
 :(scenario get_on_shape_shifting_container_inside_container)
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 container bar [
   x:foo:point
-  y:number
+  y:num
 ]
 def main [
   1:bar <- merge 14, 15, 16, 17
-  2:number <- get 1:bar, 1:offset
+  2:num <- get 1:bar, 1:offset
 ]
 +mem: storing 17 in location 2
 
@@ -367,7 +367,7 @@ bool final_type_ingredient(int type_ingredient_index, const type_info& container
 void test_replace_type_ingredients_entire() {
   run("container foo:_elem [\n"
       "  x:_elem\n"
-      "  y:number\n"
+      "  y:num\n"
       "]\n");
   reagent callsite("x:foo:point");
   reagent element = element_type(callsite.type, 0);
@@ -403,7 +403,7 @@ void test_replace_type_ingredients_head_middle() {
       "  x:_elem\n"
       "]\n"
       "container bar:_elem [\n"
-      "  x:foo:_elem:number\n"
+      "  x:foo:_elem:num\n"
       "]\n");
   reagent callsite("x:bar:address");
   reagent element = element_type(callsite.type, 0);
@@ -473,11 +473,11 @@ bool has_nth_type(const type_tree* base, int n) {
 % Hide_errors = true;
 container foo:_t [
   x:_t
-  y:number
+  y:num
 ]
 def main [
   10:foo:point <- merge 14, 15, 16
-  1:number <- get 10:foo, 1:offset
+  1:num <- get 10:foo, 1:offset
 ]
 +error: illegal type "foo" seems to be missing a type ingredient or three
 
@@ -502,7 +502,7 @@ if (info.kind == EXCLUSIVE_CONTAINER) {
 :(before "End Unit Tests")
 void test_container_sizes_shape_shifting_container() {
   run("container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:point");
@@ -512,20 +512,20 @@ void test_container_sizes_shape_shifting_container() {
 
 void test_container_sizes_shape_shifting_exclusive_container() {
   run("exclusive-container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:point");
   compute_container_sizes(r);
   CHECK_EQ(r.metadata.size, 3);
-  reagent r2("x:foo:number");
+  reagent r2("x:foo:num");
   compute_container_sizes(r2);
   CHECK_EQ(r2.metadata.size, 2);
 }
 
 void test_container_sizes_compound_type_ingredient() {
   run("container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:address:point");
@@ -539,10 +539,10 @@ void test_container_sizes_compound_type_ingredient() {
 
 void test_container_sizes_recursive_shape_shifting_container() {
   run("container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:address:foo:_t\n"
       "]\n");
-  reagent r2("x:foo:number");
+  reagent r2("x:foo:num");
   compute_container_sizes(r2);
   CHECK_EQ(r2.metadata.size, 2);
 }
@@ -562,10 +562,10 @@ if (info.kind == EXCLUSIVE_CONTAINER) {
 :(before "End Unit Tests")
 void test_container_address_offsets_in_shape_shifting_container() {
   run("container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:_t\n"
       "]\n");
-  reagent r("x:foo:address:number");
+  reagent r("x:foo:address:num");
   compute_container_sizes(r);
   compute_container_address_offsets(r);
   CHECK_EQ(SIZE(r.metadata.address), 1);
@@ -579,14 +579,14 @@ void test_container_address_offsets_in_shape_shifting_container() {
 
 void test_container_address_offsets_in_nested_shape_shifting_container() {
   run("container foo:_t [\n"
-      "  x:number\n"
+      "  x:num\n"
       "  y:_t\n"
       "]\n"
       "container bar:_t [\n"
       "  x:_t\n"
       "  y:foo:_t\n"
       "]\n");
-  reagent r("x:bar:address:number");
+  reagent r("x:bar:address:num");
   CLEAR_TRACE;
   compute_container_sizes(r);
   compute_container_address_offsets(r);
@@ -606,12 +606,12 @@ void test_container_address_offsets_in_nested_shape_shifting_container() {
 
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container)
 container foo:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo:bar <- merge 23, 1/y, 34
@@ -624,12 +624,12 @@ $error: 0
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container_2)
 % Hide_errors = true;
 container foo:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 exclusive-container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo:bar <- merge 23, 1/y, 34, 35
@@ -638,12 +638,12 @@ def main [
 
 :(scenario merge_check_shape_shifting_exclusive_container_containing_container)
 exclusive-container foo:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo:bar <- merge 1/y, 23, 34
@@ -655,12 +655,12 @@ $error: 0
 
 :(scenario merge_check_shape_shifting_exclusive_container_containing_container_2)
 exclusive-container foo:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo:bar <- merge 0/x, 23
@@ -670,12 +670,12 @@ $error: 0
 :(scenario merge_check_shape_shifting_exclusive_container_containing_container_3)
 % Hide_errors = true;
 exclusive-container foo:_elem [
-  x:number
+  x:num
   y:_elem
 ]
 container bar [
-  x:number
-  y:number
+  x:num
+  y:num
 ]
 def main [
   1:foo:bar <- merge 1/y, 23
