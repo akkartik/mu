@@ -17,7 +17,7 @@ scenario editor-initially-prints-text-to-screen [
   assume-screen 10/width, 5/height
   run [
     1:text <- new [abc]
-    new-editor 1:text, screen:address:screen, 0/left, 10/right
+    new-editor 1:text, screen:&:screen, 0/left, 10/right
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -29,26 +29,26 @@ scenario editor-initially-prints-text-to-screen [
 
 container editor-data [
   # editable text: doubly linked list of characters (head contains a special sentinel)
-  data:address:duplex-list:character
-  top-of-screen:address:duplex-list:character
-  bottom-of-screen:address:duplex-list:character
+  data:&:duplex-list:char
+  top-of-screen:&:duplex-list:char
+  bottom-of-screen:&:duplex-list:char
   # location before cursor inside data
-  before-cursor:address:duplex-list:character
+  before-cursor:&:duplex-list:char
 
   # raw bounds of display area on screen
   # always displays from row 1 (leaving row 0 for a menu) and at most until bottom of screen
-  left:number
-  right:number
-  bottom:number
+  left:num
+  right:num
+  bottom:num
   # raw screen coordinates of cursor
-  cursor-row:number
-  cursor-column:number
+  cursor-row:num
+  cursor-column:num
 ]
 
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-def new-editor s:text, screen:address:screen, left:number, right:number -> result:address:editor-data, screen:address:screen [
+def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor-data, screen:&:screen [
   local-scope
   load-ingredients
   # no clipping of bounds
@@ -61,7 +61,7 @@ def new-editor s:text, screen:address:screen, left:number, right:number -> resul
   *result <- put *result, cursor-row:offset, 1/top
   *result <- put *result, cursor-column:offset, left
   # initialize empty contents
-  init:address:duplex-list:character <- push 167/§, 0/tail
+  init:&:duplex-list:char <- push 167/§, 0/tail
   *result <- put *result, data:offset, init
   *result <- put *result, top-of-screen:offset, init
   *result <- put *result, before-cursor:offset, init
@@ -71,20 +71,20 @@ def new-editor s:text, screen:address:screen, left:number, right:number -> resul
   <editor-initialization>
 ]
 
-def insert-text editor:address:editor-data, text:text -> editor:address:editor-data [
+def insert-text editor:&:editor-data, text:text -> editor:&:editor-data [
   local-scope
   load-ingredients
   # early exit if text is empty
   return-unless text, editor/same-as-ingredient:0
-  len:number <- length *text
+  len:num <- length *text
   return-unless len, editor/same-as-ingredient:0
-  idx:number <- copy 0
+  idx:num <- copy 0
   # now we can start appending the rest, character by character
-  curr:address:duplex-list:character <- get *editor, data:offset
+  curr:&:duplex-list:char <- get *editor, data:offset
   {
-    done?:boolean <- greater-or-equal idx, len
+    done?:bool <- greater-or-equal idx, len
     break-if done?
-    c:character <- index *text, idx
+    c:char <- index *text, idx
     insert c, curr
     # next iter
     curr <- next curr
@@ -97,8 +97,8 @@ def insert-text editor:address:editor-data, text:text -> editor:address:editor-d
 scenario editor-initializes-without-data [
   assume-screen 5/width, 3/height
   run [
-    1:address:editor-data <- new-editor 0/data, screen:address:screen, 2/left, 5/right
-    2:editor-data <- copy *1:address:editor-data
+    1:&:editor-data <- new-editor 0/data, screen:&:screen, 2/left, 5/right
+    2:editor-data <- copy *1:&:editor-data
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
@@ -121,52 +121,52 @@ scenario editor-initializes-without-data [
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
-def render screen:address:screen, editor:address:editor-data -> last-row:number, last-column:number, screen:address:screen, editor:address:editor-data [
+def render screen:&:screen, editor:&:editor-data -> last-row:num, last-column:num, screen:&:screen, editor:&:editor-data [
   local-scope
   load-ingredients
   return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
-  left:number <- get *editor, left:offset
-  screen-height:number <- screen-height screen
-  right:number <- get *editor, right:offset
+  left:num <- get *editor, left:offset
+  screen-height:num <- screen-height screen
+  right:num <- get *editor, right:offset
   # traversing editor
-  curr:address:duplex-list:character <- get *editor, top-of-screen:offset
-  prev:address:duplex-list:character <- copy curr  # just in case curr becomes null and we can't compute prev
+  curr:&:duplex-list:char <- get *editor, top-of-screen:offset
+  prev:&:duplex-list:char <- copy curr  # just in case curr becomes null and we can't compute prev
   curr <- next curr
   # traversing screen
   +render-loop-initialization
-  color:number <- copy 7/white
-  row:number <- copy 1/top
-  column:number <- copy left
-  cursor-row:number <- get *editor, cursor-row:offset
-  cursor-column:number <- get *editor, cursor-column:offset
-  before-cursor:address:duplex-list:character <- get *editor, before-cursor:offset
+  color:num <- copy 7/white
+  row:num <- copy 1/top
+  column:num <- copy left
+  cursor-row:num <- get *editor, cursor-row:offset
+  cursor-column:num <- get *editor, cursor-column:offset
+  before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   screen <- move-cursor screen, row, column
   {
     +next-character
     break-unless curr
-    off-screen?:boolean <- greater-or-equal row, screen-height
+    off-screen?:bool <- greater-or-equal row, screen-height
     break-if off-screen?
     # update editor-data.before-cursor
     # Doing so at the start of each iteration ensures it stays one step behind
     # the current character.
     {
-      at-cursor-row?:boolean <- equal row, cursor-row
+      at-cursor-row?:bool <- equal row, cursor-row
       break-unless at-cursor-row?
-      at-cursor?:boolean <- equal column, cursor-column
+      at-cursor?:bool <- equal column, cursor-column
       break-unless at-cursor?
       before-cursor <- copy prev
     }
-    c:character <- get *curr, value:offset
+    c:char <- get *curr, value:offset
     <character-c-received>
     {
       # newline? move to left rather than 0
-      newline?:boolean <- equal c, 10/newline
+      newline?:bool <- equal c, 10/newline
       break-unless newline?
       # adjust cursor if necessary
       {
-        at-cursor-row?:boolean <- equal row, cursor-row
+        at-cursor-row?:bool <- equal row, cursor-row
         break-unless at-cursor-row?
-        left-of-cursor?:boolean <- lesser-than column, cursor-column
+        left-of-cursor?:bool <- lesser-than column, cursor-column
         break-unless left-of-cursor?
         cursor-column <- copy column
         before-cursor <- prev curr
@@ -184,10 +184,10 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
     {
       # at right? wrap. even if there's only one more letter left; we need
       # room for clicking on the cursor after it.
-      at-right?:boolean <- equal column, right
+      at-right?:bool <- equal column, right
       break-unless at-right?
       # print wrap icon
-      wrap-icon:character <- copy 8617/loop-back-to-left
+      wrap-icon:char <- copy 8617/loop-back-to-left
       print screen, wrap-icon, 245/grey
       column <- copy left
       row <- add row, 1
@@ -205,11 +205,11 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
   *editor <- put *editor, bottom-of-screen:offset, curr
   # is cursor to the right of the last line? move to end
   {
-    at-cursor-row?:boolean <- equal row, cursor-row
-    cursor-outside-line?:boolean <- lesser-or-equal column, cursor-column
-    before-cursor-on-same-line?:boolean <- and at-cursor-row?, cursor-outside-line?
-    above-cursor-row?:boolean <- lesser-than row, cursor-row
-    before-cursor?:boolean <- or before-cursor-on-same-line?, above-cursor-row?
+    at-cursor-row?:bool <- equal row, cursor-row
+    cursor-outside-line?:bool <- lesser-or-equal column, cursor-column
+    before-cursor-on-same-line?:bool <- and at-cursor-row?, cursor-outside-line?
+    above-cursor-row?:bool <- lesser-than row, cursor-row
+    before-cursor?:bool <- or before-cursor-on-same-line?, above-cursor-row?
     break-unless before-cursor?
     cursor-row <- copy row
     cursor-column <- copy column
@@ -222,7 +222,7 @@ def render screen:address:screen, editor:address:editor-data -> last-row:number,
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def clear-screen-from screen:address:screen, row:number, column:number, left:number, right:number -> screen:address:screen [
+def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
   local-scope
   load-ingredients
   # if it's the real screen, use the optimized primitive
@@ -238,14 +238,14 @@ def clear-screen-from screen:address:screen, row:number, column:number, left:num
   return screen/same-as-ingredient:0
 ]
 
-def clear-rest-of-screen screen:address:screen, row:number, left:number, right:number -> screen:address:screen [
+def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen:&:screen [
   local-scope
   load-ingredients
   row <- add row, 1
   screen <- move-cursor screen, row, left
-  screen-height:number <- screen-height screen
+  screen-height:num <- screen-height screen
   {
-    at-bottom-of-screen?:boolean <- greater-or-equal row, screen-height
+    at-bottom-of-screen?:bool <- greater-or-equal row, screen-height
     break-if at-bottom-of-screen?
     screen <- move-cursor screen, row, left
     clear-line-until screen, right
@@ -259,7 +259,7 @@ scenario editor-initially-prints-multiple-lines [
   run [
     s:text <- new [abc
 def]
-    new-editor s:text, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -273,7 +273,7 @@ scenario editor-initially-handles-offsets [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc]
-    new-editor s:text, screen:address:screen, 1/left, 5/right
+    new-editor s:text, screen:&:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -287,7 +287,7 @@ scenario editor-initially-prints-multiple-lines-at-offset [
   run [
     s:text <- new [abc
 def]
-    new-editor s:text, screen:address:screen, 1/left, 5/right
+    new-editor s:text, screen:&:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -301,7 +301,7 @@ scenario editor-initially-wraps-long-lines [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc def]
-    new-editor s:text, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -321,7 +321,7 @@ scenario editor-initially-wraps-barely-long-lines [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abcde]
-    new-editor s:text, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:&:screen, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -343,9 +343,9 @@ scenario editor-initializes-empty-text [
   assume-screen 5/width, 5/height
   run [
     1:text <- new []
-    2:address:editor-data <- new-editor 1:text, screen:address:screen, 0/left, 5/right
-    3:number <- get *2:address:editor-data, cursor-row:offset
-    4:number <- get *2:address:editor-data, cursor-column:offset
+    2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 5/right
+    3:num <- get *2:&:editor-data, cursor-row:offset
+    4:num <- get *2:&:editor-data, cursor-column:offset
   ]
   screen-should-contain [
     .     .
@@ -366,7 +366,7 @@ scenario render-colors-comments [
     s:text <- new [abc
 # de
 f]
-    new-editor s:text, screen:address:screen, 0/left, 5/right
+    new-editor s:text, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -396,14 +396,14 @@ after <character-c-received> [
 ]
 
 # so far the previous color is all the information we need; that may change
-def get-color color:number, c:character -> color:number [
+def get-color color:num, c:char -> color:num [
   local-scope
   load-ingredients
-  color-is-white?:boolean <- equal color, 7/white
+  color-is-white?:bool <- equal color, 7/white
   # if color is white and next character is '#', switch color to blue
   {
     break-unless color-is-white?
-    starting-comment?:boolean <- equal c, 35/#
+    starting-comment?:bool <- equal c, 35/#
     break-unless starting-comment?
     trace 90, [app], [switch color back to blue]
     color <- copy 12/lightblue
@@ -411,9 +411,9 @@ def get-color color:number, c:character -> color:number [
   }
   # if color is blue and next character is newline, switch color to white
   {
-    color-is-blue?:boolean <- equal color, 12/lightblue
+    color-is-blue?:bool <- equal color, 12/lightblue
     break-unless color-is-blue?
-    ending-comment?:boolean <- equal c, 10/newline
+    ending-comment?:bool <- equal c, 10/newline
     break-unless ending-comment?
     trace 90, [app], [switch color back to white]
     color <- copy 7/white
@@ -422,16 +422,16 @@ def get-color color:number, c:character -> color:number [
   # if color is white (no comments) and next character is '<', switch color to red
   {
     break-unless color-is-white?
-    starting-assignment?:boolean <- equal c, 60/<
+    starting-assignment?:bool <- equal c, 60/<
     break-unless starting-assignment?
     color <- copy 1/red
     jump +exit:label
   }
   # if color is red and next character is space, switch color to white
   {
-    color-is-red?:boolean <- equal color, 1/red
+    color-is-red?:bool <- equal color, 1/red
     break-unless color-is-red?
-    ending-assignment?:boolean <- equal c, 32/space
+    ending-assignment?:bool <- equal c, 32/space
     break-unless ending-assignment?
     color <- copy 7/white
     jump +exit:label
@@ -447,7 +447,7 @@ scenario render-colors-assignment [
     s:text <- new [abc
 d <- e
 f]
-    new-editor s:text, screen:address:screen, 0/left, 8/right
+    new-editor s:text, screen:&:screen, 0/left, 8/right
   ]
   screen-should-contain [
     .        .

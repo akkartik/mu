@@ -13,8 +13,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -30,7 +30,7 @@ recipe foo [
     left-click 3, 55
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # it pops back into editor
   screen-should-contain [
@@ -47,7 +47,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -73,8 +73,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -90,7 +90,7 @@ recipe foo [
     left-click 3, 68
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # it pops back into editor
   screen-should-contain [
@@ -107,7 +107,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -123,7 +123,7 @@ recipe foo [
 after <global-touch> [
   # support 'edit' button
   {
-    edit?:boolean <- should-attempt-edit? click-row, click-column, env
+    edit?:bool <- should-attempt-edit? click-row, click-column, env
     break-unless edit?
     edit?, env <- try-edit-sandbox click-row, env
     break-unless edit?
@@ -136,35 +136,35 @@ after <global-touch> [
 ]
 
 # some preconditions for attempting to edit a sandbox
-def should-attempt-edit? click-row:number, click-column:number, env:address:programming-environment-data -> result:boolean [
+def should-attempt-edit? click-row:num, click-column:num, env:&:programming-environment-data -> result:bool [
   local-scope
   load-ingredients
   # are we below the sandbox editor?
-  click-sandbox-area?:boolean <- click-on-sandbox-area? click-row, click-column, env
+  click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
   reply-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'edit' button?
-  first-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  first-sandbox:&:editor-data <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
-  sandbox-left-margin:number <- get *first-sandbox, left:offset
-  sandbox-right-margin:number <- get *first-sandbox, right:offset
-  edit-button-left:number, edit-button-right:number, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  edit-button-vertical-area?:boolean <- within-range? click-column, edit-button-left, edit-button-right
+  sandbox-left-margin:num <- get *first-sandbox, left:offset
+  sandbox-right-margin:num <- get *first-sandbox, right:offset
+  edit-button-left:num, edit-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  edit-button-vertical-area?:bool <- within-range? click-column, edit-button-left, edit-button-right
   reply-unless edit-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox
 ]
 
-def try-edit-sandbox click-row:number, env:address:programming-environment-data -> clicked-on-edit-button?:boolean, env:address:programming-environment-data [
+def try-edit-sandbox click-row:num, env:&:programming-environment-data -> clicked-on-edit-button?:bool, env:&:programming-environment-data [
   local-scope
   load-ingredients
   # identify the sandbox to edit, if the click was actually on the 'edit' button
-  sandbox:address:sandbox-data <- find-sandbox env, click-row
+  sandbox:&:sandbox-data <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   clicked-on-edit-button? <- copy 1/true
   # 'edit' button = 'copy' button + 'delete' button
   text:text <- get *sandbox, data:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   env <- delete-sandbox env, sandbox
   # reset scroll
@@ -180,12 +180,12 @@ scenario sandbox-with-print-can-be-edited [
   1:text <- new []
   # right editor contains an instruction
   2:text <- new [print-integer screen, 4]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run the sandbox
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -206,7 +206,7 @@ scenario sandbox-with-print-can-be-edited [
     left-click 3, 65
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -223,8 +223,8 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   # initialize environment
   1:text <- new []
   2:text <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  render-all screen, 3:address:programming-environment-data, render
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  render-all screen, 3:&:programming-environment-data, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -235,7 +235,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press page-down
     press page-down
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -250,7 +250,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     left-click 2, 55
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -271,8 +271,8 @@ scenario editing-sandbox-updates-sandbox-count [
   # initialize environment
   1:text <- new []
   2:text <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  render-all screen, 3:address:programming-environment-data, render
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  render-all screen, 3:&:programming-environment-data, render
   # create 2 sandboxes
   assume-console [
     press ctrl-n
@@ -281,7 +281,7 @@ scenario editing-sandbox-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -300,7 +300,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # no change in contents
   screen-should-contain [
@@ -322,7 +322,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press page-down
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # screen should show just final sandbox with the right index (1)
   screen-should-contain [

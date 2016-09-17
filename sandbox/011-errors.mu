@@ -6,7 +6,7 @@ container programming-environment-data [
 
 # copy code from recipe editor, persist, load into mu, save any errors
 # test-recipes is a hook for testing
-def! update-recipes env:address:programming-environment-data, screen:address:screen, test-recipes:text -> errors-found?:boolean, env:address:programming-environment-data, screen:address:screen [
+def! update-recipes env:&:programming-environment-data, screen:&:screen, test-recipes:text -> errors-found?:bool, env:&:programming-environment-data, screen:&:screen [
   local-scope
   load-ingredients
   {
@@ -40,7 +40,7 @@ before <render-components-end> [
 ]
 
 container programming-environment-data [
-  error-index:number  # index of first sandbox with an error (or -1 if none)
+  error-index:num  # index of first sandbox with an error (or -1 if none)
 ]
 
 after <programming-environment-initialization> [
@@ -53,8 +53,8 @@ after <run-sandboxes-begin> [
 
 before <run-sandboxes-end> [
   {
-    error-index:number <- get *env, error-index:offset
-    sandboxes-completed-successfully?:boolean <- equal error-index, -1
+    error-index:num <- get *env, error-index:offset
+    sandboxes-completed-successfully?:bool <- equal error-index, -1
     break-if sandboxes-completed-successfully?
     errors-found? <- copy 1/true
   }
@@ -63,8 +63,8 @@ before <run-sandboxes-end> [
 before <render-components-end> [
   {
     break-if recipe-errors
-    error-index:number <- get *env, error-index:offset
-    sandboxes-completed-successfully?:boolean <- equal error-index, -1
+    error-index:num <- get *env, error-index:offset
+    sandboxes-completed-successfully?:bool <- equal error-index, -1
     break-if sandboxes-completed-successfully?
     error-index-text:text <- to-text error-index
     status:text <- interpolate [errors found (_)    ], error-index-text
@@ -76,7 +76,7 @@ container sandbox-data [
   errors:text
 ]
 
-def! update-sandbox sandbox:address:sandbox-data, env:address:programming-environment-data, idx:number -> sandbox:address:sandbox-data, env:address:programming-environment-data [
+def! update-sandbox sandbox:&:sandbox-data, env:&:programming-environment-data, idx:num -> sandbox:&:sandbox-data, env:&:programming-environment-data [
   local-scope
   load-ingredients
   {
@@ -86,22 +86,22 @@ def! update-sandbox sandbox:address:sandbox-data, env:address:programming-enviro
     return
   }
   data:text <- get *sandbox, data:offset
-  response:text, errors:text, fake-screen:address:screen, trace:text, completed?:boolean <- run-sandboxed data
+  response:text, errors:text, fake-screen:&:screen, trace:text, completed?:bool <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
   *sandbox <- put *sandbox, errors:offset, errors
   *sandbox <- put *sandbox, screen:offset, fake-screen
   *sandbox <- put *sandbox, trace:offset, trace
   {
     break-if errors
-    break-if completed?:boolean
+    break-if completed?:bool
     errors <- new [took too long!
 ]
     *sandbox <- put *sandbox, errors:offset, errors
   }
   {
     break-unless errors
-    error-index:number <- get *env, error-index:offset
-    error-not-set?:boolean <- equal error-index, -1
+    error-index:num <- get *env, error-index:offset
+    error-not-set?:bool <- equal error-index, -1
     break-unless error-not-set?
     *env <- put *env, error-index:offset, idx
   }
@@ -129,15 +129,15 @@ scenario run-shows-errors-in-get [
   assume-screen 50/width, 20/height
   1:text <- new [ 
 def foo [
-  get 123:number, foo:offset
+  get 123:num, foo:offset
 ]]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -147,7 +147,7 @@ def foo [
     .foo                                               .
     .foo: unknown element 'foo' in container 'number'  .
     .foo: first ingredient of 'get' should be a contai↩.
-    .ner, but got '123:number'                         .
+    .ner, but got '123:num'                            .
   ]
   screen-should-contain-in-color 1/red, [
     .  errors found                                    .
@@ -160,7 +160,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   assume-screen 50/width, 20/height
   1:text <- new []
   2:text <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     # create invalid sandbox 1
     type [get foo, x:offset]
@@ -170,7 +170,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/empty-test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/empty-test-recipes
   ]
   # status line shows that error is in first sandbox
   screen-should-contain [
@@ -183,7 +183,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   assume-screen 50/width, 20/height
   1:text <- new []
   2:text <- new []
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     # create invalid sandbox 2
     type [get foo, x:offset]
@@ -196,7 +196,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/empty-test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/empty-test-recipes
   ]
   # status line shows that error is in second sandbox
   screen-should-contain [
@@ -209,11 +209,11 @@ scenario run-hides-errors-from-past-sandboxes [
   assume-screen 50/width, 20/height
   1:text <- new []
   2:text <- new [get foo, x:offset]  # invalid
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4  # generate error
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/empty-test-recipes
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/empty-test-recipes
   assume-console [
     left-click 3, 10
     press ctrl-k
@@ -221,7 +221,7 @@ scenario run-hides-errors-from-past-sandboxes [
     press F4  # update sandbox
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # error should disappear
   screen-should-contain [
@@ -243,15 +243,15 @@ scenario run-updates-errors-for-shape-shifting-recipes [
   1:text <- new [recipe foo x:_elem -> z:_elem [
 local-scope
 load-ingredients
-y:address:number <- copy 0
+y:&:num <- copy 0
 z <- add x, y
 ]]
   2:text <- new [foo 2]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
@@ -268,7 +268,7 @@ z <- add x, y
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   # error should remain unchanged
   screen-should-contain [
@@ -288,24 +288,24 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # overload a well-known shape-shifting recipe
-  1:text <- new [recipe length l:address:list:_elem -> n:number [
+  1:text <- new [recipe length l:&:list:_elem -> n:num [
 ]]
   # call code that uses other variants of it, but not it itself
-  2:text <- new [x:address:list:number <- copy 0
+  2:text <- new [x:&:list:num <- copy 0
 to-text x]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   # run it once
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   # no errors anywhere on screen (can't check anything else, since to-text will return an address)
   screen-should-contain-in-color 1/red, [
     .                                                  .
     .                                                  .
     .                                                  .
     .                                                  .
-    .                      <-                          .
+    .             <-                                   .
     .                                                  .
     .                                                  .
     .                                                  .
@@ -316,7 +316,7 @@ to-text x]
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   # still no errors
   screen-should-contain-in-color 1/red, [
@@ -324,7 +324,7 @@ to-text x]
     .                                                  .
     .                                                  .
     .                                                  .
-    .                      <-                          .
+    .             <-                                   .
     .                                                  .
     .                                                  .
     .                                                  .
@@ -340,12 +340,12 @@ def foo [
   x <- copy 0
 ]]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -366,12 +366,12 @@ recipe foo \\[
   x <- copy 0
 ]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -392,16 +392,16 @@ scenario run-shows-get-on-non-container-errors [
   1:text <- new [ 
 def foo [
   local-scope
-  x:address:point <- new point:type
-  get x:address:point, 1:offset
+  x:&:point <- new point:type
+  get x:&:point, 1:offset
 ]]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -410,7 +410,7 @@ def foo [
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: first ingredient of 'get' should be a contai↩.
-    .ner, but got 'x:address:point'                    .
+    .ner, but got 'x:&:point'                          .
   ]
 ]
 
@@ -420,17 +420,17 @@ scenario run-shows-non-literal-get-argument-errors [
   1:text <- new [ 
 def foo [
   local-scope
-  x:number <- copy 0
-  y:address:point <- new point:type
-  get *y:address:point, x:number
+  x:num <- copy 0
+  y:&:point <- new point:type
+  get *y:&:point, x:num
 ]]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -439,7 +439,7 @@ def foo [
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: second ingredient of 'get' should have type ↩.
-    .'offset', but got 'x:number'                      .
+    .'offset', but got 'x:num'                         .
   ]
 ]
 
@@ -450,14 +450,14 @@ scenario run-shows-errors-everytime [
   1:text <- new [ 
 def foo [
   local-scope
-  x:number <- copy y:number
+  x:num <- copy y:num
 ]]
   2:text <- new [foo]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
@@ -471,7 +471,7 @@ def foo [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -486,22 +486,22 @@ def foo [
 scenario run-instruction-and-print-errors [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
-  1:text <- new [get 1:address:point, 1:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
+  1:text <- new [get 1:&:point, 1:offset]
+  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
   ]
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
-    .get 1:address:point, 1:offset                     .
+    .get 1:&:point, 1:offset                           .
     .first ingredient of 'get' should be a container, ↩.
-    .but got '1:address:point'                         .
+    .but got '1:&:point'                               .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -512,7 +512,7 @@ scenario run-instruction-and-print-errors [
     .                                                  .
     .                                                  .
     .first ingredient of 'get' should be a container,  .
-    .but got '1:address:point'                         .
+    .but got '1:&:point'                               .
     .                                                  .
     .                                                  .
   ]
@@ -522,15 +522,15 @@ scenario run-instruction-and-print-errors-only-once [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # editor contains an illegal instruction
-  1:text <- new [get 1234:number, foo:offset]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
+  1:text <- new [get 1234:num, foo:offset]
+  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -538,10 +538,10 @@ scenario run-instruction-and-print-errors-only-once [
     .                                                  .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
-    .get 1234:number, foo:offset                       .
+    .get 1234:num, foo:offset                          .
     .unknown element 'foo' in container 'number'       .
     .first ingredient of 'get' should be a container, ↩.
-    .but got '1234:number'                             .
+    .but got '1234:num'                                .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -554,13 +554,13 @@ scenario sandbox-can-handle-infinite-loop [
   1:text <- new [{
 loop
 }]
-  2:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text
+  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 2:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
   ]
   screen-should-contain [
     .  errors found (0)             run (F4)           .
@@ -582,19 +582,19 @@ scenario sandbox-with-errors-shows-trace [
   # generate a stash and a error
   1:text <- new [recipe foo [
 local-scope
-a:number <- next-ingredient
-b:number <- next-ingredient
+a:num <- next-ingredient
+b:num <- next-ingredient
 stash [dividing by], b
-_, c:number <- divide-with-remainder a, b
+_, c:num <- divide-with-remainder a, b
 return b
 ]]
   2:text <- new [foo 4, 0]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 2:text
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
   # run
   assume-console [
     press F4
   ]
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   # screen prints error message
   screen-should-contain [
     .  errors found (0)             run (F4)           .
@@ -602,8 +602,8 @@ return b
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .foo 4, 0                                          .
-    .foo: divide by zero in '_, c:number <- divide-wit↩.
-    .h-remainder a, b'                                 .
+    .foo: divide by zero in '_, c:num <- divide-with-r↩.
+    .emainder a, b'                                    .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
@@ -612,7 +612,7 @@ return b
     left-click 4, 15
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
   ]
   # screen should expand trace
   screen-should-contain [
@@ -623,8 +623,8 @@ return b
     .foo 4, 0                                          .
     .dividing by 0                                     .
     .14 instructions run                               .
-    .foo: divide by zero in '_, c:number <- divide-wit↩.
-    .h-remainder a, b'                                 .
+    .foo: divide by zero in '_, c:num <- divide-with-r↩.
+    .emainder a, b'                                    .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]

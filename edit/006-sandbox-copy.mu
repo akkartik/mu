@@ -14,8 +14,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -31,7 +31,7 @@ recipe foo [
     left-click 3, 69
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # it copies into editor
   screen-should-contain [
@@ -49,7 +49,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -76,8 +76,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -93,7 +93,7 @@ recipe foo [
     left-click 3, 84
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # it copies into editor
   screen-should-contain [
@@ -111,7 +111,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -128,7 +128,7 @@ recipe foo [
 after <global-touch> [
   # support 'copy' button
   {
-    copy?:boolean <- should-attempt-copy? click-row, click-column, env
+    copy?:bool <- should-attempt-copy? click-row, click-column, env
     break-unless copy?
     copy?, env <- try-copy-sandbox click-row, env
     break-unless copy?
@@ -141,34 +141,34 @@ after <global-touch> [
 ]
 
 # some preconditions for attempting to copy a sandbox
-def should-attempt-copy? click-row:number, click-column:number, env:address:programming-environment-data -> result:boolean [
+def should-attempt-copy? click-row:num, click-column:num, env:&:programming-environment-data -> result:bool [
   local-scope
   load-ingredients
   # are we below the sandbox editor?
-  click-sandbox-area?:boolean <- click-on-sandbox-area? click-row, click-column, env
+  click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
   reply-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'copy' button?
-  first-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  first-sandbox:&:editor-data <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
-  sandbox-left-margin:number <- get *first-sandbox, left:offset
-  sandbox-right-margin:number <- get *first-sandbox, right:offset
-  _, _, copy-button-left:number, copy-button-right:number, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  copy-button-vertical-area?:boolean <- within-range? click-column, copy-button-left, copy-button-right
+  sandbox-left-margin:num <- get *first-sandbox, left:offset
+  sandbox-right-margin:num <- get *first-sandbox, right:offset
+  _, _, copy-button-left:num, copy-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  copy-button-vertical-area?:bool <- within-range? click-column, copy-button-left, copy-button-right
   reply-unless copy-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox
 ]
 
-def try-copy-sandbox click-row:number, env:address:programming-environment-data -> clicked-on-copy-button?:boolean, env:address:programming-environment-data [
+def try-copy-sandbox click-row:num, env:&:programming-environment-data -> clicked-on-copy-button?:bool, env:&:programming-environment-data [
   local-scope
   load-ingredients
   # identify the sandbox to copy, if the click was actually on the 'copy' button
-  sandbox:address:sandbox-data <- find-sandbox env, click-row
+  sandbox:&:sandbox-data <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   clicked-on-copy-button? <- copy 1/true
   text:text <- get *sandbox, data:offset
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   # reset scroll
   *env <- put *env, render-from:offset, -1
@@ -176,14 +176,14 @@ def try-copy-sandbox click-row:number, env:address:programming-environment-data 
   *env <- put *env, sandbox-in-focus?:offset, 1/true
 ]
 
-def find-sandbox env:address:programming-environment-data, click-row:number -> result:address:sandbox-data [
+def find-sandbox env:&:programming-environment-data, click-row:num -> result:&:sandbox-data [
   local-scope
   load-ingredients
-  curr-sandbox:address:sandbox-data <- get *env, sandbox:offset
+  curr-sandbox:&:sandbox-data <- get *env, sandbox:offset
   {
     break-unless curr-sandbox
-    start:number <- get *curr-sandbox, starting-row-on-screen:offset
-    found?:boolean <- equal click-row, start
+    start:num <- get *curr-sandbox, starting-row-on-screen:offset
+    found?:bool <- equal click-row, start
     return-if found?, curr-sandbox
     curr-sandbox <- get *curr-sandbox, next-sandbox:offset
     loop
@@ -191,32 +191,32 @@ def find-sandbox env:address:programming-environment-data, click-row:number -> r
   return 0/not-found
 ]
 
-def click-on-sandbox-area? click-row:number, click-column:number, env:address:programming-environment-data -> result:boolean [
+def click-on-sandbox-area? click-row:num, click-column:num, env:&:programming-environment-data -> result:bool [
   local-scope
   load-ingredients
-  current-sandbox:address:editor-data <- get *env, current-sandbox:offset
-  sandbox-left-margin:number <- get *current-sandbox, left:offset
-  on-sandbox-side?:boolean <- greater-or-equal click-column, sandbox-left-margin
+  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  sandbox-left-margin:num <- get *current-sandbox, left:offset
+  on-sandbox-side?:bool <- greater-or-equal click-column, sandbox-left-margin
   return-unless on-sandbox-side?, 0/false
-  first-sandbox:address:sandbox-data <- get *env, sandbox:offset
+  first-sandbox:&:sandbox-data <- get *env, sandbox:offset
   return-unless first-sandbox, 0/false
-  first-sandbox-begins:number <- get *first-sandbox, starting-row-on-screen:offset
+  first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
   result <- greater-or-equal click-row, first-sandbox-begins
 ]
 
-def empty-editor? editor:address:editor-data -> result:boolean [
+def empty-editor? editor:&:editor-data -> result:bool [
   local-scope
   load-ingredients
-  head:address:duplex-list:character <- get *editor, data:offset
-  first:address:duplex-list:character <- next head
+  head:&:duplex-list:char <- get *editor, data:offset
+  first:&:duplex-list:char <- next head
   result <- not first
 ]
 
-def within-range? x:number, low:number, high:number -> result:boolean [
+def within-range? x:num, low:num, high:num -> result:bool [
   local-scope
   load-ingredients
-  not-too-far-left?:boolean <- greater-or-equal x, low
-  not-too-far-right?:boolean <- lesser-or-equal x, high
+  not-too-far-left?:bool <- greater-or-equal x, low
+  not-too-far-right?:bool <- lesser-or-equal x, high
   result <- and not-too-far-left? not-too-far-right?
 ]
 
@@ -233,8 +233,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:address:programming-environment-data <- new-programming-environment screen:address:screen, 1:text, 2:text
-  event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -252,7 +252,7 @@ recipe foo [
     left-click 3, 70  # click 'copy' button
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   # copy doesn't happen
   screen-should-contain [
@@ -270,7 +270,7 @@ recipe foo [
     type [1]
   ]
   run [
-    event-loop screen:address:screen, console:address:console, 3:address:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
