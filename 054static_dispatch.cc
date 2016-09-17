@@ -614,17 +614,16 @@ def foo a:bool -> b:num [
 +error: main: failed to find a matching call for 'y:num <- foo x'
 
 :(scenario override_methods_with_type_abbreviations)
-type string = address:@:char
 def main [
   local-scope
   s:text <- new [abc]
   1:num/raw <- foo s
 ]
-def foo a:text -> result:num [
+def foo a:address:array:character -> result:number [
   return 34
 ]
-# identical to previous variant once you take type abbreviation into account
-def! foo a:string -> result:num [
+# identical to previous variant once you take type abbreviations into account
+def! foo a:text -> result:num [
   return 35
 ]
 +mem: storing 35 in location 1

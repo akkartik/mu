@@ -7,10 +7,10 @@
 :(scenario surrounding_space)
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 def main [
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   20:num <- copy 0  # refcount
   21:num <- copy 5  # length
   # actual start of this recipe

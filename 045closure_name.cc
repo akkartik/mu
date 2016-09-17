@@ -46,7 +46,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       if (!is_space(inst.products.at(j))) {
-        raise << "slot 0 should always have type address:@:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
+        raise << "slot 0 should always have type address:array:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
         continue;
       }
       string_tree* s = property(inst.products.at(j), "names");

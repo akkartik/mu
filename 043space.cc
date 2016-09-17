@@ -6,7 +6,7 @@
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
   default-space:&:@:location <- copy 10/unsafe
@@ -18,7 +18,7 @@ def main [
 def main [
   # pretend pointer from outside (2000 reserved for refcount)
   2001:num <- copy 34
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
@@ -84,7 +84,7 @@ int address(int offset, int base) {
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
   if (!scalar(data) || !is_space(x))
-    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:@:location, but is " << to_string(x.type) << '\n' << end();
+    raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
   current_call().default_space = data.at(0);
   return;
 }
@@ -114,7 +114,7 @@ def main [
   # pretend pointer to container from outside (2000 reserved for refcount)
   2001:num <- copy 34
   2002:num <- copy 35
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
@@ -135,7 +135,7 @@ def main [
   2001:num <- copy 2  # length
   2002:num <- copy 34
   2003:num <- copy 35
-  # pretend address:@:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use new
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe

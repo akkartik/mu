@@ -2,7 +2,7 @@
 
 //: A Mu text is an address to an array of characters.
 :(before "End Mu Types Initialization")
-put(Type_abbreviations, "text", new_type_tree("address:array:char"));
+put(Type_abbreviations, "text", new_type_tree("address:array:character"));
 
 :(scenario new_string)
 def main [

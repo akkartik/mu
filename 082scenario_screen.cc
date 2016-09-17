@@ -253,8 +253,8 @@ void check_screen(const string& expected_contents, const int color) {
   int screen_location = get_or_insert(Memory, SCREEN)+/*skip refcount*/1;
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:@:char
-  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:char
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   int width_offset = find_element_name(get(Type_ordinal, "screen"), "num-columns", "");
   int screen_width = get_or_insert(Memory, screen_location+width_offset);
   int height_offset = find_element_name(get(Type_ordinal, "screen"), "num-rows", "");
@@ -397,8 +397,8 @@ void dump_screen() {
   int screen_height = get_or_insert(Memory, screen_location+height_offset);
   int data_offset = find_element_name(get(Type_ordinal, "screen"), "data", "");
   assert(data_offset >= 0);
-  int screen_data_location = screen_location+data_offset;  // type: address:@:char
-  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:char
+  int screen_data_location = screen_location+data_offset;  // type: address:array:character
+  int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   int curr = screen_data_start+1;  // skip length
   for (int row = 0; row < screen_height; ++row) {

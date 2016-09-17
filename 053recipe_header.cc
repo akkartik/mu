@@ -145,13 +145,12 @@ if (result.has_header) {
 //: Support type abbreviations in headers.
 
 :(scenario type_abbreviations_in_recipe_headers)
-type string = address:@:char
 def main [
   local-scope
-  a:string <- foo
+  a:text <- foo
   1:char/raw <- index *a, 0
 ]
-def foo -> a:string [
+def foo -> a:text [  # 'text' is an abbreviation
   local-scope
   load-ingredients
   a <- new [abc]

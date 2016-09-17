@@ -355,7 +355,7 @@ case HASH_OLD: {
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:@:char), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports texts (address array character), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
   break;
