@@ -13,10 +13,10 @@ case RESTORE: {
     break;
   }
   string filename;
-  if (is_literal_string(inst.ingredients.at(0))) {
+  if (is_literal_text(inst.ingredients.at(0))) {
     ;
   }
-  else if (is_mu_string(inst.ingredients.at(0))) {
+  else if (is_mu_text(inst.ingredients.at(0))) {
     ;
   }
   else {
@@ -28,11 +28,11 @@ case RESTORE: {
 :(before "End Primitive Recipe Implementations")
 case RESTORE: {
   string filename;
-  if (is_literal_string(current_instruction().ingredients.at(0))) {
+  if (is_literal_text(current_instruction().ingredients.at(0))) {
     filename = current_instruction().ingredients.at(0).name;
   }
-  else if (is_mu_string(current_instruction().ingredients.at(0))) {
-    filename = read_mu_string(ingredients.at(0).at(0));
+  else if (is_mu_text(current_instruction().ingredients.at(0))) {
+    filename = read_mu_text(ingredients.at(0).at(0));
   }
   if (Current_scenario) {
     // do nothing in tests
@@ -45,7 +45,7 @@ case RESTORE: {
   if (contents.empty())
     products.at(0).push_back(0);
   else
-    products.at(0).push_back(new_mu_string(contents));
+    products.at(0).push_back(new_mu_text(contents));
   break;
 }
 
@@ -71,17 +71,17 @@ case SAVE: {
     raise << maybe(get(Recipe, r).name) << "'save' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (is_literal_string(inst.ingredients.at(0))) {
+  if (is_literal_text(inst.ingredients.at(0))) {
     ;
   }
-  else if (is_mu_string(inst.ingredients.at(0))) {
+  else if (is_mu_text(inst.ingredients.at(0))) {
     ;
   }
   else {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'save' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(1))) {
+  if (!is_mu_text(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'save' should be an address:array:character, but got '" << to_string(inst.ingredients.at(1)) << "'\n" << end();
     break;
   }
@@ -91,14 +91,14 @@ case SAVE: {
 case SAVE: {
   if (Current_scenario) break;  // do nothing in tests
   string filename;
-  if (is_literal_string(current_instruction().ingredients.at(0))) {
+  if (is_literal_text(current_instruction().ingredients.at(0))) {
     filename = current_instruction().ingredients.at(0).name;
   }
-  else if (is_mu_string(current_instruction().ingredients.at(0))) {
-    filename = read_mu_string(ingredients.at(0).at(0));
+  else if (is_mu_text(current_instruction().ingredients.at(0))) {
+    filename = read_mu_text(ingredients.at(0).at(0));
   }
   ofstream fout(("lesson/"+filename).c_str());
-  string contents = read_mu_string(ingredients.at(1).at(0));
+  string contents = read_mu_text(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
   if (!exists("lesson/.git")) break;

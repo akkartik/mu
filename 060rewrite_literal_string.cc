@@ -43,7 +43,7 @@ void rewrite_literal_string_to_text(recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     if (recipes_taking_literal_strings.find(inst.name) == recipes_taking_literal_strings.end()) {
       for (int j = 0; j < SIZE(inst.ingredients); ++j) {
-        if (!is_literal_string(inst.ingredients.at(j))) continue;
+        if (!is_literal_text(inst.ingredients.at(j))) continue;
         instruction def;
         ostringstream ingredient_name;
         ingredient_name << inst.name << '_' << i << '_' << j << ":address:array:character";

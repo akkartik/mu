@@ -191,7 +191,7 @@ case SCREEN_SHOULD_CONTAIN: {
     raise << maybe(get(Recipe, r).name) << "'screen-should-contain' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(0))) {
+  if (!is_literal_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'screen-should-contain' should be a literal string, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -219,7 +219,7 @@ case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'screen-should-contain-in-color' should be a number (color code), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(1))) {
+  if (!is_literal_text(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'screen-should-contain-in-color' should be a literal string, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }

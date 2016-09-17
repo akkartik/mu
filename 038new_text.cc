@@ -19,19 +19,19 @@ def main [
 +mem: storing 171 in location 3
 
 :(before "End NEW Check Special-cases")
-if (is_literal_string(inst.ingredients.at(0))) break;
+if (is_literal_text(inst.ingredients.at(0))) break;
 :(before "Convert 'new' To 'allocate'")
-if (inst.name == "new" && is_literal_string(inst.ingredients.at(0))) continue;
+if (inst.name == "new" && is_literal_text(inst.ingredients.at(0))) continue;
 :(after "case NEW" following "Primitive Recipe Implementations")
-  if (is_literal_string(current_instruction().ingredients.at(0))) {
+  if (is_literal_text(current_instruction().ingredients.at(0))) {
     products.resize(1);
-    products.at(0).push_back(new_mu_string(current_instruction().ingredients.at(0).name));
+    products.at(0).push_back(new_mu_text(current_instruction().ingredients.at(0).name));
     trace(9999, "mem") << "new string alloc: " << products.at(0).at(0) << end();
     break;
   }
 
 :(code)
-int new_mu_string(const string& contents) {
+int new_mu_text(const string& contents) {
   // allocate an array just large enough for it
   int string_length = unicode_length(contents);
 //?   Total_alloc += string_length+1;
@@ -68,9 +68,9 @@ def main [
 +app: foo: abc
 
 :(before "End print Special-cases(r, data)")
-if (is_mu_string(r)) {
+if (is_mu_text(r)) {
   assert(scalar(data));
-  return read_mu_string(data.at(0));
+  return read_mu_text(data.at(0));
 }
 
 :(scenario unicode_string)
@@ -95,7 +95,7 @@ def main [
 +app: 3 97 98 99
 
 //: fixes way more than just stash
-:(before "End Preprocess is_mu_string(reagent x)")
+:(before "End Preprocess is_mu_text(reagent x)")
 if (!canonize_type(x)) return false;
 
 //: Allocate more to routine when initializing a literal string
@@ -122,7 +122,7 @@ int unicode_length(const string& s) {
   return result;
 }
 
-string read_mu_string(int address) {
+string read_mu_text(int address) {
   if (address == 0) return "";
   ++address;  // skip refcount
   int size = get_or_insert(Memory, address);

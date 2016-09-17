@@ -410,7 +410,7 @@ void check_string(int address, const string& literal) {
   trace(9999, "run") << "checking string length at " << address << end();
   if (get_or_insert(Memory, address) != SIZE(literal)) {
     if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_string(address-/*fake refcount*/1) << ")\n" << end();
+      raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_text(address-/*fake refcount*/1) << ")\n" << end();
     else
       raise << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
     if (!Scenario_testing_scenario) Passed = false;
@@ -687,7 +687,7 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(1))) {
+  if (!is_literal_text(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }

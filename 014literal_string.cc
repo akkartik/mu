@@ -119,11 +119,11 @@ if (starts_with(s, "[")) {
 //: more friendly to trace().
 
 :(after "string to_string(const reagent& r)")
-  if (is_literal_string(r))
+  if (is_literal_text(r))
     return emit_literal_string(r.name);
 
 :(code)
-bool is_literal_string(const reagent& x) {
+bool is_literal_text(const reagent& x) {
   return x.type && x.type->name == "literal-string";
 }
 

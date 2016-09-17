@@ -19,7 +19,7 @@ case _OPEN_FILE_FOR_READING: {
     raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(0))) {
+  if (!is_mu_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-reading' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
@@ -35,7 +35,7 @@ case _OPEN_FILE_FOR_READING: {
 }
 :(before "End Primitive Recipe Implementations")
 case _OPEN_FILE_FOR_READING: {
-  string filename = read_mu_string(ingredients.at(0).at(0));
+  string filename = read_mu_text(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   FILE* f = fopen(filename.c_str(), "r");
   long long int result = reinterpret_cast<long long int>(f);
@@ -54,7 +54,7 @@ case _OPEN_FILE_FOR_WRITING: {
     raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(0))) {
+  if (!is_mu_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-file-for-writing' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
@@ -70,7 +70,7 @@ case _OPEN_FILE_FOR_WRITING: {
 }
 :(before "End Primitive Recipe Implementations")
 case _OPEN_FILE_FOR_WRITING: {
-  string filename = read_mu_string(ingredients.at(0).at(0));
+  string filename = read_mu_text(ingredients.at(0).at(0));
   assert(sizeof(long long int) >= sizeof(FILE*));
   long long int result = reinterpret_cast<long long int>(fopen(filename.c_str(), "w"));
   products.resize(1);

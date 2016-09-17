@@ -20,7 +20,7 @@ case TRACE: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'trace' should be a number (depth), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(1))) {
+  if (!is_literal_text(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "second ingredient of 'trace' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
@@ -210,7 +210,7 @@ case ASSERT: {
     raise << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(1))) {
+  if (!is_literal_text(inst.ingredients.at(1))) {
     raise << maybe(get(Recipe, r).name) << "'assert' requires a literal string for its second ingredient, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
@@ -284,7 +284,7 @@ case _SYSTEM: {
     raise << maybe(get(Recipe, r).name) << "'$system' requires exactly one ingredient, but got '" << to_string(inst) << "'\n" << end();
     break;
   }
-  if (!is_literal_string(inst.ingredients.at(0))) {
+  if (!is_literal_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "ingredient to '$system' must be a literal text, but got '" << to_string(inst) << "'\n" << end();
   }
   break;

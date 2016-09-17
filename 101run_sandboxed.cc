@@ -44,7 +44,7 @@ case RUN_SANDBOXED: {
     raise << maybe(get(Recipe, r).name) << "'run-sandboxed' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(0))) {
+  if (!is_mu_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'run-sandboxed' should be a string, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
@@ -95,7 +95,7 @@ bool run_interactive(int address) {
     for (int i = 1; i < Reserved_for_tests; ++i)
       Memory.erase(i);
   }
-  string command = trim(strip_comments(read_mu_string(address)));
+  string command = trim(strip_comments(read_mu_text(address)));
   Name[get(Recipe_ordinal, "interactive")].clear();
   run_code_begin(/*should_stash_snapshots*/true);
   if (command.empty()) return false;
@@ -261,7 +261,7 @@ case _MOST_RECENT_PRODUCTS: {
 :(before "End Primitive Recipe Implementations")
 case _MOST_RECENT_PRODUCTS: {
   products.resize(1);
-  products.at(0).push_back(new_mu_string(Most_recent_products));
+  products.at(0).push_back(new_mu_text(Most_recent_products));
   break;
 }
 
@@ -379,9 +379,9 @@ void track_most_recent_products(const instruction& instruction, const vector<vec
     //    x:text <- new [abc]
     //    => abc
     if (i < SIZE(instruction.products)) {
-      if (is_mu_string(instruction.products.at(i))) {
+      if (is_mu_text(instruction.products.at(i))) {
         if (!scalar(products.at(i))) continue;  // error handled elsewhere
-        out << read_mu_string(products.at(i).at(0)) << '\n';
+        out << read_mu_text(products.at(i).at(0)) << '\n';
         continue;
       }
     }
@@ -411,7 +411,7 @@ int stringified_value_of_location(int address) {
   // convert to string
   ostringstream out;
   out << no_scientific(get_or_insert(Memory, address));
-  return new_mu_string(out.str());
+  return new_mu_text(out.str());
 }
 
 int trace_error_contents() {
@@ -425,7 +425,7 @@ int trace_error_contents() {
   string result = out.str();
   if (result.empty()) return 0;
   truncate(result);
-  return new_mu_string(result);
+  return new_mu_text(result);
 }
 
 int trace_app_contents() {
@@ -439,7 +439,7 @@ int trace_app_contents() {
   string result = out.str();
   if (result.empty()) return 0;
   truncate(result);
-  return new_mu_string(result);
+  return new_mu_text(result);
 }
 
 void truncate(string& x) {
@@ -464,7 +464,7 @@ case RELOAD: {
     raise << maybe(get(Recipe, r).name) << "'reload' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(0))) {
+  if (!is_mu_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of 'reload' should be a string, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -483,7 +483,7 @@ case RELOAD: {
   Recipe_variants = Recipe_variants_snapshot;
   Name = Name_snapshot;
   // }
-  string code = read_mu_string(ingredients.at(0).at(0));
+  string code = read_mu_text(ingredients.at(0).at(0));
   run_code_begin(/*should_stash_snapshots*/false);
   routine* save_current_routine = Current_routine;
   Current_routine = NULL;

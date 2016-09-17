@@ -191,12 +191,12 @@ void construct_filesystem_object(const map<string, string>& contents) {
   int filesystem_data_address = allocate(SIZE(contents)*2 + /*array length*/1);
   int curr = filesystem_data_address + /*skip refcount and length*/2;
   for (map<string, string>::const_iterator p = contents.begin(); p != contents.end(); ++p) {
-    put(Memory, curr, new_mu_string(p->first));
+    put(Memory, curr, new_mu_text(p->first));
     trace(9999, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
     trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
     ++curr;
-    put(Memory, curr, new_mu_string(p->second));
+    put(Memory, curr, new_mu_text(p->second));
     trace(9999, "mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
     trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();

@@ -33,7 +33,7 @@ case HASH: {
 :(code)
 size_t hash(size_t h, reagent/*copy*/ r) {
   canonize(r);
-  if (is_mu_string(r))  // optimization
+  if (is_mu_text(r))  // optimization
     return hash_mu_string(h, r);
   else if (is_mu_address(r))
     return hash_mu_address(h, r);
@@ -66,7 +66,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
 }
 
 size_t hash_mu_string(size_t h, const reagent& r) {
-  string input = read_mu_string(get_or_insert(Memory, r.value));
+  string input = read_mu_text(get_or_insert(Memory, r.value));
   for (int i = 0; i < SIZE(input); ++i) {
     h = hash_iter(h, static_cast<size_t>(input.at(i)));
 //?     cerr << i << ": " << h << '\n';
@@ -354,7 +354,7 @@ case HASH_OLD: {
     raise << maybe(get(Recipe, r).name) << "'hash_old' takes exactly one ingredient rather than '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_string(inst.ingredients.at(0))) {
+  if (!is_mu_text(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "'hash_old' currently only supports strings (address:array:character), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
@@ -362,7 +362,7 @@ case HASH_OLD: {
 }
 :(before "End Primitive Recipe Implementations")
 case HASH_OLD: {
-  string input = read_mu_string(ingredients.at(0).at(0));
+  string input = read_mu_text(ingredients.at(0).at(0));
   size_t h = 0 ;
 
   for (int i = 0; i < SIZE(input); ++i) {

@@ -73,7 +73,7 @@ void convert_ingredients_to_text(recipe& caller) {
     // all these cases are getting hairy. how can we make this extensible?
     if (inst.name == "stash") {
       for (int j = 0; j < SIZE(inst.ingredients); ++j) {
-        if (is_literal_string(inst.ingredients.at(j))) continue;
+        if (is_literal_text(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "stash_" << i << '_' << j << ":address:array:character";
         convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
@@ -81,7 +81,7 @@ void convert_ingredients_to_text(recipe& caller) {
     }
     else if (inst.name == "trace") {
       for (int j = /*skip*/2; j < SIZE(inst.ingredients); ++j) {
-        if (is_literal_string(inst.ingredients.at(j))) continue;
+        if (is_literal_text(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "trace_" << i << '_' << j << ":address:array:character";
         convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
@@ -93,7 +93,7 @@ void convert_ingredients_to_text(recipe& caller) {
       // new variants that match:
       //   append _:text, ___
       // will never ever get used.
-      if (is_literal_string(inst.ingredients.at(0)) || is_mu_string(inst.ingredients.at(0))) {
+      if (is_literal_text(inst.ingredients.at(0)) || is_mu_text(inst.ingredients.at(0))) {
         for (int j = 0; j < SIZE(inst.ingredients); ++j) {
           ostringstream ingredient_name;
           ingredient_name << "append_" << i << '_' << j << ":address:array:character";
@@ -111,7 +111,7 @@ void convert_ingredients_to_text(recipe& caller) {
 // replace r with converted text
 void convert_ingredient_to_text(reagent& r, vector<instruction>& out, const string& tmp_var) {
   if (!r.type) return;  // error; will be handled elsewhere
-  if (is_mu_string(r)) return;
+  if (is_mu_text(r)) return;
   // don't try to extend static arrays
   if (is_static_array(r)) return;
   instruction def;

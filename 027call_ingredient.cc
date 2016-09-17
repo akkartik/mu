@@ -57,7 +57,7 @@ case NEXT_INGREDIENT: {
     if (current_recipe_name() == "main") {
       // no ingredient types since the call might be implicit; assume ingredients are always strings
       // todo: how to test this?
-      if (!is_mu_string(product))
+      if (!is_mu_text(product))
         raise << "main: wrong type for ingredient '" << product.original_string << "'\n" << end();
     }
     else if (!types_coercible(product,
@@ -171,10 +171,10 @@ case INGREDIENT: {
   break;
 }
 
-//: a particularly common array type is the string, or address:array:character
+//: a particularly common array type is the text, or address:array:character
 :(code)
-bool is_mu_string(reagent/*copy*/ x) {
-  // End Preprocess is_mu_string(reagent x)
+bool is_mu_text(reagent/*copy*/ x) {
+  // End Preprocess is_mu_text(reagent x)
   return x.type
       && !x.type->atom
       && x.type->left->atom
