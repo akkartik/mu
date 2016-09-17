@@ -194,7 +194,7 @@ if (x.name == "number-of-locals") {
 def main [
   1:address <- foo
   2:address <- foo
-  3:boolean <- equal 1:address, 2:address
+  3:bool <- equal 1:address, 2:address
 ]
 def foo [
   local-scope

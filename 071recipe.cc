@@ -80,11 +80,11 @@ bool is_matching_non_recipe_literal(const reagent& x, const string& name) {
 % Hide_errors = true;
 def main [
   local-scope
-  a:boolean <- equal break 0
-  break:boolean <- copy 0
+  a:bool <- equal break 0
+  break:bool <- copy 0
 ]
 +error: main: you can't use 'break' as a recipe literal when it's also a variable
-+error: main: missing type for 'break' in 'a:boolean <- equal break, 0'
++error: main: missing type for 'break' in 'a:bool <- equal break, 0'
 
 :(before "End Primitive Recipe Declarations")
 CALL,
@@ -271,7 +271,7 @@ def f x:number -> y:number [
 def main [
   {1: (recipe number -> number)} <- copy f  # mismatch with a recipe literal
 ]
-def f x:boolean -> y:boolean [
+def f x:bool -> y:bool [
   local-scope
   load-ingredients
   y <- copy x

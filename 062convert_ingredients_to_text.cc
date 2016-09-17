@@ -152,7 +152,7 @@ def main [
   c:character <- copy 111/o
   a:text <- append [abc], 10, n, c
   expected:text <- new [abc1011o]
-  10:boolean/raw <- equal a, expected
+  10:bool/raw <- equal a, expected
 ]
 
 //: Make sure that the new system is strictly better than just the 'stash'

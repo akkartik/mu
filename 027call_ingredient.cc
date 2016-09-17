@@ -101,9 +101,9 @@ def main [
 ]
 def f [
   12:num <- next-ingredient  # consume ingredient
-  _, 1:boolean <- next-ingredient  # will not find any ingredients
+  _, 1:bool <- next-ingredient  # will not find any ingredients
   rewind-ingredients
-  13:num, 2:boolean <- next-ingredient  # will find ingredient again
+  13:num, 2:bool <- next-ingredient  # will find ingredient again
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1
@@ -130,7 +130,7 @@ def main [
 ]
 def f [
   12:num <- ingredient 1  # consume second ingredient first
-  13:num, 1:boolean <- next-ingredient  # next-ingredient tries to scan past that
+  13:num, 1:bool <- next-ingredient  # next-ingredient tries to scan past that
 ]
 +mem: storing 2 in location 12
 +mem: storing 0 in location 1

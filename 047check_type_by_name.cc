@@ -10,7 +10,7 @@
 % Hide_errors = true;
 def main [
   x:num <- copy 1
-  x:boolean <- copy 1
+  x:bool <- copy 1
 ]
 +error: main: 'x' used with multiple types
 
@@ -120,7 +120,7 @@ def foo [  # dummy
 def main [
   local-scope
   0:address:array:location/names:foo <- copy 0  # specify surrounding space
-  x:boolean <- copy 1/true
+  x:bool <- copy 1/true
   x:num/space:1 <- copy 34
   x/space:1 <- copy 35
 ]

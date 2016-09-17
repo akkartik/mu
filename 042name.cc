@@ -271,7 +271,7 @@ def main [
   12:num <- copy 1
   13:num <- copy 35
   14:num <- copy 36
-  20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, p:variant
+  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, p:variant
 ]
 +name: variant p of type number-or-point has tag 1
 +mem: storing 1 in location 22

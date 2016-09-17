@@ -282,7 +282,7 @@ def test k:address:number [
 def foo -> [
   local-scope
   load-ingredients
-  k:address:number, found?:boolean <- next-ingredient
+  k:address:number, found?:bool <- next-ingredient
   # we don't further check k for immutability, but assume it's mutable
 ]
 $error: 0

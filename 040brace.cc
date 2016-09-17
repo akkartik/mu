@@ -310,7 +310,7 @@ def main [
     {
       3:num <- copy 0
     }
-    loop-if 4:boolean
+    loop-if 4:bool
     5:num <- copy 0
   }
 ]
@@ -334,8 +334,8 @@ def test-factorial [
   1:num <- copy 5
   2:num <- copy 1
   {
-    3:boolean <- equal 1:num, 1
-    break-if 3:boolean
+    3:bool <- equal 1:num, 1
+    break-if 3:bool
 #    $print 1:num
     2:num <- multiply 2:num, 1:num
     1:num <- subtract 1:num, 1

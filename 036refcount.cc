@@ -168,7 +168,7 @@ exclusive-container foo [
 def main [
   1:address:num <- new number:type
   2:foo <- merge 1/p, 1:address:num
-  4:address:num, 5:boolean <- maybe-convert 2:foo, 1:variant/p
+  4:address:num, 5:bool <- maybe-convert 2:foo, 1:variant/p
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
@@ -766,7 +766,7 @@ def main [
   1:address:num <- new number:type
   2:bar <- merge 1:address:num
   3:foo <- merge 1/b, 2:bar
-  5:bar, 6:boolean <- maybe-convert 3:foo, 1:variant/b
+  5:bar, 6:bool <- maybe-convert 3:foo, 1:variant/b
 ]
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1

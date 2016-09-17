@@ -73,7 +73,7 @@ def main [
   12:num <- copy 1
   13:num <- copy 35
   14:num <- copy 36
-  20:point, 22:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  20:point, 22:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 # boolean
 +mem: storing 1 in location 22
@@ -86,7 +86,7 @@ def main [
   12:num <- copy 1
   13:num <- copy 35
   14:num <- copy 36
-  20:num, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 0:variant
+  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 0:variant
 ]
 # boolean
 +mem: storing 0 in location 21
@@ -203,7 +203,7 @@ def main [
   12:num <- copy 1
   13:num <- copy 35
   14:num <- copy 36
-  20:num, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  20:num, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 +error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number
 
@@ -212,7 +212,7 @@ def main [
   12:num <- copy 1
   13:num <- copy 35
   14:num <- copy 36
-  _, 21:boolean <- maybe-convert 12:number-or-point/unsafe, 1:variant
+  _, 21:bool <- maybe-convert 12:number-or-point/unsafe, 1:variant
 ]
 $error: 0
 

@@ -42,7 +42,7 @@ container foo:_a:_b [
   y:_b
 ]
 def main [
-  1:foo:number:boolean <- merge 34, 1/true
+  1:foo:number:bool <- merge 34, 1/true
 ]
 $error: 0
 
@@ -281,7 +281,7 @@ def main [
   1:text <- new [abc]
   {2: (foo number (address array character))} <- merge 34/x, 1:text/y
   3:text <- get {2: (foo number (address array character))}, y:offset
-  4:boolean <- equal 1:text, 3:text
+  4:bool <- equal 1:text, 3:text
 ]
 +mem: storing 1 in location 4
 

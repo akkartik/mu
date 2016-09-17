@@ -139,7 +139,7 @@ def main [
   4:foo <- merge 34, 98/a
   6:number <- hash 4:foo
   return-unless 6:number
-  7:boolean <- equal 3:number, 6:number
+  7:bool <- equal 3:number, 6:number
 ]
 # hash on containers includes all elements
 +mem: storing 0 in location 7
@@ -160,7 +160,7 @@ def main [
   5:foo <- merge 0/x, 34, 36
   8:number <- hash 5:foo
   return-unless 8:number
-  9:boolean <- equal 4:number, 8:number
+  9:bool <- equal 4:number, 8:number
 ]
 # hash on containers includes all elements
 +mem: storing 0 in location 9
@@ -177,7 +177,7 @@ def main [
   4:foo <- merge 34, 98/a
   6:number <- hash 4:foo
   return-unless 6:number
-  7:boolean <- equal 3:number, 6:number
+  7:bool <- equal 3:number, 6:number
 ]
 # hashes match even though y is different
 +mem: storing 1 in location 7
@@ -198,7 +198,7 @@ def main [
 def main [
   1:number <- hash 1.5
   2:number <- hash 1
-  3:boolean <- equal 1:number, 2:number
+  3:bool <- equal 1:number, 2:number
 ]
 +mem: storing 1 in location 3
 
@@ -213,7 +213,7 @@ def main [
   3:text <- new [abc]
   4:number <- hash 3:text
   return-unless 4:number
-  5:boolean <- equal 2:number, 4:number
+  5:bool <- equal 2:number, 4:number
 ]
 +mem: storing 1 in location 5
 
@@ -225,7 +225,7 @@ def main [
   3:address:number <- new number:type
   *3:address:number <- copy 34
   4:number <- hash 3:address:number
-  5:boolean <- equal 2:number, 4:number
+  5:bool <- equal 2:number, 4:number
 ]
 # different addresses hash to the same result as long as the values the point to do so
 +mem: storing 1 in location 5
@@ -240,7 +240,7 @@ def main [
   3:address:number <- copy 1:address:number
   4:number <- hash 3:address:number
   return-unless 4:number
-  5:boolean <- equal 2:number, 4:number
+  5:bool <- equal 2:number, 4:number
 ]
 # hash doesn't change when refcount changes
 +mem: storing 1 in location 5
@@ -261,7 +261,7 @@ def main [
   4:bar <- merge 34, 97/a
   6:number <- hash 4:bar
   return-unless 6:number
-  7:boolean <- equal 3:number, 6:number
+  7:bool <- equal 3:number, 6:number
 ]
 # containers with identical elements return identical hashes
 +mem: storing 1 in location 7
@@ -283,7 +283,7 @@ def main [
   7:foo <- merge 34, 97/a, 6:address:number
   10:number <- hash 7:foo
   return-unless 10:number
-  11:boolean <- equal 5:number, 10:number
+  11:bool <- equal 5:number, 10:number
 ]
 # containers with identical 'leaf' elements return identical hashes
 +mem: storing 1 in location 11
@@ -305,7 +305,7 @@ def main [
   7:foo <- merge 34, 97/a, 47, 48
   12:number <- hash 7:foo
   return-unless 12:number
-  13:boolean <- equal 6:number, 12:number
+  13:bool <- equal 6:number, 12:number
 ]
 # containers with identical 'leaf' elements return identical hashes
 +mem: storing 1 in location 13
@@ -326,7 +326,7 @@ def main [
   5:bar <- merge 34, 35
   7:number <- hash 5:bar
   return-unless 7:number
-  8:boolean <- equal 4:number, 7:number
+  8:bool <- equal 4:number, 7:number
 ]
 # hash on containers includes all elements
 +mem: storing 1 in location 8
@@ -340,7 +340,7 @@ def main [
   1:text <- new [abc]
   2:number <- hash 1:text
   3:number <- hash_old 1:text
-  4:boolean <- equal 2:number, 3:number
+  4:bool <- equal 2:number, 3:number
 ]
 +mem: storing 1 in location 4
 

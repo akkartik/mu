@@ -81,8 +81,8 @@ $error: 0
 
 :(scenario write_boolean_to_number_allowed)
 def main [
-  1:boolean <- copy 1/true
-  2:num <- copy 1:boolean
+  1:bool <- copy 1/true
+  2:num <- copy 1:bool
 ]
 +mem: storing 1 in location 2
 $error: 0
@@ -90,7 +90,7 @@ $error: 0
 :(scenario write_number_to_boolean_allowed)
 def main [
   1:num <- copy 34
-  2:boolean <- copy 1:num
+  2:bool <- copy 1:num
 ]
 +mem: storing 34 in location 2
 $error: 0

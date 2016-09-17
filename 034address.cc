@@ -125,7 +125,7 @@
 def main [
   1:address:num/raw <- new number:type
   2:address:num/raw <- new number:type
-  3:boolean/raw <- equal 1:address:num/raw, 2:address:num/raw
+  3:bool/raw <- equal 1:address:num/raw, 2:address:num/raw
 ]
 +mem: storing 0 in location 3
 

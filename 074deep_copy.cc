@@ -15,7 +15,7 @@ def main [
   local-scope
   x:number <- copy 34
   y:number <- deep-copy x
-  10:boolean/raw <- equal x, y
+  10:bool/raw <- equal x, y
 ]
 # non-address primitives are identical
 +mem: storing 1 in location 10
@@ -29,7 +29,7 @@ def main [
   local-scope
   a:foo <- merge 34, 35
   b:foo <- deep-copy a
-  10:boolean/raw <- equal a, b
+  10:bool/raw <- equal a, b
 ]
 # containers are identical as long as they don't contain addresses
 +mem: storing 1 in location 10
@@ -42,8 +42,8 @@ def main [
   1:address:number <- copy 100/unsafe  # pretend allocation
   *1:address:number <- copy 34
   2:address:number <- deep-copy 1:address:number
-  10:boolean <- equal 1:address:number, 2:address:number
-  11:boolean <- equal *1:address:number, *2:address:number
+  10:bool <- equal 1:address:number, 2:address:number
+  11:bool <- equal *1:address:number, *2:address:number
   2:address:number <- copy 0
 ]
 # the result of deep-copy is a new address
@@ -64,8 +64,8 @@ def main [
   1:address:point <- copy 100/unsafe  # pretend allocation
   *1:address:point <- merge 34, 35
   2:address:point <- deep-copy 1:address:point
-  10:boolean <- equal 1:address:point, 2:address:point
-  11:boolean <- equal *1:address:point, *2:address:point
+  10:bool <- equal 1:address:point, 2:address:point
+  11:bool <- equal *1:address:point, *2:address:point
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
@@ -81,9 +81,9 @@ def main [
   *1:address:address:number <- copy 150/unsafe
   **1:address:address:number <- copy 34
   2:address:address:number <- deep-copy 1:address:address:number
-  10:boolean <- equal 1:address:address:number, 2:address:address:number
-  11:boolean <- equal *1:address:address:number, *2:address:address:number
-  12:boolean <- equal **1:address:address:number, **2:address:address:number
+  10:bool <- equal 1:address:address:number, 2:address:address:number
+  11:bool <- equal *1:address:address:number, *2:address:address:number
+  12:bool <- equal **1:address:address:number, **2:address:address:number
 ]
 # the result of deep-copy is a new address
 +mem: storing 0 in location 10
@@ -107,8 +107,8 @@ def main [
   2:address:array:number <- deep-copy 1:address:array:number
   stash 2:address:array:number
   stash [new:], *2:address:array:number
-  10:boolean <- equal 1:address:array:number, 2:address:array:number
-  11:boolean <- equal *1:address:array:number, *2:address:array:number
+  10:bool <- equal 1:address:array:number, 2:address:array:number
+  11:bool <- equal *1:address:array:number, *2:address:array:number
 ]
 +app: old: 3 34 35 36
 +app: new: 3 34 35 36
@@ -128,9 +128,9 @@ def main [
   *y0 <- copy 35
   a:foo <- merge 34, y0
   b:foo <- deep-copy a
-  10:boolean/raw <- equal a, b
+  10:bool/raw <- equal a, b
   y1:address:number <- get b, y:offset
-  11:boolean/raw <- equal y0, y1
+  11:bool/raw <- equal y0, y1
   12:number/raw <- copy *y1
 ]
 # containers containing addresses are not identical to their deep copies
@@ -150,9 +150,9 @@ def main [
   *y0 <- copy 34
   a:foo <- merge 1/y, y0
   b:foo <- deep-copy a
-  10:boolean/raw <- equal a, b
-  y1:address:number, z:boolean <- maybe-convert b, y:variant
-  11:boolean/raw <- equal y0, y1
+  10:bool/raw <- equal a, b
+  y1:address:number, z:bool <- maybe-convert b, y:variant
+  11:bool/raw <- equal y0, y1
   12:number/raw <- copy *y1
 ]
 # exclusive containers containing addresses are not identical to their deep copies
@@ -176,10 +176,10 @@ def main [
   a:bar <- merge y0
   b:foo <- merge 1/y, a
   c:foo <- deep-copy b
-  10:boolean/raw <- equal b, c
-  d:bar, z:boolean <- maybe-convert c, y:variant
+  10:bool/raw <- equal b, c
+  d:bar, z:bool <- maybe-convert c, y:variant
   y1:address:number <- get d, x:offset
-  11:boolean/raw <- equal y0, y1
+  11:bool/raw <- equal y0, y1
   12:number/raw <- copy *y1
 ]
 # exclusive containers containing addresses are not identical to their deep copies
@@ -321,7 +321,7 @@ def main [
   *b <- merge a
   c:foo3 <- merge 1/q, b
   d:foo3 <- deep-copy c
-  e:address:foo2, z:boolean <- maybe-convert d, q:variant
+  e:address:foo2, z:bool <- maybe-convert d, q:variant
   f:address:foo1 <- get *e, p:offset
   g:address:number <- get *f, p:offset
   1:number/raw <- copy *g
@@ -356,7 +356,7 @@ def main [
   d:foo4 <- merge 35, c
   e:foo4 <- deep-copy d
   f:address:foo3 <- get e, q:offset
-  g:address:foo2, z:boolean <- maybe-convert *f, q:variant
+  g:address:foo2, z:bool <- maybe-convert *f, q:variant
   h:address:foo1 <- get *g, p:offset
   y:address:number <- get *h, p:offset
   1:number/raw <- copy *y
@@ -377,8 +377,8 @@ def main [
   1:number/raw <- get *y, p:offset
   y2:address:foo <- get *y, q:offset
   stash y [vs] y2
-  2:boolean/raw <- equal y, y2  # is it still a cycle?
-  3:boolean/raw <- equal x, y  # is it the same cycle?
+  2:bool/raw <- equal y, y2  # is it still a cycle?
+  3:bool/raw <- equal x, y  # is it the same cycle?
 ]
 +mem: storing 34 in location 1
 # deep copy also contains a cycle

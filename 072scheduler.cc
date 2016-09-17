@@ -673,7 +673,7 @@ def f1 [
 def f2 [
   2:address:number/raw <- new number:type
   # hack: assumes scheduler implementation
-  3:boolean/raw <- equal 1:address:number/raw, 2:address:number/raw
+  3:bool/raw <- equal 1:address:number/raw, 2:address:number/raw
   # signal f2 complete
   4:number/raw <- copy 1
 ]

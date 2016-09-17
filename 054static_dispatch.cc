@@ -418,13 +418,13 @@ def test a:number -> z:number [
 def main [
   1:number <- copy 34
   2:number <- copy 34
-  3:boolean <- equal 1:number, 2:number
-  4:boolean <- copy 0/false
-  5:boolean <- copy 0/false
-  6:boolean <- equal 4:boolean, 5:boolean
+  3:bool <- equal 1:number, 2:number
+  4:bool <- copy 0/false
+  5:bool <- copy 0/false
+  6:bool <- equal 4:bool, 5:bool
 ]
 # temporarily hardcode number equality to always fail
-def equal x:number, y:number -> z:boolean [
+def equal x:number, y:number -> z:bool [
   local-scope
   load-ingredients
   z <- copy 0/false
@@ -515,7 +515,7 @@ def foo x:char -> y:number [
   load-ingredients
   return 34
 ]
-def foo x:boolean -> y:number [
+def foo x:bool -> y:number [
   local-scope
   load-ingredients
   return 35
@@ -532,7 +532,7 @@ def foo x:char -> y:number [
   load-ingredients
   return 34
 ]
-def foo x:boolean -> y:number [
+def foo x:bool -> y:number [
   local-scope
   load-ingredients
   return 35
@@ -605,7 +605,7 @@ def foo a:number -> b:number [
   load-ingredients
   return 34
 ]
-def foo a:boolean -> b:number [
+def foo a:bool -> b:number [
   local-scope
   load-ingredients
   return 35

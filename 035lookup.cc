@@ -412,7 +412,7 @@ def main [
   # 10 reserved for refcount
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
-  2:num, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  2:num, 3:bool <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 3
 +mem: storing 34 in location 2
@@ -423,7 +423,7 @@ def main [
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
   2:address:num <- copy 20/unsafe
-  2:address:num/lookup, 3:boolean <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  2:address:num/lookup, 3:bool <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 3
 +mem: storing 34 in location 21
@@ -433,8 +433,8 @@ def main [
   # 10 reserved for refcount
   11:number-or-point <- merge 0/number, 34
   1:address:number-or-point <- copy 10/unsafe
-  2:address:boolean <- copy 20/unsafe
-  3:num, 2:address:boolean/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
+  2:address:bool <- copy 20/unsafe
+  3:num, 2:address:bool/lookup <- maybe-convert 1:address:number-or-point/lookup, i:variant
 ]
 +mem: storing 1 in location 21
 +mem: storing 34 in location 3

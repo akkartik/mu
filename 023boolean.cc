@@ -34,27 +34,27 @@ case AND: {
 
 :(scenario and)
 def main [
-  1:boolean <- copy 1
-  2:boolean <- copy 0
-  3:boolean <- and 1:boolean, 2:boolean
+  1:bool <- copy 1
+  2:bool <- copy 0
+  3:bool <- and 1:bool, 2:bool
 ]
 +mem: storing 0 in location 3
 
 :(scenario and_2)
 def main [
-  1:boolean <- and 1, 1
+  1:bool <- and 1, 1
 ]
 +mem: storing 1 in location 1
 
 :(scenario and_multiple)
 def main [
-  1:boolean <- and 1, 1, 0
+  1:bool <- and 1, 1, 0
 ]
 +mem: storing 0 in location 1
 
 :(scenario and_multiple_2)
 def main [
-  1:boolean <- and 1, 1, 1
+  1:bool <- and 1, 1, 1
 ]
 +mem: storing 1 in location 1
 
@@ -92,27 +92,27 @@ case OR: {
 
 :(scenario or)
 def main [
-  1:boolean <- copy 1
-  2:boolean <- copy 0
-  3:boolean <- or 1:boolean, 2:boolean
+  1:bool <- copy 1
+  2:bool <- copy 0
+  3:bool <- or 1:bool, 2:bool
 ]
 +mem: storing 1 in location 3
 
 :(scenario or_2)
 def main [
-  1:boolean <- or 0, 0
+  1:bool <- or 0, 0
 ]
 +mem: storing 0 in location 1
 
 :(scenario or_multiple)
 def main [
-  1:boolean <- and 0, 0, 0
+  1:bool <- and 0, 0, 0
 ]
 +mem: storing 0 in location 1
 
 :(scenario or_multiple_2)
 def main [
-  1:boolean <- or 0, 0, 1
+  1:bool <- or 0, 0, 1
 ]
 +mem: storing 1 in location 1
 
@@ -152,14 +152,14 @@ case NOT: {
 
 :(scenario not)
 def main [
-  1:boolean <- copy 1
-  2:boolean <- not 1:boolean
+  1:bool <- copy 1
+  2:bool <- not 1:bool
 ]
 +mem: storing 0 in location 2
 
 :(scenario not_multiple)
 def main [
-  1:boolean, 2:boolean, 3:boolean <- not 1, 0, 1
+  1:bool, 2:bool, 3:bool <- not 1, 0, 1
 ]
 +mem: storing 0 in location 1
 +mem: storing 1 in location 2

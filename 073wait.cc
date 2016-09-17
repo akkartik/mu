@@ -243,13 +243,13 @@ def main [
 :(scenario get_location_product_type_mismatch)
 % Hide_errors = true;
 container boolbool [
-  x:boolean
-  y:boolean
+  x:bool
+  y:bool
 ]
 def main [
-  12:boolean <- copy 1
-  13:boolean <- copy 0
-  15:boolean <- get-location 12:boolbool, 1:offset
+  12:bool <- copy 1
+  13:bool <- copy 0
+  15:bool <- get-location 12:boolbool, 1:offset
 ]
 +error: main: 'get-location 12:boolbool, 1:offset' should write to type location but '15' has type 'boolean'
 

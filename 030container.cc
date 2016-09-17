@@ -76,7 +76,7 @@ def main [
   4:num <- copy 34  # second
   5:num <- copy 35
   6:num <- copy 36
-  7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
+  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 1 in location 7
 
@@ -88,7 +88,7 @@ def main [
   4:num <- copy 34  # second
   5:num <- copy 35
   6:num <- copy 37  # different
-  7:boolean <- equal 1:point-number/raw, 4:point-number/unsafe
+  7:bool <- equal 1:point-number/raw, 4:point-number/unsafe
 ]
 +mem: storing 0 in location 7
 

@@ -57,9 +57,9 @@ def main [
 :(scenario add_checks_type)
 % Hide_errors = true;
 def main [
-  1:num <- add 2:boolean, 1
+  1:num <- add 2:bool, 1
 ]
-+error: main: 'add' requires number ingredients, but got '2:boolean'
++error: main: 'add' requires number ingredients, but got '2:bool'
 
 :(scenario add_checks_return_type)
 % Hide_errors = true;
