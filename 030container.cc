@@ -191,6 +191,7 @@ void compute_container_sizes(recipe_ordinal r) {
 }
 
 void compute_container_sizes(reagent& r) {
+  expand_type_abbreviations(r.type);
   if (is_literal(r) || is_dummy(r)) return;
   reagent rcopy = r;
   // Compute Container Size(reagent rcopy)
@@ -288,6 +289,19 @@ void test_container_sizes() {
   // a container we don't have the size for
   reagent r("x:point");
   CHECK(!contains_key(Container_metadata, r.type));
+  // scan
+  compute_container_sizes(r);
+  // the reagent we scanned knows its size
+  CHECK_EQ(r.metadata.size, 2);
+  // the global table also knows its size
+  CHECK(contains_key(Container_metadata, r.type));
+  CHECK_EQ(get(Container_metadata, r.type).size, 2);
+}
+
+void test_container_sizes_through_aliases() {
+  // a new alias for a container
+  put(Type_abbreviations, "pt", new_type_tree("point"));
+  reagent r("x:pt");
   // scan
   compute_container_sizes(r);
   // the reagent we scanned knows its size
