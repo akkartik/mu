@@ -56,13 +56,14 @@ case _SOCKET: {
 :(before "End Primitive Recipe Implementations")
 case _SOCKET: {
   int port = ingredients.at(0).at(0);
-  socket_t server;
-  server_socket(port, &server);
-  if (server.fd < 0) {
+  socket_t* server = new socket_t();
+  server_socket(port, server);
+  if (server->fd < 0) {
     break;
   }
+  long long int result = reinterpret_cast<long long int>(server);
   products.resize(1);
-  products.at(0).push_back(server.fd);
+  products.at(0).push_back(static_cast<double>(result));
   break;
 }
 
@@ -97,11 +98,14 @@ case _ACCEPT: {
 }
 :(before "End Primitive Recipe Implementations")
 case _ACCEPT: {
-  double socket_fd = ingredients.at(0).at(0);
-  socket_t session;
-  session_socket(socket_fd, &session);
-  products.resize(1);
-  products.at(0).push_back(session.fd);
+  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  socket_t* socket = reinterpret_cast<socket_t*>(x);
+  socket_t* session = new socket_t();
+  session_socket(socket->fd, session);
+  products.resize(2);
+  long long int result = reinterpret_cast<long long int>(session);
+  products.at(0).push_back(static_cast<double>(result));
+  products.at(1).push_back(ingredients.at(0).at(0));
   break;
 }
 
@@ -119,7 +123,7 @@ case _READ_FROM_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
-  if (SIZE(inst.products) != 1) {
+  if (SIZE(inst.products) != 2) {
     raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
     break;
   }
@@ -127,20 +131,56 @@ case _READ_FROM_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a character, but got '" << to_string(inst.products.at(0)) << "'\n" << end();
     break;
   }
+  if (!is_mu_boolean(inst.products.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-socket' should be a boolean but got '" << to_string(inst.products.at(1)) << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
-  products.resize(1);
-  double socket_fd = ingredients.at(0).at(0);
+  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  socket_t* socket = reinterpret_cast<socket_t*>(x);
+  int socket_fd = socket->fd;
   char single_char[2];
   bzero(single_char, 2);
-  if (read(socket_fd, single_char, 1) < 0) {
-    raise << maybe(current_recipe_name()) << "read from socket failed\n" << end();
-    products.at(0).push_back(0);
-    break;
+  int bytes_read = read(socket_fd, single_char, 1);
+  products.resize(2);
+  if (single_char[0]== EOF || bytes_read == 0) {
+    products.at(1).push_back(1);  // eof
+  }
+  else {
+    products.at(1).push_back(0);
   }
   products.at(0).push_back(single_char[0]);
+  break;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+_WRITE_TO_SOCKET,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "$write-to-socket", _WRITE_TO_SOCKET);
+:(before "End Primitive Recipe Checks")
+case _WRITE_TO_SOCKET: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'$write-to-socket' requires exactly two ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _WRITE_TO_SOCKET: {
+  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  socket_t* session = reinterpret_cast<socket_t*>(x);
+  // Write one character to a session at a time.
+  long long int y = static_cast<long long int>(ingredients.at(1).at(0));
+  char c = static_cast<char>(y);
+  char payload[2] = { c };
+  write(session->fd, payload, 1);
+  long long int result = reinterpret_cast<long long int>(session);
+  products.resize(1);
+  products.at(0).push_back(result);
   break;
 }
 
