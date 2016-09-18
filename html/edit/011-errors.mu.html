@@ -35,15 +35,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="SalientComment">## handling malformed programs</span>
 
-<span class="muData">container</span> programming-environment-data [
+<span class="muData">container</span> environment [
   recipe-errors:text
 ]
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu, save any errors</span>
-<span class="muRecipe">def!</span> update-recipes env:&amp;:programming-environment-data, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:programming-environment-data, screen:&amp;:screen [
+<span class="muRecipe">def!</span> update-recipes env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  recipes:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+  recipes:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:text<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
   recipe-errors:text<span class="Special"> &lt;- </span>reload in
@@ -75,7 +75,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muData">container</span> programming-environment-data [
+<span class="muData">container</span> environment [
   error-index:num  <span class="Comment"># index of first sandbox with an error (or -1 if none)</span>
 ]
 
@@ -108,11 +108,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muData">container</span> sandbox-data [
+<span class="muData">container</span> sandbox [
   errors:text
 ]
 
-<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox, env:&amp;:environment, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -157,12 +157,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  get 123:num, foo:offset</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -194,7 +194,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 1</span>
@@ -205,7 +205,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># status line shows that error is in first sandbox</span>
   screen-should-contain [
@@ -218,7 +218,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">80</span>
     <span class="Comment"># create invalid sandbox 2</span>
@@ -232,7 +232,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># status line shows that error is in second sandbox</span>
   screen-should-contain [
@@ -245,12 +245,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4  <span class="Comment"># generate error</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">58</span>
@@ -259,7 +259,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4  <span class="Comment"># update sandbox</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># error should disappear</span>
   screen-should-contain [
@@ -285,11 +285,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">z &lt;- add x, y</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 2]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ┊                                                 .</span>
@@ -306,7 +306,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># error should remain unchanged</span>
   screen-should-contain [
@@ -331,12 +331,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># call code that uses other variants of it, but not it itself</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
 <span class="Constant">to-text x]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run it once</span>
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   <span class="Comment"># no errors anywhere on screen (can't check anything else, since to-text will return an address)</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
    <span class="Constant"> .                                                                                                    .</span>
@@ -360,7 +360,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># still no errors</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -390,12 +390,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -416,12 +416,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -445,12 +445,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  get x:&amp;:point, 1:offset</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -478,12 +478,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  get *y:&amp;:point, x:num</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -511,11 +511,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  x:num &lt;- copy y:num</span>
 <span class="Constant">]</span>]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
    <span class="Constant"> .                                                  ┊foo                                              .</span>
@@ -532,7 +532,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
@@ -554,13 +554,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that screen prints error message in red</span>
   screen-should-contain [
@@ -617,14 +617,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors multiple times</span>
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that screen prints error message just once</span>
   screen-should-contain [
@@ -652,13 +652,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>]
   <span class="Comment"># right editor contains an instruction</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
@@ -685,12 +685,12 @@ _, c:num<span class="Special"> &lt;- </span>divide-with-remainder a, b
 <span class="muControl">reply</span> b
 ]]
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo 4, 0]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run</span>
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   <span class="Comment"># screen prints error message</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
@@ -708,7 +708,7 @@ _, c:num<span class="Special"> &lt;- </span>divide-with-remainder a, b
     left-click <span class="Constant">4</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># screen should expand trace</span>
   screen-should-contain [

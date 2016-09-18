@@ -48,8 +48,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -64,7 +64,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor-icon<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor-icon
   ]
@@ -90,7 +90,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor-icon
   ]
   <span class="Comment"># trace hidden again</span>
@@ -119,8 +119,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -136,7 +136,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># trace now printed above result</span>
   screen-should-contain [
@@ -163,8 +163,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -178,7 +178,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">5</span>, <span class="Constant">57</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># no change; doesn't die</span>
   screen-should-contain [
@@ -191,13 +191,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muData">container</span> sandbox-data [
+<span class="muData">container</span> sandbox [
   trace:text
   display-trace?:bool
 ]
 
 <span class="Comment"># replaced in a later layer</span>
-<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox, env:&amp;:environment, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -215,14 +215,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     click-column:num<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
     on-sandbox-side?:bool<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
     <span class="muControl">break-unless</span> on-sandbox-side?
-    first-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    first-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> first-sandbox
     first-sandbox-begins:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
     click-row:num<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
     below-sandbox-editor?:bool<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
     <span class="muControl">break-unless</span> below-sandbox-editor?
     <span class="Comment"># identify the sandbox whose code is being clicked on</span>
-    sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-code env, click-row
+    sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-click-in-sandbox-code env, click-row
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># toggle its display-trace? property</span>
     x:bool<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">display-trace?:offset</span>
@@ -237,7 +237,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> find-click-in-sandbox-code env:&amp;:programming-environment-data, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data [
+<span class="muRecipe">def</span> find-click-in-sandbox-code env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
@@ -247,7 +247,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
   <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
   <span class="Delimiter">{</span>
-    next-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">break-unless</span> next-sandbox
     next-start:num<span class="Special"> &lt;- </span>get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
     found?:bool<span class="Special"> &lt;- </span>lesser-than click-row, next-start

@@ -48,8 +48,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">5</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># color toggles to green</span>
   screen-should-contain-in-color <span class="Constant">2/green</span>, [
@@ -104,7 +104,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># result turns red</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -120,7 +120,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># this requires tracking a couple more things</span>
-<span class="muData">container</span> sandbox-data [
+<span class="muData">container</span> sandbox [
   response-starting-row-on-screen:num
   expected-response:text
 ]
@@ -152,14 +152,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     click-column:num<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
     on-sandbox-side?:bool<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
     <span class="muControl">break-unless</span> on-sandbox-side?
-    first-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    first-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> first-sandbox
     first-sandbox-begins:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
     click-row:num<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
     below-sandbox-editor?:bool<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
     <span class="muControl">break-unless</span> below-sandbox-editor?
     <span class="Comment"># identify the sandbox whose output is being clicked on</span>
-    sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>find-click-in-sandbox-output env, click-row
+    sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-click-in-sandbox-output env, click-row
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># toggle its expected-response, and save session</span>
     sandbox<span class="Special"> &lt;- </span>toggle-expected-response sandbox
@@ -173,17 +173,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> find-click-in-sandbox-output env:&amp;:programming-environment-data, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data [
+<span class="muRecipe">def</span> find-click-in-sandbox-output env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
-  sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   start:num<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
   clicked-on-sandboxes?:bool<span class="Special"> &lt;- </span>greater-or-equal click-row, start
   assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
   <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
   <span class="Delimiter">{</span>
-    next-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">break-unless</span> next-sandbox
     next-start:num<span class="Special"> &lt;- </span>get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
     found?:bool<span class="Special"> &lt;- </span>lesser-than click-row, next-start
@@ -199,7 +199,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return</span> sandbox
 ]
 
-<span class="muRecipe">def</span> toggle-expected-response sandbox:&amp;:sandbox-data<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data [
+<span class="muRecipe">def</span> toggle-expected-response sandbox:&amp;:sandbox<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   expected-response:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">expected-response:offset</span>

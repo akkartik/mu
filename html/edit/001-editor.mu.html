@@ -62,7 +62,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muData">container</span> editor-data [
+<span class="muData">container</span> editor [
   <span class="Comment"># editable text: doubly linked list of characters (head contains a special sentinel)</span>
   data:&amp;:duplex-list:char
   top-of-screen:&amp;:duplex-list:char
@@ -83,12 +83,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
 <span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">def</span> new-editor s:text, screen:&amp;:screen, left:num, right:num<span class="muRecipe"> -&gt; </span>result:&amp;:editor-data, screen:&amp;:screen [
+<span class="muRecipe">def</span> new-editor s:text, screen:&amp;:screen, left:num, right:num<span class="muRecipe"> -&gt; </span>result:&amp;:editor, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
   right<span class="Special"> &lt;- </span>subtract right, <span class="Constant">1</span>
-  result<span class="Special"> &lt;- </span>new <span class="Constant">editor-data:type</span>
+  result<span class="Special"> &lt;- </span>new <span class="Constant">editor:type</span>
   <span class="Comment"># initialize screen-related fields</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">left:offset</span>, left
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">right:offset</span>, right
@@ -106,7 +106,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">  &lt;editor-initialization&gt;</span>
 ]
 
-<span class="muRecipe">def</span> insert-text editor:&amp;:editor-data, text:text<span class="muRecipe"> -&gt; </span>editor:&amp;:editor-data [
+<span class="muRecipe">def</span> insert-text editor:&amp;:editor, text:text<span class="muRecipe"> -&gt; </span>editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># early exit if text is empty</span>
@@ -132,8 +132,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-initializes-without-data [
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">3/height</span>
   run [
-    <span class="Constant">1</span>:&amp;:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">0/data</span>, screen:&amp;:screen, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
-    <span class="Constant">2</span>:editor-data<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:&amp;:editor-data
+    <span class="Constant">1</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">0/data</span>, screen:&amp;:screen, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
+    <span class="Constant">2</span>:editor<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:&amp;:editor
   ]
   memory-should-contain [
     <span class="Comment"># 2 (data) &lt;- just the § sentinel</span>
@@ -156,7 +156,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># Assumes cursor should be at coordinates (cursor-row, cursor-column) and</span>
 <span class="Comment"># updates before-cursor to match. Might also move coordinates if they're</span>
 <span class="Comment"># outside text.</span>
-<span class="muRecipe">def</span> render screen:&amp;:screen, editor:&amp;:editor-data<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, screen:&amp;:screen, editor:&amp;:editor-data [
+<span class="muRecipe">def</span> render screen:&amp;:screen, editor:&amp;:editor<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, screen:&amp;:screen, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>, screen/same-as-ingredient:<span class="Constant">0</span>, editor/same-as-ingredient:<span class="Constant">1</span>
@@ -181,7 +181,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> curr
     off-screen?:bool<span class="Special"> &lt;- </span>greater-or-equal row, screen-height
     <span class="muControl">break-if</span> off-screen?
-    <span class="Comment"># update editor-data.before-cursor</span>
+    <span class="Comment"># update editor.before-cursor</span>
     <span class="Comment"># Doing so at the start of each iteration ensures it stays one step behind</span>
     <span class="Comment"># the current character.</span>
     <span class="Delimiter">{</span>
@@ -378,9 +378,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
   run [
     <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    <span class="Constant">2</span>:&amp;:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor-data, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor-data, <span class="Constant">cursor-column:offset</span>
+    <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>

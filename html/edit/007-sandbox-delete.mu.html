@@ -39,7 +39,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run a few commands</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">80</span>
@@ -48,7 +48,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 2, 2]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -69,7 +69,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">7</span>, <span class="Constant">85</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -87,7 +87,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">3</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -114,14 +114,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># some preconditions for attempting to delete a sandbox</span>
-<span class="muRecipe">def</span> should-attempt-delete? click-row:num, click-column:num, env:&amp;:programming-environment-data<span class="muRecipe"> -&gt; </span>result:bool [
+<span class="muRecipe">def</span> should-attempt-delete? click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># are we below the sandbox editor?</span>
   click-sandbox-area?:bool<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
   <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
   <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
-  first-sandbox:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  first-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   assert first-sandbox, <span class="Constant">[!!]</span>
   sandbox-left-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
   sandbox-right-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
@@ -129,31 +129,31 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   result<span class="Special"> &lt;- </span>within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
-<span class="muRecipe">def</span> try-delete-sandbox click-row:num, env:&amp;:programming-environment-data<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:bool, env:&amp;:programming-environment-data [
+<span class="muRecipe">def</span> try-delete-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:bool, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># identify the sandbox to delete, if the click was actually on the 'delete' button</span>
-  sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-sandbox env, click-row
   <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
   clicked-on-delete-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
   env<span class="Special"> &lt;- </span>delete-sandbox env, sandbox
 ]
 
-<span class="muRecipe">def</span> delete-sandbox env:&amp;:programming-environment-data, sandbox:&amp;:sandbox-data<span class="muRecipe"> -&gt; </span>env:&amp;:programming-environment-data [
+<span class="muRecipe">def</span> delete-sandbox env:&amp;:environment, sandbox:&amp;:sandbox<span class="muRecipe"> -&gt; </span>env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   first-sandbox?:bool<span class="Special"> &lt;- </span>equal curr-sandbox, sandbox
   <span class="Delimiter">{</span>
     <span class="Comment"># first sandbox? pop</span>
     <span class="muControl">break-unless</span> first-sandbox?
-    next-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
     *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># not first sandbox?</span>
     <span class="muControl">break-if</span> first-sandbox?
-    prev-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>copy curr-sandbox
+    prev-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>copy curr-sandbox
     curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="Delimiter">{</span>
       assert curr-sandbox, <span class="Constant">[sandbox not found! something is wrong.]</span>
@@ -164,7 +164,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># snip sandbox out of its list</span>
-    next-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
     *prev-sandbox<span class="Special"> &lt;- </span>put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
   <span class="Delimiter">}</span>
   <span class="Comment"># update sandbox count</span>
@@ -187,8 +187,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -198,7 +198,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     press page-down
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -213,7 +213,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">6</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
@@ -233,8 +233,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -244,7 +244,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
     press page-down
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -259,7 +259,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">2</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
@@ -279,8 +279,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
@@ -291,7 +291,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
     press page-down
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -306,7 +306,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">2</span>, <span class="Constant">99</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># implicitly scroll up to first sandbox</span>
   screen-should-contain [
@@ -327,8 +327,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
     press ctrl-n
@@ -337,7 +337,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -357,7 +357,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># shouldn't go past last sandbox</span>
   screen-should-contain [

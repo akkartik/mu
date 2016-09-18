@@ -48,15 +48,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   initial-recipe:text<span class="Special"> &lt;- </span>restore <span class="Constant">[recipes.mu]</span>
   initial-sandbox:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   hide-screen <span class="Constant">0/screen</span>
-  env:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
   env<span class="Special"> &lt;- </span>restore-sandboxes env
   render-all <span class="Constant">0/screen</span>, env, render
   event-loop <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env
   <span class="Comment"># never gets here</span>
 ]
 
-<span class="muData">container</span> programming-environment-data [
-  sandbox:&amp;:sandbox-data  <span class="Comment"># list of sandboxes, from top to bottom</span>
+<span class="muData">container</span> environment [
+  sandbox:&amp;:sandbox  <span class="Comment"># list of sandboxes, from top to bottom</span>
   render-from:num
   number-of-sandboxes:num
 ]
@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
 ]
 
-<span class="muData">container</span> sandbox-data [
+<span class="muData">container</span> sandbox [
   data:text
   response:text
   <span class="Comment"># coordinates to track clicks</span>
@@ -73,7 +73,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   starting-row-on-screen:num
   code-ending-row-on-screen:num  <span class="Comment"># past end of code</span>
   screen:&amp;:screen  <span class="Comment"># prints in the sandbox go here</span>
-  next-sandbox:&amp;:sandbox-data
+  next-sandbox:&amp;:sandbox
 ]
 
 <span class="muScenario">scenario</span> run-and-show-results [
@@ -83,13 +83,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[divide-with-remainder 11, 3]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that screen prints the results</span>
   screen-should-contain [
@@ -139,7 +139,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that screen prints the results</span>
   screen-should-contain [
@@ -177,23 +177,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> run-sandboxes env:&amp;:programming-environment-data, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:programming-environment-data, screen:&amp;:screen [
+<span class="muRecipe">def</span> run-sandboxes env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   errors-found?:bool, env, screen<span class="Special"> &lt;- </span>update-recipes env, screen
   <span class="muControl">return-if</span> errors-found?
   <span class="Comment"># check contents of right editor (sandbox)</span>
 <span class="Constant">  &lt;run-sandboxes-begin&gt;</span>
-  current-sandbox:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   <span class="Delimiter">{</span>
     sandbox-contents:text<span class="Special"> &lt;- </span>editor-contents current-sandbox
     <span class="muControl">break-unless</span> sandbox-contents
     <span class="Comment"># if contents exist, first save them</span>
-    <span class="Comment"># run them and turn them into a new sandbox-data</span>
-    new-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
+    <span class="Comment"># run them and turn them into a new sandbox</span>
+    new-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>new <span class="Constant">sandbox:type</span>
     *new-sandbox<span class="Special"> &lt;- </span>put *new-sandbox, <span class="Constant">data:offset</span>, sandbox-contents
     <span class="Comment"># push to head of sandbox list</span>
-    dest:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    dest:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     *new-sandbox<span class="Special"> &lt;- </span>put *new-sandbox, <span class="Constant">next-sandbox:offset</span>, dest
     *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, new-sandbox
     <span class="Comment"># update sandbox count</span>
@@ -208,7 +208,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># save all sandboxes before running, just in case we die when running</span>
   save-sandboxes env
   <span class="Comment"># run all sandboxes</span>
-  curr:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
@@ -222,10 +222,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># copy code from recipe editor, persist, load into mu</span>
 <span class="Comment"># replaced in a later layer (whereupon errors-found? will actually be set)</span>
-<span class="muRecipe">def</span> update-recipes env:&amp;:programming-environment-data, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:programming-environment-data, screen:&amp;:screen [
+<span class="muRecipe">def</span> update-recipes env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  recipes:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+  recipes:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
   in:text<span class="Special"> &lt;- </span>editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in  <span class="Comment"># newlayer: persistence</span>
   reload in
@@ -233,7 +233,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># replaced in a later layer</span>
-<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox-data, env:&amp;:programming-environment-data [
+<span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox, env:&amp;:environment, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
@@ -249,13 +249,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   screen<span class="Special"> &lt;- </span>print screen, msg, color, <span class="Constant">238/grey/background</span>
 ]
 
-<span class="muRecipe">def</span> save-sandboxes env:&amp;:programming-environment-data [
+<span class="muRecipe">def</span> save-sandboxes env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  current-sandbox:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   <span class="Comment"># first clear previous versions, in case we deleted some sandbox</span>
   $system <span class="Constant">[rm lesson/[0-9]</span>* &gt;/dev/null <span class="Constant">2</span>&gt;/dev/null]  <span class="Comment"># some shells can't handle '&gt;&amp;'</span>
-  curr:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr
@@ -269,11 +269,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def!</span> render-sandbox-side screen:&amp;:screen, env:&amp;:programming-environment-data, <span class="Delimiter">{</span>render-editor: (<span class="muRecipe">recipe</span> (address screen) (address editor-data)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor-data))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span>screen:&amp;:screen, env:&amp;:programming-environment-data [
+<span class="muRecipe">def!</span> render-sandbox-side screen:&amp;:screen, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (<span class="muRecipe">recipe</span> (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span>screen:&amp;:screen, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render sandbox side]</span>
-  current-sandbox:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   row:num, column:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>, <span class="Constant">0</span>
   left:num<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
   right:num<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">right:offset</span>
@@ -288,12 +288,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># render sandboxes</span>
   draw-horizontal screen, row, left, right, <span class="Constant">9473/horizontal-double</span>
-  sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   row, screen<span class="Special"> &lt;- </span>render-sandboxes screen, sandbox, left, right, row, render-from
   clear-rest-of-screen screen, row, left, right
 ]
 
-<span class="muRecipe">def</span> render-sandboxes screen:&amp;:screen, sandbox:&amp;:sandbox-data, left:num, right:num, row:num, render-from:num, idx:num<span class="muRecipe"> -&gt; </span>row:num, screen:&amp;:screen, sandbox:&amp;:sandbox-data [
+<span class="muRecipe">def</span> render-sandboxes screen:&amp;:screen, sandbox:&amp;:sandbox, left:num, right:num, row:num, render-from:num, idx:num<span class="muRecipe"> -&gt; </span>row:num, screen:&amp;:screen, sandbox:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">return-unless</span> sandbox
@@ -343,7 +343,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">    &lt;end-render-sandbox-reset-hidden&gt;</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># draw next sandbox</span>
-  next-sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
+  next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">next-sandbox:offset</span>
   next-idx:num<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
   row, screen<span class="Special"> &lt;- </span>render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx
 ]
@@ -451,20 +451,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># assumes programming environment has no sandboxes; restores them from previous session</span>
-<span class="muRecipe">def</span> restore-sandboxes env:&amp;:programming-environment-data<span class="muRecipe"> -&gt; </span>env:&amp;:programming-environment-data [
+<span class="muRecipe">def</span> restore-sandboxes env:&amp;:environment<span class="muRecipe"> -&gt; </span>env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># read all scenarios, pushing them to end of a list of scenarios</span>
   idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  curr:&amp;:sandbox-data<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  prev:&amp;:sandbox-data<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  curr:&amp;:sandbox<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  prev:&amp;:sandbox<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     filename:text<span class="Special"> &lt;- </span>to-text idx
     contents:text<span class="Special"> &lt;- </span>restore filename
     <span class="muControl">break-unless</span> contents  <span class="Comment"># stop at first error; assuming file didn't exist</span>
                            <span class="Comment"># todo: handle empty sandbox</span>
     <span class="Comment"># create new sandbox for file</span>
-    curr<span class="Special"> &lt;- </span>new <span class="Constant">sandbox-data:type</span>
+    curr<span class="Special"> &lt;- </span>new <span class="Constant">sandbox:type</span>
     *curr<span class="Special"> &lt;- </span>put *curr, <span class="Constant">data:offset</span>, contents
 <span class="Constant">    &lt;end-restore-sandbox&gt;</span>
     <span class="Delimiter">{</span>
@@ -562,12 +562,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>]
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -587,7 +587,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that screen updates the result on the right</span>
   screen-should-contain [
@@ -610,13 +610,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an instruction</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen, 4]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
   <span class="Comment"># run the code in the editor</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># check that it prints a little toy screen</span>
   screen-should-contain [
@@ -636,7 +636,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> editor-contents editor:&amp;:editor-data<span class="muRecipe"> -&gt; </span>result:text [
+<span class="muRecipe">def</span> editor-contents editor:&amp;:editor<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
@@ -658,14 +658,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-provides-edited-contents [
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:&amp;:editor-data<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     type <span class="Constant">[def]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor-data
-    <span class="Constant">3</span>:text<span class="Special"> &lt;- </span>editor-contents <span class="Constant">2</span>:&amp;:editor-data
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    <span class="Constant">3</span>:text<span class="Special"> &lt;- </span>editor-contents <span class="Constant">2</span>:&amp;:editor
     <span class="Constant">4</span>:@:char<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:text
   ]
   memory-should-contain [
@@ -679,7 +679,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     press enter
@@ -700,7 +700,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     press enter
@@ -723,7 +723,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># we'll not use the recipe-editor's 'bottom' element directly, because later</span>
 <span class="Comment"># layers will add other stuff to the left side below the editor (error messages)</span>
 
-<span class="muData">container</span> programming-environment-data [
+<span class="muData">container</span> environment [
   recipe-bottom:num
 ]
 
@@ -736,7 +736,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-if</span> sandbox-in-focus?
     down-arrow?:bool<span class="Special"> &lt;- </span>equal k, <span class="Constant">65516/down-arrow</span>
     <span class="muControl">break-unless</span> down-arrow?
-    recipe-editor:&amp;:editor-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
+    recipe-editor:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
     recipe-cursor-row:num<span class="Special"> &lt;- </span>get *recipe-editor, <span class="Constant">cursor-row:offset</span>
     recipe-editor-bottom:num<span class="Special"> &lt;- </span>get *recipe-editor, <span class="Constant">bottom:offset</span>
     at-bottom-of-editor?:bool<span class="Special"> &lt;- </span>greater-or-equal recipe-cursor-row, recipe-editor-bottom
@@ -766,7 +766,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> more-to-scroll? env:&amp;:programming-environment-data, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool [
+<span class="muRecipe">def</span> more-to-scroll? env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipe-bottom:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-bottom:offset</span>
@@ -778,7 +778,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     <span class="Comment"># add a line</span>
@@ -803,7 +803,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[ab</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[ab</span>
 <span class="Constant">cd]</span>
   render-all screen, env, render
   assume-console [
@@ -835,13 +835,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize sandbox side</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   assume-console [
     <span class="Comment"># create a sandbox</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -855,7 +855,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -873,7 +873,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -893,7 +893,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> sandbox-in-focus?
     page-down?:bool<span class="Special"> &lt;- </span>equal k, <span class="Constant">65518/page-down</span>
     <span class="muControl">break-unless</span> page-down?
-    sandbox:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+    sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># slide down if possible</span>
     <span class="Delimiter">{</span>
@@ -945,12 +945,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># sandbox belonging to 'env' whose next-sandbox is 'in'</span>
 <span class="Comment"># return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
-<span class="muRecipe">def</span> previous-sandbox env:&amp;:programming-environment-data, in:&amp;:sandbox-data<span class="muRecipe"> -&gt; </span>out:&amp;:sandbox-data [
+<span class="muRecipe">def</span> previous-sandbox env:&amp;:environment, in:&amp;:sandbox<span class="muRecipe"> -&gt; </span>out:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   <span class="muControl">return-unless</span> curr, <span class="Constant">0/nil</span>
-  next:&amp;:sandbox-data<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
+  next:&amp;:sandbox<span class="Special"> &lt;- </span>get *curr, <span class="Constant">next-sandbox:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">return-unless</span> next, <span class="Constant">0/nil</span>
     found?:bool<span class="Special"> &lt;- </span>equal next, in
@@ -970,18 +970,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
   <span class="Comment"># create a sandbox</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[add 2, 2]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   <span class="Comment"># hit 'down' in recipe editor</span>
   assume-console [
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -1001,8 +1001,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
     press ctrl-n
@@ -1011,7 +1011,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
   print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   screen-should-contain [
@@ -1031,7 +1031,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -1053,7 +1053,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># just second sandbox displayed</span>
   screen-should-contain [
@@ -1070,7 +1070,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
@@ -1087,7 +1087,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># back to displaying both sandboxes without editor</span>
   screen-should-contain [
@@ -1106,7 +1106,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -1128,7 +1128,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
     <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
     print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
   ]
@@ -1153,15 +1153,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize environment</span>
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:programming-environment-data<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:programming-environment-data, render
+  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
   <span class="Comment"># create a sandbox</span>
   assume-console [
     press ctrl-n
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -1177,7 +1177,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -1195,7 +1195,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
@@ -1213,7 +1213,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:programming-environment-data
+    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
