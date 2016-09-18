@@ -19,6 +19,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
+.Comment { color: #9090ff; }
 -->
 </style>
 
@@ -88,13 +89,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> _SOCKET: <span class="Delimiter">{</span>
   <span class="Normal">int</span> port = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  socket_t server<span class="Delimiter">;</span>
-  server_socket<span class="Delimiter">(</span>port<span class="Delimiter">,</span> &amp;server<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>server<span class="Delimiter">.</span>fd &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  socket_t* server = <span class="Normal">new</span> socket_t<span class="Delimiter">();</span>
+  server_socket<span class="Delimiter">(</span>port<span class="Delimiter">,</span> server<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>server<span class="Delimiter">-&gt;</span>fd &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>server<span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>server<span class="Delimiter">.</span>fd<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">double</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -129,11 +131,14 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> _ACCEPT: <span class="Delimiter">{</span>
-  <span class="Normal">double</span> socket_fd = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  socket_t session<span class="Delimiter">;</span>
-  session_socket<span class="Delimiter">(</span>socket_fd<span class="Delimiter">,</span> &amp;session<span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>session<span class="Delimiter">.</span>fd<span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  socket_t* socket = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  socket_t* session = <span class="Normal">new</span> socket_t<span class="Delimiter">();</span>
+  session_socket<span class="Delimiter">(</span>socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> session<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>session<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">double</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -151,7 +156,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$read-from-socket' should be a number, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$read-from-socket' requires exactly one product, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
@@ -159,20 +164,56 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first product of '$read-from-socket' should be a character, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second product of '$read-from-socket' should be a boolean but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> _READ_FROM_SOCKET: <span class="Delimiter">{</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  <span class="Normal">double</span> socket_fd = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  socket_t* socket = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Normal">int</span> socket_fd = socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">;</span>
   <span class="Normal">char</span> single_char[<span class="Constant">2</span>]<span class="Delimiter">;</span>
   bzero<span class="Delimiter">(</span>single_char<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>read<span class="Delimiter">(</span>socket_fd<span class="Delimiter">,</span> single_char<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">)</span> &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;read from socket failed</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Normal">int</span> bytes_read = read<span class="Delimiter">(</span>socket_fd<span class="Delimiter">,</span> single_char<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>single_char[<span class="Constant">0</span>]== <span class="Constant">EOF</span> || bytes_read == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// eof</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>single_char[<span class="Constant">0</span>]<span class="Delimiter">);</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_WRITE_TO_SOCKET<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$write-to-socket&quot;</span><span class="Delimiter">,</span> _WRITE_TO_SOCKET<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _WRITE_TO_SOCKET: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$write-to-socket' requires exactly two ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _WRITE_TO_SOCKET: <span class="Delimiter">{</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  socket_t* session = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  <span class="Comment">// Write one character to a session at a time.</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> y = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">char</span> c = <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>y<span class="Delimiter">);</span>
+  <span class="Normal">char</span> payload[<span class="Constant">2</span>] = <span class="Delimiter">{</span> c <span class="Delimiter">};</span>
+  write<span class="Delimiter">(</span>session<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> payload<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>session<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

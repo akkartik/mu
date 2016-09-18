@@ -34,14 +34,32 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   socket:num<span class="Special"> &lt;- </span>$socket <span class="Constant">8080/port</span>
   $print <span class="Constant">[Mu socket creation returned ]</span>, socket, <span class="Constant">10/newline</span>
   session:num<span class="Special"> &lt;- </span>$accept socket
+  write-to-socket session, <span class="Constant">[HTTP/1.0 200 OK</span>
+
+<span class="Constant">OK]</span>
   <span class="Delimiter">{</span>
-    client-message:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">1024</span>
-    c:char<span class="Special"> &lt;- </span>$read-from-socket session
-    <span class="muControl">break-unless</span> c
+    c:char, eof?:boolean<span class="Special"> &lt;- </span>$read-from-socket session
     $print c
+    <span class="muControl">break-if</span> eof?
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+  $print <span class="Constant">10/newline</span>, <span class="Constant">[Hit end of socket, closing...]</span>, <span class="Constant">10/newline</span>
   $close-socket socket, session
+]
+
+<span class="muRecipe">def</span> write-to-socket session-socket:number, s:address:array:character [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  len:number<span class="Special"> &lt;- </span>length *s
+  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    c:character<span class="Special"> &lt;- </span>index *s, i
+    $write-to-socket session-socket, c
+    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
 ]
 </pre>
 </body>
