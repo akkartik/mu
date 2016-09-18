@@ -8,8 +8,8 @@ scenario copy-a-sandbox-to-editor [
   assume-console [
     press F4
   ]
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -27,7 +27,7 @@ scenario copy-a-sandbox-to-editor [
     left-click 3, 19
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # it copies into editor
   screen-should-contain [
@@ -47,7 +47,7 @@ scenario copy-a-sandbox-to-editor [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -70,8 +70,8 @@ scenario copy-a-sandbox-to-editor-2 [
   assume-console [
     press F4
   ]
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -89,7 +89,7 @@ scenario copy-a-sandbox-to-editor-2 [
     left-click 3, 33
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # it copies into editor
   screen-should-contain [
@@ -109,7 +109,7 @@ scenario copy-a-sandbox-to-editor-2 [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -141,14 +141,14 @@ after <global-touch> [
 ]
 
 # some preconditions for attempting to copy a sandbox
-def should-attempt-copy? click-row:num, click-column:num, env:&:programming-environment-data -> result:bool [
+def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
   load-ingredients
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, env
   reply-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'copy' button?
-  first-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
   sandbox-left-margin:num <- get *first-sandbox, left:offset
   sandbox-right-margin:num <- get *first-sandbox, right:offset
@@ -156,28 +156,28 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:programming-envi
   copy-button-vertical-area?:bool <- within-range? click-column, copy-button-left, copy-button-right
   reply-unless copy-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox
 ]
 
-def try-copy-sandbox click-row:num, env:&:programming-environment-data -> clicked-on-copy-button?:bool, env:&:programming-environment-data [
+def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?:bool, env:&:environment [
   local-scope
   load-ingredients
   # identify the sandbox to copy, if the click was actually on the 'copy' button
-  sandbox:&:sandbox-data <- find-sandbox env, click-row
+  sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   clicked-on-copy-button? <- copy 1/true
   text:text <- get *sandbox, data:offset
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   current-sandbox <- insert-text current-sandbox, text
   # reset scroll
   *env <- put *env, render-from:offset, -1
 ]
 
-def find-sandbox env:&:programming-environment-data, click-row:num -> result:&:sandbox-data [
+def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
   local-scope
   load-ingredients
-  curr-sandbox:&:sandbox-data <- get *env, sandbox:offset
+  curr-sandbox:&:sandbox <- get *env, sandbox:offset
   {
     break-unless curr-sandbox
     start:num <- get *curr-sandbox, starting-row-on-screen:offset
@@ -189,16 +189,16 @@ def find-sandbox env:&:programming-environment-data, click-row:num -> result:&:s
   return 0/not-found
 ]
 
-def click-on-sandbox-area? click-row:num, env:&:programming-environment-data -> result:bool [
+def click-on-sandbox-area? click-row:num, env:&:environment -> result:bool [
   local-scope
   load-ingredients
-  first-sandbox:&:sandbox-data <- get *env, sandbox:offset
+  first-sandbox:&:sandbox <- get *env, sandbox:offset
   return-unless first-sandbox, 0/false
   first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
   result <- greater-or-equal click-row, first-sandbox-begins
 ]
 
-def empty-editor? editor:&:editor-data -> result:bool [
+def empty-editor? editor:&:editor -> result:bool [
   local-scope
   load-ingredients
   head:&:duplex-list:char <- get *editor, data:offset
@@ -221,8 +221,8 @@ scenario copy-fails-if-sandbox-editor-not-empty [
   assume-console [
     press F4
   ]
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -240,7 +240,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     left-click 3, 20  # click 'copy' button
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # copy doesn't happen
   screen-should-contain [
@@ -258,7 +258,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   screen-should-contain [
     .                               run (F4)           .

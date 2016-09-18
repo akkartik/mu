@@ -13,8 +13,8 @@ def foo [
   assume-console [
     press F4
   ]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
+  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -30,7 +30,7 @@ def foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -67,7 +67,7 @@ def foo [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data, 1:text/new-test-recipes
+    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/new-test-recipes
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
@@ -82,7 +82,7 @@ def foo [
 ]
 
 # this requires tracking a couple more things
-container sandbox-data [
+container sandbox [
   response-starting-row-on-screen:num
   expected-response:text
 ]
@@ -114,14 +114,14 @@ after <global-touch> [
     click-column:num <- get t, column:offset
     on-sandbox-side?:bool <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
-    first-sandbox:&:sandbox-data <- get *env, sandbox:offset
+    first-sandbox:&:sandbox <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
     click-row:num <- get t, row:offset
     below-sandbox-editor?:bool <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose output is being clicked on
-    sandbox:&:sandbox-data <- find-click-in-sandbox-output env, click-row
+    sandbox:&:sandbox <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
@@ -135,17 +135,17 @@ after <global-touch> [
   }
 ]
 
-def find-click-in-sandbox-output env:&:programming-environment-data, click-row:num -> sandbox:&:sandbox-data [
+def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:sandbox [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
-  sandbox:&:sandbox-data <- get *env, sandbox:offset
+  sandbox:&:sandbox <- get *env, sandbox:offset
   start:num <- get *sandbox, starting-row-on-screen:offset
   clicked-on-sandboxes?:bool <- greater-or-equal click-row, start
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
   {
-    next-sandbox:&:sandbox-data <- get *sandbox, next-sandbox:offset
+    next-sandbox:&:sandbox <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
     next-start:num <- get *next-sandbox, starting-row-on-screen:offset
     found?:bool <- lesser-than click-row, next-start
@@ -161,7 +161,7 @@ def find-click-in-sandbox-output env:&:programming-environment-data, click-row:n
   return sandbox
 ]
 
-def toggle-expected-response sandbox:&:sandbox-data -> sandbox:&:sandbox-data [
+def toggle-expected-response sandbox:&:sandbox -> sandbox:&:sandbox [
   local-scope
   load-ingredients
   expected-response:text <- get *sandbox, expected-response:offset

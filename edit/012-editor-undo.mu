@@ -55,7 +55,7 @@ container delete-operation [
 ]
 
 # every editor accumulates a list of operations to undo/redo
-container editor-data [
+container editor [
   undo:&:list:&:operation
   redo:&:list:&:operation
 ]
@@ -102,18 +102,18 @@ scenario editor-can-undo-typing [
   # create an editor and type a character
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [0]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # character should be gone
   screen-should-contain [
@@ -127,7 +127,7 @@ scenario editor-can-undo-typing [
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -197,7 +197,7 @@ before <insert-enter-end> [
 # redo stack, because it's now obsolete.
 # Beware: since we're counting cursor moves as operations, this means just
 # moving the cursor can lose work on the undo stack.
-def add-operation editor:&:editor-data, op:&:operation -> editor:&:editor-data [
+def add-operation editor:&:editor, op:&:operation -> editor:&:editor [
   local-scope
   load-ingredients
   undo:&:list:&:operation <- get *editor, undo:offset
@@ -232,18 +232,18 @@ scenario editor-can-undo-typing-multiple [
   # create an editor and type multiple characters
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [012]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # all characters must be gone
   screen-should-contain [
@@ -258,13 +258,13 @@ scenario editor-can-undo-typing-multiple-2 [
   # create an editor with some text
   assume-screen 10/width, 5/height
   1:text <- new [a]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # type some characters
   assume-console [
     type [012]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .012a      .
@@ -276,7 +276,7 @@ scenario editor-can-undo-typing-multiple-2 [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # back to original text
   screen-should-contain [
@@ -290,7 +290,7 @@ scenario editor-can-undo-typing-multiple-2 [
     type [3]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -304,14 +304,14 @@ scenario editor-can-undo-typing-enter [
   # create an editor with some text
   assume-screen 10/width, 5/height
   1:text <- new [  abc]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # new line
   assume-console [
     left-click 1, 8
     press enter
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .  abc     .
@@ -320,8 +320,8 @@ scenario editor-can-undo-typing-enter [
     .          .
   ]
   # line is indented
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 2
@@ -331,10 +331,10 @@ scenario editor-can-undo-typing-enter [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 5
@@ -351,7 +351,7 @@ scenario editor-can-undo-typing-enter [
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -367,13 +367,13 @@ scenario editor-redo-typing [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
   1:text <- new [a]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [012]
     press ctrl-z
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .a         .
@@ -385,7 +385,7 @@ scenario editor-redo-typing [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # all characters must be back
   screen-should-contain [
@@ -399,7 +399,7 @@ scenario editor-redo-typing [
     type [3]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -431,13 +431,13 @@ scenario editor-redo-typing-empty [
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [012]
     press ctrl-z
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .          .
@@ -449,7 +449,7 @@ scenario editor-redo-typing-empty [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # all characters must be back
   screen-should-contain [
@@ -463,7 +463,7 @@ scenario editor-redo-typing-empty [
     type [3]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -479,18 +479,18 @@ scenario editor-work-clears-redo-stack [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [1]
     press ctrl-z
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # do some more work
   assume-console [
     type [0]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .0abc      .
@@ -503,7 +503,7 @@ ghi]
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # nothing should happen
   screen-should-contain [
@@ -519,8 +519,8 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   # create an editor
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and tabs, hit enter, some more text and tabs
   assume-console [
     press tab
@@ -531,7 +531,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press tab
     type [efg]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .  ab  cd  .
@@ -539,8 +539,8 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 7
@@ -550,11 +550,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # typing in second line deleted, but not indent
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 2
@@ -571,11 +571,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # indent and newline deleted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 8
@@ -591,11 +591,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # empty screen
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 0
@@ -611,11 +611,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 8
@@ -631,11 +631,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # newline and indent inserted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 2
@@ -652,11 +652,11 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # indent and newline deleted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 7
@@ -678,21 +678,21 @@ scenario editor-can-undo-touch [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor
   assume-console [
     left-click 3, 1
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # click undone
   memory-should-contain [
@@ -704,7 +704,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -769,15 +769,15 @@ scenario editor-can-undo-scroll [
   1:text <- new [a
 b
 cdefgh]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 5/right
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 5/right
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
     press right-arrow
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   # screen scrolls
   screen-should-contain [
     .     .
@@ -794,9 +794,9 @@ cdefgh]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moved back
   memory-should-contain [
@@ -815,7 +815,7 @@ cdefgh]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .     .
@@ -831,22 +831,22 @@ scenario editor-can-undo-left-arrow [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor
   assume-console [
     left-click 3, 1
     press left-arrow
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -858,7 +858,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -875,16 +875,16 @@ scenario editor-can-undo-up-arrow [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor
   assume-console [
     left-click 3, 1
     press up-arrow
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 2
     4 <- 1
@@ -894,9 +894,9 @@ ghi]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -908,7 +908,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -925,22 +925,22 @@ scenario editor-can-undo-down-arrow [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor
   assume-console [
     left-click 2, 1
     press down-arrow
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -952,7 +952,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -972,21 +972,21 @@ c
 d
 e
 f]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # scroll the page
   assume-console [
     press ctrl-f
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # screen should again show page 1
   screen-should-contain [
@@ -1007,21 +1007,21 @@ c
 d
 e
 f]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # scroll the page
   assume-console [
     press page-down
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # screen should again show page 1
   screen-should-contain [
@@ -1042,22 +1042,22 @@ c
 d
 e
 f]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # scroll the page down and up
   assume-console [
     press page-down
     press ctrl-b
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # screen should again show page 2
   screen-should-contain [
@@ -1078,22 +1078,22 @@ c
 d
 e
 f]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # scroll the page down and up
   assume-console [
     press page-down
     press page-up
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # screen should again show page 2
   screen-should-contain [
@@ -1111,22 +1111,22 @@ scenario editor-can-undo-ctrl-a [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
     press ctrl-a
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -1138,7 +1138,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1155,22 +1155,22 @@ scenario editor-can-undo-home [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
     press home
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -1182,7 +1182,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1199,22 +1199,22 @@ scenario editor-can-undo-ctrl-e [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
     press ctrl-e
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -1226,7 +1226,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1243,22 +1243,22 @@ scenario editor-can-undo-end [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor, then to start of line
   assume-console [
     left-click 2, 1
     press end
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # undo
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves back
   memory-should-contain [
@@ -1270,7 +1270,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1287,8 +1287,8 @@ scenario editor-can-undo-multiple-arrows-in-the-same-direction [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # move the cursor
   assume-console [
     left-click 2, 1
@@ -1296,9 +1296,9 @@ ghi]
     press right-arrow
     press up-arrow
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 3
@@ -1308,9 +1308,9 @@ ghi]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # up-arrow is undone
   memory-should-contain [
@@ -1322,9 +1322,9 @@ ghi]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # both right-arrows are undone
   memory-should-contain [
@@ -1341,21 +1341,21 @@ scenario editor-redo-touch [
   1:text <- new [abc
 def
 ghi]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     left-click 3, 1
     press ctrl-z
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   # redo
   assume-console [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves to left-click
   memory-should-contain [
@@ -1367,7 +1367,7 @@ ghi]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1396,16 +1396,16 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   # create an editor, type some text, move the cursor, type some more text
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   assume-console [
     type [abc]
     left-click 1, 1
     type [d]
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   screen-should-contain [
     .          .
     .adbc      .
@@ -1421,9 +1421,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # last letter typed is deleted
   screen-should-contain [
@@ -1441,9 +1441,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # no change to screen; cursor moves
   screen-should-contain [
@@ -1461,9 +1461,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # screen empty
   screen-should-contain [
@@ -1481,9 +1481,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # first insert
   screen-should-contain [
@@ -1501,9 +1501,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # cursor moves
   screen-should-contain [
@@ -1522,9 +1522,9 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   # second insert
   screen-should-contain [
@@ -1545,23 +1545,23 @@ scenario editor-can-undo-and-redo-backspace [
   # create an editor
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and hit backspace
   assume-console [
     type [abc]
     press backspace
     press backspace
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .a         .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1571,10 +1571,10 @@ scenario editor-can-undo-and-redo-backspace [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 3
@@ -1590,10 +1590,10 @@ scenario editor-can-undo-and-redo-backspace [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1690,8 +1690,8 @@ scenario editor-can-undo-and-redo-delete [
   # create an editor
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and hit delete and backspace a few times
   assume-console [
     type [abcdef]
@@ -1701,15 +1701,15 @@ scenario editor-can-undo-and-redo-delete [
     press delete
     press delete
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .af        .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1719,10 +1719,10 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1738,10 +1738,10 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 2
@@ -1757,10 +1757,10 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 2
@@ -1776,11 +1776,11 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 2
@@ -1796,11 +1796,11 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1816,11 +1816,11 @@ scenario editor-can-undo-and-redo-delete [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1880,14 +1880,14 @@ scenario editor-can-undo-and-redo-ctrl-k [
   assume-screen 10/width, 5/height
   1:text <- new [abc
 def]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and hit delete and backspace a few times
   assume-console [
     left-click 1, 1
     press ctrl-k
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .a         .
@@ -1895,8 +1895,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1906,7 +1906,7 @@ def]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1915,8 +1915,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1926,7 +1926,7 @@ def]
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
   screen-should-contain [
@@ -1936,8 +1936,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 1
@@ -1947,7 +1947,7 @@ def]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -1982,14 +1982,14 @@ scenario editor-can-undo-and-redo-ctrl-u [
   assume-screen 10/width, 5/height
   1:text <- new [abc
 def]
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and hit delete and backspace a few times
   assume-console [
     left-click 1, 2
     press ctrl-u
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .c         .
@@ -1997,8 +1997,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 0
@@ -2008,7 +2008,7 @@ def]
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -2017,8 +2017,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 2
@@ -2028,7 +2028,7 @@ def]
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   # first line inserted
   screen-should-contain [
@@ -2038,8 +2038,8 @@ def]
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
-  3:num <- get *2:&:editor-data, cursor-row:offset
-  4:num <- get *2:&:editor-data, cursor-column:offset
+  3:num <- get *2:&:editor, cursor-row:offset
+  4:num <- get *2:&:editor, cursor-column:offset
   memory-should-contain [
     3 <- 1
     4 <- 0
@@ -2049,7 +2049,7 @@ def]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+    editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   ]
   screen-should-contain [
     .          .
@@ -2082,15 +2082,15 @@ scenario editor-can-undo-and-redo-ctrl-u-2 [
   # create an editor
   assume-screen 10/width, 5/height
   1:text <- new []
-  2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 10/right
-  editor-render screen, 2:&:editor-data
+  2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 10/right
+  editor-render screen, 2:&:editor
   # insert some text and hit delete and backspace a few times
   assume-console [
     type [abc]
     press ctrl-u
     press ctrl-z
   ]
-  editor-event-loop screen:&:screen, console:&:console, 2:&:editor-data
+  editor-event-loop screen:&:screen, console:&:console, 2:&:editor
   screen-should-contain [
     .          .
     .abc       .

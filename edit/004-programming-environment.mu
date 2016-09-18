@@ -9,25 +9,25 @@ def! main [
   initial-recipe:text <- restore [recipes.mu]
   initial-sandbox:text <- new []
   hide-screen 0/screen
-  env:&:programming-environment-data <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
+  env:&:environment <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
   render-all 0/screen, env, render
   event-loop 0/screen, 0/console, env
   # never gets here
 ]
 
-container programming-environment-data [
-  recipes:&:editor-data
-  current-sandbox:&:editor-data
+container environment [
+  recipes:&:editor
+  current-sandbox:&:editor
   sandbox-in-focus?:bool  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-def new-programming-environment screen:&:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:&:programming-environment-data, screen:&:screen [
+def new-programming-environment screen:&:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:&:environment, screen:&:screen [
   local-scope
   load-ingredients
   width:num <- screen-width screen
   height:num <- screen-height screen
   # top menu
-  result <- new programming-environment-data:type
+  result <- new environment:type
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
   button-start:num <- subtract width, 20
   button-on-screen?:bool <- greater-or-equal button-start, 0
@@ -38,21 +38,21 @@ def new-programming-environment screen:&:screen, initial-recipe-contents:text, i
   divider:num, _ <- divide-with-remainder width, 2
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
-  recipes:&:editor-data <- new-editor initial-recipe-contents, screen, 0/left, divider/right
+  recipes:&:editor <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
   sandbox-left:num <- add divider, 1
-  current-sandbox:&:editor-data <- new-editor initial-sandbox-contents, screen, sandbox-left, width/right
+  current-sandbox:&:editor <- new-editor initial-sandbox-contents, screen, sandbox-left, width/right
   *result <- put *result, recipes:offset, recipes
   *result <- put *result, current-sandbox:offset, current-sandbox
   *result <- put *result, sandbox-in-focus?:offset, 0/false
   <programming-environment-initialization>
 ]
 
-def event-loop screen:&:screen, console:&:console, env:&:programming-environment-data -> screen:&:screen, console:&:console, env:&:programming-environment-data [
+def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&:screen, console:&:console, env:&:environment [
   local-scope
   load-ingredients
-  recipes:&:editor-data <- get *env, recipes:offset
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  recipes:&:editor <- get *env, recipes:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
@@ -184,21 +184,21 @@ def event-loop screen:&:screen, console:&:console, env:&:programming-environment
   }
 ]
 
-def resize screen:&:screen, env:&:programming-environment-data -> env:&:programming-environment-data, screen:&:screen [
+def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
   width:num <- screen-width screen
   divider:num, _ <- divide-with-remainder width, 2
   # update recipe editor
-  recipes:&:editor-data <- get *env, recipes:offset
+  recipes:&:editor <- get *env, recipes:offset
   right:num <- subtract divider, 1
   *recipes <- put *recipes, right:offset, right
   # reset cursor (later we'll try to preserve its position)
   *recipes <- put *recipes, cursor-row:offset, 1
   *recipes <- put *recipes, cursor-column:offset, 0
   # update sandbox editor
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- add divider, 1
   *current-sandbox <- put *current-sandbox, left:offset, left
   right:num <- subtract width, 1
@@ -211,7 +211,7 @@ def resize screen:&:screen, env:&:programming-environment-data -> env:&:programm
 # Variant of 'render' that updates cursor-row and cursor-column based on
 # before-cursor (rather than the other way around). If before-cursor moves
 # off-screen, it resets cursor-row and cursor-column.
-def render-without-moving-cursor screen:&:screen, editor:&:editor-data -> last-row:num, last-column:num, screen:&:screen, editor:&:editor-data [
+def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
   return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
@@ -240,7 +240,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor-data -> last-r
     off-screen?:bool <- greater-or-equal row, screen-height
     break-if off-screen?
     # if we find old-before-cursor still on the new resized screen, update
-    # editor-data.cursor-row and editor-data.cursor-column based on
+    # editor.cursor-row and editor.cursor-column based on
     # old-before-cursor
     {
       at-cursor?:bool <- equal old-before-cursor, prev
@@ -298,7 +298,7 @@ scenario point-at-multiple-editors [
   # initialize both halves of screen
   1:text <- new [abc]
   2:text <- new [def]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -306,11 +306,11 @@ scenario point-at-multiple-editors [
   ]
   # check cursor column in each
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
-    4:&:editor-data <- get *3:&:programming-environment-data, recipes:offset
-    5:num <- get *4:&:editor-data, cursor-column:offset
-    6:&:editor-data <- get *3:&:programming-environment-data, current-sandbox:offset
-    7:num <- get *6:&:editor-data, cursor-column:offset
+    event-loop screen:&:screen, console:&:console, 3:&:environment
+    4:&:editor <- get *3:&:environment, recipes:offset
+    5:num <- get *4:&:editor, cursor-column:offset
+    6:&:editor <- get *3:&:environment, current-sandbox:offset
+    7:num <- get *6:&:editor, cursor-column:offset
   ]
   memory-should-contain [
     5 <- 1
@@ -324,8 +324,8 @@ scenario edit-multiple-editors [
   # initialize both halves of screen
   1:text <- new [abc]
   2:text <- new [def]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:programming-environment-data, render
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  render-all screen, 3:&:environment, render
   # type one letter in each of them
   assume-console [
     left-click 1, 1
@@ -334,11 +334,11 @@ scenario edit-multiple-editors [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
-    4:&:editor-data <- get *3:&:programming-environment-data, recipes:offset
-    5:num <- get *4:&:editor-data, cursor-column:offset
-    6:&:editor-data <- get *3:&:programming-environment-data, current-sandbox:offset
-    7:num <- get *6:&:editor-data, cursor-column:offset
+    event-loop screen:&:screen, console:&:console, 3:&:environment
+    4:&:editor <- get *3:&:environment, recipes:offset
+    5:num <- get *4:&:editor, cursor-column:offset
+    6:&:editor <- get *3:&:environment, current-sandbox:offset
+    7:num <- get *6:&:editor, cursor-column:offset
   ]
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
@@ -369,8 +369,8 @@ scenario multiple-editors-cover-only-their-own-areas [
   run [
     1:text <- new [abc]
     2:text <- new [def]
-    3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-    render-all screen, 3:&:programming-environment-data, render
+    3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+    render-all screen, 3:&:environment, render
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -387,12 +387,12 @@ scenario editor-in-focus-keeps-cursor [
   assume-screen 30/width, 5/height
   1:text <- new [abc]
   2:text <- new [def]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:programming-environment-data, render
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  render-all screen, 3:&:environment, render
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
     4:char/cursor <- copy 9251/␣
     print screen:&:screen, 4:char/cursor
   ]
@@ -408,7 +408,7 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
     4:char/cursor <- copy 9251/␣
     print screen:&:screen, 4:char/cursor
   ]
@@ -428,8 +428,8 @@ scenario backspace-in-sandbox-editor-joins-lines [
   1:text <- new []
   2:text <- new [abc
 def]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:programming-environment-data, render
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  render-all screen, 3:&:environment, render
   screen-should-contain [
     .           run (F4)           .
     .               ┊abc           .
@@ -443,7 +443,7 @@ def]
     press backspace
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
     4:char/cursor <- copy 9251/␣
     print screen:&:screen, 4:char/cursor
   ]
@@ -456,7 +456,7 @@ def]
   ]
 ]
 
-def render-all screen:&:screen, env:&:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:&:screen, env:&:programming-environment-data [
+def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -480,19 +480,19 @@ def render-all screen:&:screen, env:&:programming-environment-data, {render-edit
   screen <- render-sandbox-side screen, env, render-editor
   <render-components-end>
   #
-  recipes:&:editor-data <- get *env, recipes:offset
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  recipes:&:editor <- get *env, recipes:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
   #
   show-screen screen
 ]
 
-def render-recipes screen:&:screen, env:&:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:&:screen, env:&:programming-environment-data [
+def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 11, [app], [render recipes]
-  recipes:&:editor-data <- get *env, recipes:offset
+  recipes:&:editor <- get *env, recipes:offset
   # render recipes
   left:num <- get *recipes, left:offset
   right:num <- get *recipes, right:offset
@@ -507,10 +507,10 @@ def render-recipes screen:&:screen, env:&:programming-environment-data, {render-
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:&:screen, env:&:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:&:screen, env:&:programming-environment-data [
+def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
@@ -522,7 +522,7 @@ def render-sandbox-side screen:&:screen, env:&:programming-environment-data, {re
   clear-screen-from screen, row, left, left, right
 ]
 
-def update-cursor screen:&:screen, recipes:&:editor-data, current-sandbox:&:editor-data, sandbox-in-focus?:bool, env:&:programming-environment-data -> screen:&:screen [
+def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, sandbox-in-focus?:bool, env:&:environment -> screen:&:screen [
   local-scope
   load-ingredients
   <update-cursor-special-cases>
@@ -608,7 +608,7 @@ after <global-type> [
   {
     redraw-screen?:bool <- equal c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:&:programming-environment-data, render
+    screen <- render-all screen, env:&:environment, render
     sync-screen screen
     loop +next-event:label
   }

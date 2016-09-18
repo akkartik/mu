@@ -13,8 +13,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -29,7 +29,7 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
     4:char/cursor-icon <- copy 9251/␣
     print screen:&:screen, 4:char/cursor-icon
   ]
@@ -55,7 +55,7 @@ recipe foo [
     left-click 4, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
     print screen:&:screen, 4:char/cursor-icon
   ]
   # trace hidden again
@@ -84,8 +84,8 @@ recipe foo [
   assume-console [
     press F4
   ]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -101,7 +101,7 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # trace now printed above result
   screen-should-contain [
@@ -128,8 +128,8 @@ scenario clicking-on-app-trace-does-nothing [
     press F4
     left-click 4, 51
   ]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -143,7 +143,7 @@ scenario clicking-on-app-trace-does-nothing [
     left-click 5, 57
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # no change; doesn't die
   screen-should-contain [
@@ -156,13 +156,13 @@ scenario clicking-on-app-trace-does-nothing [
   ]
 ]
 
-container sandbox-data [
+container sandbox [
   trace:text
   display-trace?:bool
 ]
 
 # replaced in a later layer
-def! update-sandbox sandbox:&:sandbox-data, env:&:programming-environment-data, idx:num -> sandbox:&:sandbox-data, env:&:programming-environment-data [
+def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
   load-ingredients
   data:text <- get *sandbox, data:offset
@@ -180,14 +180,14 @@ after <global-touch> [
     click-column:num <- get t, column:offset
     on-sandbox-side?:bool <- greater-or-equal click-column, sandbox-left-margin
     break-unless on-sandbox-side?
-    first-sandbox:&:sandbox-data <- get *env, sandbox:offset
+    first-sandbox:&:sandbox <- get *env, sandbox:offset
     break-unless first-sandbox
     first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
     click-row:num <- get t, row:offset
     below-sandbox-editor?:bool <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose code is being clicked on
-    sandbox:&:sandbox-data <- find-click-in-sandbox-code env, click-row
+    sandbox:&:sandbox <- find-click-in-sandbox-code env, click-row
     break-unless sandbox
     # toggle its display-trace? property
     x:bool <- get *sandbox, display-trace?:offset
@@ -202,7 +202,7 @@ after <global-touch> [
   }
 ]
 
-def find-click-in-sandbox-code env:&:programming-environment-data, click-row:num -> sandbox:&:sandbox-data [
+def find-click-in-sandbox-code env:&:environment, click-row:num -> sandbox:&:sandbox [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
@@ -212,7 +212,7 @@ def find-click-in-sandbox-code env:&:programming-environment-data, click-row:num
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
   {
-    next-sandbox:&:sandbox-data <- get *sandbox, next-sandbox:offset
+    next-sandbox:&:sandbox <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
     next-start:num <- get *next-sandbox, starting-row-on-screen:offset
     found?:bool <- lesser-than click-row, next-start

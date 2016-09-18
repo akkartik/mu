@@ -1,14 +1,14 @@
 ## handling malformed programs
 
-container programming-environment-data [
+container environment [
   recipe-errors:text
 ]
 
 # copy code from recipe editor, persist, load into mu, save any errors
-def! update-recipes env:&:programming-environment-data, screen:&:screen -> errors-found?:bool, env:&:programming-environment-data, screen:&:screen [
+def! update-recipes env:&:environment, screen:&:screen -> errors-found?:bool, env:&:environment, screen:&:screen [
   local-scope
   load-ingredients
-  recipes:&:editor-data <- get *env, recipes:offset
+  recipes:&:editor <- get *env, recipes:offset
   in:text <- editor-contents recipes
   save [recipes.mu], in
   recipe-errors:text <- reload in
@@ -40,7 +40,7 @@ before <render-recipe-components-end> [
   }
 ]
 
-container programming-environment-data [
+container environment [
   error-index:num  # index of first sandbox with an error (or -1 if none)
 ]
 
@@ -73,11 +73,11 @@ before <render-components-end> [
   }
 ]
 
-container sandbox-data [
+container sandbox [
   errors:text
 ]
 
-def! update-sandbox sandbox:&:sandbox-data, env:&:programming-environment-data, idx:num -> sandbox:&:sandbox-data, env:&:programming-environment-data [
+def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
   load-ingredients
   data:text <- get *sandbox, data:offset
@@ -122,12 +122,12 @@ recipe foo [
   get 123:num, foo:offset
 ]]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -159,7 +159,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   assume-screen 100/width, 15/height
   1:text <- new []
   2:text <- new []
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     left-click 3, 80
     # create invalid sandbox 1
@@ -170,7 +170,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # status line shows that error is in first sandbox
   screen-should-contain [
@@ -183,7 +183,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   assume-screen 100/width, 15/height
   1:text <- new []
   2:text <- new []
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     left-click 3, 80
     # create invalid sandbox 2
@@ -197,7 +197,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # status line shows that error is in second sandbox
   screen-should-contain [
@@ -210,12 +210,12 @@ scenario run-hides-errors-from-past-sandboxes [
   assume-screen 100/width, 15/height
   1:text <- new []
   2:text <- new [get foo, x:offset]  # invalid
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4  # generate error
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   assume-console [
     left-click 3, 58
@@ -224,7 +224,7 @@ scenario run-hides-errors-from-past-sandboxes [
     press F4  # update sandbox
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # error should disappear
   screen-should-contain [
@@ -250,11 +250,11 @@ y:&:num <- copy 0
 z <- add x, y
 ]]
   2:text <- new [foo 2]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
@@ -271,7 +271,7 @@ z <- add x, y
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # error should remain unchanged
   screen-should-contain [
@@ -296,12 +296,12 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   # call code that uses other variants of it, but not it itself
   2:text <- new [x:&:list:num <- copy 0
 to-text x]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run it once
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   # no errors anywhere on screen (can't check anything else, since to-text will return an address)
   screen-should-contain-in-color 1/red, [
     .                                                                                                    .
@@ -325,7 +325,7 @@ to-text x]
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # still no errors
   screen-should-contain-in-color 1/red, [
@@ -355,12 +355,12 @@ recipe foo [
   x <- copy 0
 ]]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -381,12 +381,12 @@ recipe foo \\[
   x <- copy 0
 ]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -410,12 +410,12 @@ recipe foo [
   get x:&:point, 1:offset
 ]]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -443,12 +443,12 @@ recipe foo [
   get *y:&:point, x:num
 ]]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -476,11 +476,11 @@ recipe foo [
   x:num <- copy y:num
 ]]
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
@@ -497,7 +497,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -519,13 +519,13 @@ scenario run-instruction-and-print-errors [
   1:text <- new []
   # right editor contains an illegal instruction
   2:text <- new [get 1234:num, foo:offset]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # check that screen prints error message in red
   screen-should-contain [
@@ -582,14 +582,14 @@ scenario run-instruction-and-print-errors-only-once [
   1:text <- new []
   # right editor contains an illegal instruction
   2:text <- new [get 1234:num, foo:offset]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -617,13 +617,13 @@ scenario sandbox-can-handle-infinite-loop [
 ]]
   # right editor contains an instruction
   2:text <- new [foo]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
@@ -650,12 +650,12 @@ _, c:num <- divide-with-remainder a, b
 reply b
 ]]
   2:text <- new [foo 4, 0]
-  3:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text, 2:text
+  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
   # run
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 3:&:environment
   # screen prints error message
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
@@ -673,7 +673,7 @@ reply b
     left-click 4, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 3:&:environment
   ]
   # screen should expand trace
   screen-should-contain [

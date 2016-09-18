@@ -4,7 +4,7 @@ scenario deleting-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   1:text <- new []
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
   # run a few commands
   assume-console [
     type [divide-with-remainder 11, 3]
@@ -12,7 +12,7 @@ scenario deleting-sandboxes [
     type [add 2, 2]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -33,7 +33,7 @@ scenario deleting-sandboxes [
     left-click 7, 34
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -50,7 +50,7 @@ scenario deleting-sandboxes [
     left-click 3, 49
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -76,14 +76,14 @@ after <global-touch> [
 ]
 
 # some preconditions for attempting to delete a sandbox
-def should-attempt-delete? click-row:num, click-column:num, env:&:programming-environment-data -> result:bool [
+def should-attempt-delete? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
   load-ingredients
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, env
   reply-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'copy' button?
-  first-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
   sandbox-left-margin:num <- get *first-sandbox, left:offset
   sandbox-right-margin:num <- get *first-sandbox, right:offset
@@ -91,31 +91,31 @@ def should-attempt-delete? click-row:num, click-column:num, env:&:programming-en
   result <- within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
-def try-delete-sandbox click-row:num, env:&:programming-environment-data -> clicked-on-delete-button?:bool, env:&:programming-environment-data [
+def try-delete-sandbox click-row:num, env:&:environment -> clicked-on-delete-button?:bool, env:&:environment [
   local-scope
   load-ingredients
   # identify the sandbox to delete, if the click was actually on the 'delete' button
-  sandbox:&:sandbox-data <- find-sandbox env, click-row
+  sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   clicked-on-delete-button? <- copy 1/true
   env <- delete-sandbox env, sandbox
 ]
 
-def delete-sandbox env:&:programming-environment-data, sandbox:&:sandbox-data -> env:&:programming-environment-data [
+def delete-sandbox env:&:environment, sandbox:&:sandbox -> env:&:environment [
   local-scope
   load-ingredients
-  curr-sandbox:&:sandbox-data <- get *env, sandbox:offset
+  curr-sandbox:&:sandbox <- get *env, sandbox:offset
   first-sandbox?:bool <- equal curr-sandbox, sandbox
   {
     # first sandbox? pop
     break-unless first-sandbox?
-    next-sandbox:&:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+    next-sandbox:&:sandbox <- get *curr-sandbox, next-sandbox:offset
     *env <- put *env, sandbox:offset, next-sandbox
   }
   {
     # not first sandbox?
     break-if first-sandbox?
-    prev-sandbox:&:sandbox-data <- copy curr-sandbox
+    prev-sandbox:&:sandbox <- copy curr-sandbox
     curr-sandbox <- get *curr-sandbox, next-sandbox:offset
     {
       assert curr-sandbox, [sandbox not found! something is wrong.]
@@ -126,7 +126,7 @@ def delete-sandbox env:&:programming-environment-data, sandbox:&:sandbox-data ->
       loop
     }
     # snip sandbox out of its list
-    next-sandbox:&:sandbox-data <- get *curr-sandbox, next-sandbox:offset
+    next-sandbox:&:sandbox <- get *curr-sandbox, next-sandbox:offset
     *prev-sandbox <- put *prev-sandbox, next-sandbox:offset, next-sandbox
   }
   # update sandbox count
@@ -148,8 +148,8 @@ scenario deleting-sandbox-after-scroll [
   assume-screen 50/width, 10/height
   # initialize environment
   1:text <- new []
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  render-all screen, 2:&:programming-environment-data, render
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  render-all screen, 2:&:environment, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -159,7 +159,7 @@ scenario deleting-sandbox-after-scroll [
     press F4
     press page-down
   ]
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -177,7 +177,7 @@ scenario deleting-sandbox-after-scroll [
     left-click 6, 34
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -196,8 +196,8 @@ scenario deleting-top-sandbox-after-scroll [
   assume-screen 50/width, 10/height
   # initialize environment
   1:text <- new []
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  render-all screen, 2:&:programming-environment-data, render
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  render-all screen, 2:&:environment, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -207,7 +207,7 @@ scenario deleting-top-sandbox-after-scroll [
     press F4
     press page-down
   ]
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -225,7 +225,7 @@ scenario deleting-top-sandbox-after-scroll [
     left-click 2, 34
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -244,8 +244,8 @@ scenario deleting-final-sandbox-after-scroll [
   assume-screen 50/width, 10/height
   # initialize environment
   1:text <- new []
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  render-all screen, 2:&:programming-environment-data, render
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  render-all screen, 2:&:environment, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -256,7 +256,7 @@ scenario deleting-final-sandbox-after-scroll [
     press page-down
     press page-down
   ]
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -271,7 +271,7 @@ scenario deleting-final-sandbox-after-scroll [
     left-click 2, 34
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # implicitly scroll up to first sandbox
   screen-should-contain [
@@ -291,8 +291,8 @@ scenario deleting-updates-sandbox-count [
   assume-screen 50/width, 10/height
   # initialize environment
   1:text <- new []
-  2:&:programming-environment-data <- new-programming-environment screen:&:screen, 1:text
-  render-all screen, 2:&:programming-environment-data, render
+  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  render-all screen, 2:&:environment, render
   # create 2 sandboxes
   assume-console [
     press ctrl-n
@@ -301,7 +301,7 @@ scenario deleting-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+  event-loop screen:&:screen, console:&:console, 2:&:environment
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -321,7 +321,7 @@ scenario deleting-updates-sandbox-count [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:programming-environment-data
+    event-loop screen:&:screen, console:&:console, 2:&:environment
   ]
   # shouldn't go past last sandbox
   screen-should-contain [

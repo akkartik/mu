@@ -5,27 +5,27 @@ def! main [
   open-console
   initial-sandbox:text <- new []
   hide-screen 0/screen
-  env:&:programming-environment-data <- new-programming-environment 0/screen, initial-sandbox
+  env:&:environment <- new-programming-environment 0/screen, initial-sandbox
   env <- restore-sandboxes env
   render-sandbox-side 0/screen, env, render
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   update-cursor 0/screen, current-sandbox, env
   show-screen 0/screen
   event-loop 0/screen, 0/console, env
   # never gets here
 ]
 
-container programming-environment-data [
-  current-sandbox:&:editor-data
+container environment [
+  current-sandbox:&:editor
 ]
 
-def new-programming-environment screen:&:screen, initial-sandbox-contents:text -> result:&:programming-environment-data, screen:&:screen [
+def new-programming-environment screen:&:screen, initial-sandbox-contents:text -> result:&:environment, screen:&:screen [
   local-scope
   load-ingredients
   width:num <- screen-width screen
   height:num <- screen-height screen
   # top menu
-  result <- new programming-environment-data:type
+  result <- new environment:type
   draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
   button-start:num <- subtract width, 20
   button-on-screen?:bool <- greater-or-equal button-start, 0
@@ -33,15 +33,15 @@ def new-programming-environment screen:&:screen, initial-sandbox-contents:text -
   screen <- move-cursor screen, 0/row, button-start
   print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
-  current-sandbox:&:editor-data <- new-editor initial-sandbox-contents, screen, 0, width/right
+  current-sandbox:&:editor <- new-editor initial-sandbox-contents, screen, 0, width/right
   *result <- put *result, current-sandbox:offset, current-sandbox
   <programming-environment-initialization>
 ]
 
-def event-loop screen:&:screen, console:&:console, env:&:programming-environment-data -> screen:&:screen, console:&:console, env:&:programming-environment-data [
+def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&:screen, console:&:console, env:&:environment [
   local-scope
   load-ingredients
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
@@ -137,13 +137,13 @@ def event-loop screen:&:screen, console:&:console, env:&:programming-environment
   }
 ]
 
-def resize screen:&:screen, env:&:programming-environment-data -> env:&:programming-environment-data, screen:&:screen [
+def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:screen [
   local-scope
   load-ingredients
   clear-screen screen  # update screen dimensions
   width:num <- screen-width screen
   # update sandbox editor
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   right:num <- subtract width, 1
   *current-sandbox <- put *current-sandbox right:offset, right
   # reset cursor
@@ -154,7 +154,7 @@ def resize screen:&:screen, env:&:programming-environment-data -> env:&:programm
 # Variant of 'render' that updates cursor-row and cursor-column based on
 # before-cursor (rather than the other way around). If before-cursor moves
 # off-screen, it resets cursor-row and cursor-column.
-def render-without-moving-cursor screen:&:screen, editor:&:editor-data -> last-row:num, last-column:num, screen:&:screen, editor:&:editor-data [
+def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
   return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
@@ -183,7 +183,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor-data -> last-r
     off-screen?:bool <- greater-or-equal row, screen-height
     break-if off-screen?
     # if we find old-before-cursor still on the new resized screen, update
-    # editor-data.cursor-row and editor-data.cursor-column based on
+    # editor.cursor-row and editor.cursor-column based on
     # old-before-cursor
     {
       at-cursor?:bool <- equal old-before-cursor, prev
@@ -234,7 +234,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor-data -> last-r
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
 
-def render-all screen:&:screen, env:&:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:&:screen, env:&:programming-environment-data [
+def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -252,17 +252,17 @@ def render-all screen:&:screen, env:&:programming-environment-data, {render-edit
   screen <- render-sandbox-side screen, env, render-editor
   <render-components-end>
   #
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env
   #
   show-screen screen
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:&:screen, env:&:programming-environment-data, {render-editor: (recipe (address screen) (address editor-data) -> number number (address screen) (address editor-data))} -> screen:&:screen, env:&:programming-environment-data [
+def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
-  current-sandbox:&:editor-data <- get *env, current-sandbox:offset
+  current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
@@ -274,7 +274,7 @@ def render-sandbox-side screen:&:screen, env:&:programming-environment-data, {re
   clear-screen-from screen, row, left, left, right
 ]
 
-def update-cursor screen:&:screen, current-sandbox:&:editor-data, env:&:programming-environment-data -> screen:&:screen [
+def update-cursor screen:&:screen, current-sandbox:&:editor, env:&:environment -> screen:&:screen [
   local-scope
   load-ingredients
   <update-cursor-special-cases>
@@ -352,13 +352,13 @@ after <global-type> [
   {
     redraw-screen?:bool <- equal c, 12/ctrl-l
     break-unless redraw-screen?
-    screen <- render-all screen, env:&:programming-environment-data, render
+    screen <- render-all screen, env:&:environment, render
     sync-screen screen
     loop +next-event:label
   }
 ]
 
 # dummy
-def restore-sandboxes env:&:programming-environment-data -> env:&:programming-environment-data [
+def restore-sandboxes env:&:environment -> env:&:environment [
   # do nothing; redefined later
 ]

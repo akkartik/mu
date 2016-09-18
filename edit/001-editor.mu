@@ -27,7 +27,7 @@ scenario editor-initially-prints-text-to-screen [
   ]
 ]
 
-container editor-data [
+container editor [
   # editable text: doubly linked list of characters (head contains a special sentinel)
   data:&:duplex-list:char
   top-of-screen:&:duplex-list:char
@@ -48,12 +48,12 @@ container editor-data [
 # creates a new editor widget and renders its initial appearance to screen
 #   top/left/right constrain the screen area available to the new editor
 #   right is exclusive
-def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor-data, screen:&:screen [
+def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor, screen:&:screen [
   local-scope
   load-ingredients
   # no clipping of bounds
   right <- subtract right, 1
-  result <- new editor-data:type
+  result <- new editor:type
   # initialize screen-related fields
   *result <- put *result, left:offset, left
   *result <- put *result, right:offset, right
@@ -71,7 +71,7 @@ def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor-d
   <editor-initialization>
 ]
 
-def insert-text editor:&:editor-data, text:text -> editor:&:editor-data [
+def insert-text editor:&:editor, text:text -> editor:&:editor [
   local-scope
   load-ingredients
   # early exit if text is empty
@@ -97,8 +97,8 @@ def insert-text editor:&:editor-data, text:text -> editor:&:editor-data [
 scenario editor-initializes-without-data [
   assume-screen 5/width, 3/height
   run [
-    1:&:editor-data <- new-editor 0/data, screen:&:screen, 2/left, 5/right
-    2:editor-data <- copy *1:&:editor-data
+    1:&:editor <- new-editor 0/data, screen:&:screen, 2/left, 5/right
+    2:editor <- copy *1:&:editor
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
@@ -121,7 +121,7 @@ scenario editor-initializes-without-data [
 # Assumes cursor should be at coordinates (cursor-row, cursor-column) and
 # updates before-cursor to match. Might also move coordinates if they're
 # outside text.
-def render screen:&:screen, editor:&:editor-data -> last-row:num, last-column:num, screen:&:screen, editor:&:editor-data [
+def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
   return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
@@ -146,7 +146,7 @@ def render screen:&:screen, editor:&:editor-data -> last-row:num, last-column:nu
     break-unless curr
     off-screen?:bool <- greater-or-equal row, screen-height
     break-if off-screen?
-    # update editor-data.before-cursor
+    # update editor.before-cursor
     # Doing so at the start of each iteration ensures it stays one step behind
     # the current character.
     {
@@ -343,9 +343,9 @@ scenario editor-initializes-empty-text [
   assume-screen 5/width, 5/height
   run [
     1:text <- new []
-    2:&:editor-data <- new-editor 1:text, screen:&:screen, 0/left, 5/right
-    3:num <- get *2:&:editor-data, cursor-row:offset
-    4:num <- get *2:&:editor-data, cursor-column:offset
+    2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 5/right
+    3:num <- get *2:&:editor, cursor-row:offset
+    4:num <- get *2:&:editor, cursor-column:offset
   ]
   screen-should-contain [
     .     .
