@@ -27,9 +27,11 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    state of the screen at the end of a test. Here's a test for a little
    text-mode chessboard program in Mu (delimiting the edge of the 'screen'
    with dots):
-   <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
-   <br>I'm building up similarly *dependency-injected* interfaces to the
-   keyboard, mouse, touch screen, disk, network, etc.
+
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
+
+   I'm building up similarly *dependency-injected* interfaces to the keyboard,
+   mouse, touch screen, disk, network, etc.
 
 1. Support for testing side-effects like performance, deadlock-freedom,
    race-freeness, memory usage, etc. Mu's *white-box tests* can check not just
@@ -37,11 +39,14 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    specific events in the log of its progress. For example, here's a test that
    our string-comparison function doesn't scan individual characters unless it
    has to:
-   <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='white-box test' src='html/tracing-test.png'>
-   <br>Another example: if a sort function logs each swap, a performance test can
+
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='white-box test' src='html/tracing-test.png'>
+
+   Another example: if a sort function logs each swap, a performance test can
    ensure that the number of swaps doesn't quadruple when the size of the
    input doubles.
-   <p>Besides expanding the scope of tests, this ability also allows more
+
+   Besides expanding the scope of tests, this ability also allows more
    radical refactoring without needing to modify tests. All Mu's tests call a
    top-level function rather than individual sub-systems directly. As a result
    the way the subsystems are invoked can be radically changed (interface
