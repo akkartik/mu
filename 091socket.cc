@@ -16,7 +16,7 @@ struct socket_t {
 :(code)
 void server_socket(int portno, socket_t* server) {
   server->fd = socket(AF_INET, SOCK_STREAM, 0);
-  int dummy;
+  int dummy = 0;
   setsockopt(server->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
   server->addr.sin_family = AF_INET;
   server->addr.sin_addr.s_addr = INADDR_ANY;
@@ -115,24 +115,20 @@ _READ_FROM_SOCKET,
 put(Recipe_ordinal, "$read-from-socket", _READ_FROM_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _READ_FROM_SOCKET: {
-  if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
+  if (!is_mu_number(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    break;
+  }
   if (SIZE(inst.products) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
-    break;
-  }
-  if (!is_mu_character(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a character, but got '" << to_string(inst.products.at(0)) << "'\n" << end();
-    break;
-  }
-  if (!is_mu_boolean(inst.products.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-socket' should be a boolean but got '" << to_string(inst.products.at(1)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two product, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   break;
@@ -140,20 +136,16 @@ case _READ_FROM_SOCKET: {
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  int bytes = static_cast<int>(ingredients.at(1).at(0)); //? Should this be something with more bytes?
   socket_t* socket = reinterpret_cast<socket_t*>(x);
   int socket_fd = socket->fd;
-  char single_char[2];
-  bzero(single_char, 2);
-  int bytes_read = read(socket_fd, single_char, 1);
+  char contents[bytes];
+  bzero(contents, bytes);
+  int bytes_read = read(socket_fd, contents, bytes - 1 /* null-terminated */);
+  //?: cerr << "Read:\n" << string(contents) << "\n";
   products.resize(2);
-  if (single_char[0]== EOF || bytes_read == 0) {
-    products.at(1).push_back(1);  // eof
-  }
-  else {
-    products.at(1).push_back(0);
-  }
-  products.at(0).push_back(single_char[0]);
-  break;
+  products.at(0).push_back(new_mu_text(string(contents)));
+  products.at(1).push_back(bytes_read);
   break;
 }
 
@@ -190,11 +182,11 @@ _CLOSE_SOCKET,
 put(Recipe_ordinal, "$close-socket", _CLOSE_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _CLOSE_SOCKET: {
-  if (SIZE(inst.ingredients) != 2) {
+  if (SIZE(inst.ingredients) != 1) {
     raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly two ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_number(inst.ingredients.at(0)) || !is_mu_number(inst.ingredients.at(0))) {
+  if (!is_mu_number(inst.ingredients.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a character, but got '" << to_string(inst.ingredients.at(0)) << "t\n" << end();
     break;
   }
@@ -202,9 +194,8 @@ case _CLOSE_SOCKET: {
 }
 :(before "End Primitive Recipe Implementations")
 case _CLOSE_SOCKET: {
-  double socket_fd = ingredients.at(0).at(0);
-  double session_fd = ingredients.at(1).at(0);
-  close(socket_fd);
-  close(session_fd);
+  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  socket_t* socket = reinterpret_cast<socket_t*>(x);
+  close(socket->fd);
   break;
 }
