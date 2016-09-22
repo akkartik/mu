@@ -134,6 +134,7 @@ map<string, type_ordinal> Type_ordinal_snapshot_stash;
 map<type_ordinal, type_info> Type_snapshot_stash;
 map<recipe_ordinal, map<string, int> > Name_snapshot_stash;
 map<string, vector<recipe_ordinal> > Recipe_variants_snapshot_stash;
+map<string, type_tree*> Type_abbreviations_snapshot_stash;
 
 :(code)
 void run_code_begin(bool should_stash_snapshots) {
@@ -176,6 +177,8 @@ void stash_snapshots() {
   Name_snapshot_stash = Name_snapshot;
   assert(Recipe_variants_snapshot_stash.empty());
   Recipe_variants_snapshot_stash = Recipe_variants_snapshot;
+  assert(Type_abbreviations_snapshot_stash.empty());
+  Type_abbreviations_snapshot_stash = Type_abbreviations_snapshot;
   save_snapshots();
 }
 void unstash_snapshots() {
@@ -186,6 +189,7 @@ void unstash_snapshots() {
   Type_snapshot = Type_snapshot_stash;  Type_snapshot_stash.clear();
   Name_snapshot = Name_snapshot_stash;  Name_snapshot_stash.clear();
   Recipe_variants_snapshot = Recipe_variants_snapshot_stash;  Recipe_variants_snapshot_stash.clear();
+  Type_abbreviations_snapshot = Type_abbreviations_snapshot_stash;  Type_abbreviations_snapshot_stash.clear();
 }
 
 :(before "End Load Recipes")
