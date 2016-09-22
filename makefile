@@ -9,9 +9,7 @@ all: mu_bin core.mu
 # beware: if you introduce or delete functions the makefile isn't smart enough
 # to recompute dependencies. You have to manually run 'make redo' to recreate
 # the .build/ directory from scratch.
-redo:
-	rm -rf mu.cc core.mu mu_bin* *_list .build
-	@make
+redo: clean1 all
 
 CXX ?= c++
 CXXFLAGS ?= -g -O3
@@ -77,8 +75,11 @@ test_list: mu.cc
 .PHONY: all redo clean clena
 
 clena: clean
-clean: redo
+clean: clean1
 	cd enumerate && make clean
 	cd tangle && make clean
 	cd cleave && make clean
 	cd termbox && make clean
+
+clean1:
+	rm -rf mu.cc core.mu mu_bin* *_list .build
