@@ -215,9 +215,6 @@ $error: 0
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_3)
 % Hide_errors = true;
-container foo [
-  x:num
-]
 def main [
   # don't run anything
 ]
@@ -230,9 +227,6 @@ def foo a:&:@:&:num [
 +error: foo: cannot modify 'x' in instruction '*x <- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product
 
 :(scenario cannot_modify_address_inside_immutable_ingredients_4)
-container foo [
-  x:&:@:num  # contains an address
-]
 def main [
   # don't run anything
 ]
