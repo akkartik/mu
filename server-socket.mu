@@ -1,15 +1,15 @@
 # Example of reading from a socket using channels and writing back to it
-# directly. Running this file and navigating to <address of server>:8081
+# directly. Running this file and navigating to <address of server>:8080
 # should result in your browser displaying "SUCCESS!".
 #
 # Unfortunately, the reading implementation has some redundant, inelegant
-# code to make up for my lack of insight into Linux's socket internal.
+# code to make up for my lack of insight into Linux's socket internals.
 def main [
   local-scope
-  socket:num <- $socket 8081/port
+  socket:num <- $socket 8080/port
   $print [Mu socket creation returned ], socket, 10/newline
   session:num <- $accept socket
-  contents:&:source:char, sink:&:sink:char <- new-channel 5096
+  contents:&:source:char, sink:&:sink:char <- new-channel 30
   sink <- start-running transmit-from-socket session, sink
   buf:&:buffer <- new-buffer 30
   {
@@ -50,7 +50,7 @@ def transmit-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
-    req:text, bytes-read:number  <- $read-from-socket session, 4096/bytes
+    req:text, bytes-read:number <- $read-from-socket session, 4096/bytes
     $print [read ], bytes-read, [ bytes from socket], 10/newline
     i:number <- copy 0
     {
