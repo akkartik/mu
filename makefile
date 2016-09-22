@@ -10,7 +10,7 @@ all: mu_bin core.mu
 # to recompute dependencies. You have to manually run 'make redo' to recreate
 # the .build/ directory from scratch.
 redo:
-	rm -rf mu_bin mu.cc core.mu .build
+	rm -rf mu.cc core.mu mu_bin* *_list .build
 	@make
 
 CXX ?= c++
@@ -77,11 +77,8 @@ test_list: mu.cc
 .PHONY: all redo clean clena
 
 clena: clean
-clean:
+clean: redo
 	cd enumerate && make clean
 	cd tangle && make clean
 	cd cleave && make clean
 	cd termbox && make clean
-	-rm mu.cc core.mu mu_bin *_list
-	-rm -rf mu_bin.*
-	-rm -rf .build
