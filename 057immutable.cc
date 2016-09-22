@@ -240,6 +240,18 @@ def foo a:&:@:&:num [
 ]
 $error: 0
 
+:(scenario latter_ingredient_of_index_is_immutable)
+def main [
+  # don't run anything
+]
+def foo a:&:@:&:@:num, b:num -> a:&:@:&:@:num [
+  local-scope
+  load-ingredients
+  x:&:@:num <- index *a, b
+  *x <- put-index *x, 0, 34
+]
+$error: 0
+
 :(scenario can_traverse_immutable_ingredients)
 container test-list [
   next:&:test-list
@@ -342,6 +354,7 @@ void check_immutable_ingredients(recipe_ordinal r) {
     for (int i = 0; i < SIZE(caller.steps); ++i) {
       const instruction& inst = caller.steps.at(i);
       check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
+      if (inst.operation == INDEX && inst.ingredients.at(1).name == current_ingredient.name) continue;
       update_aliases(inst, immutable_vars);
     }
   }
