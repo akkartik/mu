@@ -472,17 +472,7 @@ case RELOAD: {
 }
 :(before "End Primitive Recipe Implementations")
 case RELOAD: {
-  // conundrum: need to support repeated reloads of the same code, but not
-  // wipe out state for the current test
-  // hacky solution: subset of restore_snapshots() without restoring recipes {
-  // can't yet define containers in a test that runs 'reload'
-  Type_ordinal = Type_ordinal_snapshot;
-  Type = Type_snapshot;
-  // can't yet create new specializations of shape-shifting recipes in a test
-  // that runs 'reload'
-  Recipe_variants = Recipe_variants_snapshot;
-  Name = Name_snapshot;
-  // }
+  restore_non_recipe_snapshots();
   string code = read_mu_text(ingredients.at(0).at(0));
   run_code_begin(/*should_stash_snapshots*/false);
   routine* save_current_routine = Current_routine;

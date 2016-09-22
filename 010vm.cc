@@ -243,6 +243,10 @@ void save_snapshots() {
 void restore_snapshots() {
   Recipe = Recipe_snapshot;
   Recipe_ordinal = Recipe_ordinal_snapshot;
+  restore_non_recipe_snapshots();
+}
+// when running sandboxes in the edit/ app we'll want to restore everything except recipes defined in the app
+void restore_non_recipe_snapshots() {
   Type_ordinal = Type_ordinal_snapshot;
   Type = Type_snapshot;
   // End restore_snapshots
