@@ -169,6 +169,7 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; Type_ordinal_snap
 map&lt;type_ordinal<span class="Delimiter">,</span> type_info&gt; Type_snapshot_stash<span class="Delimiter">;</span>
 map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; &gt; Name_snapshot_stash<span class="Delimiter">;</span>
 map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; Recipe_variants_snapshot_stash<span class="Delimiter">;</span>
+map&lt;string<span class="Delimiter">,</span> type_tree*&gt; Type_abbreviations_snapshot_stash<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> run_code_begin<span class="Delimiter">(</span><span class="Normal">bool</span> should_stash_snapshots<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -211,6 +212,8 @@ map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; 
   Name_snapshot_stash = Name_snapshot<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>Recipe_variants_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
   Recipe_variants_snapshot_stash = Recipe_variants_snapshot<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>Type_abbreviations_snapshot_stash<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+  Type_abbreviations_snapshot_stash = Type_abbreviations_snapshot<span class="Delimiter">;</span>
   save_snapshots<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 <span class="Normal">void</span> unstash_snapshots<span class="Delimiter">()</span> <span class="Delimiter">{</span>
@@ -221,6 +224,7 @@ map&lt;string<span class="Delimiter">,</span> vector&lt;recipe_ordinal&gt; &gt; 
   Type_snapshot = Type_snapshot_stash<span class="Delimiter">;</span>  Type_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   Name_snapshot = Name_snapshot_stash<span class="Delimiter">;</span>  Name_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   Recipe_variants_snapshot = Recipe_variants_snapshot_stash<span class="Delimiter">;</span>  Recipe_variants_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  Type_abbreviations_snapshot = Type_abbreviations_snapshot_stash<span class="Delimiter">;</span>  Type_abbreviations_snapshot_stash<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Load Recipes&quot;)</span>
@@ -507,17 +511,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> RELOAD: <span class="Delimiter">{</span>
-  <span class="Comment">// conundrum: need to support repeated reloads of the same code, but not</span>
-  <span class="Comment">// wipe out state for the current test</span>
-  <span class="Comment">// hacky solution: subset of restore_snapshots() without restoring recipes {</span>
-  <span class="Comment">// can't yet define containers in a test that runs 'reload'</span>
-  Type_ordinal = Type_ordinal_snapshot<span class="Delimiter">;</span>
-  Type = Type_snapshot<span class="Delimiter">;</span>
-  <span class="Comment">// can't yet create new specializations of shape-shifting recipes in a test</span>
-  <span class="Comment">// that runs 'reload'</span>
-  Recipe_variants = Recipe_variants_snapshot<span class="Delimiter">;</span>
-  Name = Name_snapshot<span class="Delimiter">;</span>
-  <span class="Comment">// }</span>
+  restore_non_recipe_snapshots<span class="Delimiter">();</span>
   string code = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   run_code_begin<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">should_stash_snapshots</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
   routine* save_current_routine = Current_routine<span class="Delimiter">;</span>

@@ -250,9 +250,6 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_3)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
-  <span class="Normal">x</span>:num
-]
 def main [
   <span class="Comment"># don't run anything</span>
 ]
@@ -265,9 +262,6 @@ def foo a:&amp;:@:&amp;:num [
 <span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_4)</span>
-container foo [
-  <span class="Normal">x</span>:&amp;:@:num  <span class="Comment"># contains an address</span>
-]
 def main [
   <span class="Comment"># don't run anything</span>
 ]
@@ -278,6 +272,18 @@ def foo a:&amp;:@:&amp;:num [
   <span class="Comment"># modify b, completely unrelated to immutable ingredient a</span>
   <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span>index *b<span class="Delimiter">,</span> <span class="Constant">0</span>
   *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario latter_ingredient_of_index_is_immutable)</span>
+def main [
+  <span class="Comment"># don't run anything</span>
+]
+def foo a:&amp;:@:&amp;:@:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> a:&amp;:@:&amp;:@:num [
+  local-scope
+  load-ingredients
+  <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>index *a<span class="Delimiter">,</span> b
+  *x<span class="Special"> &lt;- </span>put-index *x<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 $error: <span class="Constant">0</span>
 
@@ -383,6 +389,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
       check_immutable_ingredient_in_instruction<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">,</span> current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">,</span> caller<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == INDEX &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name == current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       update_aliases<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
