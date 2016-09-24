@@ -22,11 +22,12 @@ void server_socket(int portno, socket_t* server) {
   server->addr.sin_addr.s_addr = INADDR_ANY;
   server->addr.sin_port = htons(portno);
   if (bind(server->fd, (struct sockaddr*)&server->addr, sizeof(server->addr)) < 0) {
+    close(server->fd);
     server->fd = -1;
-    raise << "Failed to bind server socket to port " << portno << ". Something's already using that port." << "\n";
+    raise << "Failed to bind server socket to port " << portno << ". Something's already using that port.\n" << end();
     return;
   }
-  listen(server->fd, 5);
+  listen(server->fd, /*queue length*/5);
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -58,11 +59,13 @@ case _SOCKET: {
   int port = ingredients.at(0).at(0);
   socket_t* server = new socket_t();
   server_socket(port, server);
+  products.resize(1);
   if (server->fd < 0) {
+    delete server;
+    products.at(0).push_back(0);
     break;
   }
   long long int result = reinterpret_cast<long long int>(server);
-  products.resize(1);
   products.at(0).push_back(static_cast<double>(result));
   break;
 }
@@ -168,8 +171,7 @@ case _WRITE_TO_SOCKET: {
   // Write one character to a session at a time.
   long long int y = static_cast<long long int>(ingredients.at(1).at(0));
   char c = static_cast<char>(y);
-  char payload[2] = { c };
-  write(session->fd, payload, 1);
+  write(session->fd, &c, 1);
   long long int result = reinterpret_cast<long long int>(session);
   products.resize(1);
   products.at(0).push_back(result);
@@ -187,7 +189,7 @@ case _CLOSE_SOCKET: {
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a character, but got '" << to_string(inst.ingredients.at(0)) << "t\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a character, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
