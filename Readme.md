@@ -83,9 +83,9 @@ operations (albeit at the cost of some runtime checks).
 
 *Taking Mu for a spin*
 
-Mu is currently implemented in C++ and requires a unix-like environment. It's
+Mu is currently implemented in C++ and requires a Unix-like environment. It's
 been tested on Ubuntu and Mac OS X, on x86, x86\_64 and ARMv7 with recent
-versions of gcc and clang. Since it uses no recent language features and has
+versions of GCC and Clang. Since it uses no recent language features and has
 no exotic dependencies, it should work with most reasonable versions,
 compilers or processors.
 

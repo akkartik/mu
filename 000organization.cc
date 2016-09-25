@@ -75,7 +75,7 @@
 //: the program, and pass all tests for loaded features. (Relevant is
 //: http://youtube.com/watch?v=c8N72t7aScY, a scene from "2001: A Space
 //: Odyssey".) Get into the habit of running the included script called
-//: 'test_all_layers' before you commit any changes.
+//: 'test_layers' before you commit any changes.
 //:
 //: This 'subsetting guarantee' ensures that this directory contains a
 //: cleaned-up narrative of the evolution of this codebase. Organizing
