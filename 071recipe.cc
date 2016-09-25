@@ -199,7 +199,7 @@ recipe from_reagent(const reagent& r) {
     return result_header;  // no products
   }
   read_products:
-  for (/*nada*/; curr && !curr->atom; curr=curr->right)
+  for (/*nada*/; curr && !curr->atom; curr = curr->right)
     result_header.products.push_back(next_recipe_reagent(curr->left));
   if (curr) {
     assert(curr->atom);

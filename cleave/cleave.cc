@@ -88,14 +88,17 @@ string trim(const string& s) {
 }
 
 bool starts_with(const string& s, const string& pat) {
-  return s.substr(0, pat.size()) == pat;
+  string::const_iterator a=s.begin(), b=pat.begin();
+  for (/*nada*/; a!=s.end() && b!=pat.end(); ++a, ++b)
+    if (*a != *b) return false;
+  return b == pat.end();
 }
 
 bool has_data(istream& in) {
   return in && !in.eof();
 }
 
-void slurp(const string/*copy*/ filename, vector<string>& lines) {
+void slurp(const string& filename, vector<string>& lines) {
   lines.clear();
   ifstream in(filename.c_str());
   while (has_data(in)) {
