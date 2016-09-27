@@ -1,7 +1,7 @@
 scenario array-from-args [
   run [
     local-scope
-    x:text <- new-array 0, 1, 2
+    x:&:@:char <- new-array 0, 1, 2
     10:@:char/raw <- copy *x
   ]
   memory-should-contain [
@@ -13,7 +13,8 @@ scenario array-from-args [
 ]
 
 # create an array out of a list of scalar args
-def new-array -> result:text [
+# hacky; needs to be generic
+def new-array -> result:&:@:char [
   local-scope
   capacity:num <- copy 0
   {
