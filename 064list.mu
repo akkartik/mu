@@ -308,7 +308,7 @@ def to-buffer in:&:list:_elem, buf:&:buffer -> buf:&:buffer [
   load-ingredients
   {
     break-if in
-    buf <- append buf, 48/0
+    buf <- append buf, [[]]
     return
   }
   # append in.value to buf
@@ -336,4 +336,12 @@ def to-buffer in:&:list:_elem, buf:&:buffer -> buf:&:buffer [
   }
   # past recursion depth; insert ellipses and stop
   append buf, [...]
+]
+
+scenario stash-empty-list [
+  x:&:list:num <- copy 0
+  stash x
+  trace-should-contain [
+    app: []
+  ]
 ]
