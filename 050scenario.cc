@@ -70,6 +70,10 @@ vector<scenario> Scenarios;
 else if (command == "scenario") {
   Scenarios.push_back(parse_scenario(in));
 }
+else if (command == "pending-scenario") {
+  // for temporary use only
+  parse_scenario(in);  // discard
+}
 
 :(code)
 scenario parse_scenario(istream& in) {
