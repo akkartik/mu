@@ -292,6 +292,34 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
+<span class="Comment"># reverse the elements of a list</span>
+<span class="Comment"># (contributed by Caleb Couch)</span>
+<span class="muRecipe">def</span> reverse list:&amp;:list:_elem temp:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:list:_elem [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="muControl">reply-unless</span> list, temp
+  object:_elem<span class="Special"> &lt;- </span>first, list
+  list<span class="Special"> &lt;- </span>rest list
+  temp<span class="Special"> &lt;- </span>push object, temp
+  result<span class="Special"> &lt;- </span>reverse list, temp
+]
+
+<span class="muScenario">scenario</span> reverse-list [
+  run [
+    <span class="Constant">local-scope</span>
+    list:&amp;:list:number<span class="Special"> &lt;- </span>push <span class="Constant">1</span>, <span class="Constant">0</span>
+    list<span class="Special"> &lt;- </span>push <span class="Constant">2</span>, list
+    list<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, list
+    stash <span class="Constant">[list:]</span>, list
+    list<span class="Special"> &lt;- </span>reverse list, <span class="Constant">0</span>
+    stash <span class="Constant">[reversed:]</span>, list
+  ]
+  trace-should-contain [
+    app: list: <span class="Constant">3</span><span class="muRecipe"> -&gt; </span><span class="Constant">2</span><span class="muRecipe"> -&gt; </span><span class="Constant">1</span>
+    app: reversed: <span class="Constant">1</span><span class="muRecipe"> -&gt; </span><span class="Constant">2</span><span class="muRecipe"> -&gt; </span><span class="Constant">3</span>
+  ]
+]
+
 <span class="muRecipe">def</span> to-text in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
