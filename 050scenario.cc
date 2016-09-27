@@ -541,7 +541,6 @@ void check_trace(const string& expected) {
     ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) return;
   }
-
   if (Current_scenario && !Scenario_testing_scenario)
     raise << "\nF - " << Current_scenario->name << ": missing [" << expected_lines.at(curr_expected_line).contents << "] "
           << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
@@ -560,6 +559,11 @@ vector<trace_line> parse_trace(const string& expected) {
     buf.at(i) = trim(buf.at(i));
     if (buf.at(i).empty()) continue;
     int delim = buf.at(i).find(": ");
+    if (delim == -1) {
+      raise << Current_scenario->name << ": lines in 'trace-should-contain' should be of the form <label>: <contents>. Both parts are required.\n" << end();
+      result.clear();
+      return result;
+    }
     result.push_back(trace_line(trim(buf.at(i).substr(0, delim)),  trim(buf.at(i).substr(delim+2))));
   }
   return result;
