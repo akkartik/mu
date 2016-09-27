@@ -109,21 +109,13 @@ vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instructi
 }
 
 bool all_concrete_header_reagents_strictly_match(const instruction& inst, const recipe& variant) {
-  if (SIZE(inst.ingredients) < SIZE(variant.ingredients)) {
-    trace(9993, "transform") << "too few ingredients" << end();
-    return false;
-  }
-  if (SIZE(variant.products) < SIZE(inst.products)) {
-    trace(9993, "transform") << "too few products" << end();
-    return false;
-  }
-  for (int i = 0; i < SIZE(variant.ingredients); ++i) {
+  for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
     if (!concrete_type_names_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "concrete-type match failed: ingredient " << i << end();
       return false;
     }
   }
-  for (int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0; i < min(SIZE(inst.products), SIZE(variant.ingredients)); ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!concrete_type_names_strictly_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();

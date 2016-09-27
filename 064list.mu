@@ -277,7 +277,7 @@ scenario reverse-list [
     list <- push 2, list
     list <- push 3, list
     stash [list:], list
-    list <- reverse list, 0
+    list <- reverse list
     stash [reversed:], list
   ]
   trace-should-contain [
