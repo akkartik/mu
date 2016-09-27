@@ -322,10 +322,6 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
   }
 }
 
-int min(int a, int b) {
-  return (a < b) ? a : b;
-}
-
 void accumulate_type_ingredients(const reagent& exemplar_reagent, reagent& refinement, map<string, const type_tree*>& mappings, const recipe& exemplar, const instruction& call_instruction, const recipe& caller_recipe, bool* error) {
   assert(refinement.type);
   accumulate_type_ingredients(exemplar_reagent.type, refinement.type, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
