@@ -63,6 +63,7 @@ syntax keyword muControl reply reply-if reply-unless return return-if return-unl
 syntax keyword muRecipe recipe recipe! def def! before after | highlight muRecipe ctermfg=208
 syntax match muRecipe " -> "
 syntax keyword muScenario scenario | highlight muScenario ctermfg=34
-syntax keyword muData container exclusive-container | highlight muData ctermfg=226
+syntax keyword muPendingScenario pending-scenario | highlight link muPendingScenario SpecialChar
+syntax keyword muData container exclusive-container type | highlight muData ctermfg=226
 
 let &cpo = s:save_cpo
