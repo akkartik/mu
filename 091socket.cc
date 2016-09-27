@@ -145,7 +145,7 @@ case _READ_FROM_SOCKET: {
   char contents[bytes];
   bzero(contents, bytes);
   int bytes_read = read(socket_fd, contents, bytes - 1 /* null-terminated */);
-  //?: cerr << "Read:\n" << string(contents) << "\n";
+//?   cerr << "Read:\n" << string(contents) << "\n";
   products.resize(2);
   products.at(0).push_back(new_mu_text(string(contents)));
   products.at(1).push_back(bytes_read);
@@ -171,7 +171,10 @@ case _WRITE_TO_SOCKET: {
   // Write one character to a session at a time.
   long long int y = static_cast<long long int>(ingredients.at(1).at(0));
   char c = static_cast<char>(y);
-  write(session->fd, &c, 1);
+  if (write(session->fd, &c, 1) != 1) {
+    raise << maybe(current_recipe_name()) << "failed to write to socket\n" << end();
+    exit(0);
+  }
   long long int result = reinterpret_cast<long long int>(session);
   products.resize(1);
   products.at(0).push_back(result);
