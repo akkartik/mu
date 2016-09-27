@@ -258,6 +258,34 @@ scenario removing-from-singleton-list [
   ]
 ]
 
+# reverse the elements of a list
+# (contributed by Caleb Couch)
+def reverse list:&:list:_elem temp:&:list:_elem -> result:&:list:_elem [
+  local-scope
+  load-ingredients
+  reply-unless list, temp
+  object:_elem <- first, list
+  list <- rest list
+  temp <- push object, temp
+  result <- reverse list, temp
+]
+
+scenario reverse-list [
+  run [
+    local-scope
+    list:&:list:number <- push 1, 0
+    list <- push 2, list
+    list <- push 3, list
+    stash [list:], list
+    list <- reverse list, 0
+    stash [reversed:], list
+  ]
+  trace-should-contain [
+    app: list: 3 -> 2 -> 1
+    app: reversed: 1 -> 2 -> 3
+  ]
+]
+
 def to-text in:&:list:_elem -> result:text [
   local-scope
   load-ingredients
