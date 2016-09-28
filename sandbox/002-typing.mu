@@ -854,14 +854,14 @@ after <handle-special-character> [
     newline?:bool <- equal c, 10/newline
     break-unless newline?
     <insert-enter-begin>
-    editor <- insert-new-line-and-indent editor, screen
+    editor <- insert-newline-and-indent editor, screen
     <insert-enter-end>
     go-render? <- copy 1/true
     return
   }
 ]
 
-def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool [
+def insert-newline-and-indent editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool [
   local-scope
   load-ingredients
   cursor-row:num <- get *editor, cursor-row:offset
