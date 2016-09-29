@@ -58,9 +58,9 @@ recipe fill array:&:@:num -> array:&:@:num [
 ]
 
 scenario fill-on-an-empty-array [
+  local-scope
+  array:&:@:num <- new number:type, 3
   run [
-    local-scope
-    array:&:@:num <- new number:type, 3
     array <- fill array, 1 2 3
     10:@:num/raw <- copy *array
   ]
@@ -73,10 +73,10 @@ scenario fill-on-an-empty-array [
 ]
 
 scenario fill-overwrites-existing-values [
+  local-scope
+  array:&:@:num <- new number:type, 3
+  *array <- put-index *array, 0, 4
   run [
-    local-scope
-    array:&:@:num <- new number:type, 3
-    *array <- put-index *array, 0, 4
     array <- fill array, 1 2 3
     10:@:num/raw <- copy *array
   ]
@@ -89,9 +89,9 @@ scenario fill-overwrites-existing-values [
 ]
 
 scenario fill-exits-gracefully-when-given-no-ingredients [
+  local-scope
+  array:&:@:num <- new number:type, 3
   run [
-    local-scope
-    array:&:@:num <- new number:type, 3
     array <- fill array
     10:@:num/raw <- copy *array
   ]
@@ -115,10 +115,10 @@ recipe swap array:&:@:num, index1:num, index2:num -> array:&:@:num [
 ]
 
 scenario swap-works [
+  local-scope
+  array:&:@:num <- new number:type, 4
+  array <- fill array, 4 3 2 1
   run [
-    local-scope
-    array:&:@:num <- new number:type, 4
-    array <- fill array, 4 3 2 1
     array <- swap array, 0, 2
     10:num/raw <- index *array, 0
     11:num/raw <- index *array, 2
@@ -148,10 +148,10 @@ def reverse array:&:@:_elem -> array:&:@:_elem [
 ]
 
 scenario reverse-array-odd-length [
+  local-scope
+  array:&:@:num <- new number:type, 3
+  array <- fill array, 3 2 1
   run [
-    local-scope
-    array:&:@:num <- new number:type, 3
-    array <- fill array, 3 2 1
     array <- reverse array
     10:@:num/raw <- copy *array
   ]
@@ -164,10 +164,10 @@ scenario reverse-array-odd-length [
 ]
 
 scenario reverse-array-even-length [
+  local-scope
+  array:&:@:num <- new number:type, 4
+  array <- fill array, 4 3 2 1
   run [
-    local-scope
-    array:&:@:num <- new number:type, 4
-    array <- fill array, 4 3 2 1
     array <- reverse array
     10:@:num/raw <- copy *array
   ]

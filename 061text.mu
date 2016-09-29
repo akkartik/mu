@@ -32,9 +32,9 @@ def equal a:text, b:text -> result:bool [
 ]
 
 scenario text-equal-reflexive [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     10:bool/raw <- equal x, x
   ]
   memory-should-contain [
@@ -43,10 +43,10 @@ scenario text-equal-reflexive [
 ]
 
 scenario text-equal-identical [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [abc]
     10:bool/raw <- equal x, y
   ]
   memory-should-contain [
@@ -55,10 +55,10 @@ scenario text-equal-identical [
 ]
 
 scenario text-equal-distinct-lengths [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [abcd]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [abcd]
     10:bool/raw <- equal x, y
   ]
   memory-should-contain [
@@ -73,10 +73,10 @@ scenario text-equal-distinct-lengths [
 ]
 
 scenario text-equal-with-empty [
+  local-scope
+  x:text <- new []
+  y:text <- new [abcd]
   run [
-    local-scope
-    x:text <- new []
-    y:text <- new [abcd]
     10:bool/raw <- equal x, y
   ]
   memory-should-contain [
@@ -85,10 +85,10 @@ scenario text-equal-with-empty [
 ]
 
 scenario text-equal-common-lengths-but-distinct [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [abd]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [abd]
     10:bool/raw <- equal x, y
   ]
   memory-should-contain [
@@ -205,18 +205,53 @@ def append buf:&:buffer, t:text -> buf:&:buffer [
   }
 ]
 
-scenario buffer-append-works [
+scenario append-to-empty-buffer [
+  local-scope
+  x:&:buffer <- new-buffer
   run [
-    local-scope
-    x:&:buffer <- new-buffer 3
-    s1:text <- get *x, data:offset
     c:char <- copy 97/a
     x <- append x, c
-    c:char <- copy 98/b
+    10:num/raw <- get *x, length:offset
+    s:text <- get *x, data:offset
+    11:char/raw <- index *s, 0
+    12:char/raw <- index *s, 1
+  ]
+  memory-should-contain [
+    10 <- 1  # buffer length
+    11 <- 97  # a
+    12 <- 0  # rest of buffer is empty
+  ]
+]
+
+scenario append-to-buffer [
+  local-scope
+  x:&:buffer <- new-buffer
+  c:char <- copy 97/a
+  x <- append x, c
+  run [
+    c <- copy 98/b
     x <- append x, c
-    c:char <- copy 99/c
-    x <- append x, c
-    s2:text <- get *x, data:offset
+    10:num/raw <- get *x, length:offset
+    s:text <- get *x, data:offset
+    11:char/raw <- index *s, 0
+    12:char/raw <- index *s, 1
+    13:char/raw <- index *s, 2
+  ]
+  memory-should-contain [
+    10 <- 2  # buffer length
+    11 <- 97  # a
+    12 <- 98  # b
+    13 <- 0  # rest of buffer is empty
+  ]
+]
+
+scenario append-grows-buffer [
+  local-scope
+  x:&:buffer <- new-buffer 3
+  s1:text <- get *x, data:offset
+  x <- append x, [abc]  # buffer is now full
+  s2:text <- get *x, data:offset
+  run [
     10:bool/raw <- equal s1, s2
     11:@:char/raw <- copy *s2
     +buffer-filled
@@ -229,13 +264,13 @@ scenario buffer-append-works [
   ]
   memory-should-contain [
     # before +buffer-filled
-    10 <- 1   # no change in data pointer
+    10 <- 1   # no change in data pointer after original append
     11 <- 3   # size of data
     12 <- 97  # data
     13 <- 98
     14 <- 99
     # in the end
-    20 <- 0   # data pointer has grown
+    20 <- 0   # data pointer has grown after second append
     21 <- 4   # final length
     30 <- 6   # but data's capacity has doubled
     31 <- 97  # data
@@ -247,23 +282,11 @@ scenario buffer-append-works [
   ]
 ]
 
-scenario buffer-append-to-empty [
-  run [
-    local-scope
-    x:&:buffer <- new-buffer
-    c:char <- copy 97/a
-    x <- append x, c
-  ]
-]
-
 scenario buffer-append-handles-backspace [
+  local-scope
+  x:&:buffer <- new-buffer
+  x <- append x, [ab]
   run [
-    local-scope
-    x:&:buffer <- new-buffer 3
-    c:char <- copy 97/a
-    x <- append x, c
-    c:char <- copy 98/b
-    x <- append x, c
     c:char <- copy 8/backspace
     x <- append x, c
     s:text <- buffer-to-array x
@@ -328,10 +351,10 @@ def append first:text -> result:text [
 ]
 
 scenario text-append-1 [
+  local-scope
+  x:text <- new [hello,]
+  y:text <- new [ world!]
   run [
-    local-scope
-    x:text <- new [hello,]
-    y:text <- new [ world!]
     z:text <- append x, y
     10:@:char/raw <- copy *z
   ]
@@ -341,10 +364,10 @@ scenario text-append-1 [
 ]
 
 scenario text-append-null [
+  local-scope
+  x:text <- copy 0
+  y:text <- new [ world!]
   run [
-    local-scope
-    x:text <- copy 0
-    y:text <- new [ world!]
     z:text <- append x, y
     10:@:char/raw <- copy *z
   ]
@@ -354,10 +377,10 @@ scenario text-append-null [
 ]
 
 scenario text-append-null-2 [
+  local-scope
+  x:text <- new [hello,]
+  y:text <- copy 0
   run [
-    local-scope
-    x:text <- new [hello,]
-    y:text <- copy 0
     z:text <- append x, y
     10:@:char/raw <- copy *z
   ]
@@ -367,11 +390,11 @@ scenario text-append-null-2 [
 ]
 
 scenario text-append-multiary [
+  local-scope
+  x:text <- new [hello, ]
+  y:text <- new [world]
+  z:text <- new [!]
   run [
-    local-scope
-    x:text <- new [hello, ]
-    y:text <- new [world]
-    z:text <- new [!]
     z:text <- append x, y, z
     10:@:char/raw <- copy *z
   ]
@@ -381,9 +404,9 @@ scenario text-append-multiary [
 ]
 
 scenario replace-character-in-text [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     x <- replace x, 98/b, 122/z
     10:@:char/raw <- copy *x
   ]
@@ -405,9 +428,9 @@ def replace s:text, oldc:char, newc:char, from:num/optional -> s:text [
 ]
 
 scenario replace-character-at-start [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     x <- replace x, 97/a, 122/z
     10:@:char/raw <- copy *x
   ]
@@ -417,9 +440,9 @@ scenario replace-character-at-start [
 ]
 
 scenario replace-character-at-end [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     x <- replace x, 99/c, 122/z
     10:@:char/raw <- copy *x
   ]
@@ -429,9 +452,9 @@ scenario replace-character-at-end [
 ]
 
 scenario replace-character-missing [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     x <- replace x, 100/d, 122/z
     10:@:char/raw <- copy *x
   ]
@@ -441,9 +464,9 @@ scenario replace-character-missing [
 ]
 
 scenario replace-all-characters [
+  local-scope
+  x:text <- new [banana]
   run [
-    local-scope
-    x:text <- new [banana]
     x <- replace x, 97/a, 122/z
     10:@:char/raw <- copy *x
   ]
@@ -527,10 +550,10 @@ def interpolate template:text -> result:text [
 ]
 
 scenario interpolate-works [
+  local-scope
+  x:text <- new [abc_ghi]
+  y:text <- new [def]
   run [
-    local-scope
-    x:text <- new [abc_ghi]
-    y:text <- new [def]
     z:text <- interpolate x, y
     10:@:char/raw <- copy *z
   ]
@@ -540,10 +563,10 @@ scenario interpolate-works [
 ]
 
 scenario interpolate-at-start [
+  local-scope
+  x:text <- new [_, hello!]
+  y:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [_, hello!]
-    y:text <- new [abc]
     z:text <- interpolate x, y
     10:@:char/raw <- copy *z
   ]
@@ -554,9 +577,10 @@ scenario interpolate-at-start [
 ]
 
 scenario interpolate-at-end [
+  local-scope
+  x:text <- new [hello, _]
+  y:text <- new [abc]
   run [
-    x:text <- new [hello, _]
-    y:text <- new [abc]
     z:text <- interpolate x, y
     10:@:char/raw <- copy *z
   ]
@@ -677,9 +701,9 @@ def trim s:text -> result:text [
 ]
 
 scenario trim-unmodified [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     y:text <- trim x
     1:@:char/raw <- copy *y
   ]
@@ -689,9 +713,9 @@ scenario trim-unmodified [
 ]
 
 scenario trim-left [
+  local-scope
+  x:text <- new [  abc]
   run [
-    local-scope
-    x:text <- new [  abc]
     y:text <- trim x
     1:@:char/raw <- copy *y
   ]
@@ -701,9 +725,9 @@ scenario trim-left [
 ]
 
 scenario trim-right [
+  local-scope
+  x:text <- new [abc  ]
   run [
-    local-scope
-    x:text <- new [abc  ]
     y:text <- trim x
     1:@:char/raw <- copy *y
   ]
@@ -713,9 +737,9 @@ scenario trim-right [
 ]
 
 scenario trim-left-right [
+  local-scope
+  x:text <- new [  abc   ]
   run [
-    local-scope
-    x:text <- new [  abc   ]
     y:text <- trim x
     1:@:char/raw <- copy *y
   ]
@@ -725,10 +749,10 @@ scenario trim-left-right [
 ]
 
 scenario trim-newline-tab [
-  run [
-    local-scope
-    x:text <- new [	abc
+  local-scope
+  x:text <- new [	abc
 ]
+  run [
     y:text <- trim x
     1:@:char/raw <- copy *y
   ]
@@ -754,9 +778,9 @@ def find-next text:text, pattern:char, idx:num -> next-index:num [
 ]
 
 scenario text-find-next [
+  local-scope
+  x:text <- new [a/b]
   run [
-    local-scope
-    x:text <- new [a/b]
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -765,9 +789,9 @@ scenario text-find-next [
 ]
 
 scenario text-find-next-empty [
+  local-scope
+  x:text <- new []
   run [
-    local-scope
-    x:text <- new []
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -776,9 +800,9 @@ scenario text-find-next-empty [
 ]
 
 scenario text-find-next-initial [
+  local-scope
+  x:text <- new [/abc]
   run [
-    local-scope
-    x:text <- new [/abc]
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -787,9 +811,9 @@ scenario text-find-next-initial [
 ]
 
 scenario text-find-next-final [
+  local-scope
+  x:text <- new [abc/]
   run [
-    local-scope
-    x:text <- new [abc/]
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -798,9 +822,9 @@ scenario text-find-next-final [
 ]
 
 scenario text-find-next-missing [
+  local-scope
+  x:text <- new [abcd]
   run [
-    local-scope
-    x:text <- new [abcd]
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -809,9 +833,9 @@ scenario text-find-next-missing [
 ]
 
 scenario text-find-next-invalid-index [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     10:num/raw <- find-next x, 47/slash, 4/start-index
   ]
   memory-should-contain [
@@ -820,9 +844,9 @@ scenario text-find-next-invalid-index [
 ]
 
 scenario text-find-next-first [
+  local-scope
+  x:text <- new [ab/c/]
   run [
-    local-scope
-    x:text <- new [ab/c/]
     10:num/raw <- find-next x, 47/slash, 0/start-index
   ]
   memory-should-contain [
@@ -831,9 +855,9 @@ scenario text-find-next-first [
 ]
 
 scenario text-find-next-second [
+  local-scope
+  x:text <- new [ab/c/]
   run [
-    local-scope
-    x:text <- new [ab/c/]
     10:num/raw <- find-next x, 47/slash, 3/start-index
   ]
   memory-should-contain [
@@ -864,10 +888,10 @@ def find-next text:text, pattern:text, idx:num -> next-index:num [
 ]
 
 scenario find-next-text-1 [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [bc]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [bc]
     10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
@@ -876,10 +900,10 @@ scenario find-next-text-1 [
 ]
 
 scenario find-next-text-2 [
+  local-scope
+  x:text <- new [abcd]
+  y:text <- new [bc]
   run [
-    local-scope
-    x:text <- new [abcd]
-    y:text <- new [bc]
     10:num/raw <- find-next x, y, 1
   ]
   memory-should-contain [
@@ -888,10 +912,10 @@ scenario find-next-text-2 [
 ]
 
 scenario find-next-no-match [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [bd]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [bd]
     10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
@@ -900,10 +924,10 @@ scenario find-next-no-match [
 ]
 
 scenario find-next-suffix-match [
+  local-scope
+  x:text <- new [abcd]
+  y:text <- new [cd]
   run [
-    local-scope
-    x:text <- new [abcd]
-    y:text <- new [cd]
     10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
@@ -912,10 +936,10 @@ scenario find-next-suffix-match [
 ]
 
 scenario find-next-suffix-match-2 [
+  local-scope
+  x:text <- new [abcd]
+  y:text <- new [cde]
   run [
-    local-scope
-    x:text <- new [abcd]
-    y:text <- new [cde]
     10:num/raw <- find-next x, y, 0
   ]
   memory-should-contain [
@@ -956,10 +980,10 @@ def match-at text:text, pattern:text, idx:num -> result:bool [
 ]
 
 scenario match-at-checks-pattern-at-index [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [ab]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [ab]
     10:bool/raw <- match-at x, y, 0
   ]
   memory-should-contain [
@@ -968,9 +992,9 @@ scenario match-at-checks-pattern-at-index [
 ]
 
 scenario match-at-reflexive [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     10:bool/raw <- match-at x, x, 0
   ]
   memory-should-contain [
@@ -979,10 +1003,10 @@ scenario match-at-reflexive [
 ]
 
 scenario match-at-outside-bounds [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [a]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [a]
     10:bool/raw <- match-at x, y, 4
   ]
   memory-should-contain [
@@ -991,10 +1015,10 @@ scenario match-at-outside-bounds [
 ]
 
 scenario match-at-empty-pattern [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new []
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new []
     10:bool/raw <- match-at x, y, 0
   ]
   memory-should-contain [
@@ -1003,10 +1027,10 @@ scenario match-at-empty-pattern [
 ]
 
 scenario match-at-empty-pattern-outside-bound [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new []
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new []
     10:bool/raw <- match-at x, y, 4
   ]
   memory-should-contain [
@@ -1015,10 +1039,10 @@ scenario match-at-empty-pattern-outside-bound [
 ]
 
 scenario match-at-empty-text [
+  local-scope
+  x:text <- new []
+  y:text <- new [abc]
   run [
-    local-scope
-    x:text <- new []
-    y:text <- new [abc]
     10:bool/raw <- match-at x, y, 0
   ]
   memory-should-contain [
@@ -1027,9 +1051,9 @@ scenario match-at-empty-text [
 ]
 
 scenario match-at-empty-against-empty [
+  local-scope
+  x:text <- new []
   run [
-    local-scope
-    x:text <- new []
     10:bool/raw <- match-at x, x, 0
   ]
   memory-should-contain [
@@ -1038,10 +1062,10 @@ scenario match-at-empty-against-empty [
 ]
 
 scenario match-at-inside-bounds [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [bc]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [bc]
     10:bool/raw <- match-at x, y, 1
   ]
   memory-should-contain [
@@ -1050,10 +1074,10 @@ scenario match-at-inside-bounds [
 ]
 
 scenario match-at-inside-bounds-2 [
+  local-scope
+  x:text <- new [abc]
+  y:text <- new [bc]
   run [
-    local-scope
-    x:text <- new [abc]
-    y:text <- new [bc]
     10:bool/raw <- match-at x, y, 0
   ]
   memory-should-contain [
@@ -1104,9 +1128,9 @@ def split s:text, delim:char -> result:&:@:text [
 ]
 
 scenario text-split-1 [
+  local-scope
+  x:text <- new [a/b]
   run [
-    local-scope
-    x:text <- new [a/b]
     y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
@@ -1122,9 +1146,9 @@ scenario text-split-1 [
 ]
 
 scenario text-split-2 [
+  local-scope
+  x:text <- new [a/b/c]
   run [
-    local-scope
-    x:text <- new [a/b/c]
     y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
@@ -1143,9 +1167,9 @@ scenario text-split-2 [
 ]
 
 scenario text-split-missing [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
@@ -1158,9 +1182,9 @@ scenario text-split-missing [
 ]
 
 scenario text-split-empty [
+  local-scope
+  x:text <- new []
   run [
-    local-scope
-    x:text <- new []
     y:&:@:text <- split x, 47/slash
     10:num/raw <- length *y
   ]
@@ -1170,9 +1194,9 @@ scenario text-split-empty [
 ]
 
 scenario text-split-empty-piece [
+  local-scope
+  x:text <- new [a/b//c]
   run [
-    local-scope
-    x:text <- new [a/b//c]
     y:&:@:text <- split x:text, 47/slash
     10:num/raw <- length *y
     a:text <- index *y, 0
@@ -1212,9 +1236,9 @@ def split-first text:text, delim:char -> x:text, y:text [
 ]
 
 scenario text-split-first [
+  local-scope
+  x:text <- new [a/b]
   run [
-    local-scope
-    x:text <- new [a/b]
     y:text, z:text <- split-first x, 47/slash
     10:@:char/raw <- copy *y
     20:@:char/raw <- copy *z
@@ -1248,10 +1272,10 @@ def copy-range buf:text, start:num, end:num -> result:text [
   }
 ]
 
-scenario text-copy-copies-partial-text [
+scenario copy-range-works [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     y:text <- copy-range x, 1, 3
     1:@:char/raw <- copy *y
   ]
@@ -1260,10 +1284,10 @@ scenario text-copy-copies-partial-text [
   ]
 ]
 
-scenario text-copy-out-of-bounds [
+scenario copy-range-out-of-bounds [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     y:text <- copy-range x, 2, 4
     1:@:char/raw <- copy *y
   ]
@@ -1272,10 +1296,10 @@ scenario text-copy-out-of-bounds [
   ]
 ]
 
-scenario text-copy-out-of-bounds-2 [
+scenario copy-range-out-of-bounds-2 [
+  local-scope
+  x:text <- new [abc]
   run [
-    local-scope
-    x:text <- new [abc]
     y:text <- copy-range x, 3, 3
     1:@:char/raw <- copy *y
   ]

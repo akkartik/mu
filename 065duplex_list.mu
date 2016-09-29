@@ -99,11 +99,11 @@ def insert x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
 ]
 
 scenario inserting-into-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     list2:&:duplex-list:char <- next list  # inside list
     list2 <- insert 6, list2
     # check structure like before
@@ -136,11 +136,11 @@ scenario inserting-into-duplex-list [
 ]
 
 scenario inserting-at-end-of-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     list2:&:duplex-list:char <- next list  # inside list
     list2 <- next list2  # now at end of list
     list2 <- insert 6, list2
@@ -174,11 +174,11 @@ scenario inserting-at-end-of-duplex-list [
 ]
 
 scenario inserting-after-start-of-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     list <- insert 6, list
     # check structure like before
     list2:&:duplex-list:char <- copy list
@@ -240,11 +240,11 @@ def remove x:&:duplex-list:_elem/contained-in:in, in:&:duplex-list:_elem -> in:&
 ]
 
 scenario removing-from-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     list2:&:duplex-list:char <- next list  # second element
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
@@ -269,11 +269,11 @@ scenario removing-from-duplex-list [
 ]
 
 scenario removing-from-start-of-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     list <- remove list, list
     # check structure like before
     list2:&:duplex-list:char <- copy list
@@ -295,11 +295,11 @@ scenario removing-from-start-of-duplex-list [
 ]
 
 scenario removing-from-end-of-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
-    list <- push 4, list
-    list <- push 5, list
     # delete last element
     list2:&:duplex-list:char <- next list
     list2 <- next list2
@@ -326,9 +326,9 @@ scenario removing-from-end-of-duplex-list [
 ]
 
 scenario removing-from-singleton-duplex-list [
+  local-scope
+  list:&:duplex-list:char <- push 3, 0
   run [
-    local-scope
-    list:&:duplex-list:char <- push 3, 0
     list <- remove list, list
     1:num/raw <- copy list
   ]
@@ -371,10 +371,7 @@ scenario remove-range [
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:&:duplex-list:char/raw <- copy list  # save list
   run [
-    local-scope
-    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete 16 onwards
     # first pointer: to the third element
     list2:&:duplex-list:char <- next list
@@ -405,10 +402,7 @@ scenario remove-range-to-final [
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:&:duplex-list:char/raw <- copy list  # save list
   run [
-    local-scope
-    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete 15, 16 and 17
     # start pointer: to the second element
     list2:&:duplex-list:char <- next list
@@ -440,10 +434,7 @@ scenario remove-range-empty [
   list:&:duplex-list:char <- push 15, 0
   list <- push 14, list
   list <- push 13, list
-  1:&:duplex-list:char/raw <- copy list  # save list
   run [
-    local-scope
-    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # delete between first and second element (i.e. nothing)
     list2:&:duplex-list:char <- next list
     remove-between list, list2
@@ -473,10 +464,7 @@ scenario remove-range-to-end [
   list <- push 15, list
   list <- push 14, list
   list <- push 13, list
-  1:&:duplex-list:char/raw <- copy list  # save list
   run [
-    local-scope
-    list:&:duplex-list:char <- copy 1:&:duplex-list:char/raw  # restore list
     # remove the third element and beyond
     list2:&:duplex-list:char <- next list
     remove-between list2, 0

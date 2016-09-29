@@ -2,20 +2,20 @@
 ## see code operate in multiple situations
 
 scenario copy-a-sandbox-to-editor [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -31,7 +31,7 @@ recipe foo [
     left-click 3, 69
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -49,7 +49,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -64,20 +64,20 @@ recipe foo [
 ]
 
 scenario copy-a-sandbox-to-editor-2 [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -93,7 +93,7 @@ recipe foo [
     left-click 3, 84
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -111,7 +111,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -221,20 +221,20 @@ def within-range? x:num, low:num, high:num -> result:bool [
 ]
 
 scenario copy-fails-if-sandbox-editor-not-empty [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -252,7 +252,7 @@ recipe foo [
     left-click 3, 70  # click 'copy' button
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # copy doesn't happen
   screen-should-contain [
@@ -270,7 +270,7 @@ recipe foo [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .

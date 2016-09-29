@@ -1,20 +1,20 @@
 ## clicking on the code typed into a sandbox toggles its trace
 
 scenario sandbox-click-on-code-toggles-app-trace [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   stash [abc]
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -29,9 +29,9 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:char/cursor-icon <- copy 9251/␣
-    print screen:&:screen, 4:char/cursor-icon
+    event-loop screen:&:screen, console:&:console, env
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
@@ -55,8 +55,8 @@ recipe foo [
     left-click 4, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    print screen:&:screen, 4:char/cursor-icon
+    event-loop screen:&:screen, console:&:console, env
+    print screen:&:screen, cursor
   ]
   # trace hidden again
   screen-should-contain [
@@ -71,21 +71,21 @@ recipe foo [
 ]
 
 scenario sandbox-shows-app-trace-and-result [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   stash [abc]
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -101,7 +101,7 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # trace now printed above result
   screen-should-contain [
@@ -119,17 +119,16 @@ recipe foo [
 ]
 
 scenario clicking-on-app-trace-does-nothing [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  1:text <- new []
+  env:&:environment <- new-programming-environment screen:&:screen, [], [stash 123456789]
   # create and expand the trace
-  2:text <- new [stash 123456789]
   assume-console [
     press F4
     left-click 4, 51
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -143,7 +142,7 @@ scenario clicking-on-app-trace-does-nothing [
     left-click 5, 57
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # no change; doesn't die
   screen-should-contain [

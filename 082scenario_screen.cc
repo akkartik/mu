@@ -12,10 +12,11 @@ recipes_taking_literal_strings.insert("screen-should-contain-in-color");
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
 scenario screen-in-scenario [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, 1:char/a
+    a:char <- copy 97/a
+    screen:&:screen <- print screen:&:screen, a
   ]
   screen-should-contain [
   #  01234
@@ -28,12 +29,13 @@ scenario screen-in-scenario [
 
 :(scenario screen_in_scenario_unicode)
 scenario screen-in-scenario-unicode-color [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:char <- copy 955/greek-small-lambda
-    screen:&:screen <- print screen:&:screen, 1:char/lambda, 1/red
-    2:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, 2:char/a
+    lambda:char <- copy 955/greek-small-lambda
+    screen:&:screen <- print screen:&:screen, lambda, 1/red
+    a:char <- copy 97/a
+    screen:&:screen <- print screen:&:screen, a
   ]
   screen-should-contain [
   #  01234
@@ -47,12 +49,13 @@ scenario screen-in-scenario-unicode-color [
 :(scenario screen_in_scenario_color)
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:char <- copy 955/greek-small-lambda
-    screen:&:screen <- print screen:&:screen, 1:char/lambda, 1/red
-    2:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, 2:char/a, 7/white
+    lambda:char <- copy 955/greek-small-lambda
+    screen:&:screen <- print screen:&:screen, lambda, 1/red
+    a:char <- copy 97/a
+    screen:&:screen <- print screen:&:screen, a, 7/white
   ]
   # screen-should-contain shows everything
   screen-should-contain [
@@ -83,10 +86,11 @@ scenario screen-in-scenario-color [
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
 scenario screen-in-scenario-error [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, 1:char/a
+    a:char <- copy 97/a
+    screen:&:screen <- print screen:&:screen, a
   ]
   screen-should-contain [
   #  01234
@@ -102,10 +106,11 @@ scenario screen-in-scenario-error [
 % Hide_errors = true;
 # screen-should-contain can check unicode characters in the fake screen
 scenario screen-in-scenario-color [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:char <- copy 97/a
-    screen:&:screen <- print screen:&:screen, 1:char/a, 1/red
+    a:char <- copy 97/a
+    screen:&:screen <- print screen:&:screen, a, 1/red
   ]
   screen-should-contain-in-color 2/green, [
   #  01234
@@ -137,11 +142,6 @@ extern const int Max_variables_in_scenarios = Reserved_for_tests-100;
 int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
 :(before "End Setup")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
-:(after "transform_all()" following "case RUN:")
-// There's a restriction on the number of variables 'run' can use, so that
-// it can avoid colliding with the dynamic allocator in case it doesn't
-// initialize a default-space.
-assert(Name[tmp_recipe.at(0)][""] < Max_variables_in_scenarios);
 
 :(before "End Globals")
 // Scenario Globals.

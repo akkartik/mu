@@ -172,9 +172,9 @@ def print screen:&:screen, c:char -> screen:&:screen [
 ]
 
 scenario print-character-at-top-left [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char
     cell:&:@:screen-cell <- get *fake-screen, data:offset
@@ -190,9 +190,9 @@ scenario print-character-at-top-left [
 ]
 
 scenario print-character-in-color [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     a:char <- copy 97/a
     fake-screen <- print fake-screen, a:char, 1/red
     cell:&:@:screen-cell <- get *fake-screen, data:offset
@@ -208,11 +208,11 @@ scenario print-character-in-color [
 ]
 
 scenario print-backspace-character [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
     10:num/raw <- get *fake-screen, cursor-column:offset
@@ -230,14 +230,14 @@ scenario print-backspace-character [
 ]
 
 scenario print-extra-backspace-character [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
     backspace:char <- copy 8/backspace
     fake-screen <- print fake-screen, backspace
-    fake-screen <- print fake-screen, backspace
+    fake-screen <- print fake-screen, backspace  # cursor already at left margin
     1:num/raw <- get *fake-screen, cursor-column:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     3:@:screen-cell/raw <- copy *cell
@@ -253,13 +253,15 @@ scenario print-extra-backspace-character [
 ]
 
 scenario print-character-at-right-margin [
+  # fill top row of screen with text
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 2/width, 2/height
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
+  b:char <- copy 98/b
+  fake-screen <- print fake-screen, b
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 2/width, 2/height
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
-    b:char <- copy 98/b
-    fake-screen <- print fake-screen, b
+    # cursor now at right margin
     c:char <- copy 99/c
     fake-screen <- print fake-screen, c
     10:num/raw <- get *fake-screen, cursor-column:offset
@@ -279,12 +281,12 @@ scenario print-character-at-right-margin [
 ]
 
 scenario print-newline-character [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
     newline:char <- copy 10/newline
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
     fake-screen <- print fake-screen, newline
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
@@ -303,16 +305,18 @@ scenario print-newline-character [
 ]
 
 scenario print-newline-at-bottom-line [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  newline:char <- copy 10/newline
+  fake-screen <- print fake-screen, newline
+  fake-screen <- print fake-screen, newline
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
-    newline:char <- copy 10/newline
-    fake-screen <- print fake-screen, newline
-    fake-screen <- print fake-screen, newline
+    # cursor now at bottom of screen
     fake-screen <- print fake-screen, newline
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
   ]
+  # doesn't move further down
   memory-should-contain [
     10 <- 1  # cursor row
     11 <- 0  # cursor column
@@ -320,18 +324,19 @@ scenario print-newline-at-bottom-line [
 ]
 
 scenario print-character-at-bottom-right [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 2/width, 2/height
+  newline:char <- copy 10/newline
+  fake-screen <- print fake-screen, newline
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
+  b:char <- copy 98/b
+  fake-screen <- print fake-screen, b
+  c:char <- copy 99/c
+  fake-screen <- print fake-screen, c
+  fake-screen <- print fake-screen, newline
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 2/width, 2/height
-    newline:char <- copy 10/newline
-    fake-screen <- print fake-screen, newline
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
-    b:char <- copy 98/b
-    fake-screen <- print fake-screen, b
-    c:char <- copy 99/c
-    fake-screen <- print fake-screen, c
-    fake-screen <- print fake-screen, newline
+    # cursor now at bottom right
     d:char <- copy 100/d
     fake-screen <- print fake-screen, d
     10:num/raw <- get *fake-screen, cursor-row:offset
@@ -431,15 +436,14 @@ def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen 
 ]
 
 scenario clear-line-erases-printed-characters [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  # print a character
+  a:char <- copy 97/a
+  fake-screen <- print fake-screen, a
+  # move cursor to start of line
+  fake-screen <- move-cursor fake-screen, 0/row, 0/column
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
-    # print a character
-    a:char <- copy 97/a
-    fake-screen <- print fake-screen, a
-    # move cursor to start of line
-    fake-screen <- move-cursor fake-screen, 0/row, 0/column
-    # clear line
     fake-screen <- clear-line fake-screen
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     10:@:screen-cell/raw <- copy *cell
@@ -672,11 +676,10 @@ def print screen:&:screen, s:text -> screen:&:screen [
 ]
 
 scenario print-text-stops-at-right-margin [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
   run [
-    local-scope
-    fake-screen:&:screen <- new-fake-screen 3/width, 2/height
-    s:text <- new [abcd]
-    fake-screen <- print fake-screen, s:text
+    fake-screen <- print fake-screen, [abcd]
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     10:@:screen-cell/raw <- copy *cell
   ]

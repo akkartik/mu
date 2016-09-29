@@ -177,9 +177,9 @@ scenario channel-initialization [
 ]
 
 scenario channel-write-increments-free [
+  local-scope
+  _, sink:&:sink:num <- new-channel 3/capacity
   run [
-    local-scope
-    _, sink:&:sink:num <- new-channel 3/capacity
     sink <- write sink, 34
     chan:&:channel:num <- get *sink, chan:offset
     10:num/raw <- get *chan, first-full:offset
@@ -192,10 +192,10 @@ scenario channel-write-increments-free [
 ]
 
 scenario channel-read-increments-full [
+  local-scope
+  source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
+  sink <- write sink, 34
   run [
-    local-scope
-    source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
-    sink <- write sink, 34
     _, _, source <- read source
     chan:&:channel:num <- get *source, chan:offset
     10:num/raw <- get *chan, first-full:offset
@@ -208,14 +208,14 @@ scenario channel-read-increments-full [
 ]
 
 scenario channel-wrap [
+  local-scope
+  # channel with just 1 slot
+  source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+  chan:&:channel:num <- get *source, chan:offset
+  # write and read a value
+  sink <- write sink, 34
+  _, _, source <- read source
   run [
-    local-scope
-    # channel with just 1 slot
-    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
-    chan:&:channel:num <- get *source, chan:offset
-    # write and read a value
-    sink <- write sink, 34
-    _, _, source <- read source
     # first-free will now be 1
     10:num/raw <- get *chan, first-free:offset
     11:num/raw <- get *chan, first-free:offset
@@ -249,9 +249,10 @@ scenario channel-new-empty-not-full [
 ]
 
 scenario channel-write-not-empty [
+  local-scope
+  source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
+  chan:&:channel:num <- get *source, chan:offset
   run [
-    source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
-    chan:&:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan
@@ -263,10 +264,10 @@ scenario channel-write-not-empty [
 ]
 
 scenario channel-write-full [
+  local-scope
+  source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+  chan:&:channel:num <- get *source, chan:offset
   run [
-    local-scope
-    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
-    chan:&:channel:num <- get *source, chan:offset
     sink <- write sink, 34
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan
@@ -278,11 +279,11 @@ scenario channel-write-full [
 ]
 
 scenario channel-read-not-full [
+  local-scope
+  source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
+  chan:&:channel:num <- get *source, chan:offset
+  sink <- write sink, 34
   run [
-    local-scope
-    source:&:source:num, sink:&:sink:num <- new-channel 1/capacity
-    chan:&:channel:num <- get *source, chan:offset
-    sink <- write sink, 34
     _, _, source <- read source
     10:bool/raw <- channel-empty? chan
     11:bool/raw <- channel-full? chan

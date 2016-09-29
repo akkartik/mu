@@ -14,10 +14,10 @@ def! main text:text [
 ]
 
 scenario editor-initially-prints-text-to-screen [
+  local-scope
   assume-screen 10/width, 5/height
   run [
-    1:text <- new [abc]
-    new-editor 1:text, screen:&:screen, 0/left, 10/right
+    new-editor [abc], screen:&:screen, 0/left, 10/right
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -95,10 +95,11 @@ def insert-text editor:&:editor, text:text -> editor:&:editor [
 ]
 
 scenario editor-initializes-without-data [
+  local-scope
   assume-screen 5/width, 3/height
   run [
-    1:&:editor <- new-editor 0/data, screen:&:screen, 2/left, 5/right
-    2:editor <- copy *1:&:editor
+    e:&:editor <- new-editor 0/data, screen:&:screen, 2/left, 5/right
+    2:editor/raw <- copy *e
   ]
   memory-should-contain [
     # 2 (data) <- just the § sentinel
@@ -255,11 +256,12 @@ def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen
 ]
 
 scenario editor-initially-prints-multiple-lines [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc
 def]
-    new-editor s:text, screen:&:screen, 0/left, 5/right
+    new-editor s, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -270,10 +272,11 @@ def]
 ]
 
 scenario editor-initially-handles-offsets [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc]
-    new-editor s:text, screen:&:screen, 1/left, 5/right
+    new-editor s, screen:&:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -283,11 +286,12 @@ scenario editor-initially-handles-offsets [
 ]
 
 scenario editor-initially-prints-multiple-lines-at-offset [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc
 def]
-    new-editor s:text, screen:&:screen, 1/left, 5/right
+    new-editor s, screen:&:screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -298,10 +302,11 @@ def]
 ]
 
 scenario editor-initially-wraps-long-lines [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc def]
-    new-editor s:text, screen:&:screen, 0/left, 5/right
+    new-editor s, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -318,10 +323,11 @@ scenario editor-initially-wraps-long-lines [
 ]
 
 scenario editor-initially-wraps-barely-long-lines [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abcde]
-    new-editor s:text, screen:&:screen, 0/left, 5/right
+    new-editor s, screen:&:screen, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -340,12 +346,12 @@ scenario editor-initially-wraps-barely-long-lines [
 ]
 
 scenario editor-initializes-empty-text [
+  local-scope
   assume-screen 5/width, 5/height
   run [
-    1:text <- new []
-    2:&:editor <- new-editor 1:text, screen:&:screen, 0/left, 5/right
-    3:num <- get *2:&:editor, cursor-row:offset
-    4:num <- get *2:&:editor, cursor-column:offset
+    e:&:editor <- new-editor [], screen:&:screen, 0/left, 5/right
+    3:num/raw <- get *e, cursor-row:offset
+    4:num/raw <- get *e, cursor-column:offset
   ]
   screen-should-contain [
     .     .
@@ -361,12 +367,13 @@ scenario editor-initializes-empty-text [
 # just a little color for mu code
 
 scenario render-colors-comments [
+  local-scope
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc
 # de
 f]
-    new-editor s:text, screen:&:screen, 0/left, 5/right
+    new-editor s, screen:&:screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -442,12 +449,13 @@ def get-color color:num, c:char -> color:num [
 ]
 
 scenario render-colors-assignment [
+  local-scope
   assume-screen 8/width, 5/height
   run [
     s:text <- new [abc
 d <- e
 f]
-    new-editor s:text, screen:&:screen, 0/left, 8/right
+    new-editor s, screen:&:screen, 0/left, 8/right
   ]
   screen-should-contain [
     .        .

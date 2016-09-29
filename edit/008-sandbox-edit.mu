@@ -1,20 +1,20 @@
 ## editing sandboxes after they've been created
 
 scenario clicking-on-a-sandbox-moves-it-to-editor [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -30,7 +30,7 @@ recipe foo [
     left-click 3, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it pops back into editor
   screen-should-contain [
@@ -47,7 +47,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -61,20 +61,20 @@ recipe foo [
 ]
 
 scenario clicking-on-a-sandbox-moves-it-to-editor-2 [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo [
   reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -90,7 +90,7 @@ recipe foo [
     left-click 3, 68
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it pops back into editor
   screen-should-contain [
@@ -107,7 +107,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -174,18 +174,17 @@ def try-edit-sandbox click-row:num, env:&:environment -> clicked-on-edit-button?
 ]
 
 scenario sandbox-with-print-can-be-edited [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
   # left editor is empty
-  1:text <- new []
   # right editor contains an instruction
-  2:text <- new [print-integer screen, 4]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [], [print-integer screen, 4]
   # run the sandbox
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -206,7 +205,7 @@ scenario sandbox-with-print-can-be-edited [
     left-click 3, 65
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -218,13 +217,12 @@ scenario sandbox-with-print-can-be-edited [
 ]
 
 scenario editing-sandbox-after-scrolling-resets-scroll [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:text <- new []
-  2:text <- new []
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:environment, render
+  env:&:environment <- new-programming-environment screen:&:screen, [], []
+  render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
     press ctrl-n
@@ -235,7 +233,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press page-down
     press page-down
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -250,7 +248,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     left-click 2, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -266,13 +264,12 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
 ]
 
 scenario editing-sandbox-updates-sandbox-count [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # initialize environment
-  1:text <- new []
-  2:text <- new []
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:environment, render
+  env:&:environment <- new-programming-environment screen:&:screen, [], []
+  render-all screen, env, render
   # create 2 sandboxes
   assume-console [
     press ctrl-n
@@ -281,7 +278,7 @@ scenario editing-sandbox-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -300,7 +297,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # no change in contents
   screen-should-contain [
@@ -322,7 +319,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # screen should show just final sandbox with the right index (1)
   screen-should-contain [

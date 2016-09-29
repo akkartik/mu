@@ -293,12 +293,11 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
 
 
 scenario point-at-multiple-editors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:text <- new [abc]
-  2:text <- new [def]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [abc], [def]
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -306,11 +305,11 @@ scenario point-at-multiple-editors [
   ]
   # check cursor column in each
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:&:editor <- get *3:&:environment, recipes:offset
-    5:num <- get *4:&:editor, cursor-column:offset
-    6:&:editor <- get *3:&:environment, current-sandbox:offset
-    7:num <- get *6:&:editor, cursor-column:offset
+    event-loop screen:&:screen, console:&:console, env
+    recipes:&:editor <- get *env, recipes:offset
+    5:num/raw <- get *recipes, cursor-column:offset
+    sandbox:&:editor <- get *env, current-sandbox:offset
+    7:num/raw <- get *sandbox, cursor-column:offset
   ]
   memory-should-contain [
     5 <- 1
@@ -319,13 +318,12 @@ scenario point-at-multiple-editors [
 ]
 
 scenario edit-multiple-editors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  1:text <- new [abc]
-  2:text <- new [def]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:environment, render
+  env:&:environment <- new-programming-environment screen:&:screen, [abc], [def]
+  render-all screen, env, render
   # type one letter in each of them
   assume-console [
     left-click 1, 1
@@ -334,11 +332,11 @@ scenario edit-multiple-editors [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:&:editor <- get *3:&:environment, recipes:offset
-    5:num <- get *4:&:editor, cursor-column:offset
-    6:&:editor <- get *3:&:environment, current-sandbox:offset
-    7:num <- get *6:&:editor, cursor-column:offset
+    event-loop screen:&:screen, console:&:console, env
+    recipes:&:editor <- get *env, recipes:offset
+    5:num/raw <- get *recipes, cursor-column:offset
+    sandbox:&:editor <- get *env, current-sandbox:offset
+    7:num/raw <- get *sandbox, cursor-column:offset
   ]
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
@@ -352,8 +350,8 @@ scenario edit-multiple-editors [
   ]
   # show the cursor at the right window
   run [
-    8:char/cursor <- copy 9251/␣
-    print screen:&:screen, 8:char/cursor
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   screen-should-contain [
     .           run (F4)           .
@@ -364,13 +362,12 @@ scenario edit-multiple-editors [
 ]
 
 scenario multiple-editors-cover-only-their-own-areas [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 60/width, 10/height
   run [
-    1:text <- new [abc]
-    2:text <- new [def]
-    3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-    render-all screen, 3:&:environment, render
+    env:&:environment <- new-programming-environment screen:&:screen, [abc], [def]
+    render-all screen, env, render
   ]
   # divider isn't messed up
   screen-should-contain [
@@ -383,18 +380,17 @@ scenario multiple-editors-cover-only-their-own-areas [
 ]
 
 scenario editor-in-focus-keeps-cursor [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
-  1:text <- new [abc]
-  2:text <- new [def]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:environment, render
+  env:&:environment <- new-programming-environment screen:&:screen, [abc], [def]
+  render-all screen, env, render
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:char/cursor <- copy 9251/␣
-    print screen:&:screen, 4:char/cursor
+    event-loop screen:&:screen, console:&:console, env
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   # is cursor at the right place?
   screen-should-contain [
@@ -408,9 +404,9 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:char/cursor <- copy 9251/␣
-    print screen:&:screen, 4:char/cursor
+    event-loop screen:&:screen, console:&:console, env
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   # cursor should still be right
   screen-should-contain [
@@ -422,14 +418,14 @@ scenario editor-in-focus-keeps-cursor [
 ]
 
 scenario backspace-in-sandbox-editor-joins-lines [
-#?   trace-until 100/app  # trace too long
+  local-scope
+  trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize sandbox side with two lines
-  1:text <- new []
-  2:text <- new [abc
+  s:text <- new [abc
 def]
-  3:&:environment <- new-programming-environment screen:&:screen, 1:text, 2:text
-  render-all screen, 3:&:environment, render
+  env:&:environment <- new-programming-environment screen:&:screen, [], s:text
+  render-all screen, env, render
   screen-should-contain [
     .           run (F4)           .
     .               ┊abc           .
@@ -443,9 +439,9 @@ def]
     press backspace
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
-    4:char/cursor <- copy 9251/␣
-    print screen:&:screen, 4:char/cursor
+    event-loop screen:&:screen, console:&:console, env
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   # cursor moves to end of old line
   screen-should-contain [

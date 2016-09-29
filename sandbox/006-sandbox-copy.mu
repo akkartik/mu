@@ -2,14 +2,14 @@
 ## see code operate in multiple situations
 
 scenario copy-a-sandbox-to-editor [
+  local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:text <- new [add 1, 1]
+  env:&:environment <- new-programming-environment screen:&:screen, [add 1, 1]
   assume-console [
     press F4
   ]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -27,7 +27,7 @@ scenario copy-a-sandbox-to-editor [
     left-click 3, 19
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -47,7 +47,7 @@ scenario copy-a-sandbox-to-editor [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -64,14 +64,14 @@ scenario copy-a-sandbox-to-editor [
 ]
 
 scenario copy-a-sandbox-to-editor-2 [
+  local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:text <- new [add 1, 1]
+  env:&:environment <- new-programming-environment screen:&:screen, [add 1, 1]
   assume-console [
     press F4
   ]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -89,7 +89,7 @@ scenario copy-a-sandbox-to-editor-2 [
     left-click 3, 33
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -109,7 +109,7 @@ scenario copy-a-sandbox-to-editor-2 [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -215,14 +215,14 @@ def within-range? x:num, low:num, high:num -> result:bool [
 ]
 
 scenario copy-fails-if-sandbox-editor-not-empty [
+  local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  1:text <- new [add 1, 1]
+  env:&:environment <- new-programming-environment screen:&:screen, [add 1, 1]
   assume-console [
     press F4
   ]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
-  event-loop screen:&:screen, console:&:console, 2:&:environment
+  event-loop screen:&:screen, console:&:console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -240,7 +240,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     left-click 3, 20  # click 'copy' button
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # copy doesn't happen
   screen-should-contain [
@@ -258,7 +258,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .                               run (F4)           .

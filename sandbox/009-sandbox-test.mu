@@ -1,20 +1,20 @@
 ## clicking on sandbox results to 'fix' them and turn sandboxes into tests
 
 scenario sandbox-click-on-result-toggles-color-to-green [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # basic recipe
-  1:text <- new [ 
-def foo [
-  return 4
+  recipes:text <- new [ 
+recipe foo [
+  reply 4
 ]]
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   # run it
-  2:text <- new [foo]
   assume-console [
     press F4
   ]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, env, recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -30,7 +30,7 @@ def foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -44,8 +44,8 @@ def foo [
   ]
   # cursor should remain unmoved
   run [
-    4:char/cursor <- copy 9251/␣
-    print screen:&:screen, 4:char/cursor
+    cursor:char <- copy 9251/␣
+    print screen:&:screen, cursor
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -58,16 +58,16 @@ def foo [
     .                                                  .
   ]
   # now change the result
-  1:text <- new [ 
-def foo [
-  return 3
+  new-recipes:text <- new [ 
+recipe foo [
+  reply 3
 ]]
   # then rerun
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/new-test-recipes
+    event-loop screen:&:screen, console:&:console, env, new-recipes
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [

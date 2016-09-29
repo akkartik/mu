@@ -2,9 +2,9 @@
 # arbitrary types.
 
 scenario table-read-write [
+  local-scope
+  tab:&:table:num:num <- new-table 30
   run [
-    local-scope
-    tab:&:table:num:num <- new-table 30
     put-index tab, 12, 34
     1:num/raw <- index tab, 12
   ]
@@ -14,10 +14,10 @@ scenario table-read-write [
 ]
 
 scenario table-read-write-non-integer [
+  local-scope
+  key:text <- new [abc def]
+  {tab: (address table text number)} <- new-table 30
   run [
-    local-scope
-    key:text <- new [abc def]
-    {tab: (address table text number)} <- new-table 30
     put-index tab, key, 34
     1:num/raw <- index tab, key
   ]

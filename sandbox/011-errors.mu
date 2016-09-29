@@ -125,19 +125,19 @@ after <render-sandbox-trace-done> [
 ]
 
 scenario run-shows-errors-in-get [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new [ 
-def foo [
+  recipes:text <- new [ 
+recipe foo [
   get 123:num, foo:offset
 ]]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -156,11 +156,10 @@ def foo [
 ]
 
 scenario run-updates-status-with-first-erroneous-sandbox [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new []
-  2:text <- new []
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, []
   assume-console [
     # create invalid sandbox 1
     type [get foo, x:offset]
@@ -170,7 +169,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/empty-test-recipes
+    event-loop screen:&:screen, console:&:console, env, []
   ]
   # status line shows that error is in first sandbox
   screen-should-contain [
@@ -179,11 +178,10 @@ scenario run-updates-status-with-first-erroneous-sandbox [
 ]
 
 scenario run-updates-status-with-first-erroneous-sandbox-2 [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new []
-  2:text <- new []
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, []
   assume-console [
     # create invalid sandbox 2
     type [get foo, x:offset]
@@ -196,7 +194,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/empty-test-recipes
+    event-loop screen:&:screen, console:&:console, env, []
   ]
   # status line shows that error is in second sandbox
   screen-should-contain [
@@ -205,15 +203,14 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
 ]
 
 scenario run-hides-errors-from-past-sandboxes [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new []
-  2:text <- new [get foo, x:offset]  # invalid
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [get foo, x:offset]   # invalid
   assume-console [
     press F4  # generate error
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/empty-test-recipes
+  event-loop screen:&:screen, console:&:console, env, []
   assume-console [
     left-click 3, 10
     press ctrl-k
@@ -221,7 +218,7 @@ scenario run-hides-errors-from-past-sandboxes [
     press F4  # update sandbox
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # error should disappear
   screen-should-contain [
@@ -237,21 +234,21 @@ scenario run-hides-errors-from-past-sandboxes [
 ]
 
 scenario run-updates-errors-for-shape-shifting-recipes [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # define a shape-shifting recipe with an error
-  1:text <- new [recipe foo x:_elem -> z:_elem [
+  recipes:text <- new [recipe foo x:_elem -> z:_elem [
 local-scope
 load-ingredients
 y:&:num <- copy 0
 z <- add x, y
 ]]
-  2:text <- new [foo 2]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo 2]
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, env, recipes
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
@@ -268,7 +265,7 @@ z <- add x, y
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   # error should remain unchanged
   screen-should-contain [
@@ -285,20 +282,21 @@ z <- add x, y
 ]
 
 scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # overload a well-known shape-shifting recipe
-  1:text <- new [recipe length l:&:list:_elem -> n:num [
+  recipes:text <- new [recipe length l:&:list:_elem -> n:num [
 ]]
   # call code that uses other variants of it, but not it itself
-  2:text <- new [x:&:list:num <- copy 0
+  sandbox:text <- new [x:&:list:num <- copy 0
 to-text x]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, sandbox
   # run it once
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, env, recipes
   # no errors anywhere on screen (can't check anything else, since to-text will return an address)
   screen-should-contain-in-color 1/red, [
     .                                                  .
@@ -316,7 +314,7 @@ to-text x]
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   # still no errors
   screen-should-contain-in-color 1/red, [
@@ -333,19 +331,19 @@ to-text x]
 ]
 
 scenario run-shows-missing-type-errors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new [ 
-def foo [
+  recipes:text <- new [ 
+recipe foo [
   x <- copy 0
 ]]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -358,20 +356,20 @@ def foo [
 ]
 
 scenario run-shows-unbalanced-bracket-errors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # recipe is incomplete (unbalanced '[')
-  1:text <- new [ 
+  recipes:text <- new [ 
 recipe foo \\[
   x <- copy 0
 ]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -387,21 +385,21 @@ recipe foo \\[
 ]
 
 scenario run-shows-get-on-non-container-errors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new [ 
-def foo [
+  recipes:text <- new [ 
+recipe foo [
   local-scope
   x:&:point <- new point:type
   get x:&:point, 1:offset
 ]]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -415,22 +413,22 @@ def foo [
 ]
 
 scenario run-shows-non-literal-get-argument-errors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  1:text <- new [ 
-def foo [
+  recipes:text <- new [ 
+recipe foo [
   local-scope
   x:num <- copy 0
   y:&:point <- new point:type
   get *y:&:point, x:num
 ]]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -444,20 +442,20 @@ def foo [
 ]
 
 scenario run-shows-errors-everytime [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # try to run a file with an error
-  1:text <- new [ 
-def foo [
+  recipes:text <- new [ 
+recipe foo [
   local-scope
   x:num <- copy y:num
 ]]
-  2:text <- new [foo]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo]
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, env, recipes
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
@@ -471,7 +469,7 @@ def foo [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   screen-should-contain [
     .  errors found                 run (F4)           .
@@ -484,16 +482,17 @@ def foo [
 ]
 
 scenario run-instruction-and-print-errors [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
-  1:text <- new [get 1:&:point, 1:offset]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  env:&:environment <- new-programming-environment screen:&:screen, [get 1:&:point, 1:offset]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
+  # check that screen prints error message in red
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
@@ -519,18 +518,19 @@ scenario run-instruction-and-print-errors [
 ]
 
 scenario run-instruction-and-print-errors-only-once [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # editor contains an illegal instruction
-  1:text <- new [get 1234:num, foo:offset]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  sandbox:text <- new [get 1234:num, foo:offset]
+  env:&:environment <- new-programming-environment screen:&:screen, sandbox
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -548,19 +548,20 @@ scenario run-instruction-and-print-errors-only-once [
 ]
 
 scenario sandbox-can-handle-infinite-loop [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an infinite loop
-  1:text <- new [{
+  sandbox:text <- new [{
 loop
 }]
-  2:&:environment <- new-programming-environment screen:&:screen, 1:text
+  env:&:environment <- new-programming-environment screen:&:screen, sandbox
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 2:&:environment
+    event-loop screen:&:screen, console:&:console, env
   ]
   screen-should-contain [
     .  errors found (0)             run (F4)           .
@@ -577,24 +578,24 @@ loop
 ]
 
 scenario sandbox-with-errors-shows-trace [
+  local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # generate a stash and a error
-  1:text <- new [recipe foo [
+  recipes:text <- new [recipe foo [
 local-scope
 a:num <- next-ingredient
 b:num <- next-ingredient
 stash [dividing by], b
 _, c:num <- divide-with-remainder a, b
-return b
+reply b
 ]]
-  2:text <- new [foo 4, 0]
-  3:&:environment <- new-programming-environment screen:&:screen, 2:text
+  env:&:environment <- new-programming-environment screen:&:screen, [foo 4, 0]
   # run
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+  event-loop screen:&:screen, console:&:console, env, recipes
   # screen prints error message
   screen-should-contain [
     .  errors found (0)             run (F4)           .
@@ -612,7 +613,7 @@ return b
     left-click 4, 15
   ]
   run [
-    event-loop screen:&:screen, console:&:console, 3:&:environment, 1:text/test-recipes
+    event-loop screen:&:screen, console:&:console, env, recipes
   ]
   # screen should expand trace
   screen-should-contain [
