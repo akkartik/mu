@@ -83,15 +83,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> new-channel capacity:num<span class="muRecipe"> -&gt; </span>in:&amp;:source:_elem, out:&amp;:sink:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:&amp;:channel:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(channel _elem): type<span class="Delimiter">}</span>
+  result:&amp;:channel:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(channel _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">first-full:offset</span>, <span class="Constant">0</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">first-free:offset</span>, <span class="Constant">0</span>
   capacity<span class="Special"> &lt;- </span>add capacity, <span class="Constant">1</span>  <span class="Comment"># unused slot for 'full?' below</span>
   data:&amp;:@:_elem<span class="Special"> &lt;- </span>new <span class="Constant">_elem:type</span>, capacity
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">data:offset</span>, data
-  in<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(source _elem): type<span class="Delimiter">}</span>
+  in<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(source _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">chan:offset</span>, result
-  out<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(sink _elem): type<span class="Delimiter">}</span>
+  out<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(sink _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *out<span class="Special"> &lt;- </span>put *out, <span class="Constant">chan:offset</span>, result
 ]
 
@@ -213,9 +213,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-write-increments-free [
+  <span class="Constant">local-scope</span>
+  _, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
   run [
-    <span class="Constant">local-scope</span>
-    _, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
     chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *sink, <span class="Constant">chan:offset</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
@@ -228,10 +228,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-read-increments-full [
+  <span class="Constant">local-scope</span>
+  source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
     _, _, source<span class="Special"> &lt;- </span>read source
     chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *chan, <span class="Constant">first-full:offset</span>
@@ -244,14 +244,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-wrap [
+  <span class="Constant">local-scope</span>
+  <span class="Comment"># channel with just 1 slot</span>
+  source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
+  chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
+  <span class="Comment"># write and read a value</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
+  _, _, source<span class="Special"> &lt;- </span>read source
   run [
-    <span class="Constant">local-scope</span>
-    <span class="Comment"># channel with just 1 slot</span>
-    source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
-    chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
-    <span class="Comment"># write and read a value</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
-    _, _, source<span class="Special"> &lt;- </span>read source
     <span class="Comment"># first-free will now be 1</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
     <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *chan, <span class="Constant">first-free:offset</span>
@@ -285,9 +285,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-write-not-empty [
+  <span class="Constant">local-scope</span>
+  source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
+  chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
   run [
-    source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">3/capacity</span>
-    chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>channel-empty? chan
     <span class="Constant">11</span>:bool/<span class="Special">raw &lt;- </span>channel-full? chan
@@ -299,10 +300,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-write-full [
+  <span class="Constant">local-scope</span>
+  source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
+  chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
-    chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>channel-empty? chan
     <span class="Constant">11</span>:bool/<span class="Special">raw &lt;- </span>channel-full? chan
@@ -314,11 +315,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> channel-read-not-full [
+  <span class="Constant">local-scope</span>
+  source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
+  chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:num, sink:&amp;:sink:num<span class="Special"> &lt;- </span>new-channel <span class="Constant">1/capacity</span>
-    chan:&amp;:channel:num<span class="Special"> &lt;- </span>get *source, <span class="Constant">chan:offset</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">34</span>
     _, _, source<span class="Special"> &lt;- </span>read source
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>channel-empty? chan
     <span class="Constant">11</span>:bool/<span class="Special">raw &lt;- </span>channel-full? chan

@@ -66,9 +66,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-equal-reflexive [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal x, x
   ]
   memory-should-contain [
@@ -77,10 +77,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-equal-identical [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -89,10 +89,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-equal-distinct-lengths [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -107,10 +107,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-equal-with-empty [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -119,10 +119,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-equal-common-lengths-but-distinct [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abd]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal x, y
   ]
   memory-should-contain [
@@ -239,18 +239,53 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muScenario">scenario</span> buffer-append-works [
+<span class="muScenario">scenario</span> append-to-empty-buffer [
+  <span class="Constant">local-scope</span>
+  x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer
   run [
-    <span class="Constant">local-scope</span>
-    x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
-    s1:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
     c:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     x<span class="Special"> &lt;- </span>append x, c
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *x, <span class="Constant">length:offset</span>
+    s:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>index *s, <span class="Constant">0</span>
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>index *s, <span class="Constant">1</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># buffer length</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">97</span>  <span class="Comment"># a</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># rest of buffer is empty</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> append-to-buffer [
+  <span class="Constant">local-scope</span>
+  x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer
+  c:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  x<span class="Special"> &lt;- </span>append x, c
+  run [
+    c<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
     x<span class="Special"> &lt;- </span>append x, c
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
-    x<span class="Special"> &lt;- </span>append x, c
-    s2:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *x, <span class="Constant">length:offset</span>
+    s:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>index *s, <span class="Constant">0</span>
+    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>index *s, <span class="Constant">1</span>
+    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>index *s, <span class="Constant">2</span>
+  ]
+  memory-should-contain [
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># buffer length</span>
+    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">97</span>  <span class="Comment"># a</span>
+    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">98</span>  <span class="Comment"># b</span>
+    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># rest of buffer is empty</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> append-grows-buffer [
+  <span class="Constant">local-scope</span>
+  x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
+  s1:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+  x<span class="Special"> &lt;- </span>append x, <span class="Constant">[abc]</span>  <span class="Comment"># buffer is now full</span>
+  s2:text<span class="Special"> &lt;- </span>get *x, <span class="Constant">data:offset</span>
+  run [
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal s1, s2
     <span class="Constant">11</span>:@:char/<span class="Special">raw &lt;- </span>copy *s2
 <span class="Constant">    +buffer-filled</span>
@@ -263,13 +298,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   memory-should-contain [
     <span class="Comment"># before +buffer-filled</span>
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>   <span class="Comment"># no change in data pointer</span>
+    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>   <span class="Comment"># no change in data pointer after original append</span>
     <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">3</span>   <span class="Comment"># size of data</span>
     <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">97</span>  <span class="Comment"># data</span>
     <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">98</span>
     <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">99</span>
     <span class="Comment"># in the end</span>
-    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>   <span class="Comment"># data pointer has grown</span>
+    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>   <span class="Comment"># data pointer has grown after second append</span>
     <span class="Constant">21</span><span class="Special"> &lt;- </span><span class="Constant">4</span>   <span class="Comment"># final length</span>
     <span class="Constant">30</span><span class="Special"> &lt;- </span><span class="Constant">6</span>   <span class="Comment"># but data's capacity has doubled</span>
     <span class="Constant">31</span><span class="Special"> &lt;- </span><span class="Constant">97</span>  <span class="Comment"># data</span>
@@ -281,23 +316,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> buffer-append-to-empty [
-  run [
-    <span class="Constant">local-scope</span>
-    x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    x<span class="Special"> &lt;- </span>append x, c
-  ]
-]
-
 <span class="muScenario">scenario</span> buffer-append-handles-backspace [
+  <span class="Constant">local-scope</span>
+  x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer
+  x<span class="Special"> &lt;- </span>append x, <span class="Constant">[ab]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">3</span>
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    x<span class="Special"> &lt;- </span>append x, c
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
-    x<span class="Special"> &lt;- </span>append x, c
     c:char<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
     x<span class="Special"> &lt;- </span>append x, c
     s:text<span class="Special"> &lt;- </span>buffer-to-array x
@@ -362,10 +385,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-append-1 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello,]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ world!]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello,]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ world!]</span>
     z:text<span class="Special"> &lt;- </span>append x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -375,10 +398,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-append-null [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ world!]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ world!]</span>
     z:text<span class="Special"> &lt;- </span>append x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -388,10 +411,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-append-null-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello,]</span>
+  y:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello,]</span>
-    y:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     z:text<span class="Special"> &lt;- </span>append x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -401,11 +424,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-append-multiary [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello, ]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[world]</span>
+  z:text<span class="Special"> &lt;- </span>new <span class="Constant">[!]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello, ]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[world]</span>
-    z:text<span class="Special"> &lt;- </span>new <span class="Constant">[!]</span>
     z:text<span class="Special"> &lt;- </span>append x, y, z
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -415,9 +438,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> replace-character-in-text [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     x<span class="Special"> &lt;- </span>replace x, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *x
   ]
@@ -439,9 +462,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> replace-character-at-start [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     x<span class="Special"> &lt;- </span>replace x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *x
   ]
@@ -451,9 +474,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> replace-character-at-end [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     x<span class="Special"> &lt;- </span>replace x, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *x
   ]
@@ -463,9 +486,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> replace-character-missing [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     x<span class="Special"> &lt;- </span>replace x, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *x
   ]
@@ -475,9 +498,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> replace-all-characters [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[banana]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[banana]</span>
     x<span class="Special"> &lt;- </span>replace x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *x
   ]
@@ -561,10 +584,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> interpolate-works [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc_ghi]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc_ghi]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[def]</span>
     z:text<span class="Special"> &lt;- </span>interpolate x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -574,10 +597,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> interpolate-at-start [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[_, hello!]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[_, hello!]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     z:text<span class="Special"> &lt;- </span>interpolate x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -588,9 +611,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> interpolate-at-end [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello, _]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[hello, _]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     z:text<span class="Special"> &lt;- </span>interpolate x, y
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
   ]
@@ -711,9 +735,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> trim-unmodified [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     y:text<span class="Special"> &lt;- </span>trim x
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -723,9 +747,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> trim-left [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[  abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[  abc]</span>
     y:text<span class="Special"> &lt;- </span>trim x
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -735,9 +759,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> trim-right [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc  ]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc  ]</span>
     y:text<span class="Special"> &lt;- </span>trim x
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -747,9 +771,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> trim-left-right [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[  abc   ]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[  abc   ]</span>
     y:text<span class="Special"> &lt;- </span>trim x
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -759,10 +783,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> trim-newline-tab [
-  run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ abc</span>
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ abc</span>
 <span class="Constant">]</span>
+  run [
     y:text<span class="Special"> &lt;- </span>trim x
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -788,9 +812,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -799,9 +823,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-empty [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -810,9 +834,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-initial [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[/abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[/abc]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -821,9 +845,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-final [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc/]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc/]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -832,9 +856,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-missing [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -843,9 +867,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-invalid-index [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">4/start-index</span>
   ]
   memory-should-contain [
@@ -854,9 +878,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-first [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">0/start-index</span>
   ]
   memory-should-contain [
@@ -865,9 +889,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-find-next-second [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab/c/]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, <span class="Constant">47/slash</span>, <span class="Constant">3/start-index</span>
   ]
   memory-should-contain [
@@ -898,10 +922,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> find-next-text-1 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -910,10 +934,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> find-next-text-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, y, <span class="Constant">1</span>
   ]
   memory-should-contain [
@@ -922,10 +946,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> find-next-no-match [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bd]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -934,10 +958,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> find-next-suffix-match [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[cd]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[cd]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -946,10 +970,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> find-next-suffix-match-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[cde]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[cde]</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>find-next x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -990,10 +1014,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-checks-pattern-at-index [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1002,9 +1026,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-reflexive [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, x, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1013,10 +1037,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-outside-bounds [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[a]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">4</span>
   ]
   memory-should-contain [
@@ -1025,10 +1049,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-empty-pattern [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1037,10 +1061,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-empty-pattern-outside-bound [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">4</span>
   ]
   memory-should-contain [
@@ -1049,10 +1073,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-empty-text [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1061,9 +1085,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-empty-against-empty [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, x, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1072,10 +1096,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-inside-bounds [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">1</span>
   ]
   memory-should-contain [
@@ -1084,10 +1108,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> match-at-inside-bounds-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
+  y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[bc]</span>
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>match-at x, y, <span class="Constant">0</span>
   ]
   memory-should-contain [
@@ -1103,7 +1127,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     empty?:bool<span class="Special"> &lt;- </span>equal len, <span class="Constant">0</span>
     <span class="muControl">break-unless</span> empty?
-    result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>, <span class="Constant">0</span>
+    result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): <span class="muData">type</span><span class="Delimiter">}</span>, <span class="Constant">0</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># count #pieces we need room for</span>
@@ -1118,7 +1142,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># allocate space</span>
-  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>, count
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): <span class="muData">type</span><span class="Delimiter">}</span>, count
   <span class="Comment"># repeatedly copy slices start..end until delimiter into result[curr-result]</span>
   curr-result:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   start:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -1138,9 +1162,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-1 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
     y:&amp;:@:text<span class="Special"> &lt;- </span>split x, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>length *y
     a:text<span class="Special"> &lt;- </span>index *y, <span class="Constant">0</span>
@@ -1156,9 +1180,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b/c]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b/c]</span>
     y:&amp;:@:text<span class="Special"> &lt;- </span>split x, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>length *y
     a:text<span class="Special"> &lt;- </span>index *y, <span class="Constant">0</span>
@@ -1177,9 +1201,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-missing [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     y:&amp;:@:text<span class="Special"> &lt;- </span>split x, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>length *y
     a:text<span class="Special"> &lt;- </span>index *y, <span class="Constant">0</span>
@@ -1192,9 +1216,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-empty [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
     y:&amp;:@:text<span class="Special"> &lt;- </span>split x, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>length *y
   ]
@@ -1204,9 +1228,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-empty-piece [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b//c]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b//c]</span>
     y:&amp;:@:text<span class="Special"> &lt;- </span>split x:text, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>length *y
     a:text<span class="Special"> &lt;- </span>index *y, <span class="Constant">0</span>
@@ -1246,9 +1270,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> text-split-first [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
     y:text, z:text<span class="Special"> &lt;- </span>split-first x, <span class="Constant">47/slash</span>
     <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
     <span class="Constant">20</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
@@ -1282,10 +1306,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muScenario">scenario</span> text-copy-copies-partial-text [
+<span class="muScenario">scenario</span> copy-range-works [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     y:text<span class="Special"> &lt;- </span>copy-range x, <span class="Constant">1</span>, <span class="Constant">3</span>
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -1294,10 +1318,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> text-copy-out-of-bounds [
+<span class="muScenario">scenario</span> copy-range-out-of-bounds [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     y:text<span class="Special"> &lt;- </span>copy-range x, <span class="Constant">2</span>, <span class="Constant">4</span>
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]
@@ -1306,10 +1330,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> text-copy-out-of-bounds-2 [
+<span class="muScenario">scenario</span> copy-range-out-of-bounds-2 [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
   run [
-    <span class="Constant">local-scope</span>
-    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
     y:text<span class="Special"> &lt;- </span>copy-range x, <span class="Constant">3</span>, <span class="Constant">3</span>
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
   ]

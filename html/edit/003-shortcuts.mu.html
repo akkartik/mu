@@ -20,6 +20,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muData { color: #ffff00; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -39,16 +40,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># tab - insert two spaces</span>
 
 <span class="muScenario">scenario</span> editor-inserts-two-spaces-on-tab [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># just one character in final line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">cd]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     press tab
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -73,19 +75,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># backspace - delete character before cursor</span>
 
 <span class="muScenario">scenario</span> editor-handles-backspace-key [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     press backspace
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -250,19 +252,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-clears-last-line-on-backspace [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># just one character in final line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">cd]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">0</span>  <span class="Comment"># cursor at only character in final line</span>
     press backspace
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -277,12 +280,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-joins-and-wraps-lines-on-backspace [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with two long-ish but non-wrapping lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def</span>
 <span class="Constant">ghi jkl]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position the cursor at the start of the second and hit backspace</span>
   assume-console [
@@ -290,7 +294,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press backspace
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># resulting single line should wrap correctly</span>
   screen-should-contain [
@@ -303,11 +307,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-wraps-long-lines-on-backspace [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor in part of the screen with a long line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def ghij]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc def ghij]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+  editor-render screen, e
   <span class="Comment"># confirm that it wraps</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -322,7 +326,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press backspace
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># resulting single line should wrap correctly and not overflow its bounds</span>
   screen-should-contain [
@@ -337,16 +341,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># delete - delete character at cursor</span>
 
 <span class="muScenario">scenario</span> editor-handles-delete-key [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     press delete
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -360,7 +364,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press delete
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -426,17 +430,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># right arrow</span>
 
 <span class="muScenario">scenario</span> editor-moves-cursor-right-with-key [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     press right-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -523,11 +527,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-line-with-right-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># type right-arrow a few times to get to start of second line</span>
   assume-console [
@@ -537,15 +542,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press right-arrow  <span class="Comment"># next line</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   <span class="Comment"># type something and ensure it goes where it should</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -558,20 +563,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-line-with-right-arrow-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
   assume-console [
     press right-arrow
     press right-arrow
     press right-arrow
     press right-arrow  <span class="Comment"># next line</span>
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -583,19 +589,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abcdef]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -612,11 +618,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># line just barely wrapping</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcde]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abcde]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position cursor at last character before wrap and hit right-arrow</span>
   assume-console [
@@ -624,9 +630,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -637,9 +643,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -649,19 +655,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">6/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abcdef]</span>, screen:&amp;:screen, <span class="Constant">1/left</span>, <span class="Constant">6/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">4</span>
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -678,20 +684,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># move to end of line, press right-arrow, type a character</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>
     press right-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># new character should be in next line</span>
   screen-should-contain [
@@ -709,18 +716,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># left arrow</span>
 
 <span class="muScenario">scenario</span> editor-moves-cursor-left-with-key [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press left-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -751,12 +758,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with two lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position cursor at start of second line (so there's no previous newline)</span>
   assume-console [
@@ -764,9 +772,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -776,23 +784,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with three lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">g]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position cursor further down (so there's a newline before the character at</span>
   <span class="Comment"># the cursor)</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">0</span>
     press left-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -805,21 +814,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">g]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position cursor at start of text, press left-arrow, then type a character</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">0</span>
     press left-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># left-arrow should have had no effect</span>
   screen-should-contain [
@@ -833,22 +843,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with text containing an empty line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 
 d]
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e:&amp;:editor
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># position cursor right after empty line</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">0</span>
     press left-arrow
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -861,11 +872,11 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-across-screen-lines-across-wrap-with-left-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with a wrapping line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abcdef]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -880,9 +891,9 @@ d]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># previous row</span>
@@ -892,12 +903,13 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with a wrapping line followed by a second line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
 <span class="Constant">g]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -912,9 +924,9 @@ d]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>  <span class="Comment"># previous row</span>
@@ -924,12 +936,13 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize editor with a line on the verge of wrapping, followed by a second line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd</span>
 <span class="Constant">e]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -944,9 +957,9 @@ d]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># previous row</span>
@@ -960,20 +973,21 @@ d]
 <span class="Comment"># up arrow</span>
 
 <span class="muScenario">scenario</span> editor-moves-to-previous-line-with-up-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -981,10 +995,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1076,20 +1090,21 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-adjusts-column-at-previous-line [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[ab</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">3</span>
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -1097,10 +1112,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1112,20 +1127,21 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-adjusts-column-at-empty-line [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new [
+  s:text<span class="Special"> &lt;- </span>new [
 <span class="muRecipe">def</span>]
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">3</span>
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -1133,10 +1149,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1148,13 +1164,14 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-previous-line-from-left-margin [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># start out with three lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># click on the third line and hit up-arrow, so you end up just after a newline</span>
   assume-console [
@@ -1162,9 +1179,9 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -1172,10 +1189,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1189,20 +1206,21 @@ d]
 <span class="Comment"># down arrow</span>
 
 <span class="muScenario">scenario</span> editor-moves-to-next-line-with-down-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># cursor starts out at (1, 0)</span>
   assume-console [
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># ..and ends at (2, 0)</span>
   memory-should-contain [
@@ -1211,10 +1229,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1294,20 +1312,21 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-adjusts-column-at-next-line [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">de]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
@@ -1315,10 +1334,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1332,11 +1351,12 @@ d]
 <span class="Comment"># ctrl-a/home - move cursor to start of line</span>
 
 <span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-ctrl-a [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on second line, press ctrl-a</span>
   assume-console [
@@ -1344,9 +1364,9 @@ d]
     press ctrl-a
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to start of line</span>
   memory-should-contain [
@@ -1407,11 +1427,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-ctrl-a-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on first line (no newline before), press ctrl-a</span>
   assume-console [
@@ -1419,9 +1440,9 @@ d]
     press ctrl-a
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to start of line</span>
   memory-should-contain [
@@ -1432,10 +1453,11 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-home [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on second line, press 'home'</span>
   assume-console [
@@ -1443,9 +1465,9 @@ d]
     press home
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to start of line</span>
   memory-should-contain [
@@ -1456,11 +1478,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-start-of-line-with-home-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on first line (no newline before), press 'home'</span>
   assume-console [
@@ -1468,9 +1491,9 @@ d]
     press home
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to start of line</span>
   memory-should-contain [
@@ -1483,11 +1506,12 @@ d]
 <span class="Comment"># ctrl-e/end - move cursor to end of line</span>
 
 <span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-ctrl-e [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on first line, press ctrl-e</span>
   assume-console [
@@ -1495,9 +1519,9 @@ d]
     press ctrl-e
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to end of line</span>
   memory-should-contain [
@@ -1507,12 +1531,12 @@ d]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   <span class="Comment"># editor inserts future characters at cursor</span>
   assume-console [
-    type <span class="Constant">[z]</span>
+    <span class="muData">type</span> <span class="Constant">[z]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   memory-should-contain [
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
@@ -1575,11 +1599,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-ctrl-e-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on second line (no newline after), press ctrl-e</span>
   assume-console [
@@ -1587,9 +1612,9 @@ d]
     press ctrl-e
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to end of line</span>
   memory-should-contain [
@@ -1600,11 +1625,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-end [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on first line, press 'end'</span>
   assume-console [
@@ -1612,9 +1638,9 @@ d]
     press end
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to end of line</span>
   memory-should-contain [
@@ -1625,11 +1651,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-moves-to-end-of-line-with-end-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># start on second line (no newline after), press 'end'</span>
   assume-console [
@@ -1637,9 +1664,9 @@ d]
     press end
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># cursor moves to end of line</span>
   memory-should-contain [
@@ -1652,17 +1679,18 @@ d]
 <span class="Comment"># ctrl-u - delete text from start of line until (but not at) cursor</span>
 
 <span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start on second line, press ctrl-u</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">2</span>
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to start of line</span>
   screen-should-contain [
@@ -1715,17 +1743,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start on first line (no newline before), press ctrl-u</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to start of line</span>
   screen-should-contain [
@@ -1738,17 +1767,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-start-of-line-with-ctrl-u-3 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start past end of line, press ctrl-u</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to start of line</span>
   screen-should-contain [
@@ -1761,17 +1791,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-start-of-final-line-with-ctrl-u [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start past end of final line, press ctrl-u</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">3</span>
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to start of line</span>
   screen-should-contain [
@@ -1786,17 +1817,18 @@ d]
 <span class="Comment"># ctrl-k - delete text from cursor to end of line (but not the newline)</span>
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start on first line, press ctrl-k</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to end of line</span>
   screen-should-contain [
@@ -1841,17 +1873,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start on second line (no newline after), press ctrl-k</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes to end of line</span>
   screen-should-contain [
@@ -1864,17 +1897,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-3 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start at end of line</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes just last character</span>
   screen-should-contain [
@@ -1887,17 +1921,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-4 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start past end of line</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">3</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes nothing</span>
   screen-should-contain [
@@ -1910,17 +1945,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-5 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start at end of text</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">2</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes just the final character</span>
   screen-should-contain [
@@ -1933,17 +1969,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-6 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[123</span>
 <span class="Constant">456]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   <span class="Comment"># start past end of text</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">3</span>
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># cursor deletes nothing</span>
   screen-should-contain [
@@ -1958,14 +1995,15 @@ d]
 <span class="Comment"># cursor-down can scroll if necessary</span>
 
 <span class="muScenario">scenario</span> editor-can-scroll-down-using-arrow-keys [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with &gt;3 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -1978,7 +2016,7 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen slides by one line</span>
   screen-should-contain [
@@ -2035,15 +2073,16 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-past-wrapped-line-using-arrow-keys [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with a long, wrapped line and more than a screen of</span>
   <span class="Comment"># other lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
 <span class="Constant">g</span>
 <span class="Constant">h</span>
 <span class="Constant">i]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .abcd↩     .</span>
@@ -2056,7 +2095,7 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2068,21 +2107,22 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-past-wrapped-line-using-arrow-keys-2 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor starts with a long line wrapping twice</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefghij</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefghij</span>
 <span class="Constant">k</span>
 <span class="Constant">l</span>
 <span class="Constant">m]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at last line, then try to move further down</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">0</span>
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line containing a wrap icon</span>
   screen-should-contain [
@@ -2096,7 +2136,7 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2108,22 +2148,23 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-when-line-wraps [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains a long line in the third line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdef]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at end, type a character</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">4</span>
-    type <span class="Constant">[g]</span>
+    <span class="muData">type</span> <span class="Constant">[g]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen scrolls</span>
   screen-should-contain [
@@ -2139,21 +2180,22 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-on-newline [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># position cursor after last line and type newline</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">4</span>
-    type [
+    <span class="muData">type</span> [
 ]
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen scrolls</span>
   screen-should-contain [
@@ -2169,22 +2211,23 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-on-right-arrow [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains a wrapped line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdefgh]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at end of screen and try to move right</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">3</span>
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen scrolls</span>
   screen-should-contain [
@@ -2200,23 +2243,24 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-down-on-right-arrow-2 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains more lines than can fit on screen</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at end of screen and try to move right</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">3</span>
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen scrolls</span>
   screen-should-contain [
@@ -2232,11 +2276,12 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-at-end-on-down-arrow [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">de]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
 <span class="Constant">  $clear-trace</span>
   <span class="Comment"># try to move down past end of text</span>
   assume-console [
@@ -2244,9 +2289,9 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen should scroll, moving cursor to end of text</span>
   memory-should-contain [
@@ -2254,10 +2299,10 @@ d]
     <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
   ]
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2272,9 +2317,9 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen stops scrolling because cursor is already at top</span>
   memory-should-contain [
@@ -2283,10 +2328,10 @@ d]
   ]
   check-trace-count-for-label <span class="Constant">0</span>, <span class="Constant">[print-character]</span>
   assume-console [
-    type <span class="Constant">[1]</span>
+    <span class="muData">type</span> <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2297,17 +2342,18 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-combines-page-and-line-scroll [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with a few pages of lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f</span>
 <span class="Constant">g]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># scroll down one page and one line</span>
   assume-console [
     press page-down
@@ -2315,7 +2361,7 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen scrolls down 3 lines</span>
   screen-should-contain [
@@ -2329,14 +2375,15 @@ d]
 <span class="Comment"># cursor-up can scroll if necessary</span>
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-using-arrow-keys [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with &gt;3 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -2349,7 +2396,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen slides by one line</span>
   screen-should-contain [
@@ -2416,15 +2463,16 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-up-past-wrapped-line-using-arrow-keys [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with a long, wrapped line and more than a screen of</span>
   <span class="Comment"># other lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
 <span class="Constant">g</span>
 <span class="Constant">h</span>
 <span class="Constant">i]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .abcd↩     .</span>
@@ -2436,7 +2484,7 @@ d]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2449,7 +2497,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2461,20 +2509,21 @@ d]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-up-past-wrapped-line-using-arrow-keys-2 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 4 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># editor starts with a long line wrapping twice, occupying 3 of the 4 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefghij</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdefghij</span>
 <span class="Constant">k</span>
 <span class="Constant">l</span>
 <span class="Constant">m]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at top of second page</span>
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2488,7 +2537,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2503,7 +2552,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2518,7 +2567,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2533,15 +2582,16 @@ d]
 <span class="Comment"># same as editor-scrolls-up-past-wrapped-line-using-arrow-keys but length</span>
 <span class="Comment"># slightly off, just to prevent over-training</span>
 <span class="muScenario">scenario</span> editor-scrolls-up-past-wrapped-line-using-arrow-keys-3 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with a long, wrapped line and more than a screen of</span>
   <span class="Comment"># other lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcdef</span>
 <span class="Constant">g</span>
 <span class="Constant">h</span>
 <span class="Constant">i]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">6/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">6/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .abcde↩    .</span>
@@ -2553,7 +2603,7 @@ d]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2566,7 +2616,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows partial wrapped line</span>
   screen-should-contain [
@@ -2579,20 +2629,21 @@ d]
 
 <span class="Comment"># check empty lines</span>
 <span class="muScenario">scenario</span> editor-scrolls-up-past-wrapped-line-using-arrow-keys-4 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with some lines around an empty line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 
 c
 d
 e]
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">6/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">6/right</span>
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2604,7 +2655,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2616,7 +2667,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2627,21 +2678,22 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-scrolls-up-on-left-arrow [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains &gt;3 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d</span>
 <span class="Constant">e]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at top of second page</span>
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -2654,9 +2706,9 @@ e]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
-    <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-row:offset</span>
-    <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get *<span class="Constant">2</span>:&amp;:editor, <span class="Constant">cursor-column:offset</span>
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
+    <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
   <span class="Comment"># screen scrolls</span>
   screen-should-contain [
@@ -2672,14 +2724,15 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-to-start-of-file [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with &gt;3 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -2694,7 +2747,7 @@ e]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen slides by one line</span>
   screen-should-contain [
@@ -2708,7 +2761,7 @@ e]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen remains unchanged</span>
   screen-should-contain [
@@ -2722,12 +2775,13 @@ e]
 <span class="Comment"># ctrl-f/page-down - render next page if it exists</span>
 
 <span class="muScenario">scenario</span> editor-can-scroll [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -2739,7 +2793,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows next page</span>
   screen-should-contain [
@@ -2809,11 +2863,12 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-does-not-scroll-past-end [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-  editor-render screen, <span class="Constant">2</span>:&amp;:editor
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  editor-render screen, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -2825,7 +2880,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen remains unmodified</span>
   screen-should-contain [
@@ -2837,14 +2892,15 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-starts-next-page-at-start-of-wrapped-line [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines for text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains a long last line</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdefgh]</span>
   <span class="Comment"># editor screen triggers wrap of last line</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   <span class="Comment"># some part of last line is not displayed</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2857,7 +2913,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows entire wrapped line</span>
   screen-should-contain [
@@ -2869,13 +2925,14 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-starts-next-page-at-start-of-wrapped-line-2 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines for text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains a very long line that occupies last two lines of screen</span>
   <span class="Comment"># and still has something left over</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">bcdefgh]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   <span class="Comment"># some part of last line is not displayed</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2888,7 +2945,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows entire wrapped line</span>
   screen-should-contain [
@@ -2902,12 +2959,13 @@ e]
 <span class="Comment"># ctrl-b/page-up - render previous page if it exists</span>
 
 <span class="muScenario">scenario</span> editor-can-scroll-up [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -2919,7 +2977,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows next page</span>
   screen-should-contain [
@@ -2933,7 +2991,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows original page again</span>
   screen-should-contain [
@@ -2996,10 +3054,11 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-multiple-pages [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># initialize editor with 8 lines</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">c</span>
 <span class="Constant">d</span>
@@ -3007,7 +3066,7 @@ e]
 <span class="Constant">f</span>
 <span class="Constant">g</span>
 <span class="Constant">h]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -3020,7 +3079,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows third page</span>
   screen-should-contain [
@@ -3034,7 +3093,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows second page</span>
   screen-should-contain [
@@ -3048,7 +3107,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows original page again</span>
   screen-should-contain [
@@ -3060,10 +3119,11 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-wrapped-lines [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 5 lines for text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">6/height</span>
   <span class="Comment"># editor contains a long line in the first page</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdefgh</span>
 <span class="Constant">i</span>
@@ -3074,7 +3134,7 @@ e]
 <span class="Constant">n</span>
 <span class="Constant">o]</span>
   <span class="Comment"># editor screen triggers wrap of last line</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   <span class="Comment"># some part of last line is not displayed</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3091,7 +3151,7 @@ e]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows entire wrapped line</span>
   screen-should-contain [
@@ -3107,7 +3167,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen resets</span>
   screen-should-contain [
@@ -3121,13 +3181,14 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-wrapped-lines-2 [
+  <span class="Constant">local-scope</span>
   <span class="Comment"># screen has 1 line for menu + 3 lines for text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># editor contains a very long line that occupies last two lines of screen</span>
   <span class="Comment"># and still has something left over</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">bcdefgh]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   <span class="Comment"># some part of last line is not displayed</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3140,7 +3201,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen shows entire wrapped line</span>
   screen-should-contain [
@@ -3154,7 +3215,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   <span class="Comment"># screen resets</span>
   screen-should-contain [
@@ -3166,9 +3227,10 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-past-nonempty-lines [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># text with empty line in second screen</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[axx</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[axx</span>
 <span class="Constant">bxx</span>
 <span class="Constant">cxx</span>
 <span class="Constant">dxx</span>
@@ -3177,7 +3239,7 @@ e]
 <span class="Constant">gxx</span>
 <span class="Constant">hxx</span>
 <span class="Constant">]</span>
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .axx       .</span>
@@ -3188,7 +3250,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3200,7 +3262,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3213,7 +3275,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3224,9 +3286,10 @@ e]
 ]
 
 <span class="muScenario">scenario</span> editor-can-scroll-up-past-empty-lines [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">4/height</span>
   <span class="Comment"># text with empty line in second screen</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[axy</span>
+  s:text<span class="Special"> &lt;- </span>new <span class="Constant">[axy</span>
 <span class="Constant">bxy</span>
 <span class="Constant">cxy</span>
 
@@ -3235,7 +3298,7 @@ exy
 fxy
 gxy
 ]
-  <span class="Constant">2</span>:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">1</span>:text, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor s, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">4/right</span>
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .axy       .</span>
@@ -3246,7 +3309,7 @@ gxy
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3258,7 +3321,7 @@ gxy
     press page-down
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -3271,7 +3334,7 @@ gxy
     press page-up
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">2</span>:&amp;:editor
+    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>

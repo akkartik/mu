@@ -31,9 +31,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># To check our support for screens in scenarios, rewrite tests from print.mu</span>
 
 <span class="muScenario">scenario</span> print-character-at-top-left-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">local-scope</span>
     a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     screen:&amp;:screen<span class="Special"> &lt;- </span>print screen:&amp;:screen, a
   ]
@@ -44,15 +44,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> clear-line-erases-printed-characters-2 [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">3/height</span>
+  <span class="Comment"># print a character</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  screen:&amp;:screen<span class="Special"> &lt;- </span>print screen:&amp;:screen, a
+  <span class="Comment"># move cursor to start of line</span>
+  screen:&amp;:screen<span class="Special"> &lt;- </span>move-cursor screen:&amp;:screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
   run [
-    <span class="Constant">local-scope</span>
-    <span class="Comment"># print a character</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    screen:&amp;:screen<span class="Special"> &lt;- </span>print screen:&amp;:screen, a
-    <span class="Comment"># move cursor to start of line</span>
-    screen:&amp;:screen<span class="Special"> &lt;- </span>move-cursor screen:&amp;:screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
-    <span class="Comment"># clear line</span>
     screen:&amp;:screen<span class="Special"> &lt;- </span>clear-line screen:&amp;:screen
   ]
   screen-should-contain [

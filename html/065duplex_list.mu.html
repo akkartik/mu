@@ -44,7 +44,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> push x:_elem, in:&amp;:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:&amp;:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): type<span class="Delimiter">}</span>
+  result:&amp;:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *result<span class="Special"> &lt;- </span>merge x, in, <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> in
@@ -121,7 +121,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> insert x:_elem, in:&amp;:duplex-list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:duplex-list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  new-node:&amp;:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): type<span class="Delimiter">}</span>
+  new-node:&amp;:duplex-list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(duplex-list _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">value:offset</span>, x
   <span class="Comment"># save old next before changing it</span>
   next-node:&amp;:duplex-list:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
@@ -133,11 +133,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-into-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
     <span class="Comment"># check structure like before</span>
@@ -170,11 +170,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-at-end-of-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>next list2  <span class="Comment"># now at end of list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
@@ -208,11 +208,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-after-start-of-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list
     <span class="Comment"># check structure like before</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy list
@@ -274,11 +274,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list  <span class="Comment"># second element</span>
     list<span class="Special"> &lt;- </span>remove list2, list
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
@@ -303,11 +303,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-start-of-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>remove list, list
     <span class="Comment"># check structure like before</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy list
@@ -329,11 +329,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-end-of-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     <span class="Comment"># delete last element</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list
     list2<span class="Special"> &lt;- </span>next list2
@@ -360,9 +360,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-singleton-duplex-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>remove list, list
     <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy list
   ]
@@ -405,10 +405,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   list<span class="Special"> &lt;- </span>push <span class="Constant">15</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">14</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">13</span>, list
-  <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw &lt;- </span>copy list  <span class="Comment"># save list</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw</span>  <span class="Comment"># restore list</span>
     <span class="Comment"># delete 16 onwards</span>
     <span class="Comment"># first pointer: to the third element</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list
@@ -439,10 +436,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   list<span class="Special"> &lt;- </span>push <span class="Constant">15</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">14</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">13</span>, list
-  <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw &lt;- </span>copy list  <span class="Comment"># save list</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw</span>  <span class="Comment"># restore list</span>
     <span class="Comment"># delete 15, 16 and 17</span>
     <span class="Comment"># start pointer: to the second element</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list
@@ -474,10 +468,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>push <span class="Constant">15</span>, <span class="Constant">0</span>
   list<span class="Special"> &lt;- </span>push <span class="Constant">14</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">13</span>, list
-  <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw &lt;- </span>copy list  <span class="Comment"># save list</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw</span>  <span class="Comment"># restore list</span>
     <span class="Comment"># delete between first and second element (i.e. nothing)</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list
     remove-between list, list2
@@ -507,10 +498,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   list<span class="Special"> &lt;- </span>push <span class="Constant">15</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">14</span>, list
   list<span class="Special"> &lt;- </span>push <span class="Constant">13</span>, list
-  <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw &lt;- </span>copy list  <span class="Comment"># save list</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:duplex-list:char<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:&amp;:duplex-list:char/<span class="Special">raw</span>  <span class="Comment"># restore list</span>
     <span class="Comment"># remove the third element and beyond</span>
     list2:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next list
     remove-between list2, <span class="Constant">0</span>

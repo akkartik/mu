@@ -20,6 +20,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muData { color: #ffff00; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -35,20 +36,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">## editing sandboxes after they've been created</span>
 
 <span class="muScenario">scenario</span> clicking-on-a-sandbox-moves-it-to-editor [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -64,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">3</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># it pops back into editor</span>
   screen-should-contain [
@@ -78,10 +79,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -95,20 +96,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> clicking-on-a-sandbox-moves-it-to-editor-2 [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -124,7 +125,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">3</span>, <span class="Constant">68</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># it pops back into editor</span>
   screen-should-contain [
@@ -138,10 +139,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    type <span class="Constant">[0]</span>
+    <span class="muData">type</span> <span class="Constant">[0]</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -208,18 +209,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> sandbox-with-print-can-be-edited [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
   <span class="Comment"># right editor contains an instruction</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[print-integer screen, 4]</span>
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[print-integer screen, 4]</span>
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -240,7 +240,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">3</span>, <span class="Constant">65</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -252,24 +252,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editing-sandbox-after-scrolling-resets-scroll [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  render-all screen, env, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
     press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
+    <span class="muData">type</span> <span class="Constant">[add 2, 2]</span>
     press F4
-    type <span class="Constant">[add 1, 1]</span>
+    <span class="muData">type</span> <span class="Constant">[add 1, 1]</span>
     press F4
     press page-down
     press page-down
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.</span>
@@ -284,7 +283,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">2</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
   screen-should-contain [
@@ -300,22 +299,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> editing-sandbox-updates-sandbox-count [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  render-all screen, <span class="Constant">3</span>:&amp;:environment, render
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  render-all screen, env, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
     press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
+    <span class="muData">type</span> <span class="Constant">[add 2, 2]</span>
     press F4
-    type <span class="Constant">[add 1, 1]</span>
+    <span class="muData">type</span> <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -334,7 +332,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># no change in contents</span>
   screen-should-contain [
@@ -356,7 +354,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># screen should show just final sandbox with the right index (1)</span>
   screen-should-contain [

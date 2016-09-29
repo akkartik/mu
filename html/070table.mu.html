@@ -36,9 +36,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># arbitrary types.</span>
 
 <span class="muScenario">scenario</span> table-read-write [
+  <span class="Constant">local-scope</span>
+  tab:&amp;:table:num:num<span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
   run [
-    <span class="Constant">local-scope</span>
-    tab:&amp;:table:num:num<span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
     put-index tab, <span class="Constant">12</span>, <span class="Constant">34</span>
     <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>index tab, <span class="Constant">12</span>
   ]
@@ -48,10 +48,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> table-read-write-non-integer [
+  <span class="Constant">local-scope</span>
+  key:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
+  <span class="Delimiter">{</span>tab: (address table text number)<span class="Delimiter">}</span><span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
   run [
-    <span class="Constant">local-scope</span>
-    key:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc def]</span>
-    <span class="Delimiter">{</span>tab: (address table text number)<span class="Delimiter">}</span><span class="Special"> &lt;- </span>new-table <span class="Constant">30</span>
     put-index tab, key, <span class="Constant">34</span>
     <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>index tab, key
   ]
@@ -75,8 +75,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> new-table capacity:num<span class="muRecipe"> -&gt; </span>result:&amp;:table:_key:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table _key _value): type<span class="Delimiter">}</span>
-  data:&amp;:@:table_row:_key:_value<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table_row _key _value): type<span class="Delimiter">}</span>, capacity
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table _key _value): <span class="muData">type</span><span class="Delimiter">}</span>
+  data:&amp;:@:table_row:_key:_value<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(table_row _key _value): <span class="muData">type</span><span class="Delimiter">}</span>, capacity
   *result<span class="Special"> &lt;- </span>merge <span class="Constant">0/length</span>, capacity, data
 ]
 

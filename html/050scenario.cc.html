@@ -38,9 +38,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: Mu scenarios. This will get long, but these are the tests we want to</span>
 <span class="Comment">//: support in this layer.</span>
 
-<span class="Comment">//: You can use variable names in scenarios, but for the most part we'll use</span>
-<span class="Comment">//: raw location numbers, because that lets us make assertions on memory.</span>
-<span class="Comment">//: Tests should avoid abstraction as far as possible.</span>
+<span class="Comment">//: We avoid raw numeric locations in Mu -- except in scenarios, where they're</span>
+<span class="Comment">//: handy to check the values of specific variables</span>
 <span class="Delimiter">:(scenarios run_mu_scenario)</span>
 <span class="Delimiter">:(scenario scenario_block)</span>
 scenario foo [
@@ -106,6 +105,10 @@ vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Scenarios<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;pending-scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// for temporary use only</span>
+  parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">);</span>  <span class="Comment">// discard</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
@@ -290,7 +293,8 @@ def scenario-foo [
 <span class="SalientComment">//:: The special instructions we want to support inside scenarios.</span>
 <span class="Comment">//: In a compiler for the mu VM these will require more work.</span>
 
-<span class="Comment">//: 'run' interprets a string as a set of instructions</span>
+<span class="Comment">//: 'run' is a purely lexical convenience to separate the code actually being</span>
+<span class="Comment">//: tested from any setup or teardown</span>
 
 <span class="Delimiter">:(scenario run)</span>
 def main [
@@ -300,34 +304,14 @@ def main [
 ]
 <span class="traceContains">+mem: storing 13 in location 1</span>
 
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-RUN<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">,</span> RUN<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> RUN: <span class="Delimiter">{</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Rewrite Instruction(curr, recipe result)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Comment">// Just inline all instructions inside the run block in the containing</span>
+  <span class="Comment">// recipe. 'run' is basically a comment; pretend it doesn't exist.</span>
+  istringstream in2<span class="Delimiter">(</span><span class="Constant">&quot;[</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>+curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name+<span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
+  slurp_body<span class="Delimiter">(</span>in2<span class="Delimiter">,</span> result<span class="Delimiter">);</span>
+  curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> RUN: <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>Name[Next_recipe_ordinal]<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  ostringstream tmp<span class="Delimiter">;</span>
-  tmp &lt;&lt; <span class="Constant">&quot;recipe run_&quot;</span> &lt;&lt; Next_recipe_ordinal &lt;&lt; <span class="Constant">&quot; [ &quot;</span> &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; ]&quot;</span><span class="Delimiter">;</span>
-  vector&lt;recipe_ordinal&gt; tmp_recipe = load<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-  mark_autogenerated<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  bind_special_scenario_names<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  transform_all<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9998</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;run: incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
-    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
-  <span class="Delimiter">}</span>
-  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>tmp_recipe<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// not done with caller; don't increment current_step_index()</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End maybe_make_raw&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>starts_with<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">,</span> <span class="Constant">&quot;run_&quot;</span><span class="Delimiter">))</span>
-  r<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(scenario run_multiple)</span>
 def main [
@@ -578,7 +562,6 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     ++curr_expected_line<span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr_expected_line == SIZE<span class="Delimiter">(</span>expected_lines<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-
   <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
     raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: missing [&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>contents &lt;&lt; <span class="Constant">&quot;] &quot;</span>
           &lt;&lt; <span class="Constant">&quot;in trace with label '&quot;</span> &lt;&lt; expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">).</span>label &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -597,6 +580,11 @@ vector&lt;trace_line&gt; parse_trace<span class="Delimiter">(</span><span class=
     buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> = trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">int</span> delim = buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>find<span class="Delimiter">(</span><span class="Constant">&quot;: &quot;</span><span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>delim == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: lines in 'trace-should-contain' should be of the form &lt;label&gt;: &lt;contents&gt;. Both parts are required.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      result<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     result<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> delim<span class="Delimiter">)),</span>  trim<span class="Delimiter">(</span>buf<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>substr<span class="Delimiter">(</span>delim+<span class="Constant">2</span><span class="Delimiter">))));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>

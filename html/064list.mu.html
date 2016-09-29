@@ -45,7 +45,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> push x:_elem, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *result<span class="Special"> &lt;- </span>merge x, in
 ]
 
@@ -95,7 +95,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> insert x:_elem, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  new-node:&amp;:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  new-node:&amp;:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): <span class="muData">type</span><span class="Delimiter">}</span>
   *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">value:offset</span>, x
   next-node:&amp;:list:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
   *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">next:offset</span>, new-node
@@ -103,11 +103,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-into-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
     <span class="Comment"># check structure</span>
@@ -129,11 +129,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-at-end-of-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
     list2<span class="Special"> &lt;- </span>rest list2  <span class="Comment"># now at end of list</span>
     list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
@@ -156,11 +156,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> inserting-after-start-of-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list
     <span class="Comment"># check structure like before</span>
     list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
@@ -210,11 +210,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># second element</span>
     list<span class="Special"> &lt;- </span>remove list2, list
     <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
@@ -234,11 +234,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-start-of-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     list<span class="Special"> &lt;- </span>remove list, list
     <span class="Comment"># check structure like before</span>
     list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
@@ -255,11 +255,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-end-of-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
     <span class="Comment"># delete last element</span>
     list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list
     list2<span class="Special"> &lt;- </span>rest list2
@@ -281,9 +281,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> removing-from-singleton-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
     list<span class="Special"> &lt;- </span>remove list, list
     <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy list
   ]
@@ -305,13 +305,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> reverse-list [
+  <span class="Constant">local-scope</span>
+  list:&amp;:list:number<span class="Special"> &lt;- </span>push <span class="Constant">1</span>, <span class="Constant">0</span>
+  list<span class="Special"> &lt;- </span>push <span class="Constant">2</span>, list
+  list<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, list
   run [
-    <span class="Constant">local-scope</span>
-    list:&amp;:list:number<span class="Special"> &lt;- </span>push <span class="Constant">1</span>, <span class="Constant">0</span>
-    list<span class="Special"> &lt;- </span>push <span class="Constant">2</span>, list
-    list<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, list
     stash <span class="Constant">[list:]</span>, list
-    list<span class="Special"> &lt;- </span>reverse list, <span class="Constant">0</span>
+    list<span class="Special"> &lt;- </span>reverse list
     stash <span class="Constant">[reversed:]</span>, list
   ]
   trace-should-contain [
@@ -342,7 +342,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> in
-    buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">48/0</span>
+    buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[[]</span>]
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># append in.value to buf</span>
@@ -370,6 +370,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># past recursion depth; insert ellipses and stop</span>
   append buf, <span class="Constant">[...]</span>
+]
+
+<span class="muScenario">scenario</span> stash-empty-list [
+  <span class="Constant">local-scope</span>
+  x:&amp;:list:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  run [
+    stash x
+  ]
+  trace-should-contain [
+    app: <span class="Constant">[]</span>
+  ]
 ]
 </pre>
 </body>

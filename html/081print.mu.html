@@ -207,9 +207,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-character-at-top-left [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:char
     cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
@@ -225,9 +225,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-character-in-color [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, a:char, <span class="Constant">1/red</span>
     cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
@@ -243,11 +243,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-backspace-character [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
     backspace:char<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
@@ -265,14 +265,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-extra-backspace-character [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
     backspace:char<span class="Special"> &lt;- </span>copy <span class="Constant">8/backspace</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace
+    fake-screen<span class="Special"> &lt;- </span>print fake-screen, backspace  <span class="Comment"># cursor already at left margin</span>
     <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
     cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
     <span class="Constant">3</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
@@ -288,13 +288,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-character-at-right-margin [
+  <span class="Comment"># fill top row of screen with text</span>
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
+  b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
+    <span class="Comment"># cursor now at right margin</span>
     c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, c
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
@@ -314,12 +316,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-newline-character [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
     newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
@@ -338,16 +340,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-newline-at-bottom-line [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
+    <span class="Comment"># cursor now at bottom of screen</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-column:offset</span>
   ]
+  <span class="Comment"># doesn't move further down</span>
   memory-should-contain [
     <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># cursor row</span>
     <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># cursor column</span>
@@ -355,18 +359,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-character-at-bottom-right [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
+  newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
+  b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
+  c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, c
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">2/width</span>, <span class="Constant">2/height</span>
-    newline:char<span class="Special"> &lt;- </span>copy <span class="Constant">10/newline</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    b:char<span class="Special"> &lt;- </span>copy <span class="Constant">98/b</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, b
-    c:char<span class="Special"> &lt;- </span>copy <span class="Constant">99/c</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, c
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, newline
+    <span class="Comment"># cursor now at bottom right</span>
     d:char<span class="Special"> &lt;- </span>copy <span class="Constant">100/d</span>
     fake-screen<span class="Special"> &lt;- </span>print fake-screen, d
     <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>get *fake-screen, <span class="Constant">cursor-row:offset</span>
@@ -466,15 +471,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> clear-line-erases-printed-characters [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  <span class="Comment"># print a character</span>
+  a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
+  fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
+  <span class="Comment"># move cursor to start of line</span>
+  fake-screen<span class="Special"> &lt;- </span>move-cursor fake-screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    <span class="Comment"># print a character</span>
-    a:char<span class="Special"> &lt;- </span>copy <span class="Constant">97/a</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, a
-    <span class="Comment"># move cursor to start of line</span>
-    fake-screen<span class="Special"> &lt;- </span>move-cursor fake-screen, <span class="Constant">0/row</span>, <span class="Constant">0/column</span>
-    <span class="Comment"># clear line</span>
     fake-screen<span class="Special"> &lt;- </span>clear-line fake-screen
     cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
     <span class="Constant">10</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
@@ -707,11 +711,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> print-text-stops-at-right-margin [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
   run [
-    <span class="Constant">local-scope</span>
-    fake-screen:&amp;:screen<span class="Special"> &lt;- </span>new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
-    s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abcd]</span>
-    fake-screen<span class="Special"> &lt;- </span>print fake-screen, s:text
+    fake-screen<span class="Special"> &lt;- </span>print fake-screen, <span class="Constant">[abcd]</span>
     cell:&amp;:@:screen-cell<span class="Special"> &lt;- </span>get *fake-screen, <span class="Constant">data:offset</span>
     <span class="Constant">10</span>:@:screen-cell/<span class="Special">raw &lt;- </span>copy *cell
   ]

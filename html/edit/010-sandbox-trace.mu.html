@@ -14,13 +14,13 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .muScenario { color: #00af00; }
-.muData { color: #ffff00; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
 .muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muData { color: #ffff00; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -36,20 +36,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">## clicking on the code typed into a sandbox toggles its trace</span>
 
 <span class="muScenario">scenario</span> sandbox-click-on-code-toggles-app-trace [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  stash [abc]</span>
 ]]
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -64,9 +64,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
-    <span class="Constant">4</span>:char/cursor-icon<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor-icon
+    event-loop screen:&amp;:screen, console:&amp;:console, env
+    cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
+    print screen:&amp;:screen, cursor
   ]
   <span class="Comment"># trace now printed and cursor shouldn't have budged</span>
   screen-should-contain [
@@ -90,8 +90,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">55</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
-    print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor-icon
+    event-loop screen:&amp;:screen, console:&amp;:console, env
+    print screen:&amp;:screen, cursor
   ]
   <span class="Comment"># trace hidden again</span>
   screen-should-contain [
@@ -106,21 +106,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> sandbox-shows-app-trace-and-result [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  stash [abc]</span>
   <span class="muControl">reply</span> <span class="Constant">4</span>
 ]]
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -136,7 +136,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># trace now printed above result</span>
   screen-should-contain [
@@ -154,17 +154,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> clicking-on-app-trace-does-nothing [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[stash 123456789]</span>
   <span class="Comment"># create and expand the trace</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[stash 123456789]</span>
   assume-console [
     press F4
     left-click <span class="Constant">4</span>, <span class="Constant">51</span>
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -178,7 +177,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">5</span>, <span class="Constant">57</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># no change; doesn't die</span>
   screen-should-contain [

@@ -14,13 +14,13 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .muScenario { color: #00af00; }
-.muData { color: #ffff00; }
 .Special { color: #c00000; }
 .Delimiter { color: #800080; }
 .muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.muData { color: #ffff00; }
 .muControl { color: #c0a020; }
 -->
 </style>
@@ -36,20 +36,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">## clicking on sandbox results to 'fix' them and turn sandboxes into tests</span>
 
 <span class="muScenario">scenario</span> sandbox-click-on-result-toggles-color-to-green [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes:text, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
-  <span class="Constant">2</span>:text<span class="Special"> &lt;- </span>new <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  <span class="Constant">3</span>:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">1</span>:text, <span class="Constant">2</span>:text
-  event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+  event-loop screen:&amp;:screen, console:&amp;:console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click <span class="Constant">5</span>, <span class="Constant">51</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># color toggles to green</span>
   screen-should-contain-in-color <span class="Constant">2/green</span>, [
@@ -80,8 +80,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should remain unmoved</span>
   run [
-    <span class="Constant">4</span>:char/cursor<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, <span class="Constant">4</span>:char/cursor
+    cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
+    print screen:&amp;:screen, cursor
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -100,11 +100,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">11</span>  <span class="Comment"># cursor to end of line</span>
     press backspace
-    type <span class="Constant">[3]</span>
+    <span class="muData">type</span> <span class="Constant">[3]</span>
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, <span class="Constant">3</span>:&amp;:environment
+    event-loop screen:&amp;:screen, console:&amp;:console, env
   ]
   <span class="Comment"># result turns red</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
