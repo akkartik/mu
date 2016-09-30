@@ -14,8 +14,9 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.cSpecial { color: #008000; }
 .traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
@@ -56,7 +57,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario brace_conversion)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -136,14 +137,14 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>old_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-if&quot;</span><span class="Delimiter">)</span> != string::npos || inst<span class="Delimiter">.</span>old_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;-unless&quot;</span><span class="Delimiter">)</span> != string::npos<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Comment">// conditional branches check arg 1</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset</span><span class="Constant">&quot; &lt;&lt; end();</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Delimiter">{</span>
       <span class="Comment">// unconditional branches check arg 0</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; is_literal<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:offset</span><span class="Constant">&quot; &lt;&lt; end();</span>
         <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
@@ -160,9 +161,9 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>target<span class="Delimiter">);</span>
     <span class="Comment">// log computed target</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;jump&quot;</span><span class="Delimiter">)</span>
-      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>target<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;:offset&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>target<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;:offset</span><span class="Constant">&quot; &lt;&lt; end();</span>
     <span class="Normal">else</span>
-      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>target<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;:offset&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">' '</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;, &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>target<span class="Delimiter">.</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;:offset</span><span class="Constant">&quot; &lt;&lt; end();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -180,7 +181,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario loop)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -195,7 +196,7 @@ def main [
 <span class="traceContains">+transform: jump -2:offset</span>
 
 <span class="Delimiter">:(scenario break_empty_block)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>
@@ -206,7 +207,7 @@ def main [
 <span class="traceContains">+transform: jump 0:offset</span>
 
 <span class="Delimiter">:(scenario break_cascading)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>
@@ -221,7 +222,7 @@ def main [
 <span class="traceContains">+transform: jump 0:offset</span>
 
 <span class="Delimiter">:(scenario break_cascading_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -240,7 +241,7 @@ def main [
 <span class="traceContains">+transform: jump 0:offset</span>
 
 <span class="Delimiter">:(scenario break_if)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -259,7 +260,7 @@ def main [
 <span class="traceContains">+transform: jump 0:offset</span>
 
 <span class="Delimiter">:(scenario break_nested)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -273,7 +274,7 @@ def main [
 <span class="traceContains">+transform: jump 4:offset</span>
 
 <span class="Delimiter">:(scenario break_nested_degenerate)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -286,7 +287,7 @@ def main [
 <span class="traceContains">+transform: jump 3:offset</span>
 
 <span class="Delimiter">:(scenario break_nested_degenerate_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -299,16 +300,16 @@ def main [
 
 <span class="Delimiter">:(scenario break_label)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    <span class="Identifier">break</span> +foo:offset
+    <span class="Identifier">break</span> <span class="Constant">+foo:offset</span>
   <span class="Delimiter">}</span>
 ]
 <span class="traceContains">+transform: jump +foo:offset</span>
 
 <span class="Delimiter">:(scenario break_unless)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -323,7 +324,7 @@ def main [
 <span class="traceContains">+transform: copy ...</span>
 
 <span class="Delimiter">:(scenario loop_unless)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -338,7 +339,7 @@ def main [
 <span class="traceContains">+transform: copy ...</span>
 
 <span class="Delimiter">:(scenario loop_nested)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -353,7 +354,7 @@ def main [
 <span class="traceContains">+transform: jump-if 4, -5:offset</span>
 
 <span class="Delimiter">:(scenario loop_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   +foo
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -365,7 +366,7 @@ def main [
 <span class="Comment">//: test how things actually run</span>
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario brace_conversion_and_run)</span>
-def test-factorial [
+<span class="muRecipe">def</span> test-factorial [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Delimiter">{</span>
@@ -382,14 +383,14 @@ def test-factorial [
 
 <span class="Delimiter">:(scenario break_outside_braces_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Identifier">break</span>
 ]
 <span class="traceContains">+error: 'break' needs a '{' before</span>
 
 <span class="Delimiter">:(scenario break_conditional_without_ingredient_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>-<span class="Normal">if</span>
   <span class="Delimiter">}</span>
@@ -399,20 +400,20 @@ def main [
 <span class="Comment">//: Using break we can now implement conditional returns.</span>
 
 <span class="Delimiter">:(scenario return_if)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>test1
 ]
-def test1 [
+<span class="muRecipe">def</span> test1 [
   <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+mem: storing 35 in location 1</span>
 
 <span class="Delimiter">:(scenario return_if_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>test1
 ]
-def test1 [
+<span class="muRecipe">def</span> test1 [
   <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]

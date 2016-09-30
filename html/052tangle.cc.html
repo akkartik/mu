@@ -16,12 +16,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -42,12 +43,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: todo: switch recipe.steps to a more efficient data structure.</span>
 
 <span class="Delimiter">:(scenario tangle_before)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   &lt;label1&gt;
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -198,15 +199,15 @@ check_insert_fragments<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario tangle_before_and_after)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   &lt;label1&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -219,33 +220,33 @@ $mem: <span class="Constant">4</span>
 
 <span class="Delimiter">:(scenario tangle_ignores_jump_target)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   +label1
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before +label1 [
+<span class="muRecipe">before</span> +label1 [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+error: can't tangle before label +label1</span>
 
 <span class="Delimiter">:(scenario tangle_keeps_labels_separate)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   &lt;label1&gt;
   &lt;label2&gt;
   <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label2&gt; [
+<span class="muRecipe">before</span> &lt;label2&gt; [
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label2&gt; [
+<span class="muRecipe">after</span> &lt;label2&gt; [
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -261,21 +262,21 @@ after &lt;label2&gt; [
 $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_stacks_multiple_fragments)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   &lt;label1&gt;
   <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -291,16 +292,16 @@ after &lt;label1&gt; [
 $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_supports_fragments_with_multiple_instructions)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   &lt;label1&gt;
   <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -315,21 +316,21 @@ after &lt;label1&gt; [
 $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   recipe2
 ]
-def recipe2 [
+<span class="muRecipe">def</span> recipe2 [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
   &lt;label1&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
 <span class="traceContains">+mem: storing 10 in location 1</span>
@@ -347,16 +348,16 @@ after &lt;label1&gt; [
 $mem: <span class="Constant">8</span>
 
 <span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   &lt;label1&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
 <span class="traceContains">+mem: storing 10 in location 1</span>
@@ -371,19 +372,19 @@ after &lt;label1&gt; [
 $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_tangles_into_all_labels_with_same_name_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   &lt;foo&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
 ]
-before &lt;label1&gt; [
+<span class="muRecipe">before</span> &lt;label1&gt; [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]
-after &lt;foo&gt; [
+<span class="muRecipe">after</span> &lt;foo&gt; [
   &lt;label1&gt;
 ]
 <span class="traceContains">+mem: storing 10 in location 1</span>
@@ -398,13 +399,13 @@ after &lt;foo&gt; [
 $mem: <span class="Constant">6</span>
 
 <span class="Delimiter">:(scenario tangle_handles_jump_target_inside_fragment)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
 ]
-before &lt;label1&gt; [
-  jump +label2:label
+<span class="muRecipe">before</span> &lt;label1&gt; [
+  jump <span class="Constant">+label2:label</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
   +label2
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
@@ -419,14 +420,14 @@ before &lt;label1&gt; [
 $mem: <span class="Constant">3</span>
 
 <span class="Delimiter">:(scenario tangle_renames_jump_target)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   +label2
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
 ]
-before &lt;label1&gt; [
-  jump +label2:label
+<span class="muRecipe">before</span> &lt;label1&gt; [
+  jump <span class="Constant">+label2:label</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
   +label2  <span class="Comment"># renamed</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
@@ -441,14 +442,14 @@ before &lt;label1&gt; [
 $mem: <span class="Constant">3</span>
 
 <span class="Delimiter">:(scenario tangle_jump_to_base_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
   &lt;label1&gt;
   +label2
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>
 ]
-before &lt;label1&gt; [
-  jump +label2:label
+<span class="muRecipe">before</span> &lt;label1&gt; [
+  jump <span class="Constant">+label2:label</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>
 ]

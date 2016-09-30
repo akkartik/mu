@@ -15,12 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -35,10 +36,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: Calls can also generate products, using 'reply' or 'return'.</span>
 
 <span class="Delimiter">:(scenario return)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>f <span class="Constant">34</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:num
   reply <span class="Constant">12</span>:num<span class="Delimiter">,</span> <span class="Constant">13</span>:num
@@ -135,10 +136,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenario return_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>f <span class="Constant">2</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>:point/<span class="Special">raw</span>
@@ -153,22 +154,22 @@ def f [
 
 <span class="Delimiter">:(scenario return_same_as_ingredient)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:num  <span class="Comment"># call with different ingredient and product</span>
 ]
-def test1 [
+<span class="muRecipe">def</span> test1 [
   <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Identifier">return</span> <span class="Constant">10</span>:num/same-as-ingredient:<span class="Constant">0</span>
 ]
 <span class="traceContains">+error: main: '2:num &lt;- test1 1:num' should write to '1:num' rather than '2:num'</span>
 
 <span class="Delimiter">:(scenario return_same_as_ingredient_dummy)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   _<span class="Special"> &lt;- </span>test1 <span class="Constant">1</span>:num  <span class="Comment"># call with different ingredient and product</span>
 ]
-def test1 [
+<span class="muRecipe">def</span> test1 [
   <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Identifier">return</span> <span class="Constant">10</span>:num/same-as-ingredient:<span class="Constant">0</span>
 ]

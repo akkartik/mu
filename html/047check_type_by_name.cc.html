@@ -15,12 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -42,7 +43,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario transform_fails_on_reusing_name_with_different_type)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Normal">x</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
@@ -101,7 +102,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario transform_fills_in_missing_types)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
@@ -109,7 +110,7 @@ def main [
 <span class="traceContains">+mem: storing 2 in location 2</span>
 
 <span class="Delimiter">:(scenario transform_fills_in_missing_types_in_product)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   x<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
@@ -117,7 +118,7 @@ def main [
 <span class="traceContains">+mem: storing 2 in location 1</span>
 
 <span class="Delimiter">:(scenario transform_fills_in_missing_types_in_product_and_ingredient)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   x<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
@@ -126,7 +127,7 @@ def main [
 
 <span class="Delimiter">:(scenario transform_fails_on_missing_types_in_first_mention)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   x<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">2</span>
 ]
@@ -134,24 +135,24 @@ def main [
 
 <span class="Delimiter">:(scenario typo_in_address_type_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Normal">y</span>:&amp;:charcter<span class="Special"> &lt;- </span><span class="Normal">new</span> character:type
+<span class="muRecipe">def</span> main [
+  <span class="Normal">y</span>:&amp;:charcter<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">character:type</span>
   *y<span class="Special"> &lt;- </span>copy <span class="Constant">67</span>
 ]
 <span class="traceContains">+error: main: unknown type charcter in 'y:&amp;:charcter &lt;- new character:type'</span>
 
 <span class="Delimiter">:(scenario array_type_without_size_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:@:num<span class="Special"> &lt;- </span>merge <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">12</span><span class="Delimiter">,</span> <span class="Constant">13</span>
 ]
 <span class="traceContains">+error: main can't determine the size of array variable 'x'. Either allocate it separately and make the type of 'x' an address, or specify the length of the array in the type of 'x'.</span>
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario transform_checks_types_of_identical_reagents_in_multiple_spaces)</span>
-def foo [  <span class="Comment"># dummy</span>
+<span class="muRecipe">def</span> foo [  <span class="Comment"># dummy</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Constant">0</span>:space/names:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># specify surrounding space</span>
   <span class="Normal">x</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Constant">true</span>

@@ -13,17 +13,19 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
-.traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
-.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #9090ff; }
+.CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
+.traceContains { color: #008000; }
 .Delimiter { color: #800080; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.cSpecial { color: #008000; }
+.traceAbsent { color: #c00000; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #c00000; }
 .Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -42,7 +44,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: handy to check the values of specific variables</span>
 <span class="Delimiter">:(scenarios run_mu_scenario)</span>
 <span class="Delimiter">:(scenario scenario_block)</span>
-scenario foo [
+<span class="muScenario">scenario</span> foo [
   run [
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -53,7 +55,7 @@ scenario foo [
 <span class="Comment"># checks are inside scenario</span>
 
 <span class="Delimiter">:(scenario scenario_multiple_blocks)</span>
-scenario foo [
+<span class="muScenario">scenario</span> foo [
   run [
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -71,7 +73,7 @@ scenario foo [
 <span class="Comment"># checks are inside scenario</span>
 
 <span class="Delimiter">:(scenario scenario_check_memory_and_trace)</span>
-scenario foo [
+<span class="muScenario">scenario</span> foo [
   run [
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [a b c]
@@ -112,7 +114,7 @@ vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-scenario parse_scenario<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="muScenario">scenario</span> parse_scenario<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   scenario result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -132,14 +134,14 @@ scenario parse_scenario<span class="Delimiter">(</span>istream&amp; in<span clas
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario read_scenario_with_bracket_in_comment)</span>
-scenario foo [
+<span class="muScenario">scenario</span> foo [
   <span class="Comment"># ']' in comment</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
 
 <span class="Delimiter">:(scenario read_scenario_with_bracket_in_comment_in_nested_string)</span>
-scenario foo [
+<span class="muScenario">scenario</span> foo [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [<span class="Comment"># not a comment]</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)} &lt;- new {&quot;# not a comment&quot;: &quot;literal-string&quot;}</span>
@@ -279,10 +281,10 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
 <span class="Delimiter">:(scenario forbid_redefining_scenario_even_if_forced)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="Special">% Disable_redefine_checks = true;</span>
-def scenario-foo [
+<span class="muRecipe">def</span> scenario-foo [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-def scenario-foo [
+<span class="muRecipe">def</span> scenario-foo [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
 <span class="traceContains">+error: redefining recipe scenario-foo</span>
@@ -297,7 +299,7 @@ def scenario-foo [
 <span class="Comment">//: tested from any setup or teardown</span>
 
 <span class="Delimiter">:(scenario run)</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -314,7 +316,7 @@ def main [
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_multiple)</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">13</span>
   ]
@@ -336,7 +338,7 @@ Scenario_testing_scenario = <span class="Constant">false</span><span class="Deli
 <span class="Delimiter">:(scenario memory_check)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">13</span>
   ]
@@ -458,7 +460,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario memory_check_multiple)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
@@ -469,7 +471,7 @@ def main [
 <span class="Delimiter">:(scenario memory_check_string_length)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
@@ -481,7 +483,7 @@ def main [
 <span class="traceContains">+error: expected location '1' to contain length 2 of string [ab] but saw 3</span>
 
 <span class="Delimiter">:(scenario memory_check_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>  <span class="Comment"># 'a'</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>  <span class="Comment"># 'b'</span>
@@ -498,7 +500,7 @@ def main [
 <span class="Delimiter">:(scenario memory_invalid_string_check)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span>[abc]
   ]
@@ -508,7 +510,7 @@ def main [
 <span class="Delimiter">:(scenario memory_check_with_comment)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   memory-should-contain [
     <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>  <span class="Comment"># comment</span>
   ]
@@ -524,7 +526,7 @@ def main [
 <span class="Delimiter">:(scenario trace_check_fails)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   trace-should-contain [
     <span class="Normal">a</span>: b
     <span class="Normal">a</span>: d
@@ -593,7 +595,7 @@ vector&lt;trace_line&gt; parse_trace<span class="Delimiter">(</span><span class=
 <span class="Delimiter">:(scenario trace_check_fails_in_nonfirst_line)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
@@ -606,7 +608,7 @@ def main [
 
 <span class="Delimiter">:(scenario trace_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
@@ -624,7 +626,7 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario trace_negative_check_fails)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [b]
   ]
@@ -667,7 +669,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario trace_negative_check_passes_silently)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   trace-should-<span class="Normal">not</span>-contain [
     <span class="Normal">a</span>: b
   ]
@@ -678,7 +680,7 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">:(scenario trace_negative_check_fails_on_any_unexpected_line)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [d]
   ]
@@ -690,7 +692,7 @@ def main [
 <span class="traceContains">+error: unexpected [d] in trace with label 'a'</span>
 
 <span class="Delimiter">:(scenario trace_count_check)</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [foo]
   ]
@@ -742,7 +744,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(scenario trace_count_check_2)</span>
 <span class="Special">% Scenario_testing_scenario = true;</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   run [
     trace <span class="Constant">1</span><span class="Delimiter">,</span> [a]<span class="Delimiter">,</span> [foo]
   ]
@@ -759,7 +761,7 @@ def main [
 
 <span class="Delimiter">:(scenario recipe_name_with_underscore)</span>
 <span class="Special">% Hide_errors = true;</span>
-def foo_bar [
+<span class="muRecipe">def</span> foo_bar [
 ]
 <span class="traceContains">+error: foo_bar: don't create recipes with '_' in the name</span>
 

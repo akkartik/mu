@@ -24,7 +24,19 @@ function! HighlightTangledFile()
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   set comments+=n:#
   " Some other bare-bones mu highlighting.
+  syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
+  syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
+  syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
+  syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
+  syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
+  highlight link muLiteral Constant
   syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
+  syntax match muGlobal %[^ ]\+:global/[^ ,]*\|[^ ]\+:global\>% | highlight link muGlobal SpecialChar
+  " common keywords
+  syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
+  syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
+  syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
+  syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
 endfunction
 call HighlightTangledFile()
 autocmd BufRead,BufNewFile *.mu set ft=mu

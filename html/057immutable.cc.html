@@ -15,13 +15,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
+.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -40,40 +42,40 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products)</span>
 <span class="Comment"># mutable container</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">p</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   p<span class="Special"> &lt;- </span>foo p
 ]
-def foo p:point <span class="Delimiter">-&gt;</span> p:point [
+<span class="muRecipe">def</span> foo p:point<span class="muRecipe"> -&gt; </span>p:point [
   local-scope
   load-ingredients
-  p<span class="Special"> &lt;- </span>put p<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  p<span class="Special"> &lt;- </span>put p<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
   p<span class="Special"> &lt;- </span>foo p
 ]
 <span class="Comment"># mutable address to container</span>
-def foo p:&amp;:point <span class="Delimiter">-&gt;</span> p:&amp;:point [
+<span class="muRecipe">def</span> foo p:&amp;:point<span class="muRecipe"> -&gt; </span>p:&amp;:point [
   local-scope
   load-ingredients
-  *p<span class="Special"> &lt;- </span>put *p<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  *p<span class="Special"> &lt;- </span>put *p<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario can_modify_ingredients_that_are_also_products_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:@:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
+  <span class="Normal">p</span>:&amp;:@:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">3</span>
   p<span class="Special"> &lt;- </span>foo p
 ]
 <span class="Comment"># mutable address</span>
-def foo p:&amp;:@:num <span class="Delimiter">-&gt;</span> p:&amp;:@:num [
+<span class="muRecipe">def</span> foo p:&amp;:@:num<span class="muRecipe"> -&gt; </span>p:&amp;:@:num [
   local-scope
   load-ingredients
   *p<span class="Special"> &lt;- </span>put-index *p<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
@@ -81,19 +83,19 @@ def foo p:&amp;:@:num <span class="Delimiter">-&gt;</span> p:&amp;:@:num [
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario ignore_literal_ingredients_for_immutability_checks)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> d1:type
+  <span class="Normal">p</span>:&amp;:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">d1:type</span>
   <span class="Normal">q</span>:num<span class="Special"> &lt;- </span>foo p
 ]
-def foo p:&amp;:d1 <span class="Delimiter">-&gt;</span> q:num [
+<span class="muRecipe">def</span> foo p:&amp;:d1<span class="muRecipe"> -&gt; </span>q:num [
   local-scope
   load-ingredients
-  <span class="Normal">x</span>:&amp;:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> d1:type
-  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> p:offset<span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># ignore this 'p'</span>
+  <span class="Normal">x</span>:&amp;:d1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">d1:type</span>
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> <span class="Constant">p:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># ignore this 'p'</span>
   reply <span class="Constant">36</span>
 ]
-container d1 [
+<span class="muData">container</span> d1 [
   <span class="Normal">p</span>:num
   <span class="Normal">q</span>:num
 ]
@@ -101,13 +103,13 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario cannot_modify_immutable_ingredients)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   foo x
 ]
 <span class="Comment"># immutable address to primitive</span>
-def foo x:&amp;:num [
+<span class="muRecipe">def</span> foo x:&amp;:num [
   local-scope
   load-ingredients
   *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
@@ -116,31 +118,31 @@ def foo x:&amp;:num [
 
 <span class="Delimiter">:(scenario cannot_modify_immutable_containers)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">x</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span><span class="Delimiter">,</span> <span class="Constant">36</span>
   foo x
 ]
 <span class="Comment"># immutable container</span>
-def foo x:point-number [
+<span class="muRecipe">def</span> foo x:point-number [
   local-scope
   load-ingredients
   <span class="Comment"># copy an element: ok</span>
-  <span class="Normal">y</span>:point<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> xy:offset
+  <span class="Normal">y</span>:point<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> <span class="Constant">xy:offset</span>
   <span class="Comment"># modify the element: boom</span>
   <span class="Comment"># This could be ok if y contains no addresses, but we're not going to try to be that smart.</span>
   <span class="Comment"># It also makes the rules easier to reason about. If it's just an ingredient, just don't try to change it.</span>
-  y<span class="Special"> &lt;- </span>put y<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">37</span>
+  y<span class="Special"> &lt;- </span>put y<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">37</span>
 ]
 <span class="traceContains">+error: foo: cannot modify 'y' in instruction 'y &lt;- put y, x:offset, 37' because that would modify 'x' which is an ingredient of recipe foo but not also a product</span>
 
 <span class="Delimiter">:(scenario can_modify_immutable_pointers)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   foo x
 ]
-def foo x:&amp;:num [
+<span class="muRecipe">def</span> foo x:&amp;:num [
   local-scope
   load-ingredients
   <span class="Comment"># modify the address, not the payload</span>
@@ -150,16 +152,16 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario can_modify_immutable_pointers_but_not_their_payloads)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   foo x
 ]
-def foo x:&amp;:num [
+<span class="muRecipe">def</span> foo x:&amp;:num [
   local-scope
   load-ingredients
   <span class="Comment"># modify address; ok</span>
-  x<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  x<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   <span class="Comment"># modify payload: boom</span>
   <span class="Comment"># this could be ok, but we're not going to try to be that smart</span>
   *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
@@ -168,17 +170,17 @@ def foo x:&amp;:num [
 
 <span class="Delimiter">:(scenario cannot_call_mutating_recipes_on_immutable_ingredients)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
   foo p
 ]
-def foo p:&amp;:point [
+<span class="muRecipe">def</span> foo p:&amp;:point [
   local-scope
   load-ingredients
   bar p
 ]
-def bar p:&amp;:point <span class="Delimiter">-&gt;</span> p:&amp;:point [
+<span class="muRecipe">def</span> bar p:&amp;:point<span class="muRecipe"> -&gt; </span>p:&amp;:point [
   local-scope
   load-ingredients
   <span class="Comment"># p could be modified here, but it doesn't have to be, it's already marked</span>
@@ -188,72 +190,72 @@ def bar p:&amp;:point <span class="Delimiter">-&gt;</span> p:&amp;:point [
 
 <span class="Delimiter">:(scenario cannot_modify_copies_of_immutable_ingredients)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
   foo p
 ]
-def foo p:&amp;:point [
+<span class="muRecipe">def</span> foo p:&amp;:point [
   local-scope
   load-ingredients
   <span class="Normal">q</span>:&amp;:point<span class="Special"> &lt;- </span>copy p
-  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+error: foo: cannot modify 'q' in instruction '*q &lt;- put *q, x:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product</span>
 
 <span class="Delimiter">:(scenario can_modify_copies_of_mutable_ingredients)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
   foo p
 ]
-def foo p:&amp;:point <span class="Delimiter">-&gt;</span> p:&amp;:point [
+<span class="muRecipe">def</span> foo p:&amp;:point<span class="muRecipe"> -&gt; </span>p:&amp;:point [
   local-scope
   load-ingredients
   <span class="Normal">q</span>:&amp;:point<span class="Special"> &lt;- </span>copy p
-  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  *q<span class="Special"> &lt;- </span>put *q<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:&amp;:@:num  <span class="Comment"># contains an address</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># don't run anything</span>
 ]
-def foo a:&amp;:foo [
+<span class="muRecipe">def</span> foo a:&amp;:foo [
   local-scope
   load-ingredients
-  <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> x:offset  <span class="Comment"># just a regular get of the container</span>
+  <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>get *a<span class="Delimiter">,</span> <span class="Constant">x:offset</span>  <span class="Comment"># just a regular get of the container</span>
   *x<span class="Special"> &lt;- </span>put-index *x<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># but then a put-index on the result</span>
 ]
 <span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- put-index *x, 0, 34' because that would modify a which is an ingredient of recipe foo but not also a product</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_2)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:&amp;:@:num  <span class="Comment"># contains an address</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># don't run anything</span>
 ]
-def foo a:&amp;:foo [
+<span class="muRecipe">def</span> foo a:&amp;:foo [
   local-scope
   load-ingredients
   <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>
   <span class="Comment"># modify b, completely unrelated to immutable ingredient a</span>
-  <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> x:offset
+  <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> <span class="Constant">x:offset</span>
   *x<span class="Special"> &lt;- </span>put-index *x<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_3)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># don't run anything</span>
 ]
-def foo a:&amp;:@:&amp;:num [
+<span class="muRecipe">def</span> foo a:&amp;:@:&amp;:num [
   local-scope
   load-ingredients
   <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span>index *a<span class="Delimiter">,</span> <span class="Constant">0</span>  <span class="Comment"># just a regular index of the array</span>
@@ -262,10 +264,10 @@ def foo a:&amp;:@:&amp;:num [
 <span class="traceContains">+error: foo: cannot modify 'x' in instruction '*x &lt;- copy 34' because that would modify a which is an ingredient of recipe foo but not also a product</span>
 
 <span class="Delimiter">:(scenario cannot_modify_address_inside_immutable_ingredients_4)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># don't run anything</span>
 ]
-def foo a:&amp;:@:&amp;:num [
+<span class="muRecipe">def</span> foo a:&amp;:@:&amp;:num [
   local-scope
   load-ingredients
   <span class="Normal">b</span>:&amp;:@:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">},</span> <span class="Constant">3</span>
@@ -276,10 +278,10 @@ def foo a:&amp;:@:&amp;:num [
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario latter_ingredient_of_index_is_immutable)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># don't run anything</span>
 ]
-def foo a:&amp;:@:&amp;:@:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> a:&amp;:@:&amp;:@:num [
+<span class="muRecipe">def</span> foo a:&amp;:@:&amp;:@:num<span class="Delimiter">,</span> b:num<span class="muRecipe"> -&gt; </span>a:&amp;:@:&amp;:@:num [
   local-scope
   load-ingredients
   <span class="Normal">x</span>:&amp;:@:num<span class="Special"> &lt;- </span>index *a<span class="Delimiter">,</span> b
@@ -288,39 +290,39 @@ def foo a:&amp;:@:&amp;:@:num<span class="Delimiter">,</span> b:num <span class=
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario can_traverse_immutable_ingredients)</span>
-container test-list [
+<span class="muData">container</span> test-list [
   <span class="Normal">next</span>:&amp;:test-list
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">test-list:type</span>
   foo p
 ]
-def foo p:&amp;:test-list [
+<span class="muRecipe">def</span> foo p:&amp;:test-list [
   local-scope
   load-ingredients
   <span class="Normal">p2</span>:&amp;:test-list<span class="Special"> &lt;- </span>bar p
 ]
-def bar x:&amp;:test-list <span class="Delimiter">-&gt;</span> y:&amp;:test-list [
+<span class="muRecipe">def</span> bar x:&amp;:test-list<span class="muRecipe"> -&gt; </span>y:&amp;:test-list [
   local-scope
   load-ingredients
-  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">next:offset</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario treat_optional_ingredients_as_mutable)</span>
-def main [
-  <span class="Normal">k</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Normal">k</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   test k
 ]
 <span class="Comment"># recipe taking an immutable address ingredient</span>
-def test k:&amp;:num [
+<span class="muRecipe">def</span> test k:&amp;:num [
   local-scope
   load-ingredients
   foo k
 ]
 <span class="Comment"># ..calling a recipe with an optional address ingredient</span>
-def foo <span class="Delimiter">-&gt;</span> [
+<span class="muRecipe">def</span> foo<span class="muRecipe"> -&gt; </span>[
   local-scope
   load-ingredients
   <span class="Normal">k</span>:&amp;:num<span class="Delimiter">,</span> found?:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient
@@ -330,17 +332,17 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario treat_optional_ingredients_as_mutable_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
+  <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
   foo p
 ]
-def foo p:&amp;:point [
+<span class="muRecipe">def</span> foo p:&amp;:point [
   local-scope
   load-ingredients
   bar p
 ]
-def bar [
+<span class="muRecipe">def</span> bar [
   local-scope
   load-ingredients
   <span class="Normal">p</span>:&amp;:point<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># optional ingredient; assumed to be mutable</span>
@@ -349,17 +351,17 @@ def bar [
 
 <span class="Comment">//: when checking for immutable ingredients, remember to take space into account</span>
 <span class="Delimiter">:(scenario check_space_of_reagents_in_immutability_checks)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:space<span class="Special"> &lt;- </span><span class="Normal">new</span>-closure
-  <span class="Normal">b</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">b</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   run-closure b:&amp;:num<span class="Delimiter">,</span> a:space
 ]
-def <span class="Normal">new</span>-closure [
+<span class="muRecipe">def</span> <span class="Normal">new</span>-closure [
   <span class="Normal">new</span>-<span class="Normal">default</span>-space
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   <span class="Identifier">return</span> <span class="Normal">default</span>-space
 ]
-def run-closure x:&amp;:num<span class="Delimiter">,</span> s:space [
+<span class="muRecipe">def</span> run-closure x:&amp;:num<span class="Delimiter">,</span> s:space [
   local-scope
   load-ingredients
   <span class="Constant">0</span>:space/names:<span class="Normal">new</span>-closure<span class="Special"> &lt;- </span>copy s
@@ -447,25 +449,25 @@ set&lt;<span class="Normal">int</span>&gt; scan_contained_in_product_indices<spa
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario immutability_infects_contained_in_variables)</span>
 <span class="Special">% Hide_errors = true;</span>
-container test-list [
+<span class="muData">container</span> test-list [
   <span class="Normal">value</span>:num
   <span class="Normal">next</span>:&amp;:test-list
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">test-list:type</span>
   foo p
 ]
-def foo p:&amp;:test-list [  <span class="Comment"># p is immutable</span>
+<span class="muRecipe">def</span> foo p:&amp;:test-list [  <span class="Comment"># p is immutable</span>
   local-scope
   load-ingredients
   <span class="Normal">p2</span>:&amp;:test-list<span class="Special"> &lt;- </span>test-next p  <span class="Comment"># p2 is immutable</span>
-  *p2<span class="Special"> &lt;- </span>put *p2<span class="Delimiter">,</span> value:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+  *p2<span class="Special"> &lt;- </span>put *p2<span class="Delimiter">,</span> <span class="Constant">value:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-def test-next x:&amp;:test-list <span class="Delimiter">-&gt;</span> y:&amp;:test-list/contained-in:x [
+<span class="muRecipe">def</span> test-next x:&amp;:test-list<span class="muRecipe"> -&gt; </span>y:&amp;:test-list/contained-in:x [
   local-scope
   load-ingredients
-  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">next:offset</span>
 ]
 <span class="traceContains">+error: foo: cannot modify 'p2' in instruction '*p2 &lt;- put *p2, value:offset, 34' because that would modify p which is an ingredient of recipe foo but not also a product</span>
 
@@ -567,30 +569,30 @@ set&lt;<span class="Normal">int</span>&gt; ingredient_indices<span class="Delimi
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario can_modify_contained_in_addresses)</span>
-container test-list [
+<span class="muData">container</span> test-list [
   <span class="Normal">value</span>:num
   <span class="Normal">next</span>:&amp;:test-list
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> test-list:type
+  <span class="Normal">p</span>:&amp;:test-list<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">test-list:type</span>
   foo p
 ]
-def foo p:&amp;:test-list <span class="Delimiter">-&gt;</span> p:&amp;:test-list [
+<span class="muRecipe">def</span> foo p:&amp;:test-list<span class="muRecipe"> -&gt; </span>p:&amp;:test-list [
   local-scope
   load-ingredients
   <span class="Normal">p2</span>:&amp;:test-list<span class="Special"> &lt;- </span>test-next p
   p<span class="Special"> &lt;- </span>test-remove p2<span class="Delimiter">,</span> p
 ]
-def test-next x:&amp;:test-list <span class="Delimiter">-&gt;</span> y:&amp;:test-list [
+<span class="muRecipe">def</span> test-next x:&amp;:test-list<span class="muRecipe"> -&gt; </span>y:&amp;:test-list [
   local-scope
   load-ingredients
-  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> next:offset
+  y<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">next:offset</span>
 ]
-def test-remove x:&amp;:test-list/contained-in:from<span class="Delimiter">,</span> from:&amp;:test-list <span class="Delimiter">-&gt;</span> from:&amp;:test-list [
+<span class="muRecipe">def</span> test-remove x:&amp;:test-list/contained-in:from<span class="Delimiter">,</span> from:&amp;:test-list<span class="muRecipe"> -&gt; </span>from:&amp;:test-list [
   local-scope
   load-ingredients
-  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> value:offset<span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># can modify x</span>
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> <span class="Constant">value:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>  <span class="Comment"># can modify x</span>
 ]
 $error: <span class="Constant">0</span>
 

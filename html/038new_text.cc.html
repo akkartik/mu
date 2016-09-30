@@ -14,13 +14,14 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.traceContains { color: #008000; }
+.CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.CommentedCode { color: #6c6c6c; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -39,7 +40,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address:array:character&quot;</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(scenario new_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
   <span class="Constant">2</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -47,7 +48,7 @@ def main [
 <span class="traceContains">+mem: storing 101 in location 2</span>
 
 <span class="Delimiter">:(scenario new_string_handles_unicode)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:text
   <span class="Constant">3</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">1</span>
@@ -99,7 +100,7 @@ def main [
 <span class="Comment">//: stash recognizes strings</span>
 
 <span class="Delimiter">:(scenario stash_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
 ]
@@ -112,21 +113,21 @@ def main [
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario unicode_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [♠]
   stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
 ]
 <span class="traceContains">+app: foo: ♠</span>
 
 <span class="Delimiter">:(scenario stash_space_after_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   stash <span class="Constant">1</span>:text<span class="Delimiter">,</span> [foo]
 ]
 <span class="traceContains">+app: abc foo</span>
 
 <span class="Delimiter">:(scenario stash_string_as_array)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   stash *<span class="Constant">1</span>:text
 ]
@@ -139,8 +140,8 @@ def main [
 <span class="Comment">//: Allocate more to routine when initializing a literal string</span>
 <span class="Delimiter">:(scenario new_string_overflow)</span>
 <span class="Special">% Initial_memory_per_routine = 3;</span>
-def main [
-  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   <span class="Constant">2</span>:text/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
 ]
 <span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>

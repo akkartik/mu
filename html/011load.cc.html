@@ -16,12 +16,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -37,7 +38,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenarios load)</span>  <span class="Comment">// use 'load' instead of 'run' in all scenarios in this layer</span>
 <span class="Delimiter">:(scenario first_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -264,7 +265,7 @@ Disable_redefine_checks = <span class="Constant">false</span><span class="Delimi
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario recipe_instead_of_def)</span>
-recipe main [
+<span class="muRecipe">recipe</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -273,10 +274,10 @@ recipe main [
 
 <span class="Delimiter">:(scenario parse_comment_outside_recipe)</span>
 <span class="Comment"># this comment will be dropped by the tangler, so we need a dummy recipe to stop that</span>
-def f1 [
+<span class="muRecipe">def</span> f1 [
 ]
 <span class="Comment"># this comment will go through to 'load'</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -284,7 +285,7 @@ def main [
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># comment</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
@@ -293,7 +294,7 @@ def main [
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># comment</span>
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Comment"># comment</span>
@@ -303,7 +304,7 @@ def main [
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_amongst_instruction_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Comment"># comment</span>
   <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
@@ -316,7 +317,7 @@ def main [
 <span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_comment_after_instruction)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -324,19 +325,19 @@ def main [
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   +foo
 ]
 <span class="traceContains">+parse: label: +foo</span>
 
 <span class="Delimiter">:(scenario parse_dollar_as_recipe_name)</span>
-def main [
+<span class="muRecipe">def</span> main [
   $foo
 ]
 <span class="traceContains">+parse: instruction: $foo</span>
 
 <span class="Delimiter">:(scenario parse_multiple_properties)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>/foo:bar:baz
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -344,7 +345,7 @@ def main [
 <span class="traceContains">+parse:   product: {1: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_products)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -353,7 +354,7 @@ def main [
 <span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_ingredients)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -363,7 +364,7 @@ def main [
 <span class="traceContains">+parse:   product: {2: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario parse_multiple_types)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Delimiter">,</span> <span class="Constant">2</span>:address:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">4</span>:number
 ]
 <span class="traceContains">+parse: instruction: copy</span>
@@ -373,7 +374,7 @@ def main [
 <span class="traceContains">+parse:   product: {2: (&quot;address&quot; &quot;number&quot;)}</span>
 
 <span class="Delimiter">:(scenario parse_properties)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:number/lookup<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+parse:   product: {1: (&quot;address&quot; &quot;number&quot;), &quot;lookup&quot;: ()}</span>
@@ -390,19 +391,19 @@ def main [
 
 <span class="Delimiter">:(scenario forbid_redefining_recipes)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="traceContains">+error: redefining recipe main</span>
 
 <span class="Delimiter">:(scenario permit_forcibly_redefining_recipes)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
-def! main [
+<span class="muRecipe">def</span>! main [
   <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="traceAbsent">-error: redefining recipe main</span>

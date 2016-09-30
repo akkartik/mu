@@ -15,13 +15,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -36,22 +37,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: So far the recipes we define can't run each other. Let's fix that.</span>
 
 <span class="Delimiter">:(scenario calling_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 3</span>
 
 <span class="Delimiter">:(scenario return_on_fallthrough)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
@@ -165,14 +166,14 @@ call&amp; current_call<span class="Delimiter">()</span> <span class="Delimiter">
 
 <span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   foo
 ]
 <span class="traceContains">+error: main: undefined operation in 'foo '</span>
 
 <span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>foo
 ]
 <span class="traceContains">+error: main: undefined operation in 'x:num &lt;- foo '</span>

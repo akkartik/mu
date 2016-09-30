@@ -15,13 +15,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -40,10 +41,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: todo: support storing shape-shifting recipes into recipe variables and calling them</span>
 
 <span class="Delimiter">:(scenario call_literal_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-def f x:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> f x:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -51,11 +52,11 @@ def f x:num <span class="Delimiter">-&gt;</span> y:num [
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario call_variable)</span>
-def main [
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">34</span>
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number<span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number<span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)},</span> <span class="Constant">34</span>
 ]
-def f x:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> f x:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -113,7 +114,7 @@ get_or_insert<span class="Delimiter">(</span>Type<span class="Delimiter">,</span
 <span class="Comment">//: assume variable types override recipe literals.</span>
 <span class="Delimiter">:(scenario error_on_recipe_literal_used_as_a_variable)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">a</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Identifier">break</span> <span class="Constant">0</span>
   <span class="Normal">break</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -160,10 +161,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario call_check_literal_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
-def f x:point <span class="Delimiter">-&gt;</span> y:point [
+<span class="muRecipe">def</span> f x:point<span class="muRecipe"> -&gt; </span>y:point [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -173,11 +174,11 @@ def f x:point <span class="Delimiter">-&gt;</span> y:point [
 
 <span class="Delimiter">:(scenario call_check_variable_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point <span class="Delimiter">-&gt;</span> point<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point <span class="Delimiter">-&gt;</span> point<span class="Delimiter">)},</span> <span class="Constant">34</span>
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point<span class="muRecipe"> -&gt; </span>point<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe point<span class="muRecipe"> -&gt; </span>point<span class="Delimiter">)},</span> <span class="Constant">34</span>
 ]
-def f x:point <span class="Delimiter">-&gt;</span> y:point [
+<span class="muRecipe">def</span> f x:point<span class="muRecipe"> -&gt; </span>y:point [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -211,7 +212,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-recipe from_reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="muRecipe">recipe</span> from_reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   recipe result_header<span class="Delimiter">;</span>  <span class="Comment">// will contain only ingredients and products, nothing else</span>
   result_header<span class="Delimiter">.</span>has_header = <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -289,12 +290,12 @@ reagent next_recipe_reagent<span class="Delimiter">(</span><span class="Normal">
 
 <span class="Delimiter">:(scenario copy_typecheck_recipe_variable)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># abc def</span>
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># store literal in a matching variable</span>
-  <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>recipe boolean <span class="Delimiter">-&gt;</span> boolean<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span>  <span class="Comment"># mismatch between recipe variables</span>
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number<span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># store literal in a matching variable</span>
+  <span class="Delimiter">{</span><span class="Constant">2</span>: <span class="Delimiter">(</span>recipe boolean<span class="muRecipe"> -&gt; </span>boolean<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number<span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)}</span>  <span class="Comment"># mismatch between recipe variables</span>
 ]
-def f x:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> f x:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -303,10 +304,10 @@ def f x:num <span class="Delimiter">-&gt;</span> y:num [
 
 <span class="Delimiter">:(scenario copy_typecheck_recipe_variable_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># mismatch with a recipe literal</span>
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe number<span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f  <span class="Comment"># mismatch with a recipe literal</span>
 ]
-def f x:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> y:<span class="Normal">bool</span> [
+<span class="muRecipe">def</span> f x:<span class="Normal">bool</span><span class="muRecipe"> -&gt; </span>y:<span class="Normal">bool</span> [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -333,12 +334,12 @@ def f x:<span class="Normal">bool</span> <span class="Delimiter">-&gt;</span> y:
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario call_variable_compound_ingredient)</span>
-def main [
-  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span><span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy f
   <span class="Constant">2</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Delimiter">-&gt;</span> number<span class="Delimiter">)},</span> <span class="Constant">2</span>:&amp;:num
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>call <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>recipe <span class="Delimiter">(</span>address number<span class="Delimiter">)</span><span class="muRecipe"> -&gt; </span>number<span class="Delimiter">)},</span> <span class="Constant">2</span>:&amp;:num
 ]
-def f x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> f x:&amp;:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -348,10 +349,10 @@ $error: <span class="Constant">0</span>
 <span class="Comment">//: make sure we don't accidentally break on a function literal</span>
 <span class="Delimiter">:(scenario jump_forbidden_on_recipe_literals)</span>
 <span class="Special">% Hide_errors = true;</span>
-def foo [
+<span class="muRecipe">def</span> foo [
   local-scope
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Delimiter">{</span>
     <span class="Identifier">break</span>-<span class="Normal">if</span> foo

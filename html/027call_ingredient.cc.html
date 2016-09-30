@@ -15,12 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -36,20 +37,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: ingredients, use 'next-ingredient'.</span>
 
 <span class="Delimiter">:(scenario next_ingredient)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f <span class="Constant">2</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">12</span>:num
 ]
 <span class="traceContains">+mem: storing 3 in location 13</span>
 
 <span class="Delimiter">:(scenario next_ingredient_missing)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f
 ]
-def f [
+<span class="muRecipe">def</span> f [
   _<span class="Delimiter">,</span> <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+mem: storing 0 in location 12</span>
@@ -121,19 +122,19 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario next_ingredient_fail_on_missing)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   f
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>next-ingredient
 ]
 <span class="traceContains">+error: f: no ingredient to save in '11:num'</span>
 
 <span class="Delimiter">:(scenario rewind_ingredients)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f <span class="Constant">2</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># consume ingredient</span>
   _<span class="Delimiter">,</span> <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># will not find any ingredients</span>
   rewind-ingredients
@@ -159,10 +160,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario ingredient)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>ingredient <span class="Constant">1</span>  <span class="Comment"># consume second ingredient first</span>
   <span class="Constant">13</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># next-ingredient tries to scan past that</span>
 ]

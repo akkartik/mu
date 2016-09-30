@@ -15,13 +15,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -42,7 +44,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment">//: You can create arrays using 'create-array'.</span>
 <span class="Delimiter">:(scenario create_array)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># create an array occupying locations 1 (for the size) and 2-4 (for the elements)</span>
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
 ]
@@ -111,7 +113,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Comment"># size in memory at run-time. We'll call a variable with an explicit size a</span>
 <span class="Comment"># 'static' array, and one without a 'dynamic' array since it can contain</span>
 <span class="Comment"># arrays of many different sizes.</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -124,7 +126,7 @@ def main [
 <span class="traceContains">+mem: storing 16 in location 8</span>
 
 <span class="Delimiter">:(scenario stash_array)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -154,14 +156,14 @@ def main [
 <span class="Comment">//: advance</span>
 
 <span class="Delimiter">:(scenario container_permits_static_array_element)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:array:num:<span class="Constant">3</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario container_disallows_dynamic_array_element)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:array:num
 ]
 <span class="traceContains">+error: container 'foo' cannot determine size of element 'x'</span>
@@ -175,11 +177,11 @@ container foo [
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario merge_static_array_into_container)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:array:num:<span class="Constant">3</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">10</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">1</span>:array:num:<span class="Constant">3</span>
 ]
@@ -206,19 +208,19 @@ def main [
 
 <span class="Delimiter">:(scenario code_inside_container)</span>
 <span class="Special">% Hide_errors = true;</span>
-container card [
+<span class="muData">container</span> card [
   <span class="Normal">rank</span>:num<span class="Special"> &lt;- </span>next-ingredient
 ]
-def foo [
+<span class="muRecipe">def</span> foo [
   <span class="Constant">1</span>:card<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:card rank:offset
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:card <span class="Constant">rank:offset</span>
 ]
 <span class="Comment"># shouldn't die</span>
 
 <span class="SalientComment">//:: To access elements of an array, use 'index'</span>
 
 <span class="Delimiter">:(scenario index)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -228,7 +230,7 @@ def main [
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
 <span class="Delimiter">:(scenario index_compound_element)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>address number<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -238,7 +240,7 @@ def main [
 <span class="traceContains">+mem: storing 14 in location 5</span>
 
 <span class="Delimiter">:(scenario index_direct_offset)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -342,7 +344,7 @@ type_tree* copy_array_element<span class="Delimiter">(</span><span class="Normal
 
 <span class="Delimiter">:(scenario index_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -356,7 +358,7 @@ def main [
 
 <span class="Delimiter">:(scenario index_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -370,7 +372,7 @@ def main [
 
 <span class="Delimiter">:(scenario index_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -385,7 +387,7 @@ def main [
 <span class="Comment">//: we might want to call 'index' without saving the results, say in a sandbox</span>
 
 <span class="Delimiter">:(scenario index_without_product)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -397,7 +399,7 @@ def main [
 <span class="SalientComment">//:: To write to elements of arrays, use 'put'.</span>
 
 <span class="Delimiter">:(scenario put_index)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -478,7 +480,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario put_index_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -493,7 +495,7 @@ def main [
 
 <span class="Delimiter">:(scenario put_index_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:point:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
@@ -508,7 +510,7 @@ def main [
 
 <span class="Delimiter">:(scenario put_index_product_error)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   load-ingredients
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
@@ -519,7 +521,7 @@ def main [
 <span class="SalientComment">//:: compute the length of an array</span>
 
 <span class="Delimiter">:(scenario array_length)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>

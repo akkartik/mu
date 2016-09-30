@@ -15,12 +15,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -45,7 +47,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">// to new cycles in the product.</span>
 
 <span class="Delimiter">:(scenario deep_copy_number)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>deep-copy x
@@ -55,11 +57,11 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 10</span>
 
 <span class="Delimiter">:(scenario deep_copy_container_without_address)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
@@ -70,7 +72,7 @@ def main [
 
 <span class="Delimiter">:(scenario deep_copy_address)</span>
 <span class="Special">% Memory_allocated_until = 200;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
   <span class="Comment"># that the result is deterministic</span>
   <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
@@ -92,7 +94,7 @@ def main [
 
 <span class="Delimiter">:(scenario deep_copy_address_to_container)</span>
 <span class="Special">% Memory_allocated_until = 200;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
   <span class="Comment"># that the result is deterministic</span>
   <span class="Constant">1</span>:&amp;:point<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
@@ -108,7 +110,7 @@ def main [
 
 <span class="Delimiter">:(scenario deep_copy_address_to_address)</span>
 <span class="Special">% Memory_allocated_until = 200;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
   <span class="Comment"># that the result is deterministic</span>
   <span class="Constant">1</span>:&amp;:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">100</span>/unsafe  <span class="Comment"># pretend allocation</span>
@@ -128,7 +130,7 @@ def main [
 
 <span class="Delimiter">:(scenario deep_copy_array)</span>
 <span class="Special">% Memory_allocated_until = 200;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># avoid all memory allocations except the implicit ones inside deep-copy, so</span>
   <span class="Comment"># that the result is deterministic</span>
   <span class="Constant">100</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># pretend refcount</span>
@@ -152,18 +154,18 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 11</span>
 
 <span class="Delimiter">:(scenario deep_copy_container_with_address)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:&amp;:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *y0<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> y0
   <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
   <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> b
-  <span class="Normal">y1</span>:&amp;:num<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> y:offset
+  <span class="Normal">y1</span>:&amp;:num<span class="Special"> &lt;- </span>get b<span class="Delimiter">,</span> <span class="Constant">y:offset</span>
   <span class="Constant">11</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
   <span class="Constant">12</span>:num/<span class="Special">raw &lt;- </span>copy *y1
 ]
@@ -174,18 +176,18 @@ def main [
 <span class="traceContains">+mem: storing 35 in location 12</span>
 
 <span class="Delimiter">:(scenario deep_copy_exclusive_container_with_address)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:&amp;:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *y0<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> y0
   <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>deep-copy a
   <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal a<span class="Delimiter">,</span> b
-  <span class="Normal">y1</span>:&amp;:num<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert b<span class="Delimiter">,</span> y:variant
+  <span class="Normal">y1</span>:&amp;:num<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert b<span class="Delimiter">,</span> <span class="Constant">y:variant</span>
   <span class="Constant">11</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
   <span class="Constant">12</span>:num/<span class="Special">raw &lt;- </span>copy *y1
 ]
@@ -196,23 +198,23 @@ def main [
 <span class="traceContains">+mem: storing 34 in location 12</span>
 
 <span class="Delimiter">:(scenario deep_copy_exclusive_container_with_container_with_address)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar  <span class="Comment"># inline</span>
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:&amp;:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">y0</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *y0<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Normal">a</span>:bar<span class="Special"> &lt;- </span>merge y0
   <span class="Normal">b</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> a
   <span class="Normal">c</span>:foo<span class="Special"> &lt;- </span>deep-copy b
   <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal b<span class="Delimiter">,</span> c
-  <span class="Normal">d</span>:bar<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert c<span class="Delimiter">,</span> y:variant
-  <span class="Normal">y1</span>:&amp;:num<span class="Special"> &lt;- </span>get d<span class="Delimiter">,</span> x:offset
+  <span class="Normal">d</span>:bar<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert c<span class="Delimiter">,</span> <span class="Constant">y:variant</span>
+  <span class="Normal">y1</span>:&amp;:num<span class="Special"> &lt;- </span>get d<span class="Delimiter">,</span> <span class="Constant">x:offset</span>
   <span class="Constant">11</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y0<span class="Delimiter">,</span> y1
   <span class="Constant">12</span>:num/<span class="Special">raw &lt;- </span>copy *y1
 ]
@@ -335,81 +337,81 @@ vector&lt;<span class="Normal">double</span>&gt; deep_copy<span class="Delimiter
 <span class="Comment">//: moar tests, just because I can't believe it all works</span>
 
 <span class="Delimiter">:(scenario deep_copy_stress_test_1)</span>
-container foo1 [
+<span class="muData">container</span> foo1 [
   <span class="Normal">p</span>:&amp;:num
 ]
-container foo2 [
+<span class="muData">container</span> foo2 [
   <span class="Normal">p</span>:&amp;:foo1
 ]
-exclusive-container foo3 [
+<span class="muData">exclusive-container</span> foo3 [
   <span class="Normal">p</span>:&amp;:foo1
   <span class="Normal">q</span>:&amp;:foo2
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> foo1:type
+  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
   *a<span class="Special"> &lt;- </span>merge x
-  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> foo2:type
+  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
   *b<span class="Special"> &lt;- </span>merge a
   <span class="Normal">c</span>:foo3<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
   <span class="Normal">d</span>:foo3<span class="Special"> &lt;- </span>deep-copy c
-  <span class="Normal">e</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert d<span class="Delimiter">,</span> q:variant
-  <span class="Normal">f</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *e<span class="Delimiter">,</span> p:offset
-  <span class="Normal">g</span>:&amp;:num<span class="Special"> &lt;- </span>get *f<span class="Delimiter">,</span> p:offset
+  <span class="Normal">e</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert d<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
+  <span class="Normal">f</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *e<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+  <span class="Normal">g</span>:&amp;:num<span class="Special"> &lt;- </span>get *f<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *g
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario deep_copy_stress_test_2)</span>
-container foo1 [
+<span class="muData">container</span> foo1 [
   <span class="Normal">p</span>:&amp;:num
 ]
-container foo2 [
+<span class="muData">container</span> foo2 [
   <span class="Normal">p</span>:&amp;:foo1
 ]
-exclusive-container foo3 [
+<span class="muData">exclusive-container</span> foo3 [
   <span class="Normal">p</span>:&amp;:foo1
   <span class="Normal">q</span>:&amp;:foo2
 ]
-container foo4 [
+<span class="muData">container</span> foo4 [
   <span class="Normal">p</span>:num
   <span class="Normal">q</span>:&amp;:foo3
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> foo1:type
+  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
   *a<span class="Special"> &lt;- </span>merge x
-  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> foo2:type
+  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
   *b<span class="Special"> &lt;- </span>merge a
-  <span class="Normal">c</span>:&amp;:foo3<span class="Special"> &lt;- </span><span class="Normal">new</span> foo3:type
+  <span class="Normal">c</span>:&amp;:foo3<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo3:type</span>
   *c<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
   <span class="Normal">d</span>:foo4<span class="Special"> &lt;- </span>merge <span class="Constant">35</span><span class="Delimiter">,</span> c
   <span class="Normal">e</span>:foo4<span class="Special"> &lt;- </span>deep-copy d
-  <span class="Normal">f</span>:&amp;:foo3<span class="Special"> &lt;- </span>get e<span class="Delimiter">,</span> q:offset
-  <span class="Normal">g</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert *f<span class="Delimiter">,</span> q:variant
-  <span class="Normal">h</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *g<span class="Delimiter">,</span> p:offset
-  <span class="Normal">y</span>:&amp;:num<span class="Special"> &lt;- </span>get *h<span class="Delimiter">,</span> p:offset
+  <span class="Normal">f</span>:&amp;:foo3<span class="Special"> &lt;- </span>get e<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
+  <span class="Normal">g</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert *f<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
+  <span class="Normal">h</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *g<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+  <span class="Normal">y</span>:&amp;:num<span class="Special"> &lt;- </span>get *h<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *y
 ]
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario deep_copy_cycles)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">p</span>:num
   <span class="Normal">q</span>:&amp;:foo
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> foo:type
-  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> p:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
-  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> q:offset<span class="Delimiter">,</span> x  <span class="Comment"># create a cycle</span>
+  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> <span class="Constant">p:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+  *x<span class="Special"> &lt;- </span>put *x<span class="Delimiter">,</span> <span class="Constant">q:offset</span><span class="Delimiter">,</span> x  <span class="Comment"># create a cycle</span>
   <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
-  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *y<span class="Delimiter">,</span> p:offset
-  <span class="Normal">y2</span>:&amp;:foo<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> q:offset
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+  <span class="Normal">y2</span>:&amp;:foo<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
   stash y [vs] y2
   <span class="Constant">2</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y<span class="Delimiter">,</span> y2  <span class="Comment"># is it still a cycle?</span>
   <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y  <span class="Comment"># is it the same cycle?</span>

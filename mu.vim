@@ -41,17 +41,15 @@ syntax region muScreen start=+ \.+ end=+\.$\|$+
 highlight link muScreen muString
 
 " mu literals
-syntax match muNumber %[^ ]\+:literal/\?[^ ,]*%
-syntax match muNumber %\<[0-9-]\?[0-9]\+\>%
-syntax match muNumber %\<[0-9-]\?[0-9]\+/[^ ,]*%
-highlight link muNumber Constant
-syntax match muLabel "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
-syntax match muLabel %[^ ]\+:label/\?[^ ,]*%
-syntax match muLabel "<[^ ]*>"
-highlight link muLabel Constant
-syntax match muLiteral %[^ ]\+:type/\?[^ ,]*%
-syntax match muLiteral %[^ ]\+:offset/\?[^ ,]*%
-syntax match muLiteral %[^ ]\+:variant/\?[^ ,]*%
+syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
+syntax match muLiteral %\<[0-9-]\?[0-9]\+\>%
+syntax match muLiteral %\<[0-9-]\?[0-9]\+/[^ ,]*%
+syntax match muLiteral "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
+syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
+syntax match muLiteral "<[^ ]*>"
+syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
+syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
+syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
 highlight link muLiteral Constant
 syntax keyword muKeyword default-space global-space new-default-space local-scope next-ingredient ingredient rewind-ingredients load-ingredients | highlight link muKeyword Constant
 
@@ -60,10 +58,9 @@ syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
 syntax keyword muControl reply reply-if reply-unless return return-if return-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
-syntax keyword muRecipe recipe recipe! def def! before after | highlight muRecipe ctermfg=208
-syntax match muRecipe " -> "
-syntax keyword muScenario scenario | highlight muScenario ctermfg=34
-syntax keyword muPendingScenario pending-scenario | highlight link muPendingScenario SpecialChar
-syntax keyword muData container exclusive-container type | highlight muData ctermfg=226
+syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
+syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
+syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
+syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
 
 let &cpo = s:save_cpo

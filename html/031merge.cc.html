@@ -13,15 +13,17 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
+.muData { color: #ffff00; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
+.Constant { color: #00a0a0; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -36,11 +38,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: Construct types out of their constituent fields.</span>
 
 <span class="Delimiter">:(scenario merge)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
 <span class="traceContains">+mem: storing 3 in location 1</span>
@@ -67,21 +69,21 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Comment">//: type-check 'merge' to avoid interpreting numbers as addresses</span>
 
 <span class="Delimiter">:(scenario merge_check)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_missing_element)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
 ]
 <span class="traceContains">+error: main: too few ingredients in '1:point &lt;- merge 3'</span>
 
 <span class="Delimiter">:(scenario merge_check_extra_element)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
 <span class="traceContains">+error: main: too many ingredients in '1:point &lt;- merge 3, 4, 5'</span>
@@ -92,7 +94,7 @@ def main [
 <span class="Comment">//: container fields.</span>
 
 <span class="Delimiter">:(scenario merge_check_recursive_containers)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
   <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point<span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -100,28 +102,28 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_recursive_containers_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
   <span class="Constant">2</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
 ]
 <span class="traceContains">+error: main: too few ingredients in '2:point-number &lt;- merge 1:point'</span>
 
 <span class="Delimiter">:(scenario merge_check_recursive_containers_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_recursive_containers_4)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point-number<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
 ]
 <span class="traceContains">+error: main: too few ingredients in '1:point-number &lt;- merge 3, 4'</span>
 
 <span class="Delimiter">:(scenario merge_check_reflexive)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>
   <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:point
 ]
@@ -246,7 +248,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenario merge_check_product)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
 ]
 <span class="traceContains">+error: main: 'merge' should yield a container in '1:num &lt;- merge 3'</span>

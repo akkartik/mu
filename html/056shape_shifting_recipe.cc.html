@@ -13,17 +13,19 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.traceContains { color: #008000; }
-.cSpecial { color: #008000; }
-.Special { color: #c00000; }
-.Delimiter { color: #800080; }
 .SalientComment { color: #00ffff; }
-.Identifier { color: #fcb165; }
-.Comment { color: #9090ff; }
-.PreProc { color: #800080; }
 .CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
+.muData { color: #ffff00; }
+.traceContains { color: #008000; }
+.Delimiter { color: #800080; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.cSpecial { color: #008000; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.Identifier { color: #fcb165; }
+.PreProc { color: #800080; }
 -->
 </style>
 
@@ -38,18 +40,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">//:: Like container definitions, recipes too can contain type parameters.</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">10</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span>
   <span class="Constant">11</span>:point<span class="Special"> &lt;- </span>foo <span class="Constant">10</span>:point
 ]
 <span class="Comment"># non-matching variant</span>
-def foo a:num <span class="Delimiter">-&gt;</span> result:num [
+<span class="muRecipe">def</span> foo a:num<span class="muRecipe"> -&gt; </span>result:num [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="Comment"># matching shape-shifting variant</span>
-def foo a:_t <span class="Delimiter">-&gt;</span> result:_t [
+<span class="muRecipe">def</span> foo a:_t<span class="muRecipe"> -&gt; </span>result:_t [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy a
@@ -533,18 +535,18 @@ string inspect<span class="Delimiter">(</span><span class="Normal">const</span> 
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">10</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span>
   <span class="Constant">11</span>:point<span class="Special"> &lt;- </span>foo <span class="Constant">10</span>:point
 ]
 <span class="Comment"># non-matching shape-shifting variant</span>
-def foo a:_t<span class="Delimiter">,</span> b:_t <span class="Delimiter">-&gt;</span> result:num [
+<span class="muRecipe">def</span> foo a:_t<span class="Delimiter">,</span> b:_t<span class="muRecipe"> -&gt; </span>result:num [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="Comment"># matching shape-shifting variant</span>
-def foo a:_t <span class="Delimiter">-&gt;</span> result:_t [
+<span class="muRecipe">def</span> foo a:_t<span class="muRecipe"> -&gt; </span>result:_t [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy a
@@ -553,17 +555,17 @@ def foo a:_t <span class="Delimiter">-&gt;</span> result:_t [
 <span class="traceContains">+mem: storing 15 in location 12</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_nonroot)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
   <span class="Constant">20</span>:point/<span class="Special">raw &lt;- </span>bar <span class="Constant">10</span>:foo:point
 ]
 <span class="Comment"># shape-shifting recipe with type ingredient following some other type</span>
-def bar a:foo:_t <span class="Delimiter">-&gt;</span> result:_t [
+<span class="muRecipe">def</span> bar a:foo:_t<span class="muRecipe"> -&gt; </span>result:_t [
   local-scope
   load-ingredients
-  result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> x:offset
+  result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> <span class="Constant">x:offset</span>
 ]
-container foo:_t [
+<span class="muData">container</span> foo:_t [
   <span class="Normal">x</span>:_t
   <span class="Normal">y</span>:num
 ]
@@ -571,33 +573,33 @@ container foo:_t [
 <span class="traceContains">+mem: storing 15 in location 21</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_nested)</span>
-container c:_a:_b [
+<span class="muData">container</span> c:_a:_b [
   <span class="Normal">a</span>:_a
   <span class="Normal">b</span>:_b
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">s</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   <span class="Delimiter">{</span>x: <span class="Delimiter">(</span>c <span class="Delimiter">(</span>address array character<span class="Delimiter">)</span> number<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>merge s<span class="Delimiter">,</span> <span class="Constant">34</span>
   foo x
 ]
-def foo x:c:_bar:_baz [
+<span class="muRecipe">def</span> foo x:c:_bar:_baz [
   local-scope
   load-ingredients
 ]
 <span class="Comment"># no errors</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_type_deduction_ignores_offsets)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
   <span class="Constant">20</span>:point/<span class="Special">raw &lt;- </span>bar <span class="Constant">10</span>:foo:point
 ]
-def bar a:foo:_t <span class="Delimiter">-&gt;</span> result:_t [
+<span class="muRecipe">def</span> bar a:foo:_t<span class="muRecipe"> -&gt; </span>result:_t [
   local-scope
   load-ingredients
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> x:offset  <span class="Comment"># shouldn't collide with other variable</span>
+  result<span class="Special"> &lt;- </span>get a<span class="Delimiter">,</span> <span class="Constant">x:offset</span>  <span class="Comment"># shouldn't collide with other variable</span>
 ]
-container foo:_t [
+<span class="muData">container</span> foo:_t [
   <span class="Normal">x</span>:_t
   <span class="Normal">y</span>:num
 ]
@@ -605,24 +607,24 @@ container foo:_t [
 <span class="traceContains">+mem: storing 15 in location 21</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_empty)</span>
-def main [
+<span class="muRecipe">def</span> main [
   foo <span class="Constant">1</span>
 ]
 <span class="Comment"># shape-shifting recipe with no body</span>
-def foo a:_t [
+<span class="muRecipe">def</span> foo a:_t [
 ]
 <span class="Comment"># shouldn't crash</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:&amp;:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
   <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:&amp;:foo:point
 ]
-container foo:_t [
+<span class="muData">container</span> foo:_t [
   <span class="Normal">x</span>:_t
   <span class="Normal">y</span>:num
 ]
-def bar x:num <span class="Delimiter">-&gt;</span> result:&amp;:foo:_t [
+<span class="muRecipe">def</span> bar x:num<span class="muRecipe"> -&gt; </span>result:&amp;:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
@@ -633,18 +635,18 @@ def bar x:num <span class="Delimiter">-&gt;</span> result:&amp;:foo:_t [
 <span class="traceContains">+mem: storing 0 in location 13</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_handles_shape_shifting_new_ingredient_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:&amp;:foo:point<span class="Special"> &lt;- </span>bar <span class="Constant">3</span>
   <span class="Constant">11</span>:foo:point<span class="Special"> &lt;- </span>copy *<span class="Constant">1</span>:&amp;:foo:point
 ]
-def bar x:num <span class="Delimiter">-&gt;</span> result:&amp;:foo:_t [
+<span class="muRecipe">def</span> bar x:num<span class="muRecipe"> -&gt; </span>result:&amp;:foo:_t [
   local-scope
   load-ingredients
   <span class="Comment"># new refers to _t in its ingredient *value*</span>
   result<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>foo _t<span class="Delimiter">)</span> : type<span class="Delimiter">}</span>
 ]
 <span class="Comment"># container defined after use</span>
-container foo:_t [
+<span class="muData">container</span> foo:_t [
   <span class="Normal">x</span>:_t
   <span class="Normal">y</span>:num
 ]
@@ -653,10 +655,10 @@ container foo:_t [
 <span class="traceContains">+mem: storing 0 in location 13</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_called_with_dummy)</span>
-def main [
+<span class="muRecipe">def</span> main [
   _<span class="Special"> &lt;- </span>bar <span class="Constant">34</span>
 ]
-def bar x:_t <span class="Delimiter">-&gt;</span> result:&amp;:_t [
+<span class="muRecipe">def</span> bar x:_t<span class="muRecipe"> -&gt; </span>result:&amp;:_t [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -691,13 +693,13 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_supports_compound_types)</span>
-def main [
-  <span class="Constant">1</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> point:type
-  *<span class="Constant">1</span>:&amp;:point<span class="Special"> &lt;- </span>put *<span class="Constant">1</span>:&amp;:point<span class="Delimiter">,</span> y:offset<span class="Delimiter">,</span> <span class="Constant">34</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:&amp;:point<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">point:type</span>
+  *<span class="Constant">1</span>:&amp;:point<span class="Special"> &lt;- </span>put *<span class="Constant">1</span>:&amp;:point<span class="Delimiter">,</span> <span class="Constant">y:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Constant">3</span>:&amp;:point<span class="Special"> &lt;- </span>bar <span class="Constant">1</span>:&amp;:point  <span class="Comment"># specialize _t to address:point</span>
   <span class="Constant">4</span>:point<span class="Special"> &lt;- </span>copy *<span class="Constant">3</span>:&amp;:point
 ]
-def bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
+<span class="muRecipe">def</span> bar a:_t<span class="muRecipe"> -&gt; </span>result:_t [
   local-scope
   load-ingredients
   result<span class="Special"> &lt;- </span>copy a
@@ -706,26 +708,26 @@ def bar a:_t <span class="Delimiter">-&gt;</span> result:_t [
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_error)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Normal">b</span>:&amp;:num<span class="Special"> &lt;- </span>foo a
 ]
-def foo a:_t <span class="Delimiter">-&gt;</span> b:_t [
+<span class="muRecipe">def</span> foo a:_t<span class="muRecipe"> -&gt; </span>b:_t [
   load-ingredients
   b<span class="Special"> &lt;- </span>copy a
 ]
 <span class="traceContains">+error: main: no call found for 'b:&amp;:num &lt;- foo a'</span>
 
 <span class="Delimiter">:(scenario specialize_inside_recipe_without_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   foo <span class="Constant">3</span>
 ]
-def foo [
+<span class="muRecipe">def</span> foo [
   local-scope
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># ensure no header</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>bar x  <span class="Comment"># call a shape-shifting recipe</span>
 ]
-def bar x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
+<span class="muRecipe">def</span> bar x:_elem<span class="muRecipe"> -&gt; </span>y:_elem [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
@@ -733,12 +735,12 @@ def bar x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
 <span class="traceContains">+mem: storing 4 in location 1</span>
 
 <span class="Delimiter">:(scenario specialize_with_literal)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Comment"># permit literal to map to number</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo <span class="Constant">3</span>
 ]
-def foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
+<span class="muRecipe">def</span> foo x:_elem<span class="muRecipe"> -&gt; </span>y:_elem [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
@@ -746,12 +748,12 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
 <span class="traceContains">+mem: storing 4 in location 1</span>
 
 <span class="Delimiter">:(scenario specialize_with_literal_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Comment"># permit literal to map to character</span>
   <span class="Constant">1</span>:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>foo <span class="Constant">3</span>
 ]
-def foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
+<span class="muRecipe">def</span> foo x:_elem<span class="muRecipe"> -&gt; </span>y:_elem [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> <span class="Constant">1</span>
@@ -759,12 +761,12 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:_elem [
 <span class="traceContains">+mem: storing 4 in location 1</span>
 
 <span class="Delimiter">:(scenario specialize_with_literal_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Comment"># permit '0' to map to address to shape-shifting type-ingredient</span>
   <span class="Constant">1</span>:&amp;:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>foo <span class="Constant">0</span>
 ]
-def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:&amp;:_elem [
+<span class="muRecipe">def</span> foo x:&amp;:_elem<span class="muRecipe"> -&gt; </span>y:&amp;:_elem [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -774,12 +776,12 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario specialize_with_literal_4)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Comment"># ambiguous call: what's the type of its ingredient?!</span>
   foo <span class="Constant">0</span>
 ]
-def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:&amp;:_elem [
+<span class="muRecipe">def</span> foo x:&amp;:_elem<span class="muRecipe"> -&gt; </span>y:&amp;:_elem [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>copy x
@@ -787,10 +789,10 @@ def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:&amp;:_elem [
 <span class="traceContains">+error: main: instruction 'foo' has no valid specialization</span>
 
 <span class="Delimiter">:(scenario specialize_with_literal_5)</span>
-def main [
+<span class="muRecipe">def</span> main [
   foo <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">4</span>  <span class="Comment"># recipe mapping two variables to literals</span>
 ]
-def foo x:_elem<span class="Delimiter">,</span> y:_elem [
+<span class="muRecipe">def</span> foo x:_elem<span class="Delimiter">,</span> y:_elem [
   local-scope
   load-ingredients
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add x<span class="Delimiter">,</span> y
@@ -799,28 +801,28 @@ def foo x:_elem<span class="Delimiter">,</span> y:_elem [
 
 <span class="Delimiter">:(scenario multiple_shape_shifting_variants)</span>
 <span class="Comment"># try to call two different shape-shifting recipes with the same name</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">e1</span>:d1:num<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   <span class="Normal">e2</span>:d2:num<span class="Special"> &lt;- </span>merge <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">5</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>foo e2
 ]
 <span class="Comment"># the two shape-shifting definitions</span>
-def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d1:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo a:d2:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d2:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
 <span class="Comment"># the shape-shifting containers they use</span>
-container d1:_elem [
+<span class="muData">container</span> d1:_elem [
   <span class="Normal">x</span>:_elem
 ]
-container d2:_elem [
+<span class="muData">container</span> d2:_elem [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:_elem
 ]
@@ -829,26 +831,26 @@ container d2:_elem [
 
 <span class="Delimiter">:(scenario multiple_shape_shifting_variants_2)</span>
 <span class="Comment"># static dispatch between shape-shifting variants, _including pointer lookups_</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">e1</span>:d1:num<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   <span class="Normal">e2</span>:&amp;:d2:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>d2 number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo e1
   <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>foo *e2  <span class="Comment"># different from previous scenario</span>
 ]
-def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d1:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo a:d2:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d2:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
 ]
-container d1:_elem [
+<span class="muData">container</span> d1:_elem [
   <span class="Normal">x</span>:_elem
 ]
-container d2:_elem [
+<span class="muData">container</span> d2:_elem [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:_elem
 ]
@@ -857,17 +859,17 @@ container d2:_elem [
 
 <span class="Delimiter">:(scenario missing_type_in_shape_shifting_recipe)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:d1:num<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   foo a
 ]
-def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d1:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
   copy e  <span class="Comment"># no such variable</span>
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-container d1:_elem [
+<span class="muData">container</span> d1:_elem [
   <span class="Normal">x</span>:_elem
 ]
 <span class="traceContains">+error: foo: unknown type for 'e' in 'copy e' (check the name for typos)</span>
@@ -876,17 +878,17 @@ container d1:_elem [
 
 <span class="Delimiter">:(scenario missing_type_in_shape_shifting_recipe_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:d1:num<span class="Special"> &lt;- </span>merge <span class="Constant">3</span>
   foo a
 ]
-def foo a:d1:_elem <span class="Delimiter">-&gt;</span> b:num [
+<span class="muRecipe">def</span> foo a:d1:_elem<span class="muRecipe"> -&gt; </span>b:num [
   local-scope
   load-ingredients
-  get e<span class="Delimiter">,</span> x:offset  <span class="Comment"># unknown variable in a 'get', which does some extra checking</span>
+  get e<span class="Delimiter">,</span> <span class="Constant">x:offset</span>  <span class="Comment"># unknown variable in a 'get', which does some extra checking</span>
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-container d1:_elem [
+<span class="muData">container</span> d1:_elem [
   <span class="Normal">x</span>:_elem
 ]
 <span class="traceContains">+error: foo: unknown type for 'e' in 'get e, x:offset' (check the name for typos)</span>
@@ -895,11 +897,11 @@ container d1:_elem [
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario specialize_recursive_shape_shifting_recipe)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:num
 ]
-def foo x:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Delimiter">{</span>
@@ -913,16 +915,16 @@ def foo x:_elem <span class="Delimiter">-&gt;</span> y:num [
 
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario specialize_most_similar_variant)</span>
-def main [
-  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">1</span>:&amp;:num
 ]
-def foo x:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:&amp;:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -931,19 +933,19 @@ def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
 
 <span class="Delimiter">:(scenario specialize_most_similar_variant_2)</span>
 <span class="Comment"># version with headers padded with lots of unrelated concrete types</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">2</span>:&amp;:@:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">2</span>:&amp;:@:num<span class="Delimiter">,</span> <span class="Constant">1</span>:num
 ]
 <span class="Comment"># variant with concrete type</span>
-def foo dummy:&amp;:@:num<span class="Delimiter">,</span> x:num <span class="Delimiter">-&gt;</span> y:num<span class="Delimiter">,</span> dummy:&amp;:@:num [
+<span class="muRecipe">def</span> foo dummy:&amp;:@:num<span class="Delimiter">,</span> x:num<span class="muRecipe"> -&gt; </span>y:num<span class="Delimiter">,</span> dummy:&amp;:@:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="Comment"># shape-shifting variant</span>
-def foo dummy:&amp;:@:num<span class="Delimiter">,</span> x:_elem <span class="Delimiter">-&gt;</span> y:num<span class="Delimiter">,</span> dummy:&amp;:@:num [
+<span class="muRecipe">def</span> foo dummy:&amp;:@:num<span class="Delimiter">,</span> x:_elem<span class="muRecipe"> -&gt; </span>y:num<span class="Delimiter">,</span> dummy:&amp;:@:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -952,29 +954,29 @@ def foo dummy:&amp;:@:num<span class="Delimiter">,</span> x:_elem <span class="D
 <span class="traceContains">+mem: storing 34 in location 3</span>
 
 <span class="Delimiter">:(scenario specialize_most_similar_variant_3)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   foo <span class="Constant">1</span>:text
 ]
-def foo x:text [
+<span class="muRecipe">def</span> foo x:text [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
-def foo x:&amp;:_elem [
+<span class="muRecipe">def</span> foo x:&amp;:_elem [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
 <span class="Comment"># make sure the more precise version was used</span>
 <span class="traceContains">+mem: storing 34 in location 2</span>
 
 <span class="Delimiter">:(scenario specialize_literal_as_number)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">23</span>
 ]
-def foo x:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
-def foo x:<span class="Normal">char</span> <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:<span class="Normal">char</span><span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -983,17 +985,17 @@ def foo x:<span class="Normal">char</span> <span class="Delimiter">-&gt;</span> 
 
 <span class="Delimiter">:(scenario specialize_literal_as_number_2)</span>
 <span class="Comment"># version calling with literal</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">0</span>
 ]
 <span class="Comment"># variant with concrete type</span>
-def foo x:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="Comment"># shape-shifting variant</span>
-def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:&amp;:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -1002,17 +1004,17 @@ def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
 <span class="traceContains">+mem: storing 34 in location 1</span>
 
 <span class="Delimiter">:(scenario specialize_literal_as_address)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">0</span>
 ]
 <span class="Comment"># variant with concrete address type</span>
-def foo x:&amp;:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:&amp;:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">34</span>
 ]
 <span class="Comment"># shape-shifting variant</span>
-def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:&amp;:_elem<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -1023,13 +1025,13 @@ def foo x:&amp;:_elem <span class="Delimiter">-&gt;</span> y:num [
 <span class="Delimiter">:(scenario missing_type_during_specialization)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="Comment"># define a shape-shifting recipe</span>
-def foo a:_elem [
+<span class="muRecipe">def</span> foo a:_elem [
 ]
 <span class="Comment"># define a container with field 'z'</span>
-container foo2 [
+<span class="muData">container</span> foo2 [
   <span class="Normal">z</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">x</span>:foo2<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
   <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> z:offse  <span class="Comment"># typo in 'offset'</span>
@@ -1043,13 +1045,13 @@ def main [
 <span class="Delimiter">:(scenario missing_type_during_specialization2)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="Comment"># define a shape-shifting recipe</span>
-def foo a:_elem [
+<span class="muRecipe">def</span> foo a:_elem [
 ]
 <span class="Comment"># define a container with field 'z'</span>
-container foo2 [
+<span class="muData">container</span> foo2 [
   <span class="Normal">z</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">x</span>:foo2<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
   <span class="Normal">y</span>:num<span class="Special"> &lt;- </span>get x<span class="Delimiter">,</span> z:offse  <span class="Comment"># typo in 'offset'</span>
@@ -1062,17 +1064,17 @@ def main [
 
 <span class="Delimiter">:(scenario tangle_shape_shifting_recipe)</span>
 <span class="Comment"># shape-shifting recipe</span>
-def foo a:_elem [
+<span class="muRecipe">def</span> foo a:_elem [
   local-scope
   load-ingredients
   &lt;label1&gt;
 ]
 <span class="Comment"># tangle some code that refers to the type ingredient</span>
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Normal">b</span>:_elem<span class="Special"> &lt;- </span>copy a
 ]
 <span class="Comment"># trigger specialization</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   foo <span class="Constant">34</span>
 ]
@@ -1080,17 +1082,17 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario tangle_shape_shifting_recipe_with_type_abbreviation)</span>
 <span class="Comment"># shape-shifting recipe</span>
-def foo a:_elem [
+<span class="muRecipe">def</span> foo a:_elem [
   local-scope
   load-ingredients
   &lt;label1&gt;
 ]
 <span class="Comment"># tangle some code that refers to the type ingredient</span>
-after &lt;label1&gt; [
+<span class="muRecipe">after</span> &lt;label1&gt; [
   <span class="Normal">b</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># type abbreviation</span>
 ]
 <span class="Comment"># trigger specialization</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   foo <span class="Constant">34</span>
 ]
@@ -1098,10 +1100,10 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario shape_shifting_recipe_coexists_with_primitive)</span>
 <span class="Comment"># recipe overloading a primitive with a generic type</span>
-def add a:&amp;:foo:_elem [
+<span class="muRecipe">def</span> add a:&amp;:foo:_elem [
   assert <span class="Constant">0</span><span class="Delimiter">,</span> [should <span class="Normal">not</span> get here]
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># call primitive add with literal 0</span>
   add <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">0</span>
 ]

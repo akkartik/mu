@@ -14,12 +14,14 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.CommentedCode { color: #6c6c6c; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #fcb165; }
 -->
 </style>
@@ -36,7 +38,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario rewrite_stashes_to_text)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">n</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   stash n
@@ -45,7 +47,7 @@ def main [
 <span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario rewrite_traces_to_text)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">n</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   trace <span class="Constant">2</span><span class="Delimiter">,</span> [app]<span class="Delimiter">,</span> n
@@ -57,16 +59,16 @@ def main [
 <span class="Comment">//: passing addresses around</span>
 
 <span class="Delimiter">:(scenario rewrite_stashes_of_arrays)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
-  <span class="Normal">n</span>:&amp;:@:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type<span class="Delimiter">,</span> <span class="Constant">3</span>
+  <span class="Normal">n</span>:&amp;:@:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">3</span>
   stash *n
 ]
 <span class="traceContains">+transform: {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)} &lt;- array-to-text-line {n: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)}</span>
 <span class="traceContains">+transform: stash {stash_2_0: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario ignore_stashes_of_static_arrays)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">n</span>:@:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
   stash n
@@ -74,10 +76,10 @@ def main [
 <span class="traceContains">+transform: stash {n: (&quot;array&quot; &quot;number&quot; &quot;3&quot;)}</span>
 
 <span class="Delimiter">:(scenario rewrite_stashes_of_recipe_header_products)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
 ]
-def bar <span class="Delimiter">-&gt;</span> x:foo [
+<span class="muRecipe">def</span> bar<span class="muRecipe"> -&gt; </span>x:foo [
   local-scope
   load-ingredients
   x<span class="Special"> &lt;- </span>merge <span class="Constant">34</span>
@@ -180,7 +182,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario append_other_types_to_text)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">n</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">11</span>
   <span class="Normal">c</span>:character<span class="Special"> &lt;- </span>copy <span class="Constant">111</span>/o
@@ -194,11 +196,11 @@ def main [
 
 <span class="Delimiter">:(scenario rewrite_stash_continues_to_fall_back_to_default_implementation)</span>
 <span class="Comment"># type without a to-text implementation</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">x</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   stash x

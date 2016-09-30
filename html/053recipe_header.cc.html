@@ -15,15 +15,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
 .traceContains { color: #008000; }
-.SalientComment { color: #00ffff; }
+.muRecipe { color: #ff8700; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
+.SalientComment { color: #00ffff; }
 -->
 </style>
 
@@ -39,10 +40,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: number of ingredients and yields some fixed number of products.</span>
 
 <span class="Delimiter">:(scenario recipe_with_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   <span class="Normal">z</span>:num<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
@@ -87,10 +88,10 @@ has_header = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario recipe_handles_stray_comma)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num<span class="Delimiter">,</span> [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num<span class="Delimiter">,</span> [
   local-scope
   load-ingredients
   <span class="Normal">z</span>:num<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
@@ -99,32 +100,32 @@ def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&g
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(scenario recipe_handles_stray_comma_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   foo
 ]
-def foo<span class="Delimiter">,</span> [
+<span class="muRecipe">def</span> foo<span class="Delimiter">,</span> [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
-def bar [
+<span class="muRecipe">def</span> bar [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">3</span>
 ]
 <span class="traceContains">+mem: storing 4 in location 1</span>
 
 <span class="Delimiter">:(scenario recipe_handles_wrong_arrow)</span>
 <span class="Special">% Hide_errors = true;</span>
-def foo a:num<span class="Special"> &lt;- </span>b:num [
+<span class="muRecipe">def</span> foo a:num<span class="Special"> &lt;- </span>b:num [
 ]
 <span class="traceContains">+error: recipe foo should say '-&gt;' and not '&lt;-'</span>
 
 <span class="Delimiter">:(scenario recipe_handles_missing_bracket)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main
+<span class="muRecipe">def</span> main
 <span class="Error">]</span>
 <span class="traceContains">+error: main: recipe body must begin with '['</span>
 
 <span class="Delimiter">:(scenario recipe_handles_missing_bracket_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main
+<span class="muRecipe">def</span> main
   local-scope
   <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
@@ -135,7 +136,7 @@ def main
 
 <span class="Delimiter">:(scenario recipe_handles_missing_bracket_3)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main  <span class="Comment"># comment</span>
+<span class="muRecipe">def</span> main  <span class="Comment"># comment</span>
   local-scope
   <span class="Delimiter">{</span>
   <span class="Delimiter">}</span>
@@ -155,7 +156,7 @@ out &lt;&lt; <span class="Constant">&quot;products:</span><span class="cSpecial"
 <span class="Comment">//: If a recipe never mentions any ingredients or products, assume it has a header.</span>
 
 <span class="Delimiter">:(scenario recipe_without_ingredients_or_products_has_header)</span>
-def test [
+<span class="muRecipe">def</span> test [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+parse: recipe test has a header</span>
@@ -182,12 +183,12 @@ def test [
 <span class="Comment">//: Support type abbreviations in headers.</span>
 
 <span class="Delimiter">:(scenario type_abbreviations_in_recipe_headers)</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   <span class="Normal">a</span>:text<span class="Special"> &lt;- </span>foo
   <span class="Constant">1</span>:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>index *a<span class="Delimiter">,</span> <span class="Constant">0</span>
 ]
-def foo <span class="Delimiter">-&gt;</span> a:text [  <span class="Comment"># 'text' is an abbreviation</span>
+<span class="muRecipe">def</span> foo<span class="muRecipe"> -&gt; </span>a:text [  <span class="Comment"># 'text' is an abbreviation</span>
   local-scope
   load-ingredients
   a<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
@@ -253,10 +254,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario show_clear_error_on_bad_call)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>foo <span class="Constant">34</span>
 ]
-def foo x:point <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:point<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> <span class="Constant">35</span>
@@ -265,10 +266,10 @@ def foo x:point <span class="Delimiter">-&gt;</span> y:num [
 
 <span class="Delimiter">:(scenario show_clear_error_on_bad_call_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>foo <span class="Constant">34</span>
 ]
-def foo x:num <span class="Delimiter">-&gt;</span> y:num [
+<span class="muRecipe">def</span> foo x:num<span class="muRecipe"> -&gt; </span>y:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> x
@@ -305,7 +306,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario recipe_headers_are_checked)</span>
 <span class="Special">% Hide_errors = true;</span>
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   <span class="Normal">z</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
@@ -337,7 +338,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenario recipe_headers_are_checked_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def add2 x:num<span class="Delimiter">,</span> y:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num [
   local-scope
   load-ingredients
   <span class="Normal">z</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
@@ -347,7 +348,7 @@ def add2 x:num<span class="Delimiter">,</span> y:num [
 
 <span class="Delimiter">:(scenario recipe_headers_check_for_duplicate_names)</span>
 <span class="Special">% Hide_errors = true;</span>
-def add2 x:num<span class="Delimiter">,</span> x:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> x:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   <span class="Identifier">return</span> z
@@ -377,10 +378,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario deduce_instruction_types_from_recipe_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
@@ -434,10 +435,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//: in the header.</span>
 
 <span class="Delimiter">:(scenario return_based_on_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
@@ -485,10 +486,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario explicit_reply_ignores_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 a:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&gt;</span> y:num<span class="Delimiter">,</span> z:num [
+<span class="muRecipe">def</span> add2 a:num<span class="Delimiter">,</span> b:num<span class="muRecipe"> -&gt; </span>y:num<span class="Delimiter">,</span> z:num [
   local-scope
   load-ingredients
   y<span class="Special"> &lt;- </span>add a<span class="Delimiter">,</span> b
@@ -499,10 +500,10 @@ def add2 a:num<span class="Delimiter">,</span> b:num <span class="Delimiter">-&g
 <span class="traceContains">+mem: storing -2 in location 2</span>
 
 <span class="Delimiter">:(scenario return_on_fallthrough_based_on_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
@@ -511,10 +512,10 @@ def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&g
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(scenario return_on_fallthrough_already_exists)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
@@ -525,10 +526,10 @@ def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&g
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(scenario return_after_conditional_reply_based_on_header)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> z:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
   local-scope
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
@@ -538,12 +539,12 @@ def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&g
 
 <span class="Delimiter">:(scenario recipe_headers_perform_same_ingredient_check)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>add2 <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
 ]
-def add2 x:num<span class="Delimiter">,</span> y:num <span class="Delimiter">-&gt;</span> x:num [
+<span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>x:num [
   local-scope
   load-ingredients
 ]

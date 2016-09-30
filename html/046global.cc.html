@@ -15,12 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -44,7 +45,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: entirely.</span>
 
 <span class="Delimiter">:(scenario global_space)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
   <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
   <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
@@ -55,7 +56,7 @@ def main [
   global-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
   <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Constant">1</span>:num/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
+  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="Comment"># store to default space: 10 + (skip refcount and length) 2 + (index) 1</span>
 <span class="traceContains">+mem: storing 23 in location 13</span>
@@ -96,10 +97,10 @@ global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Comment">//: don't want to make them too comfortable to use.</span>
 
 <span class="Delimiter">:(scenario global_space_with_names)</span>
-def main [
-  global-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> location:type<span class="Delimiter">,</span> <span class="Constant">10</span>
+<span class="muRecipe">def</span> main [
+  global-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">10</span>
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Constant">1</span>:num/space:global<span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
+  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
 ]
 <span class="Comment"># don't complain about mixing numeric addresses and names</span>
 $error: <span class="Constant">0</span>

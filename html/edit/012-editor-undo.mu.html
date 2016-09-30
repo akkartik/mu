@@ -13,15 +13,15 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.muRecipe { color: #ff8700; }
 .muData { color: #ffff00; }
-.muScenario { color: #00af00; }
-.Delimiter { color: #800080; }
+.muControl { color: #c0a020; }
 .Special { color: #c00000; }
+.Delimiter { color: #800080; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
-.muControl { color: #c0a020; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
 -->
 </style>
 
@@ -140,7 +140,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[0]</span>
+    type <span class="Constant">[0]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   <span class="Comment"># undo</span>
@@ -159,7 +159,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -203,7 +203,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   insert-from:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next cursor-before
   insert-to:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next insert-from
   op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-  *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">1/coalesce</span>
+  *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, <span class="Constant">1/coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">  +done-adding-insert-operation</span>
 ]
@@ -224,7 +224,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   before-cursor:&amp;:duplex-list:char<span class="Special"> &lt;- </span>get *editor, <span class="Constant">before-cursor:offset</span>
   insert-to:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next before-cursor
   op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-  *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, cursor-row-before, cursor-column-before, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, insert-from, insert-to, <span class="Constant">0/never-coalesce</span>
+  *op<span class="Special"> &lt;- </span>merge <span class="Constant">0/insert-operation</span>, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, <span class="Constant">0/never-coalesce</span>
   editor<span class="Special"> &lt;- </span>add-operation editor, op
 ]
 
@@ -270,7 +270,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[012]</span>
+    type <span class="Constant">[012]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   <span class="Comment"># undo</span>
@@ -297,7 +297,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   editor-render screen, e
   <span class="Comment"># type some characters</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[012]</span>
+    type <span class="Constant">[012]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   screen-should-contain [
@@ -322,7 +322,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[3]</span>
+    type <span class="Constant">[3]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -383,7 +383,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be at end of line</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -405,7 +405,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[a]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[012]</span>
+    type <span class="Constant">[012]</span>
     press ctrl-z
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -431,7 +431,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[3]</span>
+    type <span class="Constant">[3]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -469,7 +469,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[012]</span>
+    type <span class="Constant">[012]</span>
     press ctrl-z
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -495,7 +495,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[3]</span>
+    type <span class="Constant">[3]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -518,13 +518,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
     press ctrl-z
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   <span class="Comment"># do some more work</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[0]</span>
+    type <span class="Constant">[0]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   screen-should-contain [
@@ -560,12 +560,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># insert some text and tabs, hit enter, some more text and tabs</span>
   assume-console [
     press tab
-    <span class="muData">type</span> <span class="Constant">[ab]</span>
+    type <span class="Constant">[ab]</span>
     press tab
-    <span class="muData">type</span> <span class="Constant">[cd]</span>
+    type <span class="Constant">[cd]</span>
     press enter
     press tab
-    <span class="muData">type</span> <span class="Constant">[efg]</span>
+    type <span class="Constant">[efg]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   screen-should-contain [
@@ -738,7 +738,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -780,7 +780,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break</span> <span class="Constant">+done-adding-move-operation:label</span>
   <span class="Delimiter">}</span>
   op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-  *op<span class="Special"> &lt;- </span>merge <span class="Constant">1/move-operation</span>, cursor-row-before, cursor-column-before, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, undo-coalesce-tag
+  *op<span class="Special"> &lt;- </span>merge <span class="Constant">1/move-operation</span>, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, undo-coalesce-tag
   editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">  +done-adding-move-operation</span>
 ]
@@ -850,7 +850,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -894,7 +894,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -945,7 +945,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -990,7 +990,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1173,7 +1173,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1218,7 +1218,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1263,7 +1263,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1308,7 +1308,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1407,7 +1407,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -1442,9 +1442,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[abc]</span>
+    type <span class="Constant">[abc]</span>
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
-    <span class="muData">type</span> <span class="Constant">[d]</span>
+    type <span class="Constant">[d]</span>
   ]
   editor-event-loop screen:&amp;:screen, console:&amp;:console, e
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1592,7 +1592,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   editor-render screen, e
   <span class="Comment"># insert some text and hit backspace</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[abc]</span>
+    type <span class="Constant">[abc]</span>
     press backspace
     press backspace
   ]
@@ -1683,7 +1683,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># if not, create a new operation</span>
     op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
     deleted-until:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next before-cursor
-    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, backspaced-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">1/coalesce-backspace</span>
+    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, backspaced-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">1/coalesce-backspace</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-backspace-operation</span>
   <span class="Delimiter">}</span>
@@ -1737,7 +1737,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[abcdef]</span>
+    type <span class="Constant">[abcdef]</span>
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press delete
     press backspace
@@ -1910,7 +1910,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># if not, create a new operation</span>
     op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
     deleted-until:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next before-cursor
-    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">2/coalesce-delete</span>
+    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">2/coalesce-delete</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
   <span class="Delimiter">}</span>
@@ -1988,7 +1988,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -2013,7 +2013,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     cursor-column:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
     deleted-until:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next before-cursor
     op:&amp;:operation<span class="Special"> &lt;- </span>new <span class="Constant">operation:type</span>
-    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
+    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
   <span class="Delimiter">}</span>
@@ -2091,7 +2091,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># cursor should be in the right place</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[1]</span>
+    type <span class="Constant">[1]</span>
   ]
   run [
     editor-event-loop screen:&amp;:screen, console:&amp;:console, e
@@ -2117,7 +2117,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     deleted-until:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next before-cursor
     cursor-row:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-row:offset</span>
     cursor-column:num<span class="Special"> &lt;- </span>get *editor, <span class="Constant">cursor-column:offset</span>
-    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/<span class="muRecipe">before</span>, save-column/<span class="muRecipe">before</span>, top-before, cursor-row/<span class="muRecipe">after</span>, cursor-column/<span class="muRecipe">after</span>, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
+    *op<span class="Special"> &lt;- </span>merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
     editor<span class="Special"> &lt;- </span>add-operation editor, op
 <span class="Constant">    +done-adding-delete-operation</span>
   <span class="Delimiter">}</span>
@@ -2131,7 +2131,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
-    <span class="muData">type</span> <span class="Constant">[abc]</span>
+    type <span class="Constant">[abc]</span>
     press ctrl-u
     press ctrl-z
   ]

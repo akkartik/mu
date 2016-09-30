@@ -16,6 +16,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
+.muRecipe { color: #ff8700; }
 .traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
@@ -43,8 +44,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: iteration of some containing loop nest.</span>
 
 <span class="Delimiter">:(scenario jump_to_label)</span>
-def main [
-  jump +target:label
+<span class="muRecipe">def</span> main [
+  jump <span class="Constant">+target:label</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   +target
 ]
@@ -127,10 +128,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario break_to_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span>
     <span class="Delimiter">{</span>
-      <span class="Identifier">break</span> +target:label
+      <span class="Identifier">break</span> <span class="Constant">+target:label</span>
       <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -139,10 +140,10 @@ def main [
 <span class="traceAbsent">-mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario jump_if_to_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span>
     <span class="Delimiter">{</span>
-      jump-<span class="Normal">if</span> <span class="Constant">1</span><span class="Delimiter">,</span> +target:label
+      jump-<span class="Normal">if</span> <span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">+target:label</span>
       <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -151,10 +152,10 @@ def main [
 <span class="traceAbsent">-mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario loop_unless_to_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Delimiter">{</span>
     <span class="Delimiter">{</span>
-      loop-unless <span class="Constant">0</span><span class="Delimiter">,</span> +target:label  <span class="Comment"># loop/break with a label don't care about braces</span>
+      loop-unless <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">+target:label</span>  <span class="Comment"># loop/break with a label don't care about braces</span>
       <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -163,12 +164,12 @@ def main [
 <span class="traceAbsent">-mem: storing 0 in location 1</span>
 
 <span class="Delimiter">:(scenario jump_runs_code_after_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># first a few lines of padding to exercise the offset computation</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  jump +target:label
+  jump <span class="Constant">+target:label</span>
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   +target
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -178,21 +179,21 @@ def main [
 
 <span class="Delimiter">:(scenario jump_fails_without_target)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   jump
 ]
 <span class="traceContains">+error: main: 'jump' expects an ingredient but got none</span>
 
 <span class="Delimiter">:(scenario jump_fails_without_target_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   jump-<span class="Normal">if</span> <span class="Constant">1</span>/<span class="Constant">true</span>
 ]
 <span class="traceContains">+error: main: 'jump-if' expects 2 ingredients but got 1</span>
 
 <span class="Delimiter">:(scenario recipe_fails_on_duplicate_jump_target)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   +label
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   +label
@@ -202,12 +203,12 @@ def main [
 
 <span class="Delimiter">:(scenario jump_ignores_nontarget_label)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># first a few lines of padding to exercise the offset computation</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  jump $target:label
+  jump <span class="Constant">$target:label</span>
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   $target
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>

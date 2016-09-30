@@ -15,13 +15,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -55,7 +57,7 @@ get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> tmp<span
 <span class="Comment">//: checks in future layers from flagging them.</span>
 <span class="Delimiter">:(scenario copy_exclusive_container)</span>
 <span class="Comment"># Copying exclusive containers copies all their contents and an extra location for the tag.</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>  <span class="Comment"># 'point' variant</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
@@ -104,11 +106,11 @@ def main [
 put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;variant&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 
 <span class="Delimiter">:(scenario maybe_convert)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
+  <span class="Constant">20</span>:point<span class="Delimiter">,</span> <span class="Constant">22</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1:variant</span>
 ]
 <span class="Comment"># boolean</span>
 <span class="traceContains">+mem: storing 1 in location 22</span>
@@ -117,11 +119,11 @@ def main [
 <span class="traceContains">+mem: storing 36 in location 21</span>
 
 <span class="Delimiter">:(scenario maybe_convert_fail)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:num<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">0</span>:variant
+  <span class="Constant">20</span>:num<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">0:variant</span>
 ]
 <span class="Comment"># boolean</span>
 <span class="traceContains">+mem: storing 0 in location 21</span>
@@ -234,27 +236,27 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario maybe_convert_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">20</span>:num<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
+  <span class="Constant">20</span>:num<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1:variant</span>
 ]
 <span class="traceContains">+error: main: 'maybe-convert 12:number-or-point/unsafe, 1:variant' should write to point but '20' has type number</span>
 
 <span class="Delimiter">:(scenario maybe_convert_dummy_product)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  _<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1</span>:variant
+  _<span class="Delimiter">,</span> <span class="Constant">21</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert <span class="Constant">12</span>:number-<span class="Normal">or</span>-point/unsafe<span class="Delimiter">,</span> <span class="Constant">1:variant</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="SalientComment">//:: Allow exclusive containers to be defined in mu code.</span>
 
 <span class="Delimiter">:(scenario exclusive_container)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
@@ -271,25 +273,25 @@ exclusive-container foo [
 <span class="Comment">//: fixed in advance</span>
 
 <span class="Delimiter">:(scenario exclusive_container_contains_array)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:array:num:<span class="Constant">3</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario exclusive_container_disallows_dynamic_array_element)</span>
 <span class="Special">% Hide_errors = true;</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:array:num
 ]
 <span class="traceContains">+error: container 'foo' cannot determine size of element 'x'</span>
 
 <span class="SalientComment">//:: To construct exclusive containers out of variant types, use 'merge'.</span>
 <span class="Delimiter">:(scenario lift_to_exclusive_container)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">1</span>:num  <span class="Comment"># tag must be a literal when merging exclusive containers</span>
   <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:num
@@ -302,14 +304,14 @@ def main [
 <span class="Comment">//: type-checking for 'merge' on exclusive containers</span>
 
 <span class="Delimiter">:(scenario merge_handles_exclusive_container)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">z</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 0 in location 1</span>
@@ -318,29 +320,29 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_requires_literal_tag_for_exclusive_container)</span>
 <span class="Special">% Hide_errors = true;</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">z</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+error: main: ingredient 0 of 'merge' should be a literal, for the tag of exclusive-container 'foo' in '2:foo &lt;- merge 1:num, 34'</span>
 
 <span class="Delimiter">:(scenario merge_handles_exclusive_container_inside_exclusive_container)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-exclusive-container bar [
+<span class="muData">exclusive-container</span> bar [
   <span class="Normal">a</span>:num
   <span class="Normal">b</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/a<span class="Delimiter">,</span> <span class="Constant">34</span>
   <span class="Constant">4</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">2</span>:bar
@@ -376,15 +378,15 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario merge_check_container_containing_exclusive_container)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-exclusive-container bar [
+<span class="muData">exclusive-container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 23 in location 1</span>
@@ -394,29 +396,29 @@ $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_container_containing_exclusive_container_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-exclusive-container bar [
+<span class="muData">exclusive-container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 ]
 <span class="traceContains">+error: main: too many ingredients in '1:foo &lt;- merge 23, 1/y, 34, 35'</span>
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">34</span>
 ]
 <span class="traceContains">+mem: storing 1 in location 1</span>
@@ -425,44 +427,44 @@ def main [
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_2)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">23</span>
 ]
 $error: <span class="Constant">0</span>
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_3)</span>
 <span class="Special">% Hide_errors = true;</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span>
 ]
 <span class="traceContains">+error: main: too few ingredients in '1:foo &lt;- merge 1/y, 23'</span>
 
 <span class="Delimiter">:(scenario merge_check_exclusive_container_containing_container_4)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">a</span>:num
   <span class="Normal">b</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">24</span>
   <span class="Constant">3</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">1</span>:bar
 ]
@@ -484,15 +486,15 @@ $error: <span class="Constant">0</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario merge_exclusive_container_with_mismatched_sizes)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-exclusive-container bar [
+<span class="muData">exclusive-container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:foo
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:bar<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">1</span>:num

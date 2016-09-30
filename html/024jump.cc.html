@@ -16,12 +16,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -36,8 +37,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: Jump primitives</span>
 
 <span class="Delimiter">:(scenario jump_can_skip_instructions)</span>
-def main [
-  jump <span class="Constant">1</span>:offset
+<span class="muRecipe">def</span> main [
+  jump <span class="Constant">1:offset</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+run: jump {1: &quot;offset&quot;}</span>
@@ -73,11 +74,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 put<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;offset&quot;</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
 
 <span class="Delimiter">:(scenario jump_backward)</span>
-def main [
-  jump <span class="Constant">1</span>:offset  <span class="Comment"># 0 -+</span>
-  jump <span class="Constant">3</span>:offset  <span class="Comment">#    |   +-+ 1</span>
+<span class="muRecipe">def</span> main [
+  jump <span class="Constant">1:offset</span>  <span class="Comment"># 0 -+</span>
+  jump <span class="Constant">3:offset</span>  <span class="Comment">#    |   +-+ 1</span>
                  <span class="Comment">#   \/  /\ |</span>
-  jump -<span class="Constant">2</span>:offset <span class="Comment">#  2 +--&gt;+ |</span>
+  jump <span class="Constant">-2:offset</span> <span class="Comment">#  2 +--&gt;+ |</span>
 ]                <span class="Comment">#         \/ 3</span>
 <span class="traceContains">+run: jump {1: &quot;offset&quot;}</span>
 <span class="traceContains">+run: jump {-2: &quot;offset&quot;}</span>
@@ -117,8 +118,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_if)</span>
-def main [
-  jump-<span class="Normal">if</span> <span class="Constant">999</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+<span class="muRecipe">def</span> main [
+  jump-<span class="Normal">if</span> <span class="Constant">999</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>
   <span class="Constant">123</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+run: jump-if {999: &quot;literal&quot;}, {1: &quot;offset&quot;}</span>
@@ -127,8 +128,8 @@ def main [
 <span class="traceAbsent">-mem: storing 1 in location 123</span>
 
 <span class="Delimiter">:(scenario jump_if_fallthrough)</span>
-def main [
-  jump-<span class="Normal">if</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+<span class="muRecipe">def</span> main [
+  jump-<span class="Normal">if</span> <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>
   <span class="Constant">123</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+run: jump-if {0: &quot;literal&quot;}, {1: &quot;offset&quot;}</span>
@@ -170,8 +171,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario jump_unless)</span>
-def main [
-  jump-unless <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+<span class="muRecipe">def</span> main [
+  jump-unless <span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>
   <span class="Constant">123</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+run: jump-unless {0: &quot;literal&quot;}, {1: &quot;offset&quot;}</span>
@@ -180,8 +181,8 @@ def main [
 <span class="traceAbsent">-mem: storing 1 in location 123</span>
 
 <span class="Delimiter">:(scenario jump_unless_fallthrough)</span>
-def main [
-  jump-unless <span class="Constant">999</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+<span class="muRecipe">def</span> main [
+  jump-unless <span class="Constant">999</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>
   <span class="Constant">123</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
 ]
 <span class="traceContains">+run: jump-unless {999: &quot;literal&quot;}, {1: &quot;offset&quot;}</span>

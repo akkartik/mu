@@ -13,18 +13,19 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
-.traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
-.traceContains { color: #008000; }
 .SalientComment { color: #00ffff; }
-.Comment { color: #9090ff; }
+.CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
+.traceContains { color: #008000; }
 .Delimiter { color: #800080; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.cSpecial { color: #008000; }
+.traceAbsent { color: #c00000; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
 .Special { color: #c00000; }
 .Identifier { color: #fcb165; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
-.CommentedCode { color: #6c6c6c; }
 -->
 </style>
 
@@ -48,14 +49,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: another. Later layers will add more primitives.</span>
 
 <span class="Delimiter">:(scenario copy_literal)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 ]
 <span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {23: &quot;literal&quot;}</span>
 <span class="traceContains">+mem: storing 23 in location 1</span>
 
 <span class="Delimiter">:(scenario copy)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num
 ]
@@ -64,7 +65,7 @@ def main [
 <span class="traceContains">+mem: storing 23 in location 2</span>
 
 <span class="Delimiter">:(scenario copy_multiple)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span><span class="Delimiter">,</span> <span class="Constant">24</span>
 ]
 <span class="traceContains">+mem: storing 23 in location 1</span>
@@ -401,7 +402,7 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario run_label)</span>
-def main [
+<span class="muRecipe">def</span> main [
   +foo
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num
@@ -411,14 +412,14 @@ def main [
 <span class="traceAbsent">-run: +foo</span>
 
 <span class="Delimiter">:(scenario run_dummy)</span>
-def main [
+<span class="muRecipe">def</span> main [
   _<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+run: _ &lt;- copy {0: &quot;literal&quot;}</span>
 
 <span class="Delimiter">:(scenario write_to_0_disallowed)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">0</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceAbsent">-mem: storing 34 in location 0</span>
@@ -427,25 +428,25 @@ def main [
 <span class="Comment">//: to put spaces around the '&lt;-'.</span>
 
 <span class="Delimiter">:(scenario comma_without_space)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">2</span><span class="Delimiter">,</span><span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
 
 <span class="Delimiter">:(scenario space_without_comma)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">2</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
 
 <span class="Delimiter">:(scenario comma_before_space)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>
 
 <span class="Delimiter">:(scenario comma_after_space)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">2</span> <span class="Delimiter">,</span><span class="Constant">2</span>
 ]
 <span class="traceContains">+mem: storing 2 in location 1</span>

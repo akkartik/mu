@@ -16,13 +16,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -52,7 +54,7 @@ get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point<sp
 <span class="Comment">//: container. Don't do this in general. I'm tagging exceptions with /unsafe to</span>
 <span class="Comment">//: skip later checks.</span>
 <span class="Delimiter">:(scenario copy_multiple_locations)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:point/unsafe
@@ -63,7 +65,7 @@ def main [
 <span class="Comment">//: trying to copy to a differently-typed destination will fail</span>
 <span class="Delimiter">:(scenario copy_checks_size)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">2</span>:point<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num
 ]
 <span class="traceContains">+error: main: can't copy '1:num' to '2:point'; types don't match</span>
@@ -79,7 +81,7 @@ get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point_nu
 get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> point_number<span class="Delimiter">).</span>elements<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span><span class="Constant">&quot;z:number&quot;</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(scenario copy_handles_nested_container_elements)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
@@ -89,10 +91,10 @@ def main [
 
 <span class="Comment">//: products of recipes can include containers</span>
 <span class="Delimiter">:(scenario return_container)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>f <span class="Constant">2</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>next-ingredient
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Identifier">return</span> <span class="Constant">12</span>:point/<span class="Special">raw</span>
@@ -105,7 +107,7 @@ def f [
 <span class="Comment">//: numbers, no matter how large they are.</span>
 
 <span class="Delimiter">:(scenario compare_multiple_locations)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># first</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
@@ -117,7 +119,7 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 7</span>
 
 <span class="Delimiter">:(scenario compare_multiple_locations_2)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># first</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
@@ -310,7 +312,7 @@ container_metadata&amp; get<span class="Delimiter">(</span>vector&lt;pair&lt;typ
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario stash_container)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>  <span class="Comment"># first</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
@@ -448,10 +450,10 @@ def main [
 <span class="Comment">//: appropriate element of the container value.</span>
 
 <span class="Delimiter">:(scenario get)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">15</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset  <span class="Comment"># unsafe</span>
+  <span class="Constant">15</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 35 in location 15</span>
 
@@ -540,62 +542,62 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario get_handles_nested_container_elements)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">15</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset  <span class="Comment"># unsafe</span>
+  <span class="Constant">15</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="traceContains">+mem: storing 36 in location 15</span>
 
 <span class="Delimiter">:(scenario get_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:offset  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
+  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2:offset</span>  <span class="Comment"># point-number occupies 3 locations but has only 2 fields; out of bounds</span>
 ]
 <span class="traceContains">+error: main: invalid offset '2' for 'point-number'</span>
 
 <span class="Delimiter">:(scenario get_out_of_bounds_2)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> -<span class="Constant">1</span>:offset
+  get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">-1:offset</span>
 ]
 <span class="traceContains">+error: main: invalid offset '-1' for 'point-number'</span>
 
 <span class="Delimiter">:(scenario get_product_type_mismatch)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   <span class="Constant">14</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">36</span>
-  <span class="Constant">15</span>:address:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+  <span class="Constant">15</span>:address:num<span class="Special"> &lt;- </span>get <span class="Constant">12</span>:point-number/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>
 ]
 <span class="traceContains">+error: main: 'get 12:point-number/raw, 1:offset' should write to number but '15' has type (address number)</span>
 
 <span class="Comment">//: we might want to call 'get' without saving the results, say in a sandbox</span>
 
 <span class="Delimiter">:(scenario get_without_product)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  get <span class="Constant">12</span>:point/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:offset  <span class="Comment"># unsafe</span>
+  get <span class="Constant">12</span>:point/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1:offset</span>  <span class="Comment"># unsafe</span>
 ]
 <span class="Comment"># just don't die</span>
 
 <span class="SalientComment">//:: To write to elements of containers, use 'put'.</span>
 
 <span class="Delimiter">:(scenario put)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">13</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
   $clear-trace
-  <span class="Constant">12</span>:point<span class="Special"> &lt;- </span>put <span class="Constant">12</span>:point<span class="Delimiter">,</span> <span class="Constant">1</span>:offset<span class="Delimiter">,</span> <span class="Constant">36</span>
+  <span class="Constant">12</span>:point<span class="Special"> &lt;- </span>put <span class="Constant">12</span>:point<span class="Delimiter">,</span> <span class="Constant">1:offset</span><span class="Delimiter">,</span> <span class="Constant">36</span>
 ]
 <span class="traceContains">+mem: storing 36 in location 13</span>
 <span class="traceAbsent">-mem: storing 34 in location 12</span>
@@ -680,11 +682,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(scenario put_product_error)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   local-scope
   load-ingredients
   <span class="Constant">1</span>:point<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
-  <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>put <span class="Constant">1</span>:point<span class="Delimiter">,</span> x:offset<span class="Delimiter">,</span> <span class="Constant">36</span>
+  <span class="Constant">3</span>:point<span class="Special"> &lt;- </span>put <span class="Constant">1</span>:point<span class="Delimiter">,</span> <span class="Constant">x:offset</span><span class="Delimiter">,</span> <span class="Constant">36</span>
 ]
 <span class="traceContains">+error: main: product of 'put' must be first ingredient '1:point', but got '3:point'</span>
 
@@ -692,7 +694,7 @@ def main [
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario container)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
@@ -701,11 +703,11 @@ container foo [
 <span class="traceContains">+parse: element: {y: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario container_use_before_definition)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
@@ -724,18 +726,18 @@ container bar [
 <span class="Comment">//: if a container is defined again, the new fields add to the original definition</span>
 <span class="Delimiter">:(scenarios run)</span>
 <span class="Delimiter">:(scenario container_extend)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
 ]
 <span class="Comment"># add to previous definition</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
-  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
-  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">1</span>:offset
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">0:offset</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:foo<span class="Delimiter">,</span> <span class="Constant">1:offset</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 3</span>
 <span class="traceContains">+mem: storing 35 in location 4</span>
@@ -827,7 +829,7 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
 
 <span class="Delimiter">:(scenario multi_word_line_in_container_declaration)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num y:num
 ]
 <span class="traceContains">+error: container 'foo' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.</span>
@@ -835,13 +837,13 @@ container foo [
 <span class="Comment">//: support type abbreviations in container definitions</span>
 
 <span class="Delimiter">:(scenario type_abbreviations_in_containers)</span>
-type foo = number
-container bar [
+<span class="muData">type</span> foo = number
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:foo
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:bar/unsafe<span class="Delimiter">,</span> <span class="Constant">0</span>:offset
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>get <span class="Constant">1</span>:bar/unsafe<span class="Delimiter">,</span> <span class="Constant">0:offset</span>
 ]
 <span class="traceContains">+mem: storing 34 in location 2</span>
 
@@ -885,17 +887,17 @@ assert<span class="Delimiter">(</span>Next_type_ordinal &lt; <span class="Consta
 
 <span class="Delimiter">:(scenario run_complains_on_unknown_types)</span>
 <span class="Special">% Hide_errors = true;</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Comment"># integer is not a type</span>
   <span class="Constant">1</span>:integer<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+error: main: unknown type integer in '1:integer &lt;- copy 0'</span>
 
 <span class="Delimiter">:(scenario run_allows_type_definition_after_use)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:bar<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/unsafe
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
 ]
 $error: <span class="Constant">0</span>
@@ -937,14 +939,14 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Delimiter">:(scenario container_unknown_field)</span>
 <span class="Special">% Hide_errors = true;</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:bar
 ]
 <span class="traceContains">+error: foo: unknown type in y</span>
 
 <span class="Delimiter">:(scenario read_container_with_bracket_in_comment)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Comment"># ']' in comment</span>
   <span class="Normal">y</span>:num
@@ -954,7 +956,7 @@ container foo [
 <span class="traceContains">+parse: element: {y: &quot;number&quot;}</span>
 
 <span class="Delimiter">:(scenario container_with_compound_field_type)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Delimiter">{</span>x: <span class="Delimiter">(</span>address array <span class="Delimiter">(</span>address array character<span class="Delimiter">))}</span>
 ]
 $error: <span class="Constant">0</span>

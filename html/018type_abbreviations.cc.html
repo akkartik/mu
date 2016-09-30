@@ -13,15 +13,17 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
+.muData { color: #ffff00; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Constant { color: #00a0a0; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -37,8 +39,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenarios transform)</span>
 <span class="Delimiter">:(scenario type_abbreviations)</span>
-type foo = number
-def main [
+<span class="muData">type</span> foo = number
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 ]
 <span class="traceContains">+transform: product type after expanding abbreviations: &quot;number&quot;</span>
@@ -106,28 +108,28 @@ string_tree* parse_string_list<span class="Delimiter">(</span><span class="Norma
 
 <span class="Delimiter">:(scenario type_error1)</span>
 <span class="Special">% Hide_errors = true;</span>
-type foo
+<span class="muData">type</span> foo
 <span class="traceContains">+error: incomplete 'type' statement 'type foo'</span>
 
 <span class="Delimiter">:(scenario type_error2)</span>
 <span class="Special">% Hide_errors = true;</span>
-type foo =
+<span class="muData">type</span> foo =
 <span class="traceContains">+error: incomplete 'type' statement 'type foo ='</span>
 
 <span class="Delimiter">:(scenario type_error3)</span>
 <span class="Special">% Hide_errors = true;</span>
-type foo bar baz
+<span class="muData">type</span> foo bar baz
 <span class="traceContains">+error: 'type' statements must be of the form 'type &lt;new type name&gt; = &lt;type expression&gt;' but got 'type foo bar'</span>
 
 <span class="Delimiter">:(scenario type_conflict_error)</span>
 <span class="Special">% Hide_errors = true;</span>
-type foo = bar
-type foo = baz
+<span class="muData">type</span> foo = bar
+<span class="muData">type</span> foo = baz
 <span class="traceContains">+error: 'type' conflict: 'foo' defined as both 'bar' and 'baz'</span>
 
 <span class="Delimiter">:(scenario type_abbreviation_for_compound)</span>
-type foo = address:number
-def main [
+<span class="muData">type</span> foo = address:number
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+transform: product type after expanding abbreviations: (&quot;address&quot; &quot;number&quot;)</span>
@@ -165,8 +167,8 @@ put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</
 put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;char&quot;</span><span class="Delimiter">,</span> new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;character&quot;</span><span class="Delimiter">));</span>
 
 <span class="Delimiter">:(scenario use_type_abbreviations_when_declaring_type_abbreviations)</span>
-type foo = &amp;:num
-def main [
+<span class="muData">type</span> foo = &amp;:num
+<span class="muRecipe">def</span> main [
   <span class="Normal">a</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
 <span class="traceContains">+transform: product type after expanding abbreviations: (&quot;address&quot; &quot;number&quot;)</span>
@@ -176,14 +178,14 @@ def main [
 <span class="Comment">//: before we use them.</span>
 
 <span class="Delimiter">:(scenario abbreviations_for_address_and_array)</span>
-def main [
+<span class="muRecipe">def</span> main [
   f <span class="Constant">1</span>:&amp;:num  <span class="Comment"># abbreviation for 'address:number'</span>
   f <span class="Constant">2</span>:@:num  <span class="Comment"># abbreviation for 'array:number'</span>
   f <span class="Constant">3</span>:&amp;:@:num  <span class="Comment"># combining '&amp;' and '@'</span>
   f <span class="Constant">4</span>:&amp;:&amp;:@:&amp;:@:num  <span class="Comment"># ..any number of times</span>
   f <span class="Delimiter">{</span><span class="Constant">5</span>: <span class="Delimiter">(</span>array <span class="Delimiter">(</span>&amp; num<span class="Delimiter">)</span> <span class="Constant">3</span><span class="Delimiter">)}</span>  <span class="Comment"># support for dilated reagents and more complex parse trees</span>
 ]
-def f [
+<span class="muRecipe">def</span> f [
 ]
 <span class="traceContains">+transform: --- expand type abbreviations in recipe 'main'</span>
 <span class="traceContains">+transform: ingredient type after expanding abbreviations: (&quot;address&quot; &quot;number&quot;)</span>

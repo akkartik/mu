@@ -15,12 +15,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .Special { color: #c00000; }
+.muRecipe { color: #ff8700; }
 .traceContains { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .cSpecial { color: #008000; }
 .Identifier { color: #fcb165; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.muData { color: #ffff00; }
 .CommentedCode { color: #6c6c6c; }
 -->
 </style>
@@ -163,11 +165,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario hash_container_checks_all_elements)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
@@ -180,15 +182,15 @@ def main [
 <span class="traceContains">+mem: storing 0 in location 7</span>
 
 <span class="Delimiter">:(scenario hash_exclusive_container_checks_all_elements)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:bar
   <span class="Normal">y</span>:num
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">a</span>:num
   <span class="Normal">b</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
@@ -201,11 +203,11 @@ def main [
 <span class="traceContains">+mem: storing 0 in location 9</span>
 
 <span class="Delimiter">:(scenario hash_can_ignore_container_elements)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>/ignore-<span class="Normal">for</span>-hash
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
@@ -221,7 +223,7 @@ def main [
 <span class="Comment">//: current implementation works like we think it does.</span>
 
 <span class="Delimiter">:(scenario hash_of_zero_address)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
 ]
@@ -230,7 +232,7 @@ def main [
 <span class="Comment">//: This is probably too aggressive, but we need some way to avoid depending</span>
 <span class="Comment">//: on the precise bit pattern of a floating-point number.</span>
 <span class="Delimiter">:(scenario hash_of_numbers_ignores_fractional_part)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1.5</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>
   <span class="Constant">3</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
@@ -238,7 +240,7 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 3</span>
 
 <span class="Delimiter">:(scenario hash_of_array_same_as_string)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
   <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">97</span>
   <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">98</span>
@@ -253,11 +255,11 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_ignores_address_value)</span>
-def main [
-  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
-  <span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *<span class="Constant">3</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">3</span>:&amp;:num
   <span class="Constant">5</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">4</span>:num
@@ -266,8 +268,8 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_ignores_address_refcount)</span>
-def main [
-  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:&amp;:num
   <span class="Identifier">return</span>-unless <span class="Constant">2</span>:num
@@ -281,15 +283,15 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 5</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">3</span>:num
@@ -302,18 +304,18 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 7</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements_2)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>
   <span class="Normal">z</span>:&amp;:num
 ]
-def main [
-  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *<span class="Constant">1</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">1</span>:&amp;:num
   <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">2</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">5</span>:num
-  <span class="Constant">6</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> number:type
+  <span class="Constant">6</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   *<span class="Constant">6</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
   <span class="Constant">7</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">6</span>:&amp;:num
   <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">7</span>:foo
@@ -324,16 +326,16 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 11</span>
 
 <span class="Delimiter">:(scenario hash_container_depends_only_on_elements_3)</span>
-container foo [
+<span class="muData">container</span> foo [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:<span class="Normal">char</span>
   <span class="Normal">z</span>:bar
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">x</span>:num
   <span class="Normal">y</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">97</span>/a<span class="Delimiter">,</span> <span class="Constant">47</span><span class="Delimiter">,</span> <span class="Constant">48</span>
   <span class="Constant">6</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">6</span>:num
@@ -346,15 +348,15 @@ def main [
 <span class="traceContains">+mem: storing 1 in location 13</span>
 
 <span class="Delimiter">:(scenario hash_exclusive_container_ignores_tag)</span>
-exclusive-container foo [
+<span class="muData">exclusive-container</span> foo [
   <span class="Normal">x</span>:bar
   <span class="Normal">y</span>:num
 ]
-container bar [
+<span class="muData">container</span> bar [
   <span class="Normal">a</span>:num
   <span class="Normal">b</span>:num
 ]
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">0</span>/x<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
   <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:foo
   <span class="Identifier">return</span>-unless <span class="Constant">4</span>:num
@@ -371,7 +373,7 @@ def main [
 <span class="Comment">//: version around and check that the new one is consistent with it.</span>
 
 <span class="Delimiter">:(scenario hash_matches_old_version)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>hash <span class="Constant">1</span>:text
   <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>hash_old <span class="Constant">1</span>:text

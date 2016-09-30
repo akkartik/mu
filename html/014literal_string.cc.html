@@ -15,12 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .cSpecial { color: #008000; }
-.traceContains { color: #008000; }
+.muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
+.Identifier { color: #fcb165; }
 -->
 </style>
 
@@ -42,13 +43,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(scenarios load)</span>
 <span class="Delimiter">:(scenario string_literal)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc def]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_with_colons)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc:def/ghi]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc:def/ghi&quot;: &quot;literal-string&quot;}</span>
@@ -202,26 +203,26 @@ string emit_literal_string<span class="Delimiter">(</span>string name<span class
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario string_literal_nested)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc [def]]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc [def]&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc \[def]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc [def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_escaped_twice)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [
 abc \\[def]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;\nabc \[def&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_and_comment)</span>
-def main [
+<span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:character<span class="Special"> &lt;- </span>copy [abc]  <span class="Comment"># comment</span>
 ]
 <span class="traceContains">+parse: --- defining main</span>
@@ -231,14 +232,14 @@ def main [
 <span class="traceContains">+parse:   product: {1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)}</span>
 
 <span class="Delimiter">:(scenario string_literal_escapes_newlines_in_trace)</span>
-def main [
+<span class="muRecipe">def</span> main [
   copy [abc
-def]
+<span class="muRecipe">def</span>]
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;abc\ndef&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_can_skip_past_comments)</span>
-def main [
+<span class="muRecipe">def</span> main [
   copy [
     <span class="Comment"># ']' inside comment</span>
     bar
@@ -247,15 +248,15 @@ def main [
 <span class="traceContains">+parse:   ingredient: {&quot;\n    # ']' inside comment\n    bar\n  &quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario string_literal_empty)</span>
-def main [
+<span class="muRecipe">def</span> main [
   copy []
 ]
 <span class="traceContains">+parse:   ingredient: {&quot;&quot;: &quot;literal-string&quot;}</span>
 
 <span class="Delimiter">:(scenario multiple_unfinished_recipes)</span>
 <span class="Special">% Hide_errors = true;</span>
-def f1 [
-def f2 [
+<span class="muRecipe">def</span> f1 [
+<span class="muRecipe">def</span> f2 [
 <span class="traceContains">+error: unbalanced '['</span>
 </pre>
 </body>
