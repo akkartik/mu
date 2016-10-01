@@ -41,7 +41,7 @@ def new-array -> result:&:@:_elem [
 
 # fill an existing array with a set of numbers
 # (contributed by Caleb Couch)
-recipe fill array:&:@:num -> array:&:@:num [
+def fill array:&:@:num -> array:&:@:num [
   local-scope
   load-ingredients
   loopn:num <- copy 0
@@ -105,7 +105,7 @@ scenario fill-exits-gracefully-when-given-no-ingredients [
 
 # swap two elements of an array
 # (contributed by Caleb Couch)
-recipe swap array:&:@:num, index1:num, index2:num -> array:&:@:num [
+def swap array:&:@:num, index1:num, index2:num -> array:&:@:num [
   local-scope
   load-ingredients
   object1:num <- index *array, index1
