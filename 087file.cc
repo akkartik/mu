@@ -140,7 +140,7 @@ case _READ_FROM_FILE: {
   break;
 }
 :(before "End Includes")
-#include <cerrno>
+#include <errno.h>
 
 :(before "End Primitive Recipe Declarations")
 _WRITE_TO_FILE,
