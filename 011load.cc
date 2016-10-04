@@ -215,30 +215,6 @@ void skip_comment(istream& in) {
   }
 }
 
-//: Warn if a recipe gets redefined, because large codebases can accidentally
-//: step on their own toes. But there'll be many occasions later where
-//: we'll want to disable the errors.
-:(before "End Globals")
-bool Disable_redefine_checks = false;
-:(before "End Setup")
-Disable_redefine_checks = false;
-:(code)
-bool should_check_for_redefine(const string& recipe_name) {
-  if (Disable_redefine_checks) return false;
-  return true;
-}
-
-// for debugging
-:(code)
-void show_rest_of_stream(istream& in) {
-  cerr << '^';
-  char c;
-  while (in >> c)
-    cerr << c;
-  cerr << "$\n";
-  exit(0);
-}
-
 :(scenario recipe_instead_of_def)
 recipe main [
   1:number <- copy 23
@@ -364,6 +340,19 @@ void test_parse_comment_terminated_by_eof() {
   cerr << ".";  // termination = success
 }
 
+//: Warn if a recipe gets redefined, because large codebases can accidentally
+//: step on their own toes. But there'll be many occasions later where
+//: we'll want to disable the errors.
+:(before "End Globals")
+bool Disable_redefine_checks = false;
+:(before "End Setup")
+Disable_redefine_checks = false;
+:(code)
+bool should_check_for_redefine(const string& recipe_name) {
+  if (Disable_redefine_checks) return false;
+  return true;
+}
+
 :(scenario warn_on_missing_space_before_bracket)
 % Hide_errors = true;
 def main[
@@ -390,3 +379,14 @@ def! main [
 ]
 -error: redefining recipe main
 $error: 0
+
+:(code)
+// for debugging
+void show_rest_of_stream(istream& in) {
+  cerr << '^';
+  char c;
+  while (in >> c)
+    cerr << c;
+  cerr << "$\n";
+  exit(0);
+}
