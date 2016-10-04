@@ -340,6 +340,13 @@ void test_parse_comment_terminated_by_eof() {
   cerr << ".";  // termination = success
 }
 
+:(scenario warn_on_missing_space_before_bracket)
+% Hide_errors = true;
+def main[
+  1:number <- copy 23
+]
++error: insert a space before '[' in 'main['
+
 //: Warn if a recipe gets redefined, because large codebases can accidentally
 //: step on their own toes. But there'll be many occasions later where
 //: we'll want to disable the errors.
@@ -352,13 +359,6 @@ bool should_check_for_redefine(const string& recipe_name) {
   if (Disable_redefine_checks) return false;
   return true;
 }
-
-:(scenario warn_on_missing_space_before_bracket)
-% Hide_errors = true;
-def main[
-  1:number <- copy 23
-]
-+error: insert a space before '[' in 'main['
 
 :(scenario forbid_redefining_recipes)
 % Hide_errors = true;
