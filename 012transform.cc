@@ -27,7 +27,10 @@ typedef void (*transform_fn)(recipe_ordinal);
 :(before "End Globals")
 vector<transform_fn> Transform;
 
-:(after "int main")
+:(before "End One-time Setup")
+initialize_transforms();
+:(code)
+void initialize_transforms() {
   // Begin Transforms
     // Begin Instruction Inserting/Deleting Transforms
     // End Instruction Inserting/Deleting Transforms
@@ -38,8 +41,8 @@ vector<transform_fn> Transform;
 
   // Begin Checks
   // End Checks
+}
 
-:(code)
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
 //?   cerr << "=== transform_all\n";
