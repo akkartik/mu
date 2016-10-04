@@ -114,7 +114,7 @@ void parse_filesystem(const string& data, map<string, string>& out, const string
     if (!has_data(in)) break;
     skip_whitespace_and_comments(in);
     if (!has_data(in)) break;
-    string filename = next_filesystem_word(in);
+    string filename = next_word(in);
     if (*filename.begin() != '[') {
       raise << caller << ": assume-filesystem: filename '" << filename << "' must begin with a '['\n" << end();
       break;
@@ -129,7 +129,7 @@ void parse_filesystem(const string& data, map<string, string>& out, const string
       raise << caller << ": assume-filesystem: no data for filename '" << filename << "'\n" << end();
       break;
     }
-    string arrow = next_filesystem_word(in);
+    string arrow = next_word(in);
     if (arrow != "<-") {
       raise << caller << ": assume-filesystem: expected '<-' after filename '" << filename << "' but got '" << arrow << "'\n" << end();
       break;
@@ -138,7 +138,7 @@ void parse_filesystem(const string& data, map<string, string>& out, const string
       raise << caller << ": assume-filesystem: no data for filename '" << filename << "' after '<-'\n" << end();
       break;
     }
-    string contents = next_filesystem_word(in);
+    string contents = next_word(in);
     if (*contents.begin() != '[') {
       raise << caller << ": assume-filesystem: file contents '" << contents << "' for filename '" << filename << "' must begin with a '['\n" << end();
       break;
@@ -228,19 +228,6 @@ int size_of_filesystem() {
   result = size_of(type)+/*refcount*/1;
   delete type;
   return result;
-}
-
-string next_filesystem_word(istream& in) {
-  skip_whitespace_and_comments(in);
-  if (in.peek() == '[') {
-    string result = slurp_quoted(in);
-    skip_whitespace_and_comments_but_not_newline(in);
-    return result;
-  }
-  ostringstream out;
-  slurp_word(in, out);
-  skip_whitespace_and_comments(in);
-  return out.str();
 }
 
 void skip_whitespace(istream& in) {
