@@ -155,7 +155,15 @@ string next_word(istream& in) {
   ostringstream out;
   slurp_word(in, out);
   skip_whitespace_and_comments_but_not_newline(in);
-  return out.str();
+  string result = out.str();
+  if (result != "[" && ends_with(result, '['))
+    raise << "insert a space before '[' in '" << result << "'\n" << end();
+  return result;
+}
+
+bool ends_with(const string& s, const char c) {
+  if (s.empty()) return false;
+  return *s.rbegin() == c;
 }
 
 :(before "End Globals")
@@ -355,6 +363,13 @@ void test_parse_comment_terminated_by_eof() {
        "# abc");  // no newline after comment
   cerr << ".";  // termination = success
 }
+
+:(scenario warn_on_missing_space_before_bracket)
+% Hide_errors = true;
+def main[
+  1:number <- copy 23
+]
++error: insert a space before '[' in 'main['
 
 :(scenario forbid_redefining_recipes)
 % Hide_errors = true;
