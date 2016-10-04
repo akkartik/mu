@@ -422,6 +422,7 @@ void fill_in_reply_ingredients(recipe_ordinal r) {
       add_header_products(inst, caller_recipe);
   }
   // fall through reply
+  if (caller_recipe.steps.empty()) return;  // error will be raised elsewhere if there's a product in the header; just give up
   const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
   if (final_instruction.name != "reply" && final_instruction.name != "return") {
     instruction inst;

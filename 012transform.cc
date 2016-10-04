@@ -50,7 +50,6 @@ void transform_all() {
 //?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
-      if (r.steps.empty()) continue;
       if (r.transformed_until != t-1) continue;
       // End Transform Checks
       (*Transform.at(t))(/*recipe_ordinal*/p->first);
