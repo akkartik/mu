@@ -1,5 +1,8 @@
 //: Phase 3: Start running a loaded and transformed recipe.
 //:
+//:   The process of running mu code:
+//:     load -> transform -> run
+//:
 //: So far we've seen recipes as lists of instructions, and instructions point
 //: at other recipes. To kick things off mu needs to know how to run certain
 //: 'primitive' recipes. That will then give the ability to run recipes

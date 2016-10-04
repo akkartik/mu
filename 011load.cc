@@ -1,4 +1,7 @@
 //: Phase 1 of running mu code: load it from a textual representation.
+//:
+//: The process of running mu code:
+//:   load -> transform -> run
 
 :(scenarios load)  // use 'load' instead of 'run' in all scenarios in this layer
 :(scenario first_recipe)

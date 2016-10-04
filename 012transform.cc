@@ -1,5 +1,8 @@
 //: Phase 2: Filter loaded recipes through an extensible list of 'transforms'.
 //:
+//:   The process of running mu code:
+//:     load -> transform -> run
+//:
 //: The hope is that this framework of transform tools will provide a
 //: deconstructed alternative to conventional compilers.
 //:
