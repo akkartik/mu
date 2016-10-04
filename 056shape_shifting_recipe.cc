@@ -96,7 +96,7 @@ bool types_strictly_match_except_literal_zero_against_address(const reagent& to,
 }
 
 :(code)
-// phase 2 of static dispatch
+// phase 3 of static dispatch
 vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0; i < SIZE(variants); ++i) {
@@ -125,7 +125,7 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
   return true;
 }
 
-// tie-breaker for phase 2
+// tie-breaker for phase 3
 recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
   // primary score
