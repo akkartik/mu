@@ -160,9 +160,11 @@ if (argc > 1) {
   // skip argv[0]
   ++argv;
   --argc;
-  // ignore argv past '--'; that's commandline args for 'main'
   while (argc > 0) {
+    // ignore argv past '--'; that's commandline args for 'main'
     if (string(*argv) == "--") break;
+    if (starts_with(*argv, "--"))
+      cerr << "treating " << *argv << " as a file rather than an option\n";
     load_file_or_directory(*argv);
     --argc;
     ++argv;
