@@ -178,6 +178,16 @@ static char *terminfo_try_path(const char *path, const char *term) {
   return read_file(tmp);
 }
 
+void string_copy(char* dest, const char* src, int dest_capacity) {
+  strncpy(dest, src, dest_capacity);
+  dest[dest_capacity-1] = '\0';
+}
+
+void string_append(char* dest, const char* src, int dest_capacity) {
+  strncat(dest, src, dest_capacity);
+  dest[dest_capacity-1] = '\0';
+}
+
 static char *load_terminfo(void) {
   char tmp[4096];
   const char *term = getenv("TERM");
@@ -196,8 +206,8 @@ static char *load_terminfo(void) {
   if (home) {
     // snprintf guarantee for older compilers
     assert(sizeof(tmp) > sizeof(home)+sizeof("/.terminfo")+1);
-    strlcpy(tmp, home, sizeof(tmp));
-    strlcat(tmp, "/.terminfo", sizeof(tmp));
+    string_copy(tmp, home, sizeof(tmp));
+    string_append(tmp, "/.terminfo", sizeof(tmp));
     char *data = terminfo_try_path(tmp, term);
     if (data)
       return data;
@@ -235,7 +245,7 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
   const char *src = data + table + off;
   int len = strlen(src);
   char *dst = malloc(len+1);
-  strlcpy(dst, src, len);
+  string_copy(dst, src, len);
   return dst;
 }
 
