@@ -166,7 +166,7 @@ static char *terminfo_try_path(const char *path, const char *term) {
   char tmp[4096];
   // snprintf guarantee for older compilers
   assert(sizeof(tmp) > sizeof(path)+sizeof("/x/")+sizeof(term)+1);
-  sprintf(tmp, "%s/%c/%s", path, term[0], term);
+  snprintf(tmp, sizeof(tmp), "%s/%c/%s", path, term[0], term);
   char *data = read_file(tmp);
   if (data) {
     return data;
@@ -174,7 +174,7 @@ static char *terminfo_try_path(const char *path, const char *term) {
 
   // fallback to darwin specific dirs structure
   // snprintf guarantee above still applies
-  sprintf(tmp, "%s/%x/%s", path, term[0], term);
+  snprintf(tmp, sizeof(tmp), "%s/%x/%s", path, term[0], term);
   return read_file(tmp);
 }
 
@@ -196,8 +196,8 @@ static char *load_terminfo(void) {
   if (home) {
     // snprintf guarantee for older compilers
     assert(sizeof(tmp) > sizeof(home)+sizeof("/.terminfo")+1);
-    strncpy(tmp, home, sizeof(tmp));
-    strcat(tmp, "/.terminfo");
+    strlcpy(tmp, home, sizeof(tmp));
+    strlcat(tmp, "/.terminfo", sizeof(tmp));
     char *data = terminfo_try_path(tmp, term);
     if (data)
       return data;
@@ -235,7 +235,7 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
   const char *src = data + table + off;
   int len = strlen(src);
   char *dst = malloc(len+1);
-  strcpy(dst, src);
+  strlcpy(dst, src, len);
   return dst;
 }
 
