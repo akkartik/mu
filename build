@@ -1,0 +1,117 @@
+#!/bin/sh
+set -e  # stop immediately on error
+
+# [0-9]*.cc -> mu.cc -> .build/*.cc -> .build/*.o -> .build/mu_bin
+# (layers)   |        |              |             |
+#          tangle  cleave          $CXX          $CXX
+
+test $CXX || export CXX=c++ 
+test $CC || export CC=cc
+test $CFLAGS || export CFLAGS="-g -O3"
+export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
+
+# return 1 if $1 is older than _any_ of the remaining args
+older_than() {
+  target=$1
+  shift
+  if [ ! -e $target ]
+  then 
+#?     echo "$target doesn't exist"
+    echo "updating $target" >&2
+    return 1
+  fi
+  for f in $*
+  do
+    if [ $f -nt $target ]
+    then
+      echo "updating $target" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+noisy_cd() {
+  cd $1
+  echo "-- `pwd`" >&2
+}
+
+older_than enumerate/enumerate enumerate/enumerate.cc || {
+  $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
+}
+
+noisy_cd tangle
+  older_than type_list [0-9]*.cc || {
+    grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/' > type_list
+    grep -h "^typedef " [0-9]*.cc >> type_list
+  }
+  older_than function_list [0-9]*.cc || {
+    grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' > function_list
+  }
+  older_than file_list [0-9]*.cc || {
+    ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' > file_list
+  }
+  older_than test_file_list [0-9]*.test.cc || {
+    ls [0-9]*.test.cc |sed 's/.*/#include "&"/' > test_file_list
+  }
+  older_than test_list [0-9]*.cc || {
+    grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' > test_list
+  }
+  older_than tangle boot.cc *_list || {
+    $CXX $CFLAGS boot.cc -o tangle
+  }
+noisy_cd ..
+
+LAYERS=$(./enumerate/enumerate --until zzz |grep -v '.mu$')
+older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle || {
+  ./tangle/tangle $LAYERS > mu.cc
+}
+older_than function_list mu.cc || {
+  grep -h "^[^[:space:]#].*) {$" mu.cc |grep -v ":.*(" |sed 's/ {.*/;/' > function_list
+}
+older_than test_list mu.cc || {
+  grep -h "^\s*void test_" mu.cc |sed 's/^\s*void \(.*\)() {.*/\1,/' > test_list
+}
+
+older_than cleave/cleave cleave/cleave.cc || {
+  $CXX -O3 -Wall -Wextra -fno-strict-aliasing cleave/cleave.cc -o cleave/cleave
+  rm -rf .build
+}
+
+older_than mu_bin mu.cc *_list cleave/cleave || {
+  mkdir -p .build
+  cp function_list test_list .build
+  mkdir -p .build/termbox
+  cp termbox/termbox.h .build/termbox
+  ./cleave/cleave mu.cc .build
+  noisy_cd .build
+    older_than global_declarations_list global_definitions_list || {
+      grep ';' global_definitions_list |sed 's/[=(].*/;/' |sed 's/^[^\/# ]/extern &/' |sed 's/^extern extern /extern /' > global_declarations_list
+    }
+    for f in mu_*.cc
+    do
+      older_than `echo $f |sed 's/\.cc$/.o/'` $f || {
+        $CXX $CFLAGS -c $f
+      }
+    done
+  noisy_cd ../termbox
+    older_than utf8.o utf8.c || {
+      $CC $CFLAGS -c utf8.c
+    }
+    older_than termbox.o termbox.c termbox.h input.inl output.inl bytebuffer.inl || {
+      $CC $CFLAGS -c termbox.c
+    }
+    older_than libtermbox.a *.o || {
+      ar rcs libtermbox.a *.o
+    }
+  noisy_cd ..
+  $CXX .build/*.o termbox/libtermbox.a -o .build/mu_bin
+  cp .build/mu_bin .
+}
+
+## [0-9]*.mu -> core.mu
+
+MU_LAYERS=$(./enumerate/enumerate --until zzz |grep '.mu$')
+older_than core.mu $MU_LAYERS || {
+  cat $MU_LAYERS > core.mu
+}

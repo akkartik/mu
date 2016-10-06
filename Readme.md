@@ -84,10 +84,10 @@ operations (albeit at the cost of some runtime checks).
 *Taking Mu for a spin*
 
 Mu is currently implemented in C++ and requires a Unix-like environment. It's
-been tested on Ubuntu and Mac OS X, on x86, x86\_64 and ARMv7 with recent
-versions of GCC and Clang. Since it uses no recent language features and has
-no exotic dependencies, it should work with most reasonable versions,
-compilers or processors (though you do need GNU make or `gmake`).
+been tested on Ubuntu, Mac OS X and OpenBSD; on x86, x86\_64 and ARMv7; and on
+recent versions of GCC and Clang. Since it uses no bleeding-edge language
+features and has no exotic dependencies, it should work with most reasonable
+versions, compilers or processors.
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
 
