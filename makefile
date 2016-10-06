@@ -26,7 +26,7 @@ mu_bin: mu.cc makefile function_list test_list cleave/cleave
 	@# split mu.cc into separate compilation units under .build/ to speed up recompiles
 	./cleave/cleave mu.cc .build
 	@# recursive (potentially parallel) make to pick up BUILD_SRC after cleave
-	@make .build/mu_bin
+	@${MAKE} .build/mu_bin
 	cp .build/mu_bin .
 
 BUILD_SRC=$(wildcard .build/*.cc)
@@ -43,17 +43,17 @@ mu.cc: [0-9]*.cc enumerate/enumerate tangle/tangle
 	./tangle/tangle $$(./enumerate/enumerate --until zzz |grep -v '.mu$$') > mu.cc
 
 enumerate/enumerate: enumerate/*.cc
-	cd enumerate && make
+	cd enumerate && ${MAKE}
 
 tangle/tangle: tangle/*.cc
-	cd tangle && make && ./tangle test
+	cd tangle && ${MAKE} && ./tangle test
 
 cleave/cleave: cleave/*.cc
-	cd cleave && make
+	cd cleave && ${MAKE}
 	rm -rf .build
 
 termbox/libtermbox.a: termbox/*.c termbox/*.h termbox/*.inl
-	cd termbox && make
+	cd termbox && ${MAKE}
 
 # auto-generated files; by convention they end in '_list'.
 
@@ -76,10 +76,10 @@ test_list: mu.cc
 
 clena: clean
 clean: clean1
-	cd enumerate && make clean
-	cd tangle && make clean
-	cd cleave && make clean
-	cd termbox && make clean
+	cd enumerate && ${MAKE} clean
+	cd tangle && ${MAKE} clean
+	cd cleave && ${MAKE} clean
+	cd termbox && ${MAKE} clean
 
 clean1:
 	rm -rf mu.cc core.mu mu_bin* *_list .build
