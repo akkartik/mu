@@ -10,12 +10,12 @@ scenario editor-inserts-two-spaces-on-tab [
   # just one character in final line
   s:text <- new [ab
 cd]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   assume-console [
     press tab
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -42,7 +42,7 @@ after <handle-special-character> [
 scenario editor-handles-backspace-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -50,7 +50,7 @@ scenario editor-handles-backspace-key [
     press backspace
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -222,13 +222,13 @@ scenario editor-clears-last-line-on-backspace [
   # just one character in final line
   s:text <- new [ab
 cd]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
     press backspace
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -250,7 +250,7 @@ scenario editor-joins-and-wraps-lines-on-backspace [
   # initialize editor with two long-ish but non-wrapping lines
   s:text <- new [abc def
 ghi jkl]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position the cursor at the start of the second and hit backspace
@@ -259,7 +259,7 @@ ghi jkl]
     press backspace
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # resulting single line should wrap correctly
   screen-should-contain [
@@ -275,7 +275,7 @@ scenario editor-wraps-long-lines-on-backspace [
   local-scope
   assume-screen 10/width, 5/height
   # initialize editor in part of the screen with a long line
-  e:&:editor <- new-editor [abc def ghij], screen:&:screen, 0/left, 8/right
+  e:&:editor <- new-editor [abc def ghij], screen, 0/left, 8/right
   editor-render screen, e
   # confirm that it wraps
   screen-should-contain [
@@ -291,7 +291,7 @@ scenario editor-wraps-long-lines-on-backspace [
     press backspace
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # resulting single line should wrap correctly and not overflow its bounds
   screen-should-contain [
@@ -308,14 +308,14 @@ scenario editor-wraps-long-lines-on-backspace [
 scenario editor-handles-delete-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
     press delete
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -329,7 +329,7 @@ scenario editor-handles-delete-key [
     press delete
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -397,7 +397,7 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> editor:&:editor, screen
 scenario editor-moves-cursor-right-with-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -405,7 +405,7 @@ scenario editor-moves-cursor-right-with-key [
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -496,7 +496,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # type right-arrow a few times to get to start of second line
@@ -507,7 +507,7 @@ d]
     press right-arrow  # next line
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   check-trace-count-for-label 0, [print-character]
   # type something and ensure it goes where it should
@@ -515,7 +515,7 @@ d]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -532,7 +532,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 1/left, 10/right
+  e:&:editor <- new-editor s, screen, 1/left, 10/right
   editor-render screen, e
   assume-console [
     press right-arrow
@@ -542,7 +542,7 @@ d]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -556,7 +556,7 @@ d]
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcdef], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcdef], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -564,7 +564,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -586,7 +586,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   local-scope
   assume-screen 10/width, 5/height
   # line just barely wrapping
-  e:&:editor <- new-editor [abcde], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcde], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   # position cursor at last character before wrap and hit right-arrow
@@ -595,7 +595,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -608,7 +608,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -622,7 +622,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcdef], screen:&:screen, 1/left, 6/right
+  e:&:editor <- new-editor [abcdef], screen, 1/left, 6/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -630,7 +630,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -653,7 +653,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # move to end of line, press right-arrow, type a character
@@ -663,7 +663,7 @@ d]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # new character should be in next line
   screen-should-contain [
@@ -683,7 +683,7 @@ d]
 scenario editor-moves-cursor-left-with-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -692,7 +692,7 @@ scenario editor-moves-cursor-left-with-key [
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -728,7 +728,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
   # initialize editor with two lines
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor at start of second line (so there's no previous newline)
@@ -737,7 +737,7 @@ d]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -755,7 +755,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2
   s:text <- new [abc
 def
 g]
-  e:&:editor <- new-editor s:text, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s:text, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor further down (so there's a newline before the character at
@@ -766,7 +766,7 @@ g]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -784,7 +784,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3
   s:text <- new [abc
 def
 g]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor at start of text, press left-arrow, then type a character
@@ -794,7 +794,7 @@ g]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # left-arrow should have had no effect
   screen-should-contain [
@@ -814,7 +814,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4
   s:text <- new [abc
 
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e:&:editor
   $clear-trace
   # position cursor right after empty line
@@ -824,7 +824,7 @@ d]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -840,7 +840,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   local-scope
   assume-screen 10/width, 5/height
   # initialize editor with a wrapping line
-  e:&:editor <- new-editor [abcdef], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcdef], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -856,7 +856,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -873,7 +873,7 @@ scenario editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
   # initialize editor with a wrapping line followed by a second line
   s:text <- new [abcdef
 g]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -889,7 +889,7 @@ g]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -906,7 +906,7 @@ scenario editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
   # initialize editor with a line on the verge of wrapping, followed by a second line
   s:text <- new [abcd
 e]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -922,7 +922,7 @@ e]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -942,7 +942,7 @@ scenario editor-moves-to-previous-line-with-up-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -950,7 +950,7 @@ def]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -963,7 +963,7 @@ def]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1059,7 +1059,7 @@ scenario editor-adjusts-column-at-previous-line [
   assume-screen 10/width, 5/height
   s:text <- new [ab
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1067,7 +1067,7 @@ def]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1080,7 +1080,7 @@ def]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1096,7 +1096,7 @@ scenario editor-adjusts-column-at-empty-line [
   assume-screen 10/width, 5/height
   s:text <- new [
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1104,7 +1104,7 @@ def]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1117,7 +1117,7 @@ def]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1135,7 +1135,7 @@ scenario editor-moves-to-previous-line-from-left-margin [
   s:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # click on the third line and hit up-arrow, so you end up just after a newline
@@ -1144,7 +1144,7 @@ ghi]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1157,7 +1157,7 @@ ghi]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1175,7 +1175,7 @@ scenario editor-moves-to-next-line-with-down-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # cursor starts out at (1, 0)
@@ -1183,7 +1183,7 @@ def]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1197,7 +1197,7 @@ def]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1281,7 +1281,7 @@ scenario editor-adjusts-column-at-next-line [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 de]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1289,7 +1289,7 @@ de]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1302,7 +1302,7 @@ de]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -1320,7 +1320,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line, press ctrl-a
@@ -1329,7 +1329,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
     press ctrl-a
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -1396,7 +1396,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line (no newline before), press ctrl-a
@@ -1405,7 +1405,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
     press ctrl-a
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -1422,7 +1422,7 @@ scenario editor-moves-to-start-of-line-with-home [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   $clear-trace
   # start on second line, press 'home'
   assume-console [
@@ -1430,7 +1430,7 @@ scenario editor-moves-to-start-of-line-with-home [
     press home
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1447,7 +1447,7 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line (no newline before), press 'home'
@@ -1456,7 +1456,7 @@ scenario editor-moves-to-start-of-line-with-home-2 [
     press home
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1475,7 +1475,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line, press ctrl-e
@@ -1484,7 +1484,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
     press ctrl-e
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -1499,7 +1499,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
     type [z]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -1568,7 +1568,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line (no newline after), press ctrl-e
@@ -1577,7 +1577,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
     press ctrl-e
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     4:num/raw <- get *e, cursor-row:offset
     5:num/raw <- get *e, cursor-column:offset
   ]
@@ -1594,7 +1594,7 @@ scenario editor-moves-to-end-of-line-with-end [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line, press 'end'
@@ -1603,7 +1603,7 @@ scenario editor-moves-to-end-of-line-with-end [
     press end
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1620,7 +1620,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line (no newline after), press 'end'
@@ -1629,7 +1629,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
     press end
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1648,14 +1648,14 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to start of line
   screen-should-contain [
@@ -1712,14 +1712,14 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to start of line
   screen-should-contain [
@@ -1736,14 +1736,14 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to start of line
   screen-should-contain [
@@ -1760,14 +1760,14 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start past end of final line, press ctrl-u
   assume-console [
     left-click 2, 3
     press ctrl-u
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to start of line
   screen-should-contain [
@@ -1786,14 +1786,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to end of line
   screen-should-contain [
@@ -1842,14 +1842,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes to end of line
   screen-should-contain [
@@ -1866,14 +1866,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start at end of line
   assume-console [
     left-click 1, 2
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes just last character
   screen-should-contain [
@@ -1890,14 +1890,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start past end of line
   assume-console [
     left-click 1, 3
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes nothing
   screen-should-contain [
@@ -1914,14 +1914,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start at end of text
   assume-console [
     left-click 2, 2
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes just the final character
   screen-should-contain [
@@ -1938,14 +1938,14 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # start past end of text
   assume-console [
     left-click 2, 3
     press ctrl-k
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # cursor deletes nothing
   screen-should-contain [
@@ -1968,7 +1968,7 @@ scenario editor-can-scroll-down-using-arrow-keys [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -1981,7 +1981,7 @@ d]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen slides by one line
   screen-should-contain [
@@ -2047,7 +2047,7 @@ scenario editor-scrolls-down-past-wrapped-line-using-arrow-keys [
 g
 h
 i]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2060,7 +2060,7 @@ i]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2080,14 +2080,14 @@ scenario editor-scrolls-down-past-wrapped-line-using-arrow-keys-2 [
 k
 l
 m]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at last line, then try to move further down
   assume-console [
     left-click 3, 0
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line containing a wrap icon
   screen-should-contain [
@@ -2101,7 +2101,7 @@ m]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2120,14 +2120,14 @@ scenario editor-scrolls-down-when-line-wraps [
   s:text <- new [a
 b
 cdef]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at end, type a character
   assume-console [
     left-click 3, 4
     type [g]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2151,14 +2151,14 @@ scenario editor-scrolls-down-on-newline [
   s:text <- new [a
 b
 c]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   assume-console [
     left-click 3, 4
     type [
 ]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2183,14 +2183,14 @@ scenario editor-scrolls-down-on-right-arrow [
   s:text <- new [a
 b
 cdefgh]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2216,14 +2216,14 @@ scenario editor-scrolls-down-on-right-arrow-2 [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at end of screen and try to move right
   assume-console [
     left-click 3, 3
     press right-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2245,7 +2245,7 @@ scenario editor-scrolls-at-end-on-down-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 de]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # try to move down past end of text
@@ -2254,7 +2254,7 @@ de]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2267,7 +2267,7 @@ de]
     type [0]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2282,7 +2282,7 @@ de]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2296,7 +2296,7 @@ de]
     type [1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2318,7 +2318,7 @@ d
 e
 f
 g]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # scroll down one page and one line
   assume-console [
     press page-down
@@ -2326,7 +2326,7 @@ g]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen scrolls down 3 lines
   screen-should-contain [
@@ -2348,7 +2348,7 @@ scenario editor-can-scroll-up-using-arrow-keys [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2361,7 +2361,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen slides by one line
   screen-should-contain [
@@ -2437,7 +2437,7 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys [
 g
 h
 i]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   screen-should-contain [
     .          .
     .abcd↩     .
@@ -2449,7 +2449,7 @@ i]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2462,7 +2462,7 @@ i]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2482,13 +2482,13 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-2 [
 k
 l
 m]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2502,7 +2502,7 @@ m]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2517,7 +2517,7 @@ m]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2532,7 +2532,7 @@ m]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2556,7 +2556,7 @@ scenario editor-scrolls-up-past-wrapped-line-using-arrow-keys-3 [
 g
 h
 i]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 6/right
+  e:&:editor <- new-editor s, screen, 0/left, 6/right
   screen-should-contain [
     .          .
     .abcde↩    .
@@ -2568,7 +2568,7 @@ i]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2581,7 +2581,7 @@ i]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows partial wrapped line
   screen-should-contain [
@@ -2603,12 +2603,12 @@ b
 c
 d
 e]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 6/right
+  e:&:editor <- new-editor s, screen, 0/left, 6/right
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2620,7 +2620,7 @@ e]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2632,7 +2632,7 @@ e]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -2652,13 +2652,13 @@ b
 c
 d
 e]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   # position cursor at top of second page
   assume-console [
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .     .
@@ -2671,7 +2671,7 @@ e]
     press left-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -2697,7 +2697,7 @@ scenario editor-can-scroll-up-to-start-of-file [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2712,7 +2712,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen slides by one line
   screen-should-contain [
@@ -2726,7 +2726,7 @@ d]
     press up-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen remains unchanged
   screen-should-contain [
@@ -2746,7 +2746,7 @@ scenario editor-can-scroll [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2758,7 +2758,7 @@ d]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows next page
   screen-should-contain [
@@ -2832,7 +2832,7 @@ scenario editor-does-not-scroll-past-end [
   assume-screen 10/width, 4/height
   s:text <- new [a
 b]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   screen-should-contain [
     .          .
@@ -2845,7 +2845,7 @@ b]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen remains unmodified
   screen-should-contain [
@@ -2865,7 +2865,7 @@ scenario editor-starts-next-page-at-start-of-wrapped-line [
 b
 cdefgh]
   # editor screen triggers wrap of last line
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -2878,7 +2878,7 @@ cdefgh]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows entire wrapped line
   screen-should-contain [
@@ -2897,7 +2897,7 @@ scenario editor-starts-next-page-at-start-of-wrapped-line-2 [
   # and still has something left over
   s:text <- new [a
 bcdefgh]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -2910,7 +2910,7 @@ bcdefgh]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows entire wrapped line
   screen-should-contain [
@@ -2930,7 +2930,7 @@ scenario editor-can-scroll-up [
 b
 c
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -2942,7 +2942,7 @@ d]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows next page
   screen-should-contain [
@@ -2956,7 +2956,7 @@ d]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows original page again
   screen-should-contain [
@@ -3031,7 +3031,7 @@ e
 f
 g
 h]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   screen-should-contain [
     .          .
     .a         .
@@ -3044,7 +3044,7 @@ h]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows third page
   screen-should-contain [
@@ -3058,7 +3058,7 @@ h]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows second page
   screen-should-contain [
@@ -3072,7 +3072,7 @@ h]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows original page again
   screen-should-contain [
@@ -3099,7 +3099,7 @@ m
 n
 o]
   # editor screen triggers wrap of last line
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -3116,7 +3116,7 @@ o]
     press down-arrow
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows entire wrapped line
   screen-should-contain [
@@ -3132,7 +3132,7 @@ o]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen resets
   screen-should-contain [
@@ -3153,7 +3153,7 @@ scenario editor-can-scroll-up-wrapped-lines-2 [
   # and still has something left over
   s:text <- new [a
 bcdefgh]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   # some part of last line is not displayed
   screen-should-contain [
     .          .
@@ -3166,7 +3166,7 @@ bcdefgh]
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen shows entire wrapped line
   screen-should-contain [
@@ -3180,7 +3180,7 @@ bcdefgh]
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # screen resets
   screen-should-contain [
@@ -3204,7 +3204,7 @@ fxx
 gxx
 hxx
 ]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   screen-should-contain [
     .          .
     .axx       .
@@ -3215,7 +3215,7 @@ hxx
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -3227,7 +3227,7 @@ hxx
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -3240,7 +3240,7 @@ hxx
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -3263,7 +3263,7 @@ exy
 fxy
 gxy
 ]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 4/right
+  e:&:editor <- new-editor s, screen, 0/left, 4/right
   screen-should-contain [
     .          .
     .axy       .
@@ -3274,7 +3274,7 @@ gxy
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -3286,7 +3286,7 @@ gxy
     press page-down
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -3299,7 +3299,7 @@ gxy
     press page-up
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .

@@ -7,10 +7,10 @@ scenario read-key-in-mu [
     type [abc]
   ]
   run [
-    1:char, console:&:console, 2:bool <- read-key console:&:console
-    3:char, console:&:console, 4:bool <- read-key console:&:console
-    5:char, console:&:console, 6:bool <- read-key console:&:console
-    7:char, console:&:console, 8:bool <- read-key console:&:console
+    1:char, console, 2:bool <- read-key console
+    3:char, console, 4:bool <- read-key console
+    5:char, console, 6:bool <- read-key console
+    7:char, console, 8:bool <- read-key console
   ]
   memory-should-contain [
     1 <- 97  # 'a'

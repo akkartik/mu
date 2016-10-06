@@ -33,13 +33,13 @@ scenario run-and-show-results [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
   # sandbox editor contains an instruction without storing outputs
-  env:&:environment <- new-programming-environment screen:&:screen, [divide-with-remainder 11, 3]
+  env:&:environment <- new-programming-environment screen, [divide-with-remainder 11, 3]
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # check that screen prints the results
   screen-should-contain [
@@ -82,7 +82,7 @@ scenario run-and-show-results [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # check that screen prints both sandboxes
   screen-should-contain [
@@ -512,12 +512,12 @@ z:num <- add 2, 2
 reply z
 ]]
   # sandbox editor contains an instruction without storing outputs
-  env:&:environment <- new-programming-environment screen:&:screen, [foo]
+  env:&:environment <- new-programming-environment screen, [foo]
   # run the code in the editors
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env, recipes
+  event-loop screen, console, env, recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -539,7 +539,7 @@ return z
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env, recipes
+    event-loop screen, console, env, recipes
   ]
   # check that screen updates the result on the right
   screen-should-contain [
@@ -559,13 +559,13 @@ scenario run-instruction-manages-screen-per-sandbox [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # editor contains an instruction
-  env:&:environment <- new-programming-environment screen:&:screen, [print-integer screen, 4]
+  env:&:environment <- new-programming-environment screen, [print-integer screen, 4]
   # run the code in the editor
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # check that it prints a little toy screen
   screen-should-contain [
@@ -607,13 +607,13 @@ def editor-contents editor:&:editor -> result:text [
 scenario editor-provides-edited-contents [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     s:text <- editor-contents e
     1:@:char/raw <- copy *s
   ]
@@ -629,13 +629,13 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize
-  env:&:environment <- new-programming-environment screen:&:screen, [add 2, 2]
+  env:&:environment <- new-programming-environment screen, [add 2, 2]
   render-all screen, env, render
   assume-console [
     # create a sandbox
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -651,9 +651,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -671,9 +671,9 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press page-up
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   # sandbox editor displays again
   screen-should-contain [
@@ -765,7 +765,7 @@ scenario scrolling-through-multiple-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen:&:screen, []
+  env:&:environment <- new-programming-environment screen, []
   render-all screen, env, render
   # create 2 sandboxes
   assume-console [
@@ -775,9 +775,9 @@ scenario scrolling-through-multiple-sandboxes [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   cursor:char <- copy 9251/␣
-  print screen:&:screen, cursor
+  print screen, cursor
   screen-should-contain [
     .                               run (F4)           .
     .␣                                                 .
@@ -797,9 +797,9 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -821,7 +821,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # just second sandbox displayed
   screen-should-contain [
@@ -838,7 +838,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # no change
   screen-should-contain [
@@ -855,7 +855,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # back to displaying both sandboxes without editor
   screen-should-contain [
@@ -876,9 +876,9 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
@@ -900,9 +900,9 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   # no change
   screen-should-contain [
@@ -926,7 +926,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen:&:screen, []
+  env:&:environment <- new-programming-environment screen, []
   render-all screen, env, render
   # create a sandbox
   assume-console [
@@ -934,7 +934,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -950,7 +950,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -968,7 +968,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-up
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
@@ -986,7 +986,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox

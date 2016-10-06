@@ -5,11 +5,11 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # run something
-  env:&:environment <- new-programming-environment screen:&:screen, [add 2, 2]
+  env:&:environment <- new-programming-environment screen, [add 2, 2]
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -25,7 +25,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     left-click 3, 4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # it pops back into editor
   screen-should-contain [
@@ -39,7 +39,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -105,12 +105,12 @@ scenario sandbox-with-print-can-be-edited [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # run a print instruction
-  env:&:environment <- new-programming-environment screen:&:screen, [print-integer screen, 4]
+  env:&:environment <- new-programming-environment screen, [print-integer screen, 4]
   # run the sandbox
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -131,7 +131,7 @@ scenario sandbox-with-print-can-be-edited [
     left-click 3, 18
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -147,7 +147,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen:&:screen, []
+  env:&:environment <- new-programming-environment screen, []
   render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -159,7 +159,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     press page-down
     press page-down
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
@@ -174,7 +174,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     left-click 2, 10
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -194,7 +194,7 @@ scenario editing-sandbox-updates-sandbox-count [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen:&:screen, []
+  env:&:environment <- new-programming-environment screen, []
   render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -204,7 +204,7 @@ scenario editing-sandbox-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -221,7 +221,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # no change in contents
   screen-should-contain [
@@ -241,7 +241,7 @@ scenario editing-sandbox-updates-sandbox-count [
     press page-down
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # screen should show just final sandbox
   screen-should-contain [

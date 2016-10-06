@@ -15,10 +15,10 @@ scenario keyboard-in-scenario [
     type [abc]
   ]
   run [
-    1:char, console:&:console, 2:bool <- read-key console:&:console
-    3:char, console:&:console, 4:bool <- read-key console:&:console
-    5:char, console:&:console, 6:bool <- read-key console:&:console
-    7:char, console:&:console, 8:bool, 9:bool <- read-key console:&:console
+    1:char, console, 2:bool <- read-key console
+    3:char, console, 4:bool <- read-key console
+    5:char, console, 6:bool <- read-key console
+    7:char, console, 8:bool, 9:bool <- read-key console
   ]
   memory-should-contain [
     1 <- 97  # 'a'
@@ -187,6 +187,23 @@ void initialize_key_names() {
   Key["escape"] = TB_KEY_ESC;
 }
 
+:(after "Begin transform_names Ingredient Special-cases(ingredient, inst, caller)")
+if (is_scenario(caller))
+  initialize_special_name(ingredient);
+:(after "Begin transform_names Product Special-cases(product, inst, caller)")
+if (is_scenario(caller))
+  initialize_special_name(product);
+:(code)
+bool is_scenario(const recipe& caller) {
+  return starts_with(caller.name, "scenario_");
+}
+void initialize_special_name(reagent& r) {
+  if (r.type) return;
+  // no need for screen
+  if (r.name == "console") r.type = new_type_tree("address:console");
+  // End Initialize Type Of Special Name In Scenario(r)
+}
+
 :(scenario events_in_scenario)
 scenario events-in-scenario [
   assume-console [
@@ -197,15 +214,15 @@ scenario events-in-scenario [
   ]
   run [
     # 3 keyboard events; each event occupies 4 locations
-    1:event <- read-event console:&:console
-    5:event <- read-event console:&:console
-    9:event <- read-event console:&:console
+    1:event <- read-event console
+    5:event <- read-event console
+    9:event <- read-event console
     # mouse click
-    13:event <- read-event console:&:console
+    13:event <- read-event console
     # non-character keycode
-    17:event <- read-event console:&:console
+    17:event <- read-event console
     # final keyboard event
-    21:event <- read-event console:&:console
+    21:event <- read-event console
   ]
   memory-should-contain [
     1 <- 0  # 'text'

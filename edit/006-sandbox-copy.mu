@@ -10,12 +10,12 @@ scenario copy-a-sandbox-to-editor [
 recipe foo [
   reply 4
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -31,7 +31,7 @@ recipe foo [
     left-click 3, 69
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -49,7 +49,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -72,12 +72,12 @@ scenario copy-a-sandbox-to-editor-2 [
 recipe foo [
   reply 4
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -93,7 +93,7 @@ recipe foo [
     left-click 3, 84
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # it copies into editor
   screen-should-contain [
@@ -111,7 +111,7 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
@@ -229,12 +229,12 @@ scenario copy-fails-if-sandbox-editor-not-empty [
 recipe foo [
   reply 4
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -252,7 +252,7 @@ recipe foo [
     left-click 3, 70  # click 'copy' button
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # copy doesn't happen
   screen-should-contain [
@@ -270,7 +270,7 @@ recipe foo [
     type [1]
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .

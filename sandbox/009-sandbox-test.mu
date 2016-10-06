@@ -9,12 +9,12 @@ scenario sandbox-click-on-result-toggles-color-to-green [
 recipe foo [
   reply 4
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, [foo]
+  env:&:environment <- new-programming-environment screen, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env, recipes
+  event-loop screen, console, env, recipes
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -30,7 +30,7 @@ recipe foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env, recipes
+    event-loop screen, console, env, recipes
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -45,7 +45,7 @@ recipe foo [
   # cursor should remain unmoved
   run [
     cursor:char <- copy 9251/␣
-    print screen:&:screen, cursor
+    print screen, cursor
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -67,7 +67,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env, new-recipes
+    event-loop screen, console, env, new-recipes
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [

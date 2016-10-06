@@ -20,7 +20,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
     cursor-row:num <- get *editor, cursor-row:offset
     cursor-column:num <- get *editor, cursor-column:offset
     screen <- move-cursor screen, cursor-row, cursor-column
-    e:event, console:&:console, found?:bool, quit?:bool <- read-event console
+    e:event, console, found?:bool, quit?:bool <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
     trace 10, [app], [next-event]
@@ -283,11 +283,11 @@ def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:
 scenario editor-handles-empty-event-queue [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   assume-console []
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -300,14 +300,14 @@ scenario editor-handles-empty-event-queue [
 scenario editor-handles-mouse-clicks [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
     left-click 1, 1  # on the 'b'
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -327,13 +327,13 @@ scenario editor-handles-mouse-clicks [
 scenario editor-handles-mouse-clicks-outside-text [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   $clear-trace
   assume-console [
     left-click 1, 7  # last line, to the right of text
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -349,13 +349,13 @@ scenario editor-handles-mouse-clicks-outside-text-2 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   $clear-trace
   assume-console [
     left-click 1, 7  # interior line, to the right of text
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -371,13 +371,13 @@ scenario editor-handles-mouse-clicks-outside-text-3 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   $clear-trace
   assume-console [
     left-click 3, 7  # below text
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -392,7 +392,7 @@ scenario editor-handles-mouse-clicks-outside-column [
   local-scope
   assume-screen 10/width, 5/height
   # editor occupies only left half of screen
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -400,7 +400,7 @@ scenario editor-handles-mouse-clicks-outside-column [
     left-click 3, 8
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -420,7 +420,7 @@ scenario editor-handles-mouse-clicks-outside-column [
 scenario editor-handles-mouse-clicks-in-menu-area [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -428,7 +428,7 @@ scenario editor-handles-mouse-clicks-in-menu-area [
     left-click 0, 3
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -442,14 +442,14 @@ scenario editor-handles-mouse-clicks-in-menu-area [
 scenario editor-inserts-characters-into-empty-editor [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [], screen, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
     type [abc]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -463,7 +463,7 @@ scenario editor-inserts-characters-into-empty-editor [
 scenario editor-inserts-characters-at-cursor [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # type two letters at different places
@@ -473,7 +473,7 @@ scenario editor-inserts-characters-at-cursor [
     type [d]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -487,7 +487,7 @@ scenario editor-inserts-characters-at-cursor [
 scenario editor-inserts-characters-at-cursor-2 [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -495,7 +495,7 @@ scenario editor-inserts-characters-at-cursor-2 [
     type [d]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -511,7 +511,7 @@ scenario editor-inserts-characters-at-cursor-5 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -519,7 +519,7 @@ d]
     type [e]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -534,7 +534,7 @@ d]
 scenario editor-inserts-characters-at-cursor-3 [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -542,7 +542,7 @@ scenario editor-inserts-characters-at-cursor-3 [
     type [d]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -558,7 +558,7 @@ scenario editor-inserts-characters-at-cursor-4 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -566,7 +566,7 @@ d]
     type [e]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -583,7 +583,7 @@ scenario editor-inserts-characters-at-cursor-6 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -591,7 +591,7 @@ d]
     type [ef]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -606,13 +606,13 @@ d]
 scenario editor-moves-cursor-after-inserting-characters [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [ab], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [ab], screen, 0/left, 5/right
   editor-render screen, e
   assume-console [
     type [01]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -627,14 +627,14 @@ scenario editor-moves-cursor-after-inserting-characters [
 scenario editor-wraps-line-on-insert [
   local-scope
   assume-screen 5/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 5/right
   editor-render screen, e
   # type a letter
   assume-console [
     type [e]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # no wrap yet
   screen-should-contain [
@@ -649,7 +649,7 @@ scenario editor-wraps-line-on-insert [
     type [f]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # now wrap
   screen-should-contain [
@@ -667,7 +667,7 @@ scenario editor-wraps-line-on-insert-2 [
   assume-screen 10/width, 5/height
   s:text <- new [abcdefg
 defg]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor s, screen, 0/left, 5/right
   editor-render screen, e
   # type more text at the start
   assume-console [
@@ -675,7 +675,7 @@ defg]
     type [abc]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -748,13 +748,13 @@ after <insert-character-special-case> [
 scenario editor-wraps-cursor-after-inserting-characters-in-middle-of-line [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcde], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcde], screen, 0/left, 5/right
   assume-console [
     left-click 1, 3  # right before the wrap icon
     type [f]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -789,7 +789,7 @@ xyz]
     type [de]  # trigger wrap
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -803,13 +803,13 @@ xyz]
 scenario editor-wraps-cursor-to-left-margin [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcde], screen:&:screen, 2/left, 7/right
+  e:&:editor <- new-editor [abcde], screen, 2/left, 7/right
   assume-console [
     left-click 1, 5  # line is full; no wrap icon yet
     type [01]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -839,13 +839,13 @@ after <editor-initialization> [
 scenario editor-moves-cursor-down-after-inserting-newline [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
   assume-console [
     type [0
 1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -945,13 +945,13 @@ def line-indent curr:&:duplex-list:char, start:&:duplex-list:char -> result:num 
 scenario editor-moves-cursor-down-after-inserting-newline-2 [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen:&:screen, 1/left, 10/right
+  e:&:editor <- new-editor [abc], screen, 1/left, 10/right
   assume-console [
     type [0
 1]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
     .          .
@@ -965,7 +965,7 @@ scenario editor-moves-cursor-down-after-inserting-newline-2 [
 scenario editor-clears-previous-line-completely-after-inserting-newline [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcde], screen:&:screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcde], screen, 0/left, 5/right
   assume-console [
     press enter
   ]
@@ -977,7 +977,7 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .          .
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
   ]
   # line should be fully cleared
   screen-should-contain [
@@ -995,7 +995,7 @@ scenario editor-inserts-indent-after-newline [
   s:text <- new [ab
   cd
 ef]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # position cursor after 'cd' and hit 'newline'
   assume-console [
     left-click 2, 8
@@ -1003,7 +1003,7 @@ ef]
 ]
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -1020,7 +1020,7 @@ scenario editor-skips-indent-around-paste [
   s:text <- new [ab
   cd
 ef]
-  e:&:editor <- new-editor s, screen:&:screen, 0/left, 10/right
+  e:&:editor <- new-editor s, screen, 0/left, 10/right
   # position cursor after 'cd' and hit 'newline' surrounded by paste markers
   assume-console [
     left-click 2, 8
@@ -1029,7 +1029,7 @@ ef]
     press 65506  # end paste
   ]
   run [
-    editor-event-loop screen:&:screen, console:&:console, e
+    editor-event-loop screen, console, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]

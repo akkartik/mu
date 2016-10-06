@@ -122,12 +122,12 @@ scenario run-shows-errors-in-get [
 recipe foo [
   get 123:num, foo:offset
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -158,7 +158,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen:&:screen, [], []
+  env:&:environment <- new-programming-environment screen, [], []
   assume-console [
     left-click 3, 80
     # create invalid sandbox 1
@@ -169,7 +169,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # status line shows that error is in first sandbox
   screen-should-contain [
@@ -181,7 +181,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen:&:screen, [], []
+  env:&:environment <- new-programming-environment screen, [], []
   assume-console [
     left-click 3, 80
     # create invalid sandbox 2
@@ -195,7 +195,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # status line shows that error is in second sandbox
   screen-should-contain [
@@ -207,12 +207,12 @@ scenario run-hides-errors-from-past-sandboxes [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen:&:screen, [], [get foo, x:offset]  # invalid
+  env:&:environment <- new-programming-environment screen, [], [get foo, x:offset]  # invalid
   assume-console [
     press F4  # generate error
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   assume-console [
     left-click 3, 58
@@ -221,7 +221,7 @@ scenario run-hides-errors-from-past-sandboxes [
     press F4  # update sandbox
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # error should disappear
   screen-should-contain [
@@ -247,11 +247,11 @@ load-ingredients
 y:&:num <- copy 0
 z <- add x, y
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo 2]
+  env:&:environment <- new-programming-environment screen, recipes, [foo 2]
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
@@ -268,7 +268,7 @@ z <- add x, y
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # error should remain unchanged
   screen-should-contain [
@@ -294,12 +294,12 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   # call code that uses other variants of it, but not it itself
   sandbox:text <- new [x:&:list:num <- copy 0
 to-text x]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, sandbox
+  env:&:environment <- new-programming-environment screen, recipes, sandbox
   # run it once
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   # no errors anywhere on screen (can't check anything else, since to-text will return an address)
   screen-should-contain-in-color 1/red, [
     .                                                                                                    .
@@ -323,7 +323,7 @@ to-text x]
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # still no errors
   screen-should-contain-in-color 1/red, [
@@ -353,12 +353,12 @@ scenario run-shows-missing-type-errors [
 recipe foo [
   x <- copy 0
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -379,12 +379,12 @@ scenario run-shows-unbalanced-bracket-errors [
 recipe foo \\[
   x <- copy 0
 ]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -408,12 +408,12 @@ recipe foo [
   x:&:point <- new point:type
   get x:&:point, 1:offset
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -441,12 +441,12 @@ recipe foo [
   y:&:point <- new point:type
   get *y:&:point, x:num
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -474,11 +474,11 @@ recipe foo [
   local-scope
   x:num <- copy y:num
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
     .                                                  ┊foo                                              .
@@ -495,7 +495,7 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
@@ -516,13 +516,13 @@ scenario run-instruction-and-print-errors [
   assume-screen 100/width, 10/height
   # right editor contains an illegal instruction
   sandbox:text <- new [get 1234:num, foo:offset]
-  env:&:environment <- new-programming-environment screen:&:screen, [], sandbox
+  env:&:environment <- new-programming-environment screen, [], sandbox
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # check that screen prints error message in red
   screen-should-contain [
@@ -578,14 +578,14 @@ scenario run-instruction-and-print-errors-only-once [
   assume-screen 100/width, 10/height
   # right editor contains an illegal instruction
   sandbox:text <- new [get 1234:num, foo:offset]
-  env:&:environment <- new-programming-environment screen:&:screen, [], sandbox
+  env:&:environment <- new-programming-environment screen, [], sandbox
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -613,13 +613,13 @@ scenario sandbox-can-handle-infinite-loop [
   }
 ]]
   # right editor contains an instruction
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo]
+  env:&:environment <- new-programming-environment screen, recipes, [foo]
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
@@ -646,12 +646,12 @@ stash [dividing by], b
 _, c:num <- divide-with-remainder a, b
 reply b
 ]]
-  env:&:environment <- new-programming-environment screen:&:screen, recipes, [foo 4, 0]
+  env:&:environment <- new-programming-environment screen, recipes, [foo 4, 0]
   # run
   assume-console [
     press F4
   ]
-  event-loop screen:&:screen, console:&:console, env
+  event-loop screen, console, env
   # screen prints error message
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
@@ -669,7 +669,7 @@ reply b
     left-click 4, 55
   ]
   run [
-    event-loop screen:&:screen, console:&:console, env
+    event-loop screen, console, env
   ]
   # screen should expand trace
   screen-should-contain [
