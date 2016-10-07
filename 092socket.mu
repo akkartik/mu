@@ -27,8 +27,7 @@ def new-port-connection port:num, contents:text -> p:&:port-connection [
   local-scope
   load-ingredients
   p:&:port-connection <- new port-connection:type
-  *p <- put *p, port:offset, port
-  *p <- put *p, contents:offset, contents
+  *p <- merge port, contents
 ]
 
 def new-fake-network -> n:&:local-network [
