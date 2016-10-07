@@ -49,9 +49,9 @@ scenario write-to-fake-socket [
   tested-port-connections:&:@:port-connection <- get *single-port-network, data:offset
   tested-port-connection:port-connection <- index *tested-port-connections, 0
   contents:text <- get tested-port-connection, contents:offset
-  10:bool/raw <- equal contents, [x]
+  10:@:char/raw <- copy *contents
   memory-should-contain [
-    10 <- 1
+    10:array:character <- [x]
   ]
 ]
 
@@ -61,11 +61,10 @@ def start-writing-socket network:&:local-network, port:num -> sink:&:sink:char, 
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
     break-if network
-    socket:num <- $socket 8080/port
+    socket:num <- $socket port
     session:num <- $accept socket
     # TODO Create channel implementation of write-to-socket.
-    routine-id <- copy 0
-    return
+    return sink, 0/routine-id
   }
   # fake network
   routine-id <- start-running transmit-to-fake-socket network, port, source
