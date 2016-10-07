@@ -70,11 +70,6 @@ socket_t* server_socket(int portno) {
   return result;
 }
 
-:(code)
-void session_socket(int serverfd, socket_t* session) {
-  socklen_t dummy = sizeof(session->addr);
-  session->fd = accept(serverfd, (struct sockaddr*)&session->addr, &dummy);
-}
 :(before "End Primitive Recipe Declarations")
 _ACCEPT,
 :(before "End Primitive Recipe Numbers")
@@ -110,6 +105,11 @@ case _ACCEPT: {
   products.at(0).push_back(static_cast<double>(result));
   products.at(1).push_back(ingredients.at(0).at(0));
   break;
+}
+:(code)
+void session_socket(int serverfd, socket_t* session) {
+  socklen_t dummy = sizeof(session->addr);
+  session->fd = accept(serverfd, (struct sockaddr*)&session->addr, &dummy);
 }
 
 :(before "End Primitive Recipe Declarations")
