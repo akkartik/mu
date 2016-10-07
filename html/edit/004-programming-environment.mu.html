@@ -332,7 +332,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
   <span class="Comment"># focus on both sides</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
@@ -340,7 +340,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># check cursor column in each</span>
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     recipes:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
     <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *recipes, <span class="Constant">cursor-column:offset</span>
     sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
@@ -357,7 +357,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
   render-all screen, env, render
   <span class="Comment"># type one letter in each of them</span>
   assume-console [
@@ -367,7 +367,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     recipes:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
     <span class="Constant">5</span>:num/<span class="Special">raw &lt;- </span>get *recipes, <span class="Constant">cursor-column:offset</span>
     sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
@@ -386,7 +386,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># show the cursor at the right window</span>
   run [
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
@@ -401,7 +401,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">60/width</span>, <span class="Constant">10/height</span>
   run [
-    env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+    env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
     render-all screen, env, render
   ]
   <span class="Comment"># divider isn't messed up</span>
@@ -418,14 +418,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
   render-all screen, env, render
   <span class="Comment"># initialize programming environment and highlight cursor</span>
   assume-console <span class="Constant">[]</span>
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># is cursor at the right place?</span>
   screen-should-contain [
@@ -439,9 +439,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[z]</span>
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># cursor should still be right</span>
   screen-should-contain [
@@ -459,7 +459,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># initialize sandbox side with two lines</span>
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, s:text
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, s:text
   render-all screen, env, render
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
@@ -474,9 +474,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press backspace
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># cursor moves to end of old line</span>
   screen-should-contain [

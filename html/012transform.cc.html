@@ -32,6 +32,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="Comment">//: Phase 2: Filter loaded recipes through an extensible list of 'transforms'.</span>
 <span class="Comment">//:</span>
+<span class="Comment">//:   The process of running mu code:</span>
+<span class="Comment">//:     load -&gt; transform -&gt; run</span>
+<span class="Comment">//:</span>
 <span class="Comment">//: The hope is that this framework of transform tools will provide a</span>
 <span class="Comment">//: deconstructed alternative to conventional compilers.</span>
 <span class="Comment">//:</span>
@@ -56,7 +59,10 @@ transformed_until = -<span class="Constant">1</span><span class="Delimiter">;</s
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 vector&lt;transform_fn&gt; Transform<span class="Delimiter">;</span>
 
-<span class="Delimiter">:(after &quot;int main&quot;)</span>
+<span class="Delimiter">:(before &quot;End One-time Setup&quot;)</span>
+initialize_transforms<span class="Delimiter">();</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> initialize_transforms<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Comment">// Begin Transforms</span>
     <span class="Comment">// Begin Instruction Inserting/Deleting Transforms</span>
     <span class="Comment">// End Instruction Inserting/Deleting Transforms</span>
@@ -67,8 +73,8 @@ vector&lt;transform_fn&gt; Transform<span class="Delimiter">;</span>
 
   <span class="Comment">// Begin Checks</span>
   <span class="Comment">// End Checks</span>
+<span class="Delimiter">}</span>
 
-<span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> transform_all<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;=== transform_all()&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;=== transform_all\n&quot;;</span>
@@ -76,7 +82,6 @@ vector&lt;transform_fn&gt; Transform<span class="Delimiter">;</span>
 <span class="CommentedCode">//?     cerr &lt;&lt; &quot;transform &quot; &lt;&lt; t &lt;&lt; '\n';</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != Recipe<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       recipe&amp; r = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>transformed_until != t-<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Comment">// End Transform Checks</span>
       <span class="Delimiter">(</span>*Transform<span class="Delimiter">.</span>at<span class="Delimiter">(</span>t<span class="Delimiter">))(</span><span class="Comment">/*</span><span class="Comment">recipe_ordinal</span><span class="Comment">*/</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">);</span>

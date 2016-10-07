@@ -35,6 +35,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment">//: Phase 1 of running mu code: load it from a textual representation.</span>
+<span class="Comment">//:</span>
+<span class="Comment">//: The process of running mu code:</span>
+<span class="Comment">//:   load -&gt; transform -&gt; run</span>
 
 <span class="Delimiter">:(scenarios load)</span>  <span class="Comment">// use 'load' instead of 'run' in all scenarios in this layer</span>
 <span class="Delimiter">:(scenario first_recipe)</span>
@@ -188,7 +191,15 @@ string next_word<span class="Delimiter">(</span>istream&amp; in<span class="Deli
   ostringstream out<span class="Delimiter">;</span>
   slurp_word<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
   skip_whitespace_and_comments_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+  string result = out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result != <span class="Constant">&quot;[&quot;</span> &amp;&amp; ends_with<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">'['</span><span class="Delimiter">))</span>
+    raise &lt;&lt; <span class="Constant">&quot;insert a space before '[' in '&quot;</span> &lt;&lt; result &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Normal">bool</span> ends_with<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">char</span> c<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> *s<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == c<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -238,30 +249,6 @@ string next_word<span class="Delimiter">(</span>istream&amp; in<span class="Deli
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
     <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: Warn if a recipe gets redefined, because large codebases can accidentally</span>
-<span class="Comment">//: step on their own toes. But there'll be many occasions later where</span>
-<span class="Comment">//: we'll want to disable the errors.</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">bool</span> Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> should_check_for_redefine<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Disable_redefine_checks<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">// for debugging</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  cerr &lt;&lt; <span class="Constant">'^'</span><span class="Delimiter">;</span>
-  <span class="Normal">char</span> c<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span>
-    cerr &lt;&lt; c<span class="Delimiter">;</span>
-  cerr &lt;&lt; <span class="Constant">&quot;$</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-  exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario recipe_instead_of_def)</span>
@@ -389,6 +376,26 @@ Disable_redefine_checks = <span class="Constant">false</span><span class="Delimi
   cerr &lt;&lt; <span class="Constant">&quot;.&quot;</span><span class="Delimiter">;</span>  <span class="Comment">// termination = success</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(scenario warn_on_missing_space_before_bracket)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main[
+  <span class="Constant">1</span>:number<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+]
+<span class="traceContains">+error: insert a space before '[' in 'main['</span>
+
+<span class="Comment">//: Warn if a recipe gets redefined, because large codebases can accidentally</span>
+<span class="Comment">//: step on their own toes. But there'll be many occasions later where</span>
+<span class="Comment">//: we'll want to disable the errors.</span>
+<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span class="Normal">bool</span> Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+Disable_redefine_checks = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> should_check_for_redefine<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>Disable_redefine_checks<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
 <span class="Delimiter">:(scenario forbid_redefining_recipes)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="muRecipe">def</span> main [
@@ -408,6 +415,17 @@ Disable_redefine_checks = <span class="Constant">false</span><span class="Delimi
 ]
 <span class="traceAbsent">-error: redefining recipe main</span>
 $error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Comment">// for debugging</span>
+<span class="Normal">void</span> show_rest_of_stream<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  cerr &lt;&lt; <span class="Constant">'^'</span><span class="Delimiter">;</span>
+  <span class="Normal">char</span> c<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>in &gt;&gt; c<span class="Delimiter">)</span>
+    cerr &lt;&lt; c<span class="Delimiter">;</span>
+  cerr &lt;&lt; <span class="Constant">&quot;$</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+  exit<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

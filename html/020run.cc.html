@@ -39,6 +39,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="Comment">//: Phase 3: Start running a loaded and transformed recipe.</span>
 <span class="Comment">//:</span>
+<span class="Comment">//:   The process of running mu code:</span>
+<span class="Comment">//:     load -&gt; transform -&gt; run</span>
+<span class="Comment">//:</span>
 <span class="Comment">//: So far we've seen recipes as lists of instructions, and instructions point</span>
 <span class="Comment">//: at other recipes. To kick things off mu needs to know how to run certain</span>
 <span class="Comment">//: 'primitive' recipes. That will then give the ability to run recipes</span>
@@ -196,9 +199,11 @@ load_file_or_directory<span class="Delimiter">(</span><span class="Constant">&qu
   <span class="Comment">// skip argv[0]</span>
   ++argv<span class="Delimiter">;</span>
   --argc<span class="Delimiter">;</span>
-  <span class="Comment">// ignore argv past '--'; that's commandline args for 'main'</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>argc &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Comment">// ignore argv past '--'; that's commandline args for 'main'</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>string<span class="Delimiter">(</span>*argv<span class="Delimiter">)</span> == <span class="Constant">&quot;--&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>starts_with<span class="Delimiter">(</span>*argv<span class="Delimiter">,</span> <span class="Constant">&quot;--&quot;</span><span class="Delimiter">))</span>
+      cerr &lt;&lt; <span class="Constant">&quot;treating &quot;</span> &lt;&lt; *argv &lt;&lt; <span class="Constant">&quot; as a file rather than an option</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
     load_file_or_directory<span class="Delimiter">(</span>*argv<span class="Delimiter">);</span>
     --argc<span class="Delimiter">;</span>
     ++argv<span class="Delimiter">;</span>

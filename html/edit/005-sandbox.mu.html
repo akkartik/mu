@@ -82,13 +82,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe editor is empty</span>
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[divide-with-remainder 11, 3]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[divide-with-remainder 11, 3]</span>
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># check that screen prints the results</span>
   screen-should-contain [
@@ -138,7 +138,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># check that screen prints both sandboxes</span>
   screen-should-contain [
@@ -561,12 +561,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">reply z</span>
 <span class="Constant">]</span>]
   <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, env
+  event-loop screen, console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -586,7 +586,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># check that screen updates the result on the right</span>
   screen-should-contain [
@@ -608,13 +608,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
   <span class="Comment"># right editor contains an instruction</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[print-integer screen, 4]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[print-integer screen, 4]</span>
   <span class="Comment"># run the code in the editor</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># check that it prints a little toy screen</span>
   screen-should-contain [
@@ -656,13 +656,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> editor-provides-edited-contents [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[abc]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     type <span class="Constant">[def]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     s:text<span class="Special"> &lt;- </span>editor-contents e
     <span class="Constant">1</span>:@:char/<span class="Special">raw &lt;- </span>copy *s
   ]
@@ -677,13 +677,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     press enter
     press down-arrow
   ]
-  event-loop screen, console:&amp;:console, env
+  event-loop screen, console, env
   <span class="Comment"># no scroll</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -698,16 +698,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     press enter
     press up-arrow
     press down-arrow  <span class="Comment"># while cursor isn't at bottom</span>
   ]
-  event-loop screen, console:&amp;:console, env
+  event-loop screen, console, env
   cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-  print screen:&amp;:screen, cursor
+  print screen, cursor
   <span class="Comment"># cursor moves back to bottom</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -776,7 +776,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   assume-console [
     <span class="Comment"># add a line</span>
@@ -786,7 +786,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># try to scroll</span>
     press page-down  <span class="Comment"># or ctrl-f</span>
   ]
-  event-loop screen, console:&amp;:console, env
+  event-loop screen, console, env
   <span class="Comment"># no scroll, and cursor remains at top line</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -801,7 +801,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[ab</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[ab</span>
 <span class="Constant">cd]</span>
   render-all screen, env, render
   assume-console [
@@ -812,9 +812,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># move cursor</span>
     press down-arrow
   ]
-  event-loop screen, console:&amp;:console, env
+  event-loop screen, console, env
   cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-  print screen:&amp;:screen, cursor
+  print screen, cursor
   <span class="Comment"># no scroll on recipe side, cursor moves on sandbox side</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
@@ -832,13 +832,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize sandbox side</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[add 2, 2]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[add 2, 2]</span>
   render-all screen, env, render
   assume-console [
     <span class="Comment"># create a sandbox</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, env
+  event-loop screen, console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -852,9 +852,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -870,9 +870,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># sandbox editor displays again, cursor is in editor</span>
   screen-should-contain [
@@ -967,20 +967,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
 <span class="Constant">]</span>
   <span class="Comment"># create a sandbox</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, recipes:text, <span class="Constant">[add 2, 2]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes:text, <span class="Constant">[add 2, 2]</span>
   render-all screen, env, render
   assume-console [
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, env
+  event-loop screen, console, env
   <span class="Comment"># hit 'down' in recipe editor</span>
   assume-console [
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># cursor moves down on recipe side</span>
   screen-should-contain [
@@ -997,7 +997,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
@@ -1007,9 +1007,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, env
+  event-loop screen, console, env
   cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-  print screen:&amp;:screen, cursor
+  print screen, cursor
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊␣                                                .</span>
@@ -1027,9 +1027,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -1049,7 +1049,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># just second sandbox displayed</span>
   screen-should-contain [
@@ -1066,7 +1066,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
@@ -1083,7 +1083,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># back to displaying both sandboxes without editor</span>
   screen-should-contain [
@@ -1102,9 +1102,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
@@ -1124,9 +1124,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
     cursor:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    print screen:&amp;:screen, cursor
+    print screen, cursor
   ]
   <span class="Comment"># no change</span>
   screen-should-contain [
@@ -1148,7 +1148,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen:&amp;:screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create a sandbox</span>
   assume-console [
@@ -1156,7 +1156,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[add 1, 1]</span>
     press F4
   ]
-  event-loop screen:&amp;:screen, console:&amp;:console, env
+  event-loop screen, console, env
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ┊                                                 .</span>
@@ -1172,7 +1172,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>
@@ -1190,7 +1190,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-up
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># back to displaying both sandboxes as well as editor</span>
   screen-should-contain [
@@ -1208,7 +1208,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press page-down
   ]
   run [
-    event-loop screen:&amp;:screen, console:&amp;:console, env
+    event-loop screen, console, env
   ]
   <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
   <span class="Comment"># cursor moves to first sandbox</span>

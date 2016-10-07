@@ -137,18 +137,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor and type a character</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[0]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># character should be gone</span>
   screen-should-contain [
@@ -162,7 +162,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -267,18 +267,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor and type multiple characters</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[012]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># all characters must be gone</span>
   screen-should-contain [
@@ -293,13 +293,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[a]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[a]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># type some characters</span>
   assume-console [
     type <span class="Constant">[012]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .012a      .</span>
@@ -311,7 +311,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># back to original text</span>
   screen-should-contain [
@@ -325,7 +325,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -339,14 +339,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor with some text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[  abc]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[  abc]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># new line</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">8</span>
     press enter
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .  abc     .</span>
@@ -366,7 +366,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -386,7 +386,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -402,13 +402,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor, type something, undo</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[a]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[a]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[012]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -420,7 +420,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># all characters must be back</span>
   screen-should-contain [
@@ -434,7 +434,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -466,13 +466,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor, type something, undo</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[012]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .          .</span>
@@ -484,7 +484,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># all characters must be back</span>
   screen-should-contain [
@@ -498,7 +498,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[3]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -515,18 +515,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[1]</span>
     press ctrl-z
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># do some more work</span>
   assume-console [
     type <span class="Constant">[0]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .0abc      .</span>
@@ -539,7 +539,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># nothing should happen</span>
   screen-should-contain [
@@ -555,7 +555,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and tabs, hit enter, some more text and tabs</span>
   assume-console [
@@ -567,7 +567,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press tab
     type <span class="Constant">[efg]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .  ab  cd  .</span>
@@ -586,7 +586,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># typing in second line deleted, but not indent</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -607,7 +607,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># indent and newline deleted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -627,7 +627,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># empty screen</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -647,7 +647,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -667,7 +667,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># newline and indent inserted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -688,7 +688,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># indent and newline deleted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -715,19 +715,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># click undone</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -741,7 +741,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -807,13 +807,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[a</span>
 <span class="Constant">b</span>
 <span class="Constant">cdefgh]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   <span class="Comment"># position cursor at end of screen and try to move right</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">3</span>
     press right-arrow
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   <span class="Comment"># screen scrolls</span>
@@ -832,7 +832,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moved back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -853,7 +853,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -870,20 +870,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press left-arrow
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -897,7 +897,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -915,14 +915,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press up-arrow
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   memory-should-contain [
@@ -934,7 +934,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -948,7 +948,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -966,20 +966,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press down-arrow
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -993,7 +993,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1014,19 +1014,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># scroll the page</span>
   assume-console [
     press ctrl-f
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># screen should again show page 1</span>
   screen-should-contain [
@@ -1048,19 +1048,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># scroll the page</span>
   assume-console [
     press page-down
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># screen should again show page 1</span>
   screen-should-contain [
@@ -1082,20 +1082,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># scroll the page down and up</span>
   assume-console [
     press page-down
     press ctrl-b
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># screen should again show page 2</span>
   screen-should-contain [
@@ -1117,20 +1117,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">d</span>
 <span class="Constant">e</span>
 <span class="Constant">f]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># scroll the page down and up</span>
   assume-console [
     press page-down
     press page-up
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># screen should again show page 2</span>
   screen-should-contain [
@@ -1149,20 +1149,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press ctrl-a
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1176,7 +1176,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1194,20 +1194,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press home
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1221,7 +1221,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1239,20 +1239,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press ctrl-e
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1266,7 +1266,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1284,20 +1284,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor, then to start of line</span>
   assume-console [
     left-click <span class="Constant">2</span>, <span class="Constant">1</span>
     press end
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># undo</span>
   assume-console [
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves back</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1311,7 +1311,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1329,7 +1329,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># move the cursor</span>
   assume-console [
@@ -1338,7 +1338,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press right-arrow
     press up-arrow
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   memory-should-contain [
@@ -1350,7 +1350,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># up-arrow is undone</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1364,7 +1364,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># both right-arrows are undone</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1384,19 +1384,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def</span>
 <span class="Constant">ghi]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     left-click <span class="Constant">3</span>, <span class="Constant">1</span>
     press ctrl-z
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Comment"># redo</span>
   assume-console [
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># cursor moves to left-click</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1410,7 +1410,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1439,14 +1439,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor, type some text, move the cursor, type some more text</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   assume-console [
     type <span class="Constant">[abc]</span>
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     type <span class="Constant">[d]</span>
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   screen-should-contain [
@@ -1464,7 +1464,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1484,7 +1484,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1504,7 +1504,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1524,7 +1524,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1544,7 +1544,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1565,7 +1565,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
     <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
     <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -1588,7 +1588,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and hit backspace</span>
   assume-console [
@@ -1596,7 +1596,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press backspace
     press backspace
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -1614,7 +1614,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -1633,7 +1633,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -1733,7 +1733,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
@@ -1744,7 +1744,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press delete
     press delete
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .af        .</span>
@@ -1762,7 +1762,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -1781,7 +1781,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -1800,7 +1800,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
   <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-column:offset</span>
@@ -1819,7 +1819,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1839,7 +1839,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1859,7 +1859,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>get *e, <span class="Constant">cursor-row:offset</span>
@@ -1924,14 +1924,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">1</span>
     press ctrl-k
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .a         .</span>
@@ -1950,7 +1950,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -1970,7 +1970,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   screen-should-contain [
@@ -1991,7 +1991,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2027,14 +2027,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
   contents:text<span class="Special"> &lt;- </span>new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor contents, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
     left-click <span class="Constant">1</span>, <span class="Constant">2</span>
     press ctrl-u
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .c         .</span>
@@ -2053,7 +2053,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-z
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2073,7 +2073,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-y
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   <span class="Comment"># first line inserted</span>
   screen-should-contain [
@@ -2094,7 +2094,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+    editor-event-loop screen, console, e
   ]
   screen-should-contain [
    <span class="Constant"> .          .</span>
@@ -2127,7 +2127,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Comment"># create an editor</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen:&amp;:screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+  e:&amp;:editor<span class="Special"> &lt;- </span>new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   editor-render screen, e
   <span class="Comment"># insert some text and hit delete and backspace a few times</span>
   assume-console [
@@ -2135,7 +2135,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press ctrl-u
     press ctrl-z
   ]
-  editor-event-loop screen:&amp;:screen, console:&amp;:console, e
+  editor-event-loop screen, console, e
   screen-should-contain [
    <span class="Constant"> .          .</span>
    <span class="Constant"> .abc       .</span>

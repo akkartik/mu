@@ -148,7 +148,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    string filename = next_filesystem_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    string filename = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -163,7 +163,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    string arrow = next_filesystem_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    string arrow = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>arrow != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -172,7 +172,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' after '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    string contents = next_filesystem_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    string contents = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -262,19 +262,6 @@ string munge_filesystem_contents<span class="Delimiter">(</span><span class="Nor
   result = size_of<span class="Delimiter">(</span>type<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Normal">delete</span> type<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-string next_filesystem_word<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string result = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    skip_whitespace_and_comments_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  ostringstream out<span class="Delimiter">;</span>
-  slurp_word<span class="Delimiter">(</span>in<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
-  skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
