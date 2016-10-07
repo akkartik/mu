@@ -13,25 +13,6 @@ struct socket_t {
   }
 };
 
-:(code)
-socket_t* server_socket(int portno) {
-  socket_t* result = new socket;
-  result->fd = socket(AF_INET, SOCK_STREAM, 0);
-  int dummy = 0;
-  setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
-  result->addr.sin_family = AF_INET;
-  result->addr.sin_addr.s_addr = INADDR_ANY;
-  result->addr.sin_port = htons(portno);
-  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) < 0) {
-    close(result->fd);
-    result->fd = -1;
-    raise << "Failed to bind result socket to port " << portno << ". Something's already using that port.\n" << end();
-    return;
-  }
-  listen(result->fd, /*queue length*/5);
-  return result;
-}
-
 :(before "End Primitive Recipe Declarations")
 _SOCKET,
 :(before "End Primitive Recipe Numbers")
@@ -69,6 +50,24 @@ case _SOCKET: {
   long long int result = reinterpret_cast<long long int>(server);
   products.at(0).push_back(static_cast<double>(result));
   break;
+}
+:(code)
+socket_t* server_socket(int portno) {
+  socket_t* result = new socket_t;
+  result->fd = socket(AF_INET, SOCK_STREAM, 0);
+  int dummy = 0;
+  setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
+  result->addr.sin_family = AF_INET;
+  result->addr.sin_addr.s_addr = INADDR_ANY;
+  result->addr.sin_port = htons(portno);
+  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) < 0) {
+    close(result->fd);
+    result->fd = -1;
+    raise << "Failed to bind result socket to port " << portno << ". Something's already using that port.\n" << end();
+    return result;
+  }
+  listen(result->fd, /*queue length*/5);
+  return result;
 }
 
 :(code)
