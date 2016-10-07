@@ -8,6 +8,7 @@ def main [
   local-scope
   socket:num <- $socket 8080/port
   $print [Mu socket creation returned ], socket, 10/newline
+  return-unless socket
   session:num <- $accept socket
   contents:&:source:char, sink:&:sink:char <- new-channel 30
   sink <- start-running transmit-from-socket session, sink
@@ -30,15 +31,15 @@ SUCCESS!
   $close-socket socket
 ]
 
-def write-to-socket session-socket:number, s:address:array:character, source:&:source:char [
+def write-to-socket session-socket:num, s:text, source:&:source:char [
   local-scope
   load-ingredients
-  len:number <- length *s
-  i:number <- copy 0
+  len:num <- length *s
+  i:num <- copy 0
   {
-    done?:boolean <- greater-or-equal i, len
+    done?:bool <- greater-or-equal i, len
     break-if done?
-    c:character <- index *s, i
+    c:char <- index *s, i
     $print [writing to socket: ], i, [ ], c, 10/newline
     $write-to-socket session-socket, c
     i <- add i, 1
@@ -50,11 +51,11 @@ def transmit-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
-    req:text, bytes-read:number <- $read-from-socket session, 4096/bytes
+    req:text, bytes-read:num <- $read-from-socket session, 4096/bytes
     $print [read ], bytes-read, [ bytes from socket], 10/newline
-    i:number <- copy 0
+    i:num <- copy 0
     {
-      done?:boolean <- greater-or-equal i, bytes-read
+      done?:bool <- greater-or-equal i, bytes-read
       break-if done?
       c:char <- index *req, i
       end-of-request?:bool <- equal c, 10/newline
