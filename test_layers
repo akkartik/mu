@@ -29,7 +29,11 @@ do
   echo "=== $f"
   rm -rf .build mu.cc mu_bin  # force full rebuild for top-level, but not subsidiary tools like tangle and cleave
   ./build --until $f || exit 1
+  # valgrind requires Linux
   valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1 ./mu_bin test || exit 1
+  # run on Mac OS without valgrind, and with a hacky fix for the coarser clock
+#?   ./mu_bin test || exit 1
+#?   sleep 1
 done
 
 # Layers for Mu apps without Valgrind
