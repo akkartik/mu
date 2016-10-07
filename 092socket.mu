@@ -1,14 +1,17 @@
-# Wrappers around socket primitives that take a 'network-interface' object and
-# are thus easier to test.
-# The current semantics of fake port-connections don't match UNIX socket ones, but we'll improve them as we learn more.
+# Wrappers around socket primitives that take a 'local-network' object and are
+# thus easier to test.
+#
+# The current semantics of fake port-connections don't match UNIX socket ones,
+# but we'll improve them as we learn more.
+
 container local-network [
   data:&:@:port-connection
 ]
 
 # Port connections represent connections to ports on localhost.
 # Before passing a local-network object to network functions
-# `start-reading` and `start-writing`, add port-connections to the
-# local-network.
+# `start-reading-socket` and `start-writing-socket`, add port-connections to
+# the local-network.
 #
 # For reading, `transmit-from-socket` will check for a
 # port-connection on the port parameter that's been passed in. If there's
