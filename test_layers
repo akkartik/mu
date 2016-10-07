@@ -27,7 +27,8 @@ do
   if [[ $f < $1 ]]; then continue; fi
   if [[ $2 && $f > $2 ]]; then exit 0; fi
   echo "=== $f"
-  ./build_until $f || exit 1
+  rm -rf .build mu.cc mu_bin  # force full rebuild for top-level, but not subsidiary tools like tangle and cleave
+  ./build --until $f || exit 1
   valgrind --leak-check=yes --num-callers=40 -q --error-exitcode=1 ./mu_bin test || exit 1
 done
 

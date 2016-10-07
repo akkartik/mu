@@ -5,6 +5,10 @@ set -e  # stop immediately on error
 # (layers)   |        |              |             |
 #          tangle  cleave          $CXX          $CXX
 
+# can also be called with a layer to only build until
+#   $ ./build --until 050
+UNTIL_LAYER=${2:-zzz}
+
 test $CXX || export CXX=c++ 
 test $CC || export CC=cc
 test $CFLAGS || export CFLAGS="-g -O3"
@@ -62,7 +66,7 @@ noisy_cd tangle
   }
 noisy_cd ..
 
-LAYERS=$(./enumerate/enumerate --until zzz |grep -v '.mu$')
+LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep -v '.mu$')
 older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle || {
   ./tangle/tangle $LAYERS > mu.cc
 }
@@ -111,7 +115,7 @@ older_than mu_bin mu.cc *_list cleave/cleave || {
 
 ## [0-9]*.mu -> core.mu
 
-MU_LAYERS=$(./enumerate/enumerate --until zzz |grep '.mu$')
+MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep '.mu$') || exit 0  # ok if no .mu files
 older_than core.mu $MU_LAYERS || {
   cat $MU_LAYERS > core.mu
 }
