@@ -102,7 +102,7 @@ case _ACCEPT: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* server = reinterpret_cast<socket_t*>(x);
   if (server) {
-    socket_t* session = accept(server);
+    socket_t* session = accept_session(server);
     long long int result = reinterpret_cast<long long int>(session);
     products.at(0).push_back(static_cast<double>(result));
   }
@@ -112,7 +112,7 @@ case _ACCEPT: {
   break;
 }
 :(code)
-socket_t* accept(socket_t* server) {
+socket_t* accept_session(socket_t* server) {
   if (server->fd == 0) return NULL;
   socket_t* result = new socket_t;
   socklen_t dummy = sizeof(result->addr);
