@@ -275,7 +275,7 @@ def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:
   row:num, column:num <- render screen, editor
   clear-line-until screen, right
   row <- add row, 1
-  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  draw-horizontal screen, row, left, right, 9548/horizontal-dashed
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
 ]
@@ -292,7 +292,7 @@ scenario editor-handles-empty-event-queue [
   screen-should-contain [
     .          .
     .abc       .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
 ]
@@ -314,7 +314,7 @@ scenario editor-handles-mouse-clicks [
   screen-should-contain [
     .          .
     .abc       .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   memory-should-contain [
@@ -407,7 +407,7 @@ scenario editor-handles-mouse-clicks-outside-column [
   screen-should-contain [
     .          .
     .abc       .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
     .          .
   ]
   memory-should-contain [
@@ -454,7 +454,7 @@ scenario editor-inserts-characters-into-empty-editor [
   screen-should-contain [
     .          .
     .abc       .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
     .          .
   ]
   check-trace-count-for-label 3, [print-character]
@@ -478,7 +478,7 @@ scenario editor-inserts-characters-at-cursor [
   screen-should-contain [
     .          .
     .0adbc     .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 7, [print-character]  # 4 for first letter, 3 for second
@@ -500,7 +500,7 @@ scenario editor-inserts-characters-at-cursor-2 [
   screen-should-contain [
     .          .
     .abcd      .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 1, [print-character]
@@ -525,7 +525,7 @@ d]
     .          .
     .abce      .
     .d         .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 1, [print-character]
@@ -547,7 +547,7 @@ scenario editor-inserts-characters-at-cursor-3 [
   screen-should-contain [
     .          .
     .abcd      .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 1, [print-character]
@@ -572,7 +572,7 @@ d]
     .          .
     .abc       .
     .de        .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 1, [print-character]
@@ -597,7 +597,7 @@ d]
     .          .
     .abc       .
     .def       .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
   check-trace-count-for-label 2, [print-character]
@@ -617,7 +617,7 @@ scenario editor-moves-cursor-after-inserting-characters [
   screen-should-contain [
     .          .
     .01ab      .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
     .          .
   ]
 ]
@@ -640,7 +640,7 @@ scenario editor-wraps-line-on-insert [
   screen-should-contain [
     .     .
     .eabc .
-    .┈┈┈┈┈.
+    .╌╌╌╌╌.
     .     .
     .     .
   ]
@@ -656,7 +656,7 @@ scenario editor-wraps-line-on-insert [
     .     .
     .efab↩.
     .c    .
-    .┈┈┈┈┈.
+    .╌╌╌╌╌.
     .     .
   ]
 ]
@@ -762,7 +762,7 @@ scenario editor-wraps-cursor-after-inserting-characters-in-middle-of-line [
     .          .
     .abcf↩     .
     .de        .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
     .          .
   ]
   memory-should-contain [
@@ -796,7 +796,7 @@ xyz]
     .abcd↩     .
     .e         .
     .xyz       .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
   ]
 ]
 
@@ -817,7 +817,7 @@ scenario editor-wraps-cursor-to-left-margin [
     .          .
     .  abc0↩   .
     .  1de     .
-    .  ┈┈┈┈┈   .
+    .  ╌╌╌╌╌   .
     .          .
   ]
   memory-should-contain [
@@ -851,7 +851,7 @@ scenario editor-moves-cursor-down-after-inserting-newline [
     .          .
     .0         .
     .1abc      .
-    .┈┈┈┈┈┈┈┈┈┈.
+    .╌╌╌╌╌╌╌╌╌╌.
     .          .
   ]
 ]
@@ -957,7 +957,7 @@ scenario editor-moves-cursor-down-after-inserting-newline-2 [
     .          .
     . 0        .
     . 1abc     .
-    . ┈┈┈┈┈┈┈┈┈.
+    . ╌╌╌╌╌╌╌╌╌.
     .          .
   ]
 ]
@@ -985,7 +985,7 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .          .
     .abcd↩     .
     .e         .
-    .┈┈┈┈┈     .
+    .╌╌╌╌╌     .
   ]
 ]
 

@@ -142,7 +142,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: unknown element 'foo' in container 'number'  .
@@ -224,11 +224,11 @@ scenario run-hides-errors-from-past-sandboxes [
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]
@@ -252,12 +252,12 @@ z <- add x, y
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_2: 'add' requires number ingredients, but got↩.
     . 'y'                                              .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
   # now rerun everything
@@ -271,12 +271,12 @@ z <- add x, y
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo 2                                             .
     .foo_3: 'add' requires number ingredients, but got↩.
     . 'y'                                              .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]
@@ -348,7 +348,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: missing type for 'x' in 'x <- copy 0'        .
@@ -374,12 +374,12 @@ recipe foo \\[
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .9: unbalanced '\\[' for recipe                      .
     .9: unbalanced '\\[' for recipe                      .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]
@@ -404,7 +404,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: first ingredient of 'get' should be a contai↩.
@@ -433,7 +433,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: second ingredient of 'get' should have type ↩.
@@ -459,7 +459,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: use before set: 'y'                          .
@@ -474,7 +474,7 @@ recipe foo [
   screen-should-contain [
     .  errors found                 run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
     .foo: use before set: 'y'                          .
@@ -496,12 +496,12 @@ scenario run-instruction-and-print-errors [
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .get 1:&:point, 1:offset                           .
     .first ingredient of 'get' should be a container, ↩.
     .but got '1:&:point'                               .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
   screen-should-contain-in-color 1/red, [
@@ -536,13 +536,13 @@ scenario run-instruction-and-print-errors-only-once [
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .get 1234:num, foo:offset                          .
     .unknown element 'foo' in container 'number'       .
     .first ingredient of 'get' should be a container, ↩.
     .but got '1234:num'                                .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]
@@ -566,13 +566,13 @@ loop
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .{                                                 .
     .loop                                              .
     .}                                                 .
     .took too long!                                    .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]
@@ -600,12 +600,12 @@ reply b
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo 4, 0                                          .
     .foo: divide by zero in '_, c:num <- divide-with-r↩.
     .emainder a, b'                                    .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
   # click on the call in the sandbox
@@ -619,14 +619,14 @@ reply b
   screen-should-contain [
     .  errors found (0)             run (F4)           .
     .                                                  .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo 4, 0                                          .
     .dividing by 0                                     .
     .14 instructions run                               .
     .foo: divide by zero in '_, c:num <- divide-with-r↩.
     .emainder a, b'                                    .
-    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .──────────────────────────────────────────────────.
     .                                                  .
   ]
 ]

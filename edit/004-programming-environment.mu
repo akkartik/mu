@@ -36,7 +36,7 @@ def new-programming-environment screen:&:screen, initial-recipe-contents:text, i
   print screen, [ run (F4) ], 255/white, 161/reddish
   # dotted line down the middle
   divider:num, _ <- divide-with-remainder width, 2
-  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
+  draw-vertical screen, divider, 1/top, height, 9550/vertical-dashed
   # recipe editor on the left
   recipes:&:editor <- new-editor initial-recipe-contents, screen, 0/left, divider/right
   # sandbox editor on the right
@@ -340,9 +340,9 @@ scenario edit-multiple-editors [
   ]
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
-    .a0bc           ┊d1ef          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .a0bc           ╎d1ef          .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.
+    .               ╎              .
   ]
   memory-should-contain [
     5 <- 2  # cursor column of recipe editor
@@ -355,9 +355,9 @@ scenario edit-multiple-editors [
   ]
   screen-should-contain [
     .           run (F4)           .
-    .a0bc           ┊d1␣f          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .a0bc           ╎d1␣f          .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.
+    .               ╎              .
   ]
 ]
 
@@ -372,10 +372,10 @@ scenario multiple-editors-cover-only-their-own-areas [
   # divider isn't messed up
   screen-should-contain [
     .                                         run (F4)           .
-    .abc                           ┊def                          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                              ┊                             .
-    .                              ┊                             .
+    .abc                           ╎def                          .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────.
+    .                              ╎                             .
+    .                              ╎                             .
   ]
 ]
 
@@ -395,9 +395,9 @@ scenario editor-in-focus-keeps-cursor [
   # is cursor at the right place?
   screen-should-contain [
     .           run (F4)           .
-    .␣bc            ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .␣bc            ╎def           .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.
+    .               ╎              .
   ]
   # now try typing a letter
   assume-console [
@@ -411,9 +411,9 @@ scenario editor-in-focus-keeps-cursor [
   # cursor should still be right
   screen-should-contain [
     .           run (F4)           .
-    .z␣bc           ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .z␣bc           ╎def           .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.
+    .               ╎              .
   ]
 ]
 
@@ -428,10 +428,10 @@ def]
   render-all screen, env, render
   screen-should-contain [
     .           run (F4)           .
-    .               ┊abc           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊def           .
-    .               ┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .               ╎abc           .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎def           .
+    .               ╎──────────────.
+    .               ╎              .
   ]
   # position cursor at start of second line and hit backspace
   assume-console [
@@ -446,9 +446,9 @@ def]
   # cursor moves to end of old line
   screen-should-contain [
     .           run (F4)           .
-    .               ┊abc␣ef        .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
-    .               ┊              .
+    .               ╎abc␣ef        .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.
+    .               ╎              .
   ]
 ]
 
@@ -470,7 +470,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   trace 11, [app], [render divider]
   divider:num, _ <- divide-with-remainder width, 2
   height:num <- screen-height screen
-  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
+  draw-vertical screen, divider, 1/top, height, 9550/vertical-dashed
   #
   screen <- render-recipes screen, env, render-editor
   screen <- render-sandbox-side screen, env, render-editor
@@ -497,7 +497,7 @@ def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (
   row <- add row, 1
   <render-recipe-components-end>
   # draw dotted line after recipes
-  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  draw-horizontal screen, row, left, right, 9548/horizontal-dashed
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
 ]
@@ -513,7 +513,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
-  draw-horizontal screen, row, left, right, 9473/horizontal
+  draw-horizontal screen, row, left, right
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
 ]

@@ -131,15 +131,15 @@ recipe foo [
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  get 123:num, foo:offset                         ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: unknown element 'foo' in container 'number'  ┊                                                 .
-    .foo: first ingredient of 'get' should be a contai↩┊                                                 .
-    .ner, but got '123:num'                            ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  get 123:num, foo:offset                         ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: unknown element 'foo' in container 'number'  ╎                                                 .
+    .foo: first ingredient of 'get' should be a contai↩╎                                                 .
+    .ner, but got '123:num'                            ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
   screen-should-contain-in-color 1/red, [
     .  errors found                                                                                      .
@@ -226,13 +226,13 @@ scenario run-hides-errors-from-past-sandboxes [
   # error should disappear
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0   edit          copy            delete         .
-    .                                                  ┊add 2, 2                                         .
-    .                                                  ┊4                                                .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                                                  ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎0   edit          copy            delete         .
+    .                                                  ╎add 2, 2                                         .
+    .                                                  ╎4                                                .
+    .                                                  ╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -254,14 +254,14 @@ z <- add x, y
   event-loop screen, console, env
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
-    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .load-ingredients                                  ┊0   edit          copy            delete         .
-    .y:&:num <- copy 0                                 ┊foo 2                                            .
-    .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
-    .]                                                 ┊t 'y'                                            .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .recipe foo x:_elem -> z:_elem [                   ╎                                                 .
+    .local-scope                                       ╎─────────────────────────────────────────────────.
+    .load-ingredients                                  ╎0   edit          copy            delete         .
+    .y:&:num <- copy 0                                 ╎foo 2                                            .
+    .z <- add x, y                                     ╎foo_2: 'add' requires number ingredients, but go↩.
+    .]                                                 ╎t 'y'                                            .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
   # now rerun everything
   assume-console [
@@ -273,14 +273,14 @@ z <- add x, y
   # error should remain unchanged
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
-    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .load-ingredients                                  ┊0   edit          copy            delete         .
-    .y:&:num <- copy 0                                 ┊foo 2                                            .
-    .z <- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.
-    .]                                                 ┊t 'y'                                            .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .recipe foo x:_elem -> z:_elem [                   ╎                                                 .
+    .local-scope                                       ╎─────────────────────────────────────────────────.
+    .load-ingredients                                  ╎0   edit          copy            delete         .
+    .y:&:num <- copy 0                                 ╎foo 2                                            .
+    .z <- add x, y                                     ╎foo_3: 'add' requires number ingredients, but go↩.
+    .]                                                 ╎t 'y'                                            .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -362,11 +362,11 @@ recipe foo [
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x <- copy 0                                     ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: missing type for 'x' in 'x <- copy 0'        ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  x <- copy 0                                     ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: missing type for 'x' in 'x <- copy 0'        ╎                                                 .
   ]
 ]
 
@@ -388,13 +388,13 @@ recipe foo \\[
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo \\[                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  x <- copy 0                                     ┊                                                 .
-    .                                                  ┊                                                 .
-    .9: unbalanced '\\[' for recipe                      ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo \\[                                      ╎─────────────────────────────────────────────────.
+    .  x <- copy 0                                     ╎                                                 .
+    .                                                  ╎                                                 .
+    .9: unbalanced '\\[' for recipe                      ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -417,16 +417,16 @@ recipe foo [
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  local-scope                                     ┊                                                 .
-    .  x:&:point <- new point:type                     ┊                                                 .
-    .  get x:&:point, 1:offset                         ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: first ingredient of 'get' should be a contai↩┊                                                 .
-    .ner, but got 'x:&:point'                          ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  local-scope                                     ╎                                                 .
+    .  x:&:point <- new point:type                     ╎                                                 .
+    .  get x:&:point, 1:offset                         ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: first ingredient of 'get' should be a contai↩╎                                                 .
+    .ner, but got 'x:&:point'                          ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -450,17 +450,17 @@ recipe foo [
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  local-scope                                     ┊                                                 .
-    .  x:num <- copy 0                                 ┊                                                 .
-    .  y:&:point <- new point:type                     ┊                                                 .
-    .  get *y:&:point, x:num                           ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: second ingredient of 'get' should have type ↩┊                                                 .
-    .'offset', but got 'x:num'                         ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  local-scope                                     ╎                                                 .
+    .  x:num <- copy 0                                 ╎                                                 .
+    .  y:&:point <- new point:type                     ╎                                                 .
+    .  get *y:&:point, x:num                           ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: second ingredient of 'get' should have type ↩╎                                                 .
+    .'offset', but got 'x:num'                         ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -481,14 +481,14 @@ recipe foo [
   event-loop screen, console, env
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  local-scope                                     ┊                                                 .
-    .  x:num <- copy y:num                             ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: use before set: 'y'                          ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  local-scope                                     ╎                                                 .
+    .  x:num <- copy y:num                             ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: use before set: 'y'                          ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
   # rerun the file, check for the same error
   assume-console [
@@ -499,14 +499,14 @@ recipe foo [
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .  local-scope                                     ┊                                                 .
-    .  x:num <- copy y:num                             ┊                                                 .
-    .]                                                 ┊                                                 .
-    .foo: use before set: 'y'                          ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
-    .                                                  ┊                                                 .
+    .                                                  ╎foo                                              .
+    .recipe foo [                                      ╎─────────────────────────────────────────────────.
+    .  local-scope                                     ╎                                                 .
+    .  x:num <- copy y:num                             ╎                                                 .
+    .]                                                 ╎                                                 .
+    .foo: use before set: 'y'                          ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -527,15 +527,15 @@ scenario run-instruction-and-print-errors [
   # check that screen prints error message in red
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0   edit          copy            delete         .
-    .                                                  ┊get 1234:num, foo:offset                         .
-    .                                                  ┊unknown element 'foo' in container 'number'      .
-    .                                                  ┊first ingredient of 'get' should be a container,↩.
-    .                                                  ┊ but got '1234:num'                              .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                                                  ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎0   edit          copy            delete         .
+    .                                                  ╎get 1234:num, foo:offset                         .
+    .                                                  ╎unknown element 'foo' in container 'number'      .
+    .                                                  ╎first ingredient of 'get' should be a container,↩.
+    .                                                  ╎ but got '1234:num'                              .
+    .                                                  ╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
   screen-should-contain-in-color 7/white, [
     .                                                                                                    .
@@ -560,15 +560,15 @@ scenario run-instruction-and-print-errors [
   ]
   screen-should-contain-in-color 245/grey, [
     .                                                                                                    .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
-    .                                                  ┊                                                 .
-    .                                                  ┊                                                 .
-    .                                                  ┊                                                ↩.
-    .                                                  ┊                                                 .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                                                  ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
+    .                                                  ╎                                                 .
+    .                                                  ╎                                                 .
+    .                                                  ╎                                                ↩.
+    .                                                  ╎                                                 .
+    .                                                  ╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -590,15 +590,15 @@ scenario run-instruction-and-print-errors-only-once [
   # check that screen prints error message just once
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .                                                  ┊                                                 .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊0   edit          copy            delete         .
-    .                                                  ┊get 1234:num, foo:offset                         .
-    .                                                  ┊unknown element 'foo' in container 'number'      .
-    .                                                  ┊first ingredient of 'get' should be a container,↩.
-    .                                                  ┊ but got '1234:num'                              .
-    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .                                                  ╎                                                 .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎0   edit          copy            delete         .
+    .                                                  ╎get 1234:num, foo:offset                         .
+    .                                                  ╎unknown element 'foo' in container 'number'      .
+    .                                                  ╎first ingredient of 'get' should be a container,↩.
+    .                                                  ╎ but got '1234:num'                              .
+    .                                                  ╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -623,13 +623,13 @@ scenario sandbox-can-handle-infinite-loop [
   ]
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .recipe foo [                                      ┊                                                 .
-    .  {                                               ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .    loop                                          ┊0   edit          copy            delete         .
-    .  }                                               ┊foo                                              .
-    .]                                                 ┊took too long!                                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .                                                  ┊                                                 .
+    .recipe foo [                                      ╎                                                 .
+    .  {                                               ╎─────────────────────────────────────────────────.
+    .    loop                                          ╎0   edit          copy            delete         .
+    .  }                                               ╎foo                                              .
+    .]                                                 ╎took too long!                                   .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
+    .                                                  ╎                                                 .
   ]
 ]
 
@@ -655,14 +655,14 @@ reply b
   # screen prints error message
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .recipe foo [                                      ┊                                                 .
-    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .a:num <- next-ingredient                          ┊0   edit          copy            delete         .
-    .b:num <- next-ingredient                          ┊foo 4, 0                                         .
-    .stash [dividing by], b                            ┊foo: divide by zero in '_, c:num <- divide-with-↩.
-    ._, c:num <- divide-with-remainder a, b            ┊remainder a, b'                                  .
-    .reply b                                           ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .]                                                 ┊                                                 .
+    .recipe foo [                                      ╎                                                 .
+    .local-scope                                       ╎─────────────────────────────────────────────────.
+    .a:num <- next-ingredient                          ╎0   edit          copy            delete         .
+    .b:num <- next-ingredient                          ╎foo 4, 0                                         .
+    .stash [dividing by], b                            ╎foo: divide by zero in '_, c:num <- divide-with-↩.
+    ._, c:num <- divide-with-remainder a, b            ╎remainder a, b'                                  .
+    .reply b                                           ╎─────────────────────────────────────────────────.
+    .]                                                 ╎                                                 .
   ]
   # click on the call in the sandbox
   assume-console [
@@ -674,14 +674,14 @@ reply b
   # screen should expand trace
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
-    .recipe foo [                                      ┊                                                 .
-    .local-scope                                       ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
-    .a:num <- next-ingredient                          ┊0   edit          copy            delete         .
-    .b:num <- next-ingredient                          ┊foo 4, 0                                         .
-    .stash [dividing by], b                            ┊dividing by 0                                    .
-    ._, c:num <- divide-with-remainder a, b            ┊14 instructions run                              .
-    .reply b                                           ┊foo: divide by zero in '_, c:num <- divide-with-↩.
-    .]                                                 ┊remainder a, b'                                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .recipe foo [                                      ╎                                                 .
+    .local-scope                                       ╎─────────────────────────────────────────────────.
+    .a:num <- next-ingredient                          ╎0   edit          copy            delete         .
+    .b:num <- next-ingredient                          ╎foo 4, 0                                         .
+    .stash [dividing by], b                            ╎dividing by 0                                    .
+    ._, c:num <- divide-with-remainder a, b            ╎14 instructions run                              .
+    .reply b                                           ╎foo: divide by zero in '_, c:num <- divide-with-↩.
+    .]                                                 ╎remainder a, b'                                  .
+    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
   ]
 ]
