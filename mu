@@ -2,7 +2,7 @@
 #
 # Compile mu if necessary before running it.
 
-./build
+./build || exit 1
 
 ./mu_bin $FLAGS "$@"
 
