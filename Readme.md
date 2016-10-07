@@ -210,12 +210,18 @@ dots):
 
 Similarly you can fake the keyboard to pretend someone typed something:
 
-  ```
-  assume-keyboard [a2-a4]
-  ```
+<img alt='fake keyboard' src='html/fake-keyboard.png'>
 
-As we add a file system, graphics, audio, network support and so on, we'll
-augment scenarios with corresponding abilities.
+..or clicked somewhere:
+
+<img alt='fake console (keyboard, mouse, ..)' src='html/fake-console.png'>
+
+A fake file-system can map arbitrary paths to contents:
+
+<img alt='fake file-system' src='html/fake-filesystem.png'>
+
+As we add network support, graphics, audio, and so on, we'll augment scenarios
+with corresponding abilities.
 
 ---
 
