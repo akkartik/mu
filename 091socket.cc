@@ -97,20 +97,27 @@ case _ACCEPT: {
 }
 :(before "End Primitive Recipe Implementations")
 case _ACCEPT: {
-  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
-  socket_t* socket = reinterpret_cast<socket_t*>(x);
-  socket_t* session = new socket_t();
-  session_socket(socket->fd, session);
   products.resize(2);
-  long long int result = reinterpret_cast<long long int>(session);
-  products.at(0).push_back(static_cast<double>(result));
-  products.at(1).push_back(ingredients.at(0).at(0));
+  products.at(1).push_back(ingredients.at(0).at(0));  // indicate it modifies its ingredient
+  long long int x = static_cast<long long int>(ingredients.at(0).at(0));
+  socket_t* server = reinterpret_cast<socket_t*>(x);
+  if (server) {
+    socket_t* session = accept(server);
+    long long int result = reinterpret_cast<long long int>(session);
+    products.at(0).push_back(static_cast<double>(result));
+  }
+  else {
+    products.at(0).push_back(0);
+  }
   break;
 }
 :(code)
-void session_socket(int serverfd, socket_t* session) {
-  socklen_t dummy = sizeof(session->addr);
-  session->fd = accept(serverfd, (struct sockaddr*)&session->addr, &dummy);
+socket_t* accept(socket_t* server) {
+  if (server->fd == 0) return NULL;
+  socket_t* result = new socket_t;
+  socklen_t dummy = sizeof(result->addr);
+  result->fd = accept(server->fd, (struct sockaddr*)&result->addr, &dummy);
+  return result;
 }
 
 :(before "End Primitive Recipe Declarations")
