@@ -60,13 +60,14 @@ socket_t* server_socket(int portno) {
   result->addr.sin_family = AF_INET;
   result->addr.sin_addr.s_addr = INADDR_ANY;
   result->addr.sin_port = htons(portno);
-  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) < 0) {
+  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) >= 0) {
+    listen(result->fd, /*queue length*/5);
+  }
+  else {
     close(result->fd);
     result->fd = -1;
     raise << "Failed to bind result socket to port " << portno << ". Something's already using that port.\n" << end();
-    return result;
   }
-  listen(result->fd, /*queue length*/5);
   return result;
 }
 
