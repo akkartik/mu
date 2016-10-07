@@ -60,7 +60,7 @@ socket_t* server_socket(int portno) {
   result->addr.sin_family = AF_INET;
   result->addr.sin_addr.s_addr = INADDR_ANY;
   result->addr.sin_port = htons(portno);
-  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) >= 0) {
+  if (bind(result->fd, reinterpret_cast<sockaddr*>(&result->addr), sizeof(result->addr)) >= 0) {
     listen(result->fd, /*queue length*/5);
   }
   else {
@@ -116,7 +116,7 @@ socket_t* accept(socket_t* server) {
   if (server->fd == 0) return NULL;
   socket_t* result = new socket_t;
   socklen_t dummy = sizeof(result->addr);
-  result->fd = accept(server->fd, (struct sockaddr*)&result->addr, &dummy);
+  result->fd = accept(server->fd, reinterpret_cast<sockaddr*>(&result->addr), &dummy);
   return result;
 }
 
