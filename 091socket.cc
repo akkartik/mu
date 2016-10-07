@@ -14,20 +14,22 @@ struct socket_t {
 };
 
 :(code)
-void server_socket(int portno, socket_t* server) {
-  server->fd = socket(AF_INET, SOCK_STREAM, 0);
+socket_t* server_socket(int portno) {
+  socket_t* result = new socket;
+  result->fd = socket(AF_INET, SOCK_STREAM, 0);
   int dummy = 0;
-  setsockopt(server->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
-  server->addr.sin_family = AF_INET;
-  server->addr.sin_addr.s_addr = INADDR_ANY;
-  server->addr.sin_port = htons(portno);
-  if (bind(server->fd, (struct sockaddr*)&server->addr, sizeof(server->addr)) < 0) {
-    close(server->fd);
-    server->fd = -1;
-    raise << "Failed to bind server socket to port " << portno << ". Something's already using that port.\n" << end();
+  setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
+  result->addr.sin_family = AF_INET;
+  result->addr.sin_addr.s_addr = INADDR_ANY;
+  result->addr.sin_port = htons(portno);
+  if (bind(result->fd, (struct sockaddr*)&result->addr, sizeof(result->addr)) < 0) {
+    close(result->fd);
+    result->fd = -1;
+    raise << "Failed to bind result socket to port " << portno << ". Something's already using that port.\n" << end();
     return;
   }
-  listen(server->fd, /*queue length*/5);
+  listen(result->fd, /*queue length*/5);
+  return result;
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -57,8 +59,7 @@ case _SOCKET: {
 :(before "End Primitive Recipe Implementations")
 case _SOCKET: {
   int port = ingredients.at(0).at(0);
-  socket_t* server = new socket_t();
-  server_socket(port, server);
+  socket_t* server = server_socket(port);
   products.resize(1);
   if (server->fd < 0) {
     delete server;
