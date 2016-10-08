@@ -34,7 +34,7 @@ case HASH: {
 size_t hash(size_t h, reagent/*copy*/ r) {
   canonize(r);
   if (is_mu_text(r))  // optimization
-    return hash_mu_string(h, r);
+    return hash_mu_text(h, r);
   else if (is_mu_address(r))
     return hash_mu_address(h, r);
   else if (is_mu_scalar(r))
@@ -65,7 +65,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
   return hash(h, r);
 }
 
-size_t hash_mu_string(size_t h, const reagent& r) {
+size_t hash_mu_text(size_t h, const reagent& r) {
   string input = read_mu_text(get_or_insert(Memory, r.value));
   for (int i = 0; i < SIZE(input); ++i) {
     h = hash_iter(h, static_cast<size_t>(input.at(i)));
