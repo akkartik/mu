@@ -14,31 +14,31 @@ struct socket_t {
 };
 
 :(before "End Primitive Recipe Declarations")
-_SOCKET,
+_OPEN_SERVER_SOCKET,
 :(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "$socket", _SOCKET);
+put(Recipe_ordinal, "$open-server-socket", _OPEN_SERVER_SOCKET);
 :(before "End Primitive Recipe Checks")
-case _SOCKET: {
+case _OPEN_SERVER_SOCKET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of '$socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$open-server-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first product of '$socket' should be a number (file handle), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first product of '$open-server-socket' should be a number (file handle), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
-case _SOCKET: {
+case _OPEN_SERVER_SOCKET: {
   int port = ingredients.at(0).at(0);
   socket_t* server = server_socket(port);
   products.resize(1);

@@ -6,7 +6,7 @@
 # code to make up for my lack of insight into Linux's socket internals.
 def main [
   local-scope
-  socket:num <- $socket 8080/port
+  socket:num <- $open-server-socket 8080/port
   $print [Mu socket creation returned ], socket, 10/newline
   return-unless socket
   session:num <- $accept socket

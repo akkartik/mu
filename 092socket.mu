@@ -63,7 +63,7 @@ def start-writing-socket network:&:local-network, port:num -> sink:&:sink:char, 
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
     break-if network
-    socket:num <- $socket port
+    socket:num <- $open-server-socket port
     session:num <- $accept socket
     # TODO Create channel implementation of write-to-socket.
     return sink, 0/routine-id
