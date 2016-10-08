@@ -46,29 +46,27 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
   $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 }
 
-( cd tangle
-  older_than tangle [0-9]*.cc boot.cc *_list && {
-    echo "-- `pwd`" >&2
-    older_than type_list [0-9]*.cc && {
-      grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/' > type_list
-      grep -h "^typedef " [0-9]*.cc >> type_list
-    }
-    older_than function_list [0-9]*.cc && {
-      grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' > function_list
-    }
-    older_than file_list [0-9]*.cc && {
-      ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' > file_list
-    }
-    older_than test_file_list [0-9]*.test.cc && {
-      ls [0-9]*.test.cc |sed 's/.*/#include "&"/' > test_file_list
-    }
-    older_than test_list [0-9]*.cc && {
-      grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' > test_list
-    }
-    older_than tangle boot.cc *_list && {
+(
+  older_than tangle/tangle tangle/[0-9]*.cc tangle/boot.cc && {
+    noisy_cd tangle
+      older_than type_list [0-9]*.cc && {
+        grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/' > type_list
+        grep -h "^typedef " [0-9]*.cc >> type_list
+      }
+      older_than function_list [0-9]*.cc && {
+        grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' > function_list
+      }
+      older_than file_list [0-9]*.cc && {
+        ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' > file_list
+      }
+      older_than test_file_list [0-9]*.test.cc && {
+        ls [0-9]*.test.cc |sed 's/.*/#include "&"/' > test_file_list
+      }
+      older_than test_list [0-9]*.cc && {
+        grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' > test_list
+      }
       $CXX $CFLAGS boot.cc -o tangle
-    }
-    noisy_cd ..
+    noisy_cd ..  # no effect; just to show us returning to the parent directory
   }
   exit 0
 )
