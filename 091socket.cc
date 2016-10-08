@@ -1,8 +1,3 @@
-:(before "End Includes")
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
 :(before "End Types")
 struct socket_t {
   int fd;
@@ -217,3 +212,8 @@ case _CLOSE_SOCKET: {
   close(socket->fd);
   break;
 }
+
+:(before "End Includes")
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
