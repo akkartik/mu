@@ -55,6 +55,11 @@ case _OPEN_SERVER_SOCKET: {
 socket_t* server_socket(int portno) {
   socket_t* result = new socket_t;
   result->fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (result->fd < 0) {
+    raise << "Failed to create server socket.\n" << end();
+    delete result;
+    return NULL;
+  }
   int dummy = 0;
   setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
   result->addr.sin_family = AF_INET;
