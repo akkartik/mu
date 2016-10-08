@@ -88,7 +88,7 @@ def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:
     {
       cursor-to-next-line screen
       screen <- print screen, [move: ]
-      m:&:move, quit:boolean, error:boolean <- read-move buffered-stdin-in, screen
+      m:&:move, quit:bool, error:bool <- read-move buffered-stdin-in, screen
       break-if quit, +quit:label
       buffered-stdin-in <- clear buffered-stdin-in  # cleanup after error. todo: test this?
       loop-if error
@@ -107,13 +107,13 @@ def new-board initial-position:&:@:char -> board:board [
   load-ingredients
   # assert(length(initial-position) == 64)
   len:num <- length *initial-position
-  correct-length?:boolean <- equal len, 64
+  correct-length?:bool <- equal len, 64
   assert correct-length?, [chessboard had incorrect size]
   # board is an array of pointers to files; file is an array of characters
   board <- new {(address array character): type}, 8
   col:num <- copy 0
   {
-    done?:boolean <- equal col, 8
+    done?:bool <- equal col, 8
     break-if done?
     file:&:@:char <- new-file initial-position, col
     *board <- put-index *board, col, file
@@ -129,7 +129,7 @@ def new-file position:&:@:char, index:num -> result:&:@:char [
   result <- new character:type, 8
   row:num <- copy 0
   {
-    done?:boolean <- equal row, 8
+    done?:bool <- equal row, 8
     break-if done?
     square:char <- index *position, index
     *result <- put-index *result, row, square
@@ -146,7 +146,7 @@ def print-board screen:&:screen, board:board -> screen:&:screen [
   space:char <- copy 32/space
   # print each row
   {
-    done?:boolean <- lesser-than row, 0
+    done?:bool <- lesser-than row, 0
     break-if done?
     # print rank number as a legend
     rank:num <- add row, 1
@@ -155,8 +155,8 @@ def print-board screen:&:screen, board:board -> screen:&:screen [
     # print each square in the row
     col:num <- copy 0
     {
-      done?:boolean <- equal col:num, 8
-      break-if done?:boolean
+      done?:bool <- equal col:num, 8
+      break-if done?:bool
       f:&:@:char <- index *board, col
       c:char <- index *f, row
       print screen, c
@@ -233,10 +233,10 @@ container move [
 ]
 
 # prints only error messages to screen
-def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:boolean, error?:boolean, stdin:&:source:char, screen:&:screen [
+def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool, error?:bool, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
-  from-file:num, quit?:boolean, error?:boolean <- read-file stdin, screen
+  from-file:num, quit?:bool, error?:bool <- read-file stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
   # construct the move object
@@ -249,8 +249,8 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:boole
   error? <- expect-from-channel stdin, 45/dash, screen
   return-if error?, 0/dummy, 0/quit
   to-file:num, quit?, error? <- read-file stdin, screen
-  return-if quit?:boolean, 0/dummy
-  return-if error?:boolean, 0/dummy
+  return-if quit?:bool, 0/dummy
+  return-if error?:bool, 0/dummy
   *result <- put *result, to-file:offset, to-file
   to-rank:num, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy
@@ -261,13 +261,13 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:boole
 ]
 
 # valid values for file: 0-7
-def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, error:boolean, stdin:&:source:char, screen:&:screen [
+def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error:bool, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
-  c:char, eof?:boolean, stdin <- read stdin
+  c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
   {
-    q-pressed?:boolean <- equal c, 81/Q
+    q-pressed?:bool <- equal c, 81/Q
     break-unless q-pressed?
     return 0/dummy, 1/quit, 0/error
   }
@@ -277,12 +277,12 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, er
     return 0/dummy, 1/quit, 0/error
   }
   {
-    empty-fake-keyboard?:boolean <- equal c, 0/eof
+    empty-fake-keyboard?:bool <- equal c, 0/eof
     break-unless empty-fake-keyboard?
     return 0/dummy, 1/quit, 0/error
   }
   {
-    newline?:boolean <- equal c, 10/newline
+    newline?:bool <- equal c, 10/newline
     break-unless newline?
     print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
@@ -290,7 +290,7 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, er
   file:num <- subtract c, 97/a
   # 'a' <= file <= 'h'
   {
-    above-min:boolean <- greater-or-equal file, 0
+    above-min:bool <- greater-or-equal file, 0
     break-if above-min
     print screen, [file too low: ]
     print screen, c
@@ -298,7 +298,7 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, er
     return 0/dummy, 0/quit, 1/error
   }
   {
-    below-max:boolean <- lesser-than file, 8
+    below-max:bool <- lesser-than file, 8
     break-if below-max
     print screen, [file too high: ]
     print screen, c
@@ -308,13 +308,13 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:boolean, er
 ]
 
 # valid values for rank: 0-7
-def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:boolean, error?:boolean, stdin:&:source:char, screen:&:screen [
+def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, error?:bool, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
-  c:char, eof?:boolean, stdin <- read stdin
+  c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
   {
-    q-pressed?:boolean <- equal c, 8/Q
+    q-pressed?:bool <- equal c, 8/Q
     break-unless q-pressed?
     return 0/dummy, 1/quit, 0/error
   }
@@ -324,7 +324,7 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:boolean, e
     return 0/dummy, 1/quit, 0/error
   }
   {
-    newline?:boolean <- equal c, 10  # newline
+    newline?:bool <- equal c, 10  # newline
     break-unless newline?
     print screen, [that's not enough]
     return 0/dummy, 0/quit, 1/error
@@ -332,14 +332,14 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:boolean, e
   rank:num <- subtract c, 49/'1'
   # assert'1' <= rank <= '8'
   {
-    above-min:boolean <- greater-or-equal rank, 0
+    above-min:bool <- greater-or-equal rank, 0
     break-if above-min
     print screen, [rank too low: ]
     print screen, c
     return 0/dummy, 0/quit, 1/error
   }
   {
-    below-max:boolean <- lesser-or-equal rank, 7
+    below-max:bool <- lesser-or-equal rank, 7
     break-if below-max
     print screen, [rank too high: ]
     print screen, c
@@ -350,13 +350,13 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:boolean, e
 
 # read a character from the given channel and check that it's what we expect
 # return true on error
-def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> result:boolean, stdin:&:source:char, screen:&:screen [
+def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> result:bool, stdin:&:source:char, screen:&:screen [
   local-scope
   load-ingredients
-  c:char, eof?:boolean, stdin <- read stdin
+  c:char, eof?:bool, stdin <- read stdin
   return-if eof? 1/true
   {
-    match?:boolean <- equal c, expected
+    match?:bool <- equal c, expected
     break-if match?
     print screen, [expected character not found]
   }
@@ -372,7 +372,7 @@ scenario read-move-blocking [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
-    waiting?:boolean <- not-equal read-move-state, 2/discontinued
+    waiting?:bool <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]
     # press 'a'
@@ -426,7 +426,7 @@ F read-move-blocking: routine failed to pause after file 'a2-a4']
     # 'read-move' now completes
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    completed?:boolean <- equal read-move-state, 1/completed
+    completed?:bool <- equal read-move-state, 1/completed
     assert completed?, [ 
 F read-move-blocking: routine failed to terminate on newline]
     trace 1, [test], [reached end]
@@ -445,7 +445,7 @@ scenario read-move-quit [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
-    waiting?:boolean <- not-equal read-move-state, 2/discontinued
+    waiting?:bool <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]
     # press 'q'
@@ -454,7 +454,7 @@ F read-move-quit: routine failed to pause after coming up (before any keys were 
     # 'read-move' completes
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
-    completed?:boolean <- equal read-move-state, 1/completed
+    completed?:bool <- equal read-move-state, 1/completed
     assert completed?, [ 
 F read-move-quit: routine failed to terminate on 'q']
     trace 1, [test], [reached end]
@@ -473,7 +473,7 @@ scenario read-move-illegal-file [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
-    waiting?:boolean <- not-equal read-move-state, 2/discontinued
+    waiting?:bool <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 50/'2'
@@ -495,7 +495,7 @@ scenario read-move-illegal-rank [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
-    waiting?:boolean <- not-equal read-move-state, 2/discontinued
+    waiting?:bool <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 97/a
@@ -518,7 +518,7 @@ scenario read-move-empty [
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
-    waiting?:boolean <- not-equal read-move-state, 2/discontinued
+    waiting?:bool <- not-equal read-move-state, 2/discontinued
     assert waiting?, [ 
 F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]
     sink <- write sink, 10/newline

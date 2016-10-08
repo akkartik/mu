@@ -12,7 +12,7 @@ def factorial n:num -> result:num [
   load-ingredients
   {
     # if n=0 return 1
-    zero?:boolean <- equal n, 0
+    zero?:bool <- equal n, 0
     break-unless zero?
     return 1
   }

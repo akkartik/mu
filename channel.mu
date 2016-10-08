@@ -7,7 +7,7 @@ def producer sink:&:sink:char -> sink:&:sink:char [
   # n = 0
   n:char <- copy 0
   {
-    done?:boolean <- lesser-than n, 5
+    done?:bool <- lesser-than n, 5
     break-unless done?
     # other threads might get between these prints
     $print [produce: ], n, [ 
@@ -25,7 +25,7 @@ def consumer source:&:source:char -> source:&:source:char [
   load-ingredients
   {
     # read an integer from the channel
-    n:char, eof?:boolean, source <- read source
+    n:char, eof?:bool, source <- read source
     break-if eof?
     # other threads might get between these prints
     $print [consume: ], n:char, [ 

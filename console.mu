@@ -6,7 +6,7 @@ def main [
   local-scope
   open-console
   {
-    e:event, found?:boolean <- check-for-interaction
+    e:event, found?:bool <- check-for-interaction
     break-if found?
     print-character-to-display 97, 7/white
     loop
