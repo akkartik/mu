@@ -20,7 +20,7 @@ put(Recipe_ordinal, "$open-server-socket", _OPEN_SERVER_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _OPEN_SERVER_SOCKET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one ingredient (the port to listen for requests on), but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
