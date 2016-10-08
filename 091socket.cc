@@ -47,7 +47,7 @@ case _OPEN_SERVER_SOCKET: {
   break;
 }
 :(code)
-socket_t* server_socket(int portno) {
+socket_t* server_socket(int port) {
   socket_t* result = new socket_t;
   result->fd = socket(AF_INET, SOCK_STREAM, 0);
   if (result->fd < 0) {
@@ -59,14 +59,14 @@ socket_t* server_socket(int portno) {
   setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
   result->addr.sin_family = AF_INET;
   result->addr.sin_addr.s_addr = INADDR_ANY;
-  result->addr.sin_port = htons(portno);
+  result->addr.sin_port = htons(port);
   if (bind(result->fd, reinterpret_cast<sockaddr*>(&result->addr), sizeof(result->addr)) >= 0) {
     listen(result->fd, /*queue length*/5);
   }
   else {
     close(result->fd);
     result->fd = -1;
-    raise << "Failed to bind result socket to port " << portno << ". Something's already using that port.\n" << end();
+    raise << "Failed to bind result socket to port " << port << ". Something's already using that port.\n" << end();
   }
   return result;
 }
