@@ -1,9 +1,12 @@
-# Example of reading from a socket using channels and writing back to it
-# directly. Running this file and navigating to <address of server>:8080
-# should result in your browser displaying "SUCCESS!".
+# example program: a single-request HTTP server
+#   listen for connections from clients on a server socket
+#   when a connection occurs, transfer it to a session socket
+#   read from it using channels
+#   write to it directly
 #
-# Unfortunately, the reading implementation has some redundant, inelegant
-# code to make up for my lack of insight into Linux's socket internals.
+# After running it, navigate to localhost:8080. Your browser should display
+# "SUCCESS!" and the server will terminate after one connection.
+
 def main [
   local-scope
   socket:num <- $open-server-socket 8080/port
