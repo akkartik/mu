@@ -28,13 +28,13 @@ def main [
 Content-type: text/plain
 
 SUCCESS!
-], contents
+]
   $print 10/newline, [Wrote to and closing socket...], 10/newline
   $close-socket session
   $close-socket socket
 ]
 
-def write-to-socket session-socket:num, s:text, source:&:source:char [
+def write-to-socket session-socket:num, s:text [
   local-scope
   load-ingredients
   len:num <- length *s
