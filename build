@@ -7,6 +7,8 @@ set -e  # stop immediately on error
 
 # can also be called with a layer to only build until
 #   $ ./build --until 050
+# returns 0 on successful build or nothing to build;
+# non-zero exit status only on error during building
 UNTIL_LAYER=${2:-zzz}
 
 test $CXX || export CXX=c++
@@ -44,27 +46,32 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
   $CXX $CFLAGS enumerate/enumerate.cc -o enumerate/enumerate
 }
 
-noisy_cd tangle
-  older_than type_list [0-9]*.cc && {
-    grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/' > type_list
-    grep -h "^typedef " [0-9]*.cc >> type_list
+( cd tangle
+  older_than tangle [0-9]*.cc boot.cc *_list && {
+    echo "-- `pwd`" >&2
+    older_than type_list [0-9]*.cc && {
+      grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/' > type_list
+      grep -h "^typedef " [0-9]*.cc >> type_list
+    }
+    older_than function_list [0-9]*.cc && {
+      grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' > function_list
+    }
+    older_than file_list [0-9]*.cc && {
+      ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' > file_list
+    }
+    older_than test_file_list [0-9]*.test.cc && {
+      ls [0-9]*.test.cc |sed 's/.*/#include "&"/' > test_file_list
+    }
+    older_than test_list [0-9]*.cc && {
+      grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' > test_list
+    }
+    older_than tangle boot.cc *_list && {
+      $CXX $CFLAGS boot.cc -o tangle
+    }
+    noisy_cd ..
   }
-  older_than function_list [0-9]*.cc && {
-    grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' > function_list
-  }
-  older_than file_list [0-9]*.cc && {
-    ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' > file_list
-  }
-  older_than test_file_list [0-9]*.test.cc && {
-    ls [0-9]*.test.cc |sed 's/.*/#include "&"/' > test_file_list
-  }
-  older_than test_list [0-9]*.cc && {
-    grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' > test_list
-  }
-  older_than tangle boot.cc *_list && {
-    $CXX $CFLAGS boot.cc -o tangle
-  }
-noisy_cd ..
+  exit 0
+)
 
 LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep -v '.mu$')
 older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
