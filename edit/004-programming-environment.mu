@@ -341,7 +341,7 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
     .a0bc           ┊d1ef          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
     .               ┊              .
   ]
   memory-should-contain [
@@ -356,7 +356,7 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F4)           .
     .a0bc           ┊d1␣f          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
     .               ┊              .
   ]
 ]
@@ -373,7 +373,7 @@ scenario multiple-editors-cover-only-their-own-areas [
   screen-should-contain [
     .                                         run (F4)           .
     .abc                           ┊def                          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────.
     .                              ┊                             .
     .                              ┊                             .
   ]
@@ -396,7 +396,7 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F4)           .
     .␣bc            ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
     .               ┊              .
   ]
   # now try typing a letter
@@ -412,7 +412,7 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F4)           .
     .z␣bc           ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
     .               ┊              .
   ]
 ]
@@ -430,7 +430,7 @@ def]
     .           run (F4)           .
     .               ┊abc           .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊def           .
-    .               ┊━━━━━━━━━━━━━━.
+    .               ┊──────────────.
     .               ┊              .
   ]
   # position cursor at start of second line and hit backspace
@@ -447,7 +447,7 @@ def]
   screen-should-contain [
     .           run (F4)           .
     .               ┊abc␣ef        .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
     .               ┊              .
   ]
 ]
@@ -513,7 +513,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
-  draw-horizontal screen, row, left, right, 9473/horizontal
+  draw-horizontal screen, row, left, right
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
 ]
