@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Mu - server-socket.mu</title>
+<title>Mu - http-server.mu</title>
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
@@ -30,16 +30,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># Example of reading from a socket using channels and writing back to it</span>
-<span class="Comment"># directly. Running this file and navigating to &lt;address of server&gt;:8080</span>
-<span class="Comment"># should result in your browser displaying &quot;SUCCESS!&quot;.</span>
+<span class="Comment"># example program: a single-request HTTP server</span>
+<span class="Comment">#   listen for connections from clients on a server socket</span>
+<span class="Comment">#   when a connection occurs, transfer it to a session socket</span>
+<span class="Comment">#   read from it using channels</span>
+<span class="Comment">#   write to it directly</span>
 <span class="Comment">#</span>
-<span class="Comment"># Unfortunately, the reading implementation has some redundant, inelegant</span>
-<span class="Comment"># code to make up for my lack of insight into Linux's socket internals.</span>
+<span class="Comment"># After running it, navigate to localhost:8080. Your browser should display</span>
+<span class="Comment"># &quot;SUCCESS!&quot; and the server will terminate after one connection.</span>
+
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
-  socket:num<span class="Special"> &lt;- </span>$socket <span class="Constant">8080/port</span>
+  socket:num<span class="Special"> &lt;- </span>$open-server-socket <span class="Constant">8080/port</span>
   $print <span class="Constant">[Mu socket creation returned ]</span>, socket, <span class="Constant">10/newline</span>
+  <span class="muControl">return-unless</span> socket
   session:num<span class="Special"> &lt;- </span>$accept socket
   contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
   sink<span class="Special"> &lt;- </span>start-running transmit-from-socket session, sink
@@ -62,15 +66,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   $close-socket socket
 ]
 
-<span class="muRecipe">def</span> write-to-socket session-socket:number, s:address:array:character [
+<span class="muRecipe">def</span> write-to-socket session-socket:num, s:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  len:number<span class="Special"> &lt;- </span>length *s
-  i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  len:num<span class="Special"> &lt;- </span>length *s
+  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, len
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
-    c:character<span class="Special"> &lt;- </span>index *s, i
+    c:char<span class="Special"> &lt;- </span>index *s, i
     $print <span class="Constant">[writing to socket: ]</span>, i, <span class="Constant">[ ]</span>, c, <span class="Constant">10/newline</span>
     $write-to-socket session-socket, c
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
@@ -82,11 +86,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    req:text, bytes-read:number<span class="Special"> &lt;- </span>$read-from-socket session, <span class="Constant">4096/bytes</span>
+    req:text, bytes-read:num<span class="Special"> &lt;- </span>$read-from-socket session, <span class="Constant">4096/bytes</span>
     $print <span class="Constant">[read ]</span>, bytes-read, <span class="Constant">[ bytes from socket]</span>, <span class="Constant">10/newline</span>
-    i:number<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">{</span>
-      done?:boolean<span class="Special"> &lt;- </span>greater-or-equal i, bytes-read
+      done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, bytes-read
       <span class="muControl">break-if</span> done?
       c:char<span class="Special"> &lt;- </span>index *req, i
       end-of-request?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>

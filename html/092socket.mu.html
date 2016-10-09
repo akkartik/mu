@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - 092socket.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.muData { color: #ffff00; }
+.muControl { color: #c0a020; }
+.Delimiter { color: #800080; }
+.Comment { color: #9090ff; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.muRecipe { color: #ff8700; }
+.muScenario { color: #00af00; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment"># Wrappers around socket primitives that take a 'local-network' object and are</span>
+<span class="Comment"># thus easier to test.</span>
+<span class="Comment">#</span>
+<span class="Comment"># The current semantics of fake port-connections don't match UNIX socket ones,</span>
+<span class="Comment"># but we'll improve them as we learn more.</span>
+
+<span class="muData">container</span> local-network [
+  data:&amp;:@:port-connection
+]
+
+<span class="Comment"># Port connections represent connections to ports on localhost.</span>
+<span class="Comment"># Before passing a local-network object to network functions</span>
+<span class="Comment"># `start-reading-socket` and `start-writing-socket`, add port-connections to</span>
+<span class="Comment"># the local-network.</span>
+<span class="Comment">#</span>
+<span class="Comment"># For reading, `transmit-from-socket` will check for a</span>
+<span class="Comment"># port-connection on the port parameter that's been passed in. If there's</span>
+<span class="Comment"># no port-connectin for that port, it will return nothing and log. If</span>
+<span class="Comment"># there is a port-connection for that port, it will transmit the contents</span>
+<span class="Comment"># to the passed in sink.</span>
+<span class="Comment">#</span>
+<span class="Comment"># For writing, `start-writing-socket` returns a sink connecting the</span>
+<span class="Comment"># caller to the socket on the passed-in port.</span>
+<span class="muData">container</span> port-connection [
+  port:num
+  contents:text
+]
+
+<span class="muRecipe">def</span> new-port-connection port:num, contents:text<span class="muRecipe"> -&gt; </span>p:&amp;:port-connection [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  p:&amp;:port-connection<span class="Special"> &lt;- </span>new <span class="Constant">port-connection:type</span>
+  *p<span class="Special"> &lt;- </span>merge port, contents
+]
+
+<span class="muRecipe">def</span> new-fake-network<span class="muRecipe"> -&gt; </span>n:&amp;:local-network [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  n:&amp;:local-network<span class="Special"> &lt;- </span>new <span class="Constant">local-network:type</span>
+  local-network-ports:&amp;:@:port-connection<span class="Special"> &lt;- </span>new <span class="Constant">port-connection:type</span>, <span class="Constant">0</span>
+  *n<span class="Special"> &lt;- </span>put *n, <span class="Constant">data:offset</span>, local-network-ports
+]
+
+<span class="muScenario">scenario</span> write-to-fake-socket [
+  <span class="Constant">local-scope</span>
+  single-port-network:&amp;:local-network<span class="Special"> &lt;- </span>new-fake-network
+  sink:&amp;:sink:char, writer:num/routine<span class="Special"> &lt;- </span>start-writing-socket single-port-network, <span class="Constant">8080</span>
+  sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">120/x</span>
+  close sink
+  wait-for-routine writer
+  tested-port-connections:&amp;:@:port-connection<span class="Special"> &lt;- </span>get *single-port-network, <span class="Constant">data:offset</span>
+  tested-port-connection:port-connection<span class="Special"> &lt;- </span>index *tested-port-connections, <span class="Constant">0</span>
+  contents:text<span class="Special"> &lt;- </span>get tested-port-connection, <span class="Constant">contents:offset</span>
+  <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *contents
+  memory-should-contain [
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[x]</span>
+  ]
+]
+
+<span class="muRecipe">def</span> start-writing-socket network:&amp;:local-network, port:num<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> network
+    socket:num<span class="Special"> &lt;- </span>$open-server-socket port
+    session:num<span class="Special"> &lt;- </span>$accept socket
+    <span class="Comment"># TODO Create channel implementation of write-to-socket.</span>
+    <span class="muControl">return</span> sink, <span class="Constant">0/routine-id</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># fake network</span>
+  routine-id<span class="Special"> &lt;- </span>start-running transmit-to-fake-socket network, port, source
+]
+
+<span class="muRecipe">def</span> transmit-to-fake-socket network:&amp;:local-network, port:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>network:&amp;:local-network, source:&amp;:source:char [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># compute new port connection contents</span>
+  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  <span class="Delimiter">{</span>
+    c:char, done?:bool, source<span class="Special"> &lt;- </span>read source
+    <span class="muControl">break-unless</span> c
+    buf<span class="Special"> &lt;- </span>append buf, c
+    <span class="muControl">break-if</span> done?
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  contents:text<span class="Special"> &lt;- </span>buffer-to-array buf
+  new-port-connection:&amp;:port-connection<span class="Special"> &lt;- </span>new-port-connection port, contents
+  <span class="Comment"># Got the contents of the channel, time to write to fake port.</span>
+  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  port-connections:&amp;:@:port-connection<span class="Special"> &lt;- </span>get *network, <span class="Constant">data:offset</span>
+  len:num<span class="Special"> &lt;- </span>length *port-connections
+  <span class="Delimiter">{</span>
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    current:port-connection<span class="Special"> &lt;- </span>index *port-connections, i
+    current-port:num<span class="Special"> &lt;- </span>get current, <span class="Constant">port:offset</span>
+    ports-match?:bool<span class="Special"> &lt;- </span>equal current-port, port
+    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+    <span class="muControl">loop-unless</span> ports-match?
+    <span class="Comment"># Found an existing connection on this port, overwrite.</span>
+    put-index *port-connections, i, *new-port-connection
+    <span class="muControl">reply</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># Couldn't find an existing connection on this port, initialize a new one.</span>
+  new-len:num<span class="Special"> &lt;- </span>add len, <span class="Constant">1</span>
+  new-port-connections:&amp;:@:port-connection<span class="Special"> &lt;- </span>new <span class="Constant">port-connection:type</span>, new-len
+  put *network, <span class="Constant">data:offset</span>, new-port-connections
+  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Delimiter">{</span>
+    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    tmp:port-connection<span class="Special"> &lt;- </span>index *port-connections, i
+    put-index *new-port-connections, i, tmp
+  <span class="Delimiter">}</span>
+  put-index *new-port-connections, len, *new-port-connection
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

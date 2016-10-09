@@ -124,7 +124,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Delimiter">{</span>
       cursor-to-next-line screen
       screen<span class="Special"> &lt;- </span>print screen, <span class="Constant">[move: ]</span>
-      m:&amp;:move, quit:boolean, error:boolean<span class="Special"> &lt;- </span>read-move buffered-stdin-in, screen
+      m:&amp;:move, quit:bool, error:bool<span class="Special"> &lt;- </span>read-move buffered-stdin-in, screen
       <span class="muControl">break-if</span> quit, <span class="Constant">+quit:label</span>
       buffered-stdin-in<span class="Special"> &lt;- </span>clear buffered-stdin-in  <span class="Comment"># cleanup after error. todo: test this?</span>
       <span class="muControl">loop-if</span> error
@@ -143,13 +143,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
   len:num<span class="Special"> &lt;- </span>length *initial-position
-  correct-length?:boolean<span class="Special"> &lt;- </span>equal len, <span class="Constant">64</span>
+  correct-length?:bool<span class="Special"> &lt;- </span>equal len, <span class="Constant">64</span>
   assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
   <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
   board<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>, <span class="Constant">8</span>
   col:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>equal col, <span class="Constant">8</span>
+    done?:bool<span class="Special"> &lt;- </span>equal col, <span class="Constant">8</span>
     <span class="muControl">break-if</span> done?
     file:&amp;:@:char<span class="Special"> &lt;- </span>new-file initial-position, col
     *board<span class="Special"> &lt;- </span>put-index *board, col, file
@@ -165,7 +165,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">8</span>
   row:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>equal row, <span class="Constant">8</span>
+    done?:bool<span class="Special"> &lt;- </span>equal row, <span class="Constant">8</span>
     <span class="muControl">break-if</span> done?
     square:char<span class="Special"> &lt;- </span>index *position, index
     *result<span class="Special"> &lt;- </span>put-index *result, row, square
@@ -182,7 +182,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   space:char<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
   <span class="Comment"># print each row</span>
   <span class="Delimiter">{</span>
-    done?:boolean<span class="Special"> &lt;- </span>lesser-than row, <span class="Constant">0</span>
+    done?:bool<span class="Special"> &lt;- </span>lesser-than row, <span class="Constant">0</span>
     <span class="muControl">break-if</span> done?
     <span class="Comment"># print rank number as a legend</span>
     rank:num<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
@@ -191,8 +191,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># print each square in the row</span>
     col:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
     <span class="Delimiter">{</span>
-      done?:boolean<span class="Special"> &lt;- </span>equal col:num, <span class="Constant">8</span>
-      <span class="muControl">break-if</span> done?:boolean
+      done?:bool<span class="Special"> &lt;- </span>equal col:num, <span class="Constant">8</span>
+      <span class="muControl">break-if</span> done?:bool
       f:&amp;:@:char<span class="Special"> &lt;- </span>index *board, col
       c:char<span class="Special"> &lt;- </span>index *f, row
       print screen, c
@@ -269,10 +269,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># prints only error messages to screen</span>
-<span class="muRecipe">def</span> read-move stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:&amp;:move, quit?:boolean, error?:boolean, stdin:&amp;:source:char, screen:&amp;:screen [
+<span class="muRecipe">def</span> read-move stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:&amp;:move, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  from-file:num, quit?:boolean, error?:boolean<span class="Special"> &lt;- </span>read-file stdin, screen
+  from-file:num, quit?:bool, error?:bool<span class="Special"> &lt;- </span>read-file stdin, screen
   <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
   <span class="Comment"># construct the move object</span>
@@ -285,8 +285,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
   to-file:num, quit?, error?<span class="Special"> &lt;- </span>read-file stdin, screen
-  <span class="muControl">return-if</span> quit?:boolean, <span class="Constant">0/dummy</span>
-  <span class="muControl">return-if</span> error?:boolean, <span class="Constant">0/dummy</span>
+  <span class="muControl">return-if</span> quit?:bool, <span class="Constant">0/dummy</span>
+  <span class="muControl">return-if</span> error?:bool, <span class="Constant">0/dummy</span>
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">to-file:offset</span>, to-file
   to-rank:num, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
   <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
@@ -297,13 +297,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># valid values for file: 0-7</span>
-<span class="muRecipe">def</span> read-file stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>file:num, quit:boolean, error:boolean, stdin:&amp;:source:char, screen:&amp;:screen [
+<span class="muRecipe">def</span> read-file stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>file:num, quit:bool, error:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
   <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
-    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
+    q-pressed?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
@@ -313,12 +313,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    empty-fake-keyboard?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
+    empty-fake-keyboard?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
     <span class="muControl">break-unless</span> empty-fake-keyboard?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
+    newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> newline?
     print screen, <span class="Constant">[that's not enough]</span>
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
@@ -326,7 +326,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file:num<span class="Special"> &lt;- </span>subtract c, <span class="Constant">97/a</span>
   <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
   <span class="Delimiter">{</span>
-    above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal file, <span class="Constant">0</span>
+    above-min:bool<span class="Special"> &lt;- </span>greater-or-equal file, <span class="Constant">0</span>
     <span class="muControl">break-if</span> above-min
     print screen, <span class="Constant">[file too low: ]</span>
     print screen, c
@@ -334,7 +334,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    below-max:boolean<span class="Special"> &lt;- </span>lesser-than file, <span class="Constant">8</span>
+    below-max:bool<span class="Special"> &lt;- </span>lesser-than file, <span class="Constant">8</span>
     <span class="muControl">break-if</span> below-max
     print screen, <span class="Constant">[file too high: ]</span>
     print screen, c
@@ -344,13 +344,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># valid values for rank: 0-7</span>
-<span class="muRecipe">def</span> read-rank stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>rank:num, quit?:boolean, error?:boolean, stdin:&amp;:source:char, screen:&amp;:screen [
+<span class="muRecipe">def</span> read-rank stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>rank:num, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
   <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
-    q-pressed?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
+    q-pressed?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
@@ -360,7 +360,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    newline?:boolean<span class="Special"> &lt;- </span>equal c, <span class="Constant">10</span>  <span class="Comment"># newline</span>
+    newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10</span>  <span class="Comment"># newline</span>
     <span class="muControl">break-unless</span> newline?
     print screen, <span class="Constant">[that's not enough]</span>
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
@@ -368,14 +368,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   rank:num<span class="Special"> &lt;- </span>subtract c, <span class="Constant">49/'1'</span>
   <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
   <span class="Delimiter">{</span>
-    above-min:boolean<span class="Special"> &lt;- </span>greater-or-equal rank, <span class="Constant">0</span>
+    above-min:bool<span class="Special"> &lt;- </span>greater-or-equal rank, <span class="Constant">0</span>
     <span class="muControl">break-if</span> above-min
     print screen, <span class="Constant">[rank too low: ]</span>
     print screen, c
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    below-max:boolean<span class="Special"> &lt;- </span>lesser-or-equal rank, <span class="Constant">7</span>
+    below-max:bool<span class="Special"> &lt;- </span>lesser-or-equal rank, <span class="Constant">7</span>
     <span class="muControl">break-if</span> below-max
     print screen, <span class="Constant">[rank too high: ]</span>
     print screen, c
@@ -386,13 +386,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># read a character from the given channel and check that it's what we expect</span>
 <span class="Comment"># return true on error</span>
-<span class="muRecipe">def</span> expect-from-channel stdin:&amp;:source:char, expected:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:boolean, stdin:&amp;:source:char, screen:&amp;:screen [
+<span class="muRecipe">def</span> expect-from-channel stdin:&amp;:source:char, expected:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:boolean, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
   <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
   <span class="Delimiter">{</span>
-    match?:boolean<span class="Special"> &lt;- </span>equal c, expected
+    match?:bool<span class="Special"> &lt;- </span>equal c, expected
     <span class="muControl">break-if</span> match?
     print screen, <span class="Constant">[expected character not found]</span>
   <span class="Delimiter">}</span>
@@ -408,7 +408,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'a'</span>
@@ -462,7 +462,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' now completes</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    completed?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    completed?:bool<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
     assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to terminate on newline]</span>
     trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
@@ -481,7 +481,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'q'</span>
@@ -490,7 +490,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' completes</span>
     wait-for-routine-to-block read-move-routine
     read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    completed?:boolean<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    completed?:bool<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
     assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to terminate on 'q']</span>
     trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
@@ -509,7 +509,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
@@ -531,7 +531,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
@@ -554,7 +554,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:boolean<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]</span>
     sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10/newline</span>

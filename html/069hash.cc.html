@@ -71,7 +71,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">size_t</span> hash<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   canonize<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span>  <span class="Comment">// optimization</span>
-    <span class="Identifier">return</span> hash_mu_string<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+    <span class="Identifier">return</span> hash_mu_text<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
     <span class="Identifier">return</span> hash_mu_address<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_scalar<span class="Delimiter">(</span>r<span class="Delimiter">))</span>
@@ -102,7 +102,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">return</span> hash<span class="Delimiter">(</span>h<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">size_t</span> hash_mu_string<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">size_t</span> hash_mu_text<span class="Delimiter">(</span><span class="Normal">size_t</span> h<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string input = read_mu_text<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> r<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>input<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     h = hash_iter<span class="Delimiter">(</span>h<span class="Delimiter">,</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">size_t</span>&gt;<span class="Delimiter">(</span>input<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)));</span>
