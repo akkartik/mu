@@ -245,7 +245,7 @@ static const char *terminfo_copy_string(char *data, int str, int table) {
   const char *src = data + table + off;
   int len = strlen(src);
   char *dst = malloc(len+1);
-  string_copy(dst, src, len);
+  string_copy(dst, src, len+1);
   return dst;
 }
 
