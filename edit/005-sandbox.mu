@@ -58,14 +58,14 @@ scenario run-and-show-results [
   # check that screen prints the results
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎divide-with-remainder 11, 3                      .
-    .                                                  ╎3                                                .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊divide-with-remainder 11, 3                      .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   screen-should-contain-in-color 7/white, [
     .                                                                                                    .
@@ -80,14 +80,14 @@ scenario run-and-show-results [
   ]
   screen-should-contain-in-color 245/grey, [
     .                                                                                                    .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
-    .                                                  ╎                                                 .
-    .                                                  ╎3                                                .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # sandbox menu in reverse video
   screen-should-contain-in-color 232/black, [
@@ -108,18 +108,18 @@ scenario run-and-show-results [
   # check that screen prints both sandboxes
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎divide-with-remainder 11, 3                      .
-    .                                                  ╎3                                                .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊divide-with-remainder 11, 3                      .
+    .                                                  ┊3                                                .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -251,7 +251,7 @@ def! render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (re
     row <- add row, 1
   }
   # render sandboxes
-  draw-horizontal screen, row, left, right
+  draw-horizontal screen, row, left, right, 9473/horizontal-double
   sandbox:&:sandbox <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from
   clear-rest-of-screen screen, row, left, right
@@ -297,7 +297,7 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
     at-bottom?:bool <- greater-or-equal row, screen-height
     return-if at-bottom?
     # draw solid line after sandbox
-    draw-horizontal screen, row, left, right
+    draw-horizontal screen, row, left, right, 9473/horizontal-double
   }
   # if hidden, reset row attributes
   {
@@ -534,14 +534,14 @@ reply z
   event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .recipe foo [                                      ╎─────────────────────────────────────────────────.
-    .local-scope                                       ╎0   edit          copy            delete         .
-    .z:num <- add 2, 2                                 ╎foo                                              .
-    .reply z                                           ╎4                                                .
-    .]                                                 ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .local-scope                                       ┊0   edit          copy            delete         .
+    .z:num <- add 2, 2                                 ┊foo                                              .
+    .reply z                                           ┊4                                                .
+    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
   assume-console [
@@ -556,14 +556,14 @@ reply z
   # check that screen updates the result on the right
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .recipe foo [                                      ╎─────────────────────────────────────────────────.
-    .local-scope                                       ╎0   edit          copy            delete         .
-    .z:num <- add 2, 3                                 ╎foo                                              .
-    .reply z                                           ╎5                                                .
-    .]                                                 ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .recipe foo [                                      ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .local-scope                                       ┊0   edit          copy            delete         .
+    .z:num <- add 2, 3                                 ┊foo                                              .
+    .reply z                                           ┊5                                                .
+    .]                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -584,18 +584,18 @@ scenario run-instruction-manages-screen-per-sandbox [
   # check that it prints a little toy screen
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎print-integer screen, 4                          .
-    .                                                  ╎screen:                                          .
-    .                                                  ╎  .4                             .               .
-    .                                                  ╎  .                              .               .
-    .                                                  ╎  .                              .               .
-    .                                                  ╎  .                              .               .
-    .                                                  ╎  .                              .               .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊print-integer screen, 4                          .
+    .                                                  ┊screen:                                          .
+    .                                                  ┊  .4                             .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊  .                              .               .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -652,10 +652,10 @@ scenario scrolling-down-past-bottom-of-recipe-editor [
   # no scroll
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -676,10 +676,10 @@ scenario cursor-down-in-recipe-editor [
   # cursor moves back to bottom
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .␣                                                 ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .␣                                                 ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -755,10 +755,10 @@ scenario scrolling-down-past-bottom-of-recipe-editor-2 [
   # no scroll, and cursor remains at top line
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -783,10 +783,10 @@ cd]
   # no scroll on recipe side, cursor moves on sandbox side
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎ab                                               .
-    .                                                  ╎␣d                                               .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊ab                                               .
+    .                                                  ┊␣d                                               .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -806,10 +806,10 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
   ]
   # switch to sandbox window and hit 'page-down'
   assume-console [
@@ -825,10 +825,10 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   # cursor moves to first sandbox
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # hit 'page-up'
   assume-console [
@@ -842,10 +842,10 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   # sandbox editor displays again, cursor is in editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎␣                                                .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
+    .                                                  ┊␣                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
   ]
 ]
 
@@ -950,10 +950,10 @@ scenario scrolling-down-on-recipe-side [
   # cursor moves down on recipe side
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .␣                                                 ╎                                                 .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
+    .␣                                                 ┊                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
   ]
 ]
 
@@ -977,15 +977,15 @@ scenario scrolling-through-multiple-sandboxes [
   print screen, cursor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎␣                                                .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊␣                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # hit 'page-down'
   assume-console [
@@ -1000,14 +1000,14 @@ scenario scrolling-through-multiple-sandboxes [
   # cursor moves to first sandbox
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # hit 'page-down' again
   assume-console [
@@ -1019,12 +1019,12 @@ scenario scrolling-through-multiple-sandboxes [
   # just second sandbox displayed
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # hit 'page-down' again
   assume-console [
@@ -1036,12 +1036,12 @@ scenario scrolling-through-multiple-sandboxes [
   # no change
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # hit 'page-up'
   assume-console [
@@ -1053,14 +1053,14 @@ scenario scrolling-through-multiple-sandboxes [
   # back to displaying both sandboxes without editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # hit 'page-up' again
   assume-console [
@@ -1074,15 +1074,15 @@ scenario scrolling-through-multiple-sandboxes [
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎␣                                                .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊␣                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
   # hit 'page-up' again
   assume-console [
@@ -1096,15 +1096,15 @@ scenario scrolling-through-multiple-sandboxes [
   # no change
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎␣                                                .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎1   edit          copy            delete         .
-    .                                                  ╎add 2, 2                                         .
-    .                                                  ╎4                                                .
+    .                                                  ┊␣                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊add 2, 2                                         .
+    .                                                  ┊4                                                .
   ]
 ]
 
@@ -1124,13 +1124,13 @@ scenario scrolling-manages-sandbox-index-correctly [
   event-loop screen, console, env
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable
   assume-console [
@@ -1143,12 +1143,12 @@ scenario scrolling-manages-sandbox-index-correctly [
   # cursor moves to first sandbox
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # hit 'page-up' again
   assume-console [
@@ -1160,13 +1160,13 @@ scenario scrolling-manages-sandbox-index-correctly [
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎                                                 .
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.
-    .                                                  ╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
   # hit 'page-down'
   assume-console [
@@ -1179,11 +1179,11 @@ scenario scrolling-manages-sandbox-index-correctly [
   # cursor moves to first sandbox
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .
-    .                                                  ╎add 1, 1                                         .
-    .                                                  ╎2                                                .
-    .                                                  ╎─────────────────────────────────────────────────.
-    .                                                  ╎                                                 .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
+    .                                                  ┊                                                 .
   ]
 ]

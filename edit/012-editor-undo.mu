@@ -119,7 +119,7 @@ scenario editor-can-undo-typing [
   screen-should-contain [
     .          .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor should be in the right place
@@ -132,7 +132,7 @@ scenario editor-can-undo-typing [
   screen-should-contain [
     .          .
     .1         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -249,7 +249,7 @@ scenario editor-can-undo-typing-multiple [
   screen-should-contain [
     .          .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -268,7 +268,7 @@ scenario editor-can-undo-typing-multiple-2 [
   screen-should-contain [
     .          .
     .012a      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # undo
@@ -282,7 +282,7 @@ scenario editor-can-undo-typing-multiple-2 [
   screen-should-contain [
     .          .
     .a         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor should be in the right place
@@ -295,7 +295,7 @@ scenario editor-can-undo-typing-multiple-2 [
   screen-should-contain [
     .          .
     .3a        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -316,7 +316,7 @@ scenario editor-can-undo-typing-enter [
     .          .
     .  abc     .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # line is indented
@@ -343,7 +343,7 @@ scenario editor-can-undo-typing-enter [
   screen-should-contain [
     .          .
     .  abc     .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor should be at end of line
@@ -356,7 +356,7 @@ scenario editor-can-undo-typing-enter [
   screen-should-contain [
     .          .
     .  abc1    .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -377,7 +377,7 @@ scenario editor-redo-typing [
   screen-should-contain [
     .          .
     .a         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo
@@ -391,7 +391,7 @@ scenario editor-redo-typing [
   screen-should-contain [
     .          .
     .012a      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor should be in the right place
@@ -404,7 +404,7 @@ scenario editor-redo-typing [
   screen-should-contain [
     .          .
     .0123a     .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -441,7 +441,7 @@ scenario editor-redo-typing-empty [
   screen-should-contain [
     .          .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo
@@ -455,7 +455,7 @@ scenario editor-redo-typing-empty [
   screen-should-contain [
     .          .
     .012       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor should be in the right place
@@ -468,7 +468,7 @@ scenario editor-redo-typing-empty [
   screen-should-contain [
     .          .
     .0123      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -497,7 +497,7 @@ ghi]
     .0abc      .
     .def       .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   # redo
   assume-console [
@@ -512,7 +512,7 @@ ghi]
     .0abc      .
     .def       .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -537,7 +537,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     .          .
     .  ab  cd  .
     .    efg   .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -564,7 +564,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     .          .
     .  ab  cd  .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # undo again
@@ -584,7 +584,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   screen-should-contain [
     .          .
     .  ab  cd  .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # undo again
@@ -604,7 +604,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   screen-should-contain [
     .          .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo
@@ -624,7 +624,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   screen-should-contain [
     .          .
     .  ab  cd  .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo again
@@ -645,7 +645,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     .          .
     .  ab  cd  .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo again
@@ -666,7 +666,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
     .          .
     .  ab  cd  .
     .    efg   .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -713,7 +713,7 @@ ghi]
     .1abc      .
     .def       .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -869,7 +869,7 @@ ghi]
     .abc       .
     .def       .
     .g1hi      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -920,7 +920,7 @@ ghi]
     .abc       .
     .def       .
     .g1hi      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -965,7 +965,7 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1068,7 +1068,7 @@ f]
     .d         .
     .e         .
     .f         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1103,7 +1103,7 @@ f]
     .d         .
     .e         .
     .f         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1148,7 +1148,7 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1193,7 +1193,7 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1238,7 +1238,7 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1283,7 +1283,7 @@ ghi]
     .abc       .
     .d1ef      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1382,7 +1382,7 @@ ghi]
     .abc       .
     .def       .
     .g1hi      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1417,7 +1417,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .adbc      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1437,7 +1437,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1457,7 +1457,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1477,7 +1477,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1497,7 +1497,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1517,7 +1517,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # cursor moves
@@ -1538,7 +1538,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   screen-should-contain [
     .          .
     .adbc      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -1565,7 +1565,7 @@ scenario editor-can-undo-and-redo-backspace [
   screen-should-contain [
     .          .
     .a         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -1590,7 +1590,7 @@ scenario editor-can-undo-and-redo-backspace [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo
@@ -1609,7 +1609,7 @@ scenario editor-can-undo-and-redo-backspace [
   screen-should-contain [
     .          .
     .a         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1713,7 +1713,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .af        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -1738,7 +1738,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .adef      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # undo backspace
@@ -1757,7 +1757,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .abdef     .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # undo first delete
@@ -1776,7 +1776,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .abcdef    .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo first delete
@@ -1796,7 +1796,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .abdef     .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo backspace
@@ -1816,7 +1816,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .adef      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   # redo deletes
@@ -1836,7 +1836,7 @@ scenario editor-can-undo-and-redo-delete [
   screen-should-contain [
     .          .
     .af        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1901,7 +1901,7 @@ def]
     .          .
     .a         .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -1921,7 +1921,7 @@ def]
     .          .
     .abc       .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -1942,7 +1942,7 @@ def]
     .          .
     .a         .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -1962,7 +1962,7 @@ def]
     .          .
     .a1        .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2004,7 +2004,7 @@ def]
     .          .
     .c         .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -2024,7 +2024,7 @@ def]
     .          .
     .abc       .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -2045,7 +2045,7 @@ def]
     .          .
     .c         .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   3:num/raw <- get *e, cursor-row:offset
@@ -2065,7 +2065,7 @@ def]
     .          .
     .1c        .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -2104,7 +2104,7 @@ scenario editor-can-undo-and-redo-ctrl-u-2 [
   screen-should-contain [
     .          .
     .abc       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]

@@ -57,7 +57,7 @@ scenario editor-handles-backspace-key [
   screen-should-contain [
     .          .
     .bc        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -229,7 +229,7 @@ cd]
   screen-should-contain [
     .          .
     .abcd      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   memory-should-contain [
@@ -260,7 +260,7 @@ ghi jkl]
     .          .
     .abc defgh↩.
     .i jkl     .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -276,7 +276,7 @@ scenario editor-wraps-long-lines-on-backspace [
     .          .
     .abc def↩  .
     . ghij     .
-    .╌╌╌╌╌╌╌╌  .
+    .┈┈┈┈┈┈┈┈  .
   ]
   $clear-trace
   # position the cursor somewhere in the middle of the top screen line and hit backspace
@@ -292,7 +292,7 @@ scenario editor-wraps-long-lines-on-backspace [
     .          .
     .abcdef ↩  .
     .ghij      .
-    .╌╌╌╌╌╌╌╌  .
+    .┈┈┈┈┈┈┈┈  .
     .          .
   ]
 ]
@@ -314,7 +314,7 @@ scenario editor-handles-delete-key [
   screen-should-contain [
     .          .
     .bc        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 3, [print-character]  # length of original line to overwrite
@@ -328,7 +328,7 @@ scenario editor-handles-delete-key [
   screen-should-contain [
     .          .
     .c         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 2, [print-character]  # new length to overwrite
@@ -404,7 +404,7 @@ scenario editor-moves-cursor-right-with-key [
   screen-should-contain [
     .          .
     .a0bc      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 3, [print-character]  # 0 and following characters
@@ -513,7 +513,7 @@ d]
     .          .
     .abc       .
     .0d        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 2, [print-character]  # new length of second line
@@ -540,7 +540,7 @@ d]
     .          .
     . abc      .
     . 0d       .
-    . ╌╌╌╌╌╌╌╌╌.
+    . ┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -564,7 +564,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
     .          .
     .abcd↩     .
     .ef        .
-    .╌╌╌╌╌     .
+    .┈┈┈┈┈     .
     .          .
   ]
   memory-should-contain [
@@ -630,7 +630,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
     .          .
     . abcd↩    .
     . ef       .
-    . ╌╌╌╌╌    .
+    . ┈┈┈┈┈    .
     .          .
   ]
   memory-should-contain [
@@ -662,7 +662,7 @@ d]
     .          .
     .abc       .
     .0d        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 2, [print-character]
@@ -689,7 +689,7 @@ scenario editor-moves-cursor-left-with-key [
   screen-should-contain [
     .          .
     .a0bc      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 3, [print-character]
@@ -765,7 +765,7 @@ g]
     .abc       .
     .def0      .
     .g         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   check-trace-count-for-label 1, [print-character]  # just the '0'
 ]
@@ -794,7 +794,7 @@ g]
     .0abc      .
     .def       .
     .g         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   check-trace-count-for-label 4, [print-character]  # length of first line
 ]
@@ -823,7 +823,7 @@ d]
     .abc       .
     .0         .
     .d         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
   check-trace-count-for-label 1, [print-character]  # just the '0'
 ]
@@ -839,7 +839,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
     .          .
     .abcd↩     .
     .ef        .
-    .╌╌╌╌╌     .
+    .┈┈┈┈┈     .
     .          .
   ]
   # position cursor right after empty line
@@ -873,7 +873,7 @@ g]
     .abcd↩     .
     .ef        .
     .g         .
-    .╌╌╌╌╌     .
+    .┈┈┈┈┈     .
   ]
   # position cursor right after empty line
   assume-console [
@@ -905,7 +905,7 @@ e]
     .          .
     .abcd      .
     .e         .
-    .╌╌╌╌╌     .
+    .┈┈┈┈┈     .
     .          .
   ]
   # position cursor right after empty line
@@ -961,7 +961,7 @@ def]
     .          .
     .a0bc      .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1077,7 +1077,7 @@ def]
     .          .
     .ab0       .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1114,7 +1114,7 @@ def]
     .          .
     .0         .
     .def       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1155,7 +1155,7 @@ ghi]
     .abc       .
     .0def      .
     .ghi       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
@@ -1194,7 +1194,7 @@ def]
     .          .
     .abc       .
     .0def      .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1285,7 +1285,7 @@ de]
     .          .
     .abc       .
     .de0       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1488,7 +1488,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
     .          .
     .123z      .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
   check-trace-count-for-label 1, [print-character]
@@ -1639,7 +1639,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
     .          .
     .123       .
     .6         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1703,7 +1703,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
     .          .
     .3         .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1727,7 +1727,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     .          .
     .          .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1751,7 +1751,7 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
     .          .
     .123       .
     .          .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1777,7 +1777,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
     .          .
     .1         .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1833,7 +1833,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
     .          .
     .123       .
     .4         .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1857,7 +1857,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
     .          .
     .12        .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1881,7 +1881,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
     .          .
     .123       .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1905,7 +1905,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
     .          .
     .123       .
     .45        .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]
@@ -1929,7 +1929,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
     .          .
     .123       .
     .456       .
-    .╌╌╌╌╌╌╌╌╌╌.
+    .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
 ]

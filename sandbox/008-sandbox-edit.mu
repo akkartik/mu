@@ -13,11 +13,11 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
   # click somewhere on the sandbox
@@ -31,7 +31,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   screen-should-contain [
     .                               run (F4)           .
     .add 2, 2                                          .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
   # cursor should be in the right place
@@ -44,7 +44,7 @@ scenario clicking-on-a-sandbox-moves-it-to-editor [
   screen-should-contain [
     .                               run (F4)           .
     .0add 2, 2                                         .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
 ]
@@ -114,7 +114,7 @@ scenario sandbox-with-print-can-be-edited [
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .print-integer screen, 4                           .
     .screen:                                           .
@@ -123,7 +123,7 @@ scenario sandbox-with-print-can-be-edited [
     .  .                              .                .
     .  .                              .                .
     .  .                              .                .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
   # edit the sandbox
@@ -136,7 +136,7 @@ scenario sandbox-with-print-can-be-edited [
   screen-should-contain [
     .                               run (F4)           .
     .print-integer screen, 4                           .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
     .                                                  .
   ]
@@ -162,11 +162,11 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   event-loop screen, console, env
   screen-should-contain [
     .                               run (F4)           .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
   # edit the second sandbox
@@ -180,11 +180,11 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   screen-should-contain [
     .                               run (F4)           .
     .add 2, 2                                          .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
 ]
@@ -208,11 +208,11 @@ scenario editing-sandbox-updates-sandbox-count [
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1   edit           copy           delete          .
   ]
   # edit the second sandbox, then resave
@@ -227,11 +227,11 @@ scenario editing-sandbox-updates-sandbox-count [
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .0   edit           copy           delete          .
     .add 1, 1                                          .
     .2                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1   edit           copy           delete          .
   ]
   # now try to scroll past end
@@ -246,11 +246,11 @@ scenario editing-sandbox-updates-sandbox-count [
   # screen should show just final sandbox
   screen-should-contain [
     .                               run (F4)           .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .1   edit           copy           delete          .
     .add 2, 2                                          .
     .4                                                 .
-    .──────────────────────────────────────────────────.
+    .━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━.
     .                                                  .
   ]
 ]

@@ -269,7 +269,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   clear-line-until screen, right
   row <- add row, 1
   # draw solid line after code (you'll see why in later layers)
-  draw-horizontal screen, row, left, right
+  draw-horizontal screen, row, left, right, 9473/horizontal
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
 ]
