@@ -229,12 +229,12 @@ Mu assumes that all ingredients passed in to functions are immutable by
 default -- *unless* they are also products. So this program will throw an
 error:
 
-<img alt='immutable ingredient triggering an error' width='75%' src='html/immutable-error.png'>
+<img alt='immutable ingredient triggering an error' src='html/immutable-error.png'>
 
 To modify `foo`'s ingredient, you have to add it to the list of products
 returned:
 
-<img alt='mutable ingredient' width='75%' src='html/mutable.png'>
+<img alt='mutable ingredient' src='html/mutable.png'>
 
 The names of the variables are important here: a function that takes an
 (immutable) address and returns a different one is different from a function
