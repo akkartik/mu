@@ -2,6 +2,7 @@
 # display the position after each move.
 
 def main [
+  local-scope
   open-console  # take control of screen, keyboard and mouse
 
   # The chessboard function takes keyboard and screen objects as 'ingredients'.
@@ -19,6 +20,7 @@ def main [
 ## But enough about mu. Here's what it looks like to run the chessboard program.
 
 scenario print-board-and-read-move [
+  local-scope
   trace-until 100/app
   # we'll make the screen really wide because the program currently prints out a long line
   assume-screen 120/width, 20/height
@@ -28,7 +30,6 @@ scenario print-board-and-read-move [
 ]
   ]
   run [
-    local-scope
     screen:&:screen, console:&:console <- chessboard screen:&:screen, console:&:console
     # icon for the cursor
     cursor-icon:char <- copy 9251/␣
@@ -62,7 +63,7 @@ scenario print-board-and-read-move [
 
 ## Here's how 'chessboard' is implemented.
 
-type board = address:@:&:@:char
+type board = &:@:&:@:char  # a 2-D array of arrays of characters
 
 def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:console [
   local-scope
@@ -199,10 +200,10 @@ def initial-position -> board:board [
 ]
 
 scenario printing-the-board [
+  local-scope
+  board:board <- initial-position
   assume-screen 30/width, 12/height
   run [
-    local-scope
-    board:board <- initial-position
     screen:&:screen <- print-board screen:&:screen, board
   ]
   screen-should-contain [
@@ -364,11 +365,11 @@ def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> r
 ]
 
 scenario read-move-blocking [
+  local-scope
   assume-screen 20/width, 2/height
+  source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+  read-move-routine:num/routine <- start-running read-move, source, screen:&:screen
   run [
-    local-scope
-    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-    read-move-routine:num/routine <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -437,11 +438,11 @@ F read-move-blocking: routine failed to terminate on newline]
 ]
 
 scenario read-move-quit [
+  local-scope
   assume-screen 20/width, 2/height
+  source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+  read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    local-scope
-    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -465,11 +466,11 @@ F read-move-quit: routine failed to terminate on 'q']
 ]
 
 scenario read-move-illegal-file [
+  local-scope
   assume-screen 20/width, 2/height
+  source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+  read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    local-scope
-    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -487,11 +488,11 @@ F read-move-illegal-file: routine failed to pause after coming up (before any ke
 ]
 
 scenario read-move-illegal-rank [
+  local-scope
   assume-screen 20/width, 2/height
+  source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+  read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    local-scope
-    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -510,11 +511,11 @@ F read-move-illegal-rank: routine failed to pause after coming up (before any ke
 ]
 
 scenario read-move-empty [
+  local-scope
   assume-screen 20/width, 2/height
+  source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
+  read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    local-scope
-    source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-    read-move-routine:num <- start-running read-move, source, screen:&:screen
     # 'read-move' is waiting for input
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
@@ -547,12 +548,12 @@ def make-move board:board, m:&:move -> board:board [
 ]
 
 scenario making-a-move [
+  local-scope
   assume-screen 30/width, 12/height
+  board:board <- initial-position
+  move:&:move <- new move:type
+  *move <- merge 6/g, 1/'2', 6/g, 3/'4'
   run [
-    local-scope
-    board:board <- initial-position
-    move:&:move <- new move:type
-    *move <- merge 6/g, 1/'2', 6/g, 3/'4'
     board <- make-move board, move
     screen:&:screen <- print-board screen:&:screen, board
   ]

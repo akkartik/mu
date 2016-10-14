@@ -38,6 +38,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># display the position after each move.</span>
 
 <span class="muRecipe">def</span> main [
+  <span class="Constant">local-scope</span>
   open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
 
   <span class="Comment"># The chessboard function takes keyboard and screen objects as 'ingredients'.</span>
@@ -55,6 +56,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="SalientComment">## But enough about mu. Here's what it looks like to run the chessboard program.</span>
 
 <span class="muScenario">scenario</span> print-board-and-read-move [
+  <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>
   <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
   assume-screen <span class="Constant">120/width</span>, <span class="Constant">20/height</span>
@@ -64,7 +66,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
   ]
   run [
-    <span class="Constant">local-scope</span>
     screen:&amp;:screen, console:&amp;:console<span class="Special"> &lt;- </span>chessboard screen:&amp;:screen, console:&amp;:console
     <span class="Comment"># icon for the cursor</span>
     cursor-icon:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
@@ -98,7 +99,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
 
-<span class="muData">type</span> board = address:@:&amp;:@:char
+<span class="muData">type</span> board = &amp;:@:&amp;:@:char  <span class="Comment"># a 2-D array of arrays of characters</span>
 
 <span class="muRecipe">def</span> chessboard screen:&amp;:screen, console:&amp;:console<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console [
   <span class="Constant">local-scope</span>
@@ -235,10 +236,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> printing-the-board [
+  <span class="Constant">local-scope</span>
+  board:board<span class="Special"> &lt;- </span>initial-position
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
-    <span class="Constant">local-scope</span>
-    board:board<span class="Special"> &lt;- </span>initial-position
     screen:&amp;:screen<span class="Special"> &lt;- </span>print-board screen:&amp;:screen, board
   ]
   screen-should-contain [
@@ -400,11 +401,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> read-move-blocking [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num/routine<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    read-move-routine:num/routine<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
@@ -473,11 +474,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> read-move-quit [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
@@ -501,11 +502,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> read-move-illegal-file [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
@@ -523,11 +524,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> read-move-illegal-rank [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
@@ -546,11 +547,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> read-move-empty [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
   run [
-    <span class="Constant">local-scope</span>
-    source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-    read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
     read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
@@ -583,12 +584,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muScenario">scenario</span> making-a-move [
+  <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
+  board:board<span class="Special"> &lt;- </span>initial-position
+  move:&amp;:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
+  *move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
   run [
-    <span class="Constant">local-scope</span>
-    board:board<span class="Special"> &lt;- </span>initial-position
-    move:&amp;:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-    *move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
     board<span class="Special"> &lt;- </span>make-move board, move
     screen:&amp;:screen<span class="Special"> &lt;- </span>print-board screen:&amp;:screen, board
   ]
