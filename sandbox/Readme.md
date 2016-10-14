@@ -17,4 +17,4 @@ the right pane and your editor on the left. You should be able to hit F4 in
 either side to run the sandbox.
 
 Known issues: you have to explicitly save inside your editor before hitting
-F4, unlike with 'mu edit'.
+F4, unlike with `mu edit`.
