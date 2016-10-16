@@ -154,7 +154,7 @@ case _READ_FROM_SOCKET: {
   int bytes_read = read(socket_fd, contents, bytes - 1 /* null-terminated */);
 //?   cerr << "Read:\n" << string(contents) << "\n";
   products.resize(2);
-  products.at(0).push_back(new_mu_text(string(contents)));
+  products.at(0).push_back(new_mu_text(contents));
   products.at(1).push_back(bytes_read);
   break;
 }
@@ -175,7 +175,7 @@ case _WRITE_TO_SOCKET: {
 case _WRITE_TO_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* session = reinterpret_cast<socket_t*>(x);
-  // Write one character to a session at a time.
+  // write just one character at a time to the session socket
   long long int y = static_cast<long long int>(ingredients.at(1).at(0));
   char c = static_cast<char>(y);
   if (write(session->fd, &c, 1) != 1) {
