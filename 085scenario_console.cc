@@ -10,7 +10,7 @@ recipes_taking_literal_strings.insert("assume-console");
 
 :(scenarios run_mu_scenario)
 :(scenario keyboard_in_scenario)
-scenario keyboard-in-scenario [
+scenario foo [
   assume-console [
     type [abc]
   ]
@@ -205,7 +205,7 @@ void initialize_special_name(reagent& r) {
 }
 
 :(scenario events_in_scenario)
-scenario events-in-scenario [
+scenario foo [
   assume-console [
     type [abc]
     left-click 0, 1

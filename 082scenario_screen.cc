@@ -11,7 +11,7 @@ recipes_taking_literal_strings.insert("screen-should-contain-in-color");
 
 :(scenarios run_mu_scenario)
 :(scenario screen_in_scenario)
-scenario screen-in-scenario [
+scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
@@ -28,7 +28,7 @@ scenario screen-in-scenario [
 # checks are inside scenario
 
 :(scenario screen_in_scenario_unicode)
-scenario screen-in-scenario-unicode-color [
+scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
@@ -48,7 +48,7 @@ scenario screen-in-scenario-unicode-color [
 
 :(scenario screen_in_scenario_color)
 # screen-should-contain can check unicode characters in the fake screen
-scenario screen-in-scenario-color [
+scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
@@ -85,7 +85,7 @@ scenario screen-in-scenario-color [
 :(scenario screen_in_scenario_error)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
-scenario screen-in-scenario-error [
+scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
@@ -105,7 +105,7 @@ scenario screen-in-scenario-error [
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
 # screen-should-contain can check unicode characters in the fake screen
-scenario screen-in-scenario-color [
+scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
@@ -175,10 +175,10 @@ if (curr.name == "assume-screen") {
 
 :(scenario assume_screen_shows_up_in_errors)
 % Hide_errors = true;
-scenario error-in-assume-screen [
+scenario foo [
   assume-screen width, 5
 ]
-+error: scenario_error-in-assume-screen: missing type for 'width' in 'assume-screen width, 5'
++error: scenario_foo: missing type for 'width' in 'assume-screen width, 5'
 
 //: screen-should-contain is a regular instruction
 :(before "End Primitive Recipe Declarations")

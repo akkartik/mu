@@ -6,7 +6,7 @@
 
 :(scenarios run_mu_scenario)
 :(scenario simple_filesystem)
-scenario assume-filesystem [
+scenario foo [
   local-scope
   assume-filesystem [
     # file 'a' containing two lines of data
@@ -50,7 +50,7 @@ de f
 ]
 
 :(scenario escaping_file_contents)
-scenario assume-filesystem [
+scenario foo [
   local-scope
   assume-filesystem [
     # file 'a' containing a '|'
