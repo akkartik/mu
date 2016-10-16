@@ -28,12 +28,13 @@ scenario foo [
 # checks are inside scenario
 
 :(scenario screen_in_scenario_unicode)
+# screen-should-contain can check unicode characters in the fake screen
 scenario foo [
   local-scope
   assume-screen 5/width, 3/height
   run [
     lambda:char <- copy 955/greek-small-lambda
-    screen:&:screen <- print screen:&:screen, lambda, 1/red
+    screen:&:screen <- print screen:&:screen, lambda
     a:char <- copy 97/a
     screen:&:screen <- print screen:&:screen, a
   ]
@@ -47,7 +48,6 @@ scenario foo [
 # checks are inside scenario
 
 :(scenario screen_in_scenario_color)
-# screen-should-contain can check unicode characters in the fake screen
 scenario foo [
   local-scope
   assume-screen 5/width, 3/height
