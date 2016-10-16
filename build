@@ -18,7 +18,7 @@ export CFLAGS="$CFLAGS -Wall -Wextra -ftrapv -fno-strict-aliasing"
 
 # return 1 if $1 is older than _any_ of the remaining args
 older_than() {
-  target=$1
+  local target=$1
   shift
   if [ ! -e $target ]
   then
@@ -26,6 +26,7 @@ older_than() {
     echo "updating $target" >&2
     return 0  # success
   fi
+  local f
   for f in $*
   do
     if [ $f -nt $target ]
@@ -99,7 +100,7 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
     }
     for f in mu_*.cc
     do
-      older_than `echo $f |sed 's/\.cc$/.o/'` $f && {
+      older_than `echo $f |sed 's/\.cc$/.o/'` $f header global_declarations_list && {
         $CXX $CFLAGS -c $f
       }
     done
