@@ -19,7 +19,7 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
     file:num <- $open-file-for-reading filename
     assert file, [file not found]
     contents:&:source:char, sink:&:sink:char <- new-channel 30
-    start-running transmit-from-file file, sink
+    start-running receive-from-file file, sink
     return
   }
   # fake file system
@@ -36,13 +36,13 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
     loop-unless found?
     contents:&:source:char, sink:&:sink:char <- new-channel 30
     curr-contents:text <- get tmp, contents:offset
-    start-running transmit-from-text curr-contents, sink
+    start-running receive-from-text curr-contents, sink
     return
   }
   return 0/not-found
 ]
 
-def transmit-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
@@ -55,7 +55,7 @@ def transmit-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
   file <- $close-file file
 ]
 
-def transmit-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   i:num <- copy 0

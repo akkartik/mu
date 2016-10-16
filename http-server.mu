@@ -14,7 +14,7 @@ def main [
   return-unless socket
   session:num <- $accept socket
   contents:&:source:char, sink:&:sink:char <- new-channel 30
-  sink <- start-running transmit-from-socket session, sink
+  sink <- start-running receive-from-socket session, sink
   buf:&:buffer <- new-buffer 30
   {
     c:char, done?:bool, contents <- read contents
@@ -50,7 +50,7 @@ def write-to-socket session-socket:num, s:text [
   }
 ]
 
-def transmit-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
