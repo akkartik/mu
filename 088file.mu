@@ -1,20 +1,20 @@
-# Wrappers around file system primitives that take a 'filesystem' object and
+# Wrappers around file system primitives that take a 'resources' object and
 # are thus easier to test.
 
-container filesystem [
-  data:&:@:file-mapping
+container resources [
+  data:&:@:resource
 ]
 
-container file-mapping [
+container resource [
   name:text
   contents:text
 ]
 
-def start-reading fs:&:filesystem, filename:text -> contents:&:source:char [
+def start-reading resources:&:resources, filename:text -> contents:&:source:char [
   local-scope
   load-ingredients
   {
-    break-if fs
+    break-if resources
     # real file system
     file:num <- $open-file-for-reading filename
     assert file, [file not found]
@@ -24,12 +24,12 @@ def start-reading fs:&:filesystem, filename:text -> contents:&:source:char [
   }
   # fake file system
   i:num <- copy 0
-  data:&:@:file-mapping <- get *fs, data:offset
+  data:&:@:resource <- get *resources, data:offset
   len:num <- length *data
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-    tmp:file-mapping <- index *data, i
+    tmp:resource <- index *data, i
     i <- add i, 1
     curr-filename:text <- get tmp, name:offset
     found?:bool <- equal filename, curr-filename
@@ -71,12 +71,12 @@ def transmit-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
   sink <- close sink
 ]
 
-def start-writing fs:&:filesystem, filename:text -> sink:&:sink:char, routine-id:num [
+def start-writing resources:&:resources, filename:text -> sink:&:sink:char, routine-id:num [
   local-scope
   load-ingredients
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
-    break-if fs
+    break-if resources
     # real file system
     file:num <- $open-file-for-writing filename
     assert file, [no such file]
@@ -85,7 +85,7 @@ def start-writing fs:&:filesystem, filename:text -> sink:&:sink:char, routine-id
   }
   # fake file system
   # beware: doesn't support multiple concurrent writes yet
-  routine-id <- start-running transmit-to-fake-file fs, filename, source
+  routine-id <- start-running transmit-to-fake-file resources, filename, source
 ]
 
 def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
@@ -100,7 +100,7 @@ def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
   file <- $close-file file
 ]
 
-def transmit-to-fake-file fs:&:filesystem, filename:text, source:&:source:char -> fs:&:filesystem, source:&:source:char [
+def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:char -> resources:&:resources, source:&:source:char [
   local-scope
   load-ingredients
   # compute new file contents
@@ -112,35 +112,35 @@ def transmit-to-fake-file fs:&:filesystem, filename:text, source:&:source:char -
     loop
   }
   contents:text <- buffer-to-array buf
-  new-file-mapping:file-mapping <- merge filename, contents
-  # write to filesystem
+  new-resource:resource <- merge filename, contents
+  # write to resources
   curr-filename:text <- copy 0
-  data:&:@:file-mapping <- get *fs, data:offset
+  data:&:@:resource <- get *resources, data:offset
   # replace file contents if it already exists
   i:num <- copy 0
   len:num <- length *data
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-    tmp:file-mapping <- index *data, i
+    tmp:resource <- index *data, i
     curr-filename <- get tmp, name:offset
     found?:bool <- equal filename, curr-filename
     loop-unless found?
-    put-index *data, i, new-file-mapping
+    put-index *data, i, new-resource
     reply
   }
   # if file didn't already exist, make room for it
   new-len:num <- add len, 1
-  new-data:&:@:file-mapping <- new file-mapping:type, new-len
-  put *fs, data:offset, new-data
+  new-data:&:@:resource <- new resource:type, new-len
+  put *resources, data:offset, new-data
   # copy over old files
   i:num <- copy 0
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-    tmp:file-mapping <- index *data, i
+    tmp:resource <- index *data, i
     put-index *new-data, i, tmp
   }
   # write new file
-  put-index *new-data, len, new-file-mapping
+  put-index *new-data, len, new-resource
 ]

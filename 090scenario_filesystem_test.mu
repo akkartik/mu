@@ -2,12 +2,12 @@
 
 scenario read-from-fake-file [
   local-scope
-  assume-filesystem [
+  assume-resources [
     [a] <- [
       |xyz|
     ]
   ]
-  contents:&:source:char <- start-reading filesystem:&:filesystem, [a]
+  contents:&:source:char <- start-reading resources:&:resources, [a]
   1:char/raw <- read contents
   2:char/raw <- read contents
   3:char/raw <- read contents
@@ -24,14 +24,14 @@ scenario read-from-fake-file [
 
 scenario write-to-fake-file [
   local-scope
-  assume-filesystem [
+  assume-resources [
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing filesystem:&:filesystem, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:text <- slurp filesystem, [a]
+  contents-read-back:text <- slurp resources, [a]
   10:bool/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
@@ -40,15 +40,15 @@ scenario write-to-fake-file [
 
 scenario write-to-fake-file-that-exists [
   local-scope
-  assume-filesystem [
+  assume-resources [
     [a] <- []
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing filesystem:&:filesystem, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:text <- slurp filesystem, [a]
+  contents-read-back:text <- slurp resources, [a]
   10:bool/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written
@@ -57,20 +57,20 @@ scenario write-to-fake-file-that-exists [
 
 scenario write-to-existing-file-preserves-other-files [
   local-scope
-  assume-filesystem [
+  assume-resources [
     [a] <- []
     [b] <- [
       |bcd|
     ]
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing filesystem:&:filesystem, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
   wait-for-routine writer
-  contents-read-back:text <- slurp filesystem, [a]
+  contents-read-back:text <- slurp resources, [a]
   10:bool/raw <- equal contents-read-back, [xy]
-  other-file-contents:text <- slurp filesystem, [b]
+  other-file-contents:text <- slurp resources, [b]
   11:bool/raw <- equal other-file-contents, [bcd
 ]
   memory-should-contain [
@@ -79,10 +79,10 @@ scenario write-to-existing-file-preserves-other-files [
   ]
 ]
 
-def slurp fs:&:filesystem, filename:text -> contents:text [
+def slurp resources:&:resources, filename:text -> contents:text [
   local-scope
   load-ingredients
-  source:&:source:char <- start-reading fs, filename
+  source:&:source:char <- start-reading resources, filename
   buf:&:buffer <- new-buffer 30/capacity
   {
     c:char, done?:bool, source <- read source
