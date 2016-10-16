@@ -7,7 +7,7 @@ scenario read-from-fake-file [
       |xyz|
     ]
   ]
-  contents:&:source:char <- start-reading resources:&:resources, [a]
+  contents:&:source:char <- start-reading resources, [a]
   1:char/raw <- read contents
   2:char/raw <- read contents
   3:char/raw <- read contents
@@ -26,7 +26,7 @@ scenario write-to-fake-file [
   local-scope
   assume-resources [
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -43,7 +43,7 @@ scenario write-to-fake-file-that-exists [
   assume-resources [
     [a] <- []
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink
@@ -63,7 +63,7 @@ scenario write-to-existing-file-preserves-other-files [
       |bcd|
     ]
   ]
-  sink:&:sink:char, writer:num/routine <- start-writing resources:&:resources, [a]
+  sink:&:sink:char, writer:num/routine <- start-writing resources, [a]
   sink <- write sink, 120/x
   sink <- write sink, 121/y
   close sink

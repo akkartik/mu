@@ -1,8 +1,6 @@
 //: Clean syntax to manipulate and check the file system in scenarios.
-//: Instructions 'assume-resources' and 'resources-should-contain' implicitly create
-//: a variable called 'resources' that is accessible to later instructions in
-//: the scenario. 'resources-should-contain' can check unicode characters in
-//: the fake resources
+//: Instruction 'assume-resources' implicitly creates a variable called
+//: 'resources' that is accessible to later instructions in the scenario.
 
 :(scenarios run_mu_scenario)
 :(scenario simple_filesystem)
