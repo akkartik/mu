@@ -52,8 +52,7 @@ socket_t* server_socket(int port) {
   result->fd = socket(AF_INET, SOCK_STREAM, 0);
   if (result->fd < 0) {
     raise << "Failed to create server socket.\n" << end();
-    delete result;
-    return NULL;
+    return result;
   }
   int dummy = 0;
   setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
