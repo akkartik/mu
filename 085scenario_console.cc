@@ -187,12 +187,9 @@ void initialize_key_names() {
   Key["escape"] = TB_KEY_ESC;
 }
 
-:(after "Begin transform_names Ingredient Special-cases(ingredient, inst, caller)")
+:(after "Begin check_or_set_invalid_types(r)")
 if (is_scenario(caller))
-  initialize_special_name(ingredient);
-:(after "Begin transform_names Product Special-cases(product, inst, caller)")
-if (is_scenario(caller))
-  initialize_special_name(product);
+  initialize_special_name(r);
 :(code)
 bool is_scenario(const recipe& caller) {
   return starts_with(caller.name, "scenario_");

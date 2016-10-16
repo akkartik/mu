@@ -874,15 +874,20 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
   for (int index = 0; index < SIZE(caller.steps); ++index) {
     instruction& inst = caller.steps.at(index);
     for (int i = 0; i < SIZE(inst.ingredients); ++i)
-      check_or_set_invalid_types(inst.ingredients.at(i).type, maybe(caller.name), "'"+inst.original_string+"'");
+      check_or_set_invalid_types(inst.ingredients.at(i), caller, inst);
     for (int i = 0; i < SIZE(inst.products); ++i)
-      check_or_set_invalid_types(inst.products.at(i).type, maybe(caller.name), "'"+inst.original_string+"'");
+      check_or_set_invalid_types(inst.products.at(i), caller, inst);
   }
   // End check_or_set_invalid_types
 }
 
+void check_or_set_invalid_types(reagent& r, const recipe& caller, const instruction& inst) {
+  // Begin check_or_set_invalid_types(r)
+  check_or_set_invalid_types(r.type, maybe(caller.name), "'"+inst.original_string+"'");
+}
+
 void check_or_set_invalid_types(type_tree* type, const string& block, const string& name) {
-  if (!type) return;  // will throw a more precise error elsewhere
+  if (!type) return;
   // End Container Type Checks
   if (!type->atom) {
     check_or_set_invalid_types(type->left, block, name);

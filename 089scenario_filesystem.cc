@@ -20,7 +20,7 @@ scenario foo [
       |xyz|
     ]
   ]
-  data:&:@:file-mapping <- get *filesystem:&:filesystem, data:offset
+  data:&:@:file-mapping <- get *filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
   10:@:char/raw <- copy *file1-name
@@ -59,7 +59,7 @@ scenario foo [
       |x\\\\|yz|
     ]
   ]
-  data:&:@:file-mapping <- get *filesystem:&:filesystem, data:offset
+  data:&:@:file-mapping <- get *filesystem, data:offset
   file1:file-mapping <- index *data, 0
   file1-name:text <- get file1, name:offset
   10:@:char/raw <- copy *file1-name
@@ -80,6 +80,8 @@ Name[r]["filesystem"] = FILESYSTEM;
 //: make 'filesystem' always a raw location in scenarios
 :(before "End is_special_name Cases")
 if (s == "filesystem") return true;
+:(before "End Initialize Type Of Special Name In Scenario(r)")
+if (r.name == "filesystem") r.type = new_type_tree("address:filesystem");
 
 :(before "End initialize_transform_rewrite_literal_string_to_text()")
 recipes_taking_literal_strings.insert("assume-filesystem");
