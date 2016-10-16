@@ -15,9 +15,9 @@ container local-network [
 #
 # For reading, `receive-from-socket` will check for a
 # port-connection on the port parameter that's been passed in. If there's
-# no port-connection for that port, it will return nothing and log. If there
-# is a port-connection for that port, it will transmit the contents to the
-# passed in sink.
+# no port-connection for that port, it will return nothing and log an error.
+# If there is a port-connection for that port, it will transmit the contents
+# to the provided sink.
 #
 # For writing, `start-writing-socket` returns a sink connecting the
 # caller to the socket on the passed-in port.
