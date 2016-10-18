@@ -372,12 +372,30 @@ for (int i = 0; i < SIZE(Routines); ++i) {
   }
 }
 
+//: yield voluntarily to let some other routine run
+
+:(before "End Primitive Recipe Declarations")
+SWITCH,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "switch", SWITCH);
+:(before "End Primitive Recipe Checks")
+case SWITCH: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SWITCH: {
+  ++current_step_index();
+  goto stop_running_current_routine;
+}
+
+//:(scenario switch_preempts_current_routine)
+
+
 //:: helpers for manipulating routines in tests
 //:
 //: Managing arbitrary scenarios requires the ability to:
-//:   a) stop the current routine (`switch`)
-//:   b) restart a routine (`restart`)
-//:   c) tell when a routine is blocked
+//:   a) check if a routine is blocked
+//:   b) restart a blocked routine (`restart`)
 //:
 //: A routine is blocked either if it's waiting or if it explicitly signals
 //: that it's blocked (even as it periodically wakes up and polls for some
@@ -499,40 +517,6 @@ for (int i = 0; i < SIZE(Routines); ++i) {
       waiter->waiting_on_routine_to_block = 0;
     }
   }
-}
-
-//: yield voluntarily to let some other routine run
-
-:(before "End Primitive Recipe Declarations")
-SWITCH,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "switch", SWITCH);
-:(before "End Primitive Recipe Checks")
-case SWITCH: {
-  break;
-}
-//: pick another RUNNING routine at random and wait for it to get a chance
-//: there might be a better implementation than this
-:(before "End Primitive Recipe Implementations")
-case SWITCH: {
-  int id = some_other_running_routine();
-  if (id) {
-    assert(id != Current_routine->id);
-    Current_routine->state = WAITING;
-    Current_routine->waiting_on_routine_to_block = id;
-  }
-  break;
-}
-:(code)
-int some_other_running_routine() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
-    if (i == Current_routine_index) continue;
-    assert(Routines.at(i) != Current_routine);
-    assert(Routines.at(i)->id != Current_routine->id);
-    if (Routines.at(i)->state == RUNNING)
-      return Routines.at(i)->id;
-  }
-  return 0;
 }
 
 //: helper for restarting blocking routines in tests
