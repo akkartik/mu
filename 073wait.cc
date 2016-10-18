@@ -62,6 +62,15 @@ void dump_waiting_routines() {
   }
 }
 
+:(scenario wait_for_location_can_deadlock)
+% Hide_errors = true;
+def main [
+  10:num <- copy 1
+  20:location <- copy 10/unsafe
+  wait-for-reset-then-set 20:location
+]
++error: deadlock!
+
 //: Primitive recipe to put routines in that state.
 //: This primitive is also known elsewhere as compare-and-set (CAS). Used to
 //: build locks.
