@@ -386,8 +386,21 @@ case SWITCH: {
   goto stop_running_current_routine;
 }
 
-//:(scenario switch_preempts_current_routine)
-
+:(scenario switch_preempts_current_routine)
+def f1 [
+  start-running f2
+  1:num <- copy 34
+  switch
+  3:num <- copy 36
+]
+def f2 [
+  2:num <- copy 35
+]
++mem: storing 34 in location 1
+# context switch
++mem: storing 35 in location 2
+# back to original thread
++mem: storing 36 in location 3
 
 //:: helpers for manipulating routines in tests
 //:
