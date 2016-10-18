@@ -183,13 +183,8 @@ bool product_of_new_is_valid(const instruction& inst) {
       return false;
     drop_from_type(product, "array");
   }
-  reagent/*copy*/ expected_product("x:"+inst.ingredients.at(0).name);
-  {
-    string_tree* tmp_type_names = parse_string_tree(expected_product.type->name);
-    delete expected_product.type;
-    expected_product.type = new_type_tree(tmp_type_names);
-    delete tmp_type_names;
-  }
+  reagent/*copy*/ expected_product;
+  expected_product.type = new_type_tree(inst.ingredients.at(0).name);
   return types_strictly_match(product, expected_product);
 }
 
@@ -204,6 +199,12 @@ void drop_from_type(reagent& r, string expected_type) {
   tmp->right = NULL;
   delete tmp;
 }
+
+:(scenario new_with_type_abbreviation)
+def main [
+  1:address:num/raw <- new num:type
+]
+$error: 0
 
 //: To implement 'new', a Mu transform turns all 'new' instructions into
 //: 'allocate' instructions that precompute the amount of memory they want to
