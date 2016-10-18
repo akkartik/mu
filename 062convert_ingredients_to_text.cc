@@ -60,7 +60,6 @@ Transform.push_back(convert_ingredients_to_text);
 void convert_ingredients_to_text(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
-//?   cerr << "--- convert some ingredients to text in recipe " << caller.name << '\n';
   // in recipes without named locations, 'stash' is still not extensible
   if (contains_numeric_locations(caller)) return;
   convert_ingredients_to_text(caller);

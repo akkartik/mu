@@ -45,9 +45,7 @@ void initialize_transforms() {
 
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
-//?   cerr << "=== transform_all\n";
   for (int t = 0; t < SIZE(Transform); ++t) {
-//?     cerr << "transform " << t << '\n';
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
       recipe& r = p->second;
       if (r.transformed_until != t-1) continue;
@@ -56,7 +54,6 @@ void transform_all() {
       r.transformed_until = t;
     }
   }
-//?   cerr << "wrapping up transform\n";
   parse_int_reagents();  // do this after all other transforms have run
   // End transform_all
 }

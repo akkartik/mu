@@ -37,7 +37,6 @@ Name = Name_snapshot;
 void transform_names(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- transform names for recipe " << caller.name << end();
-//?   cerr << "--- transform names for recipe " << caller.name << '\n';
   bool names_used = false;
   bool numeric_locations_used = false;
   map<string, int>& names = Name[r];

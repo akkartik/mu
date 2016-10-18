@@ -67,7 +67,6 @@ void run(routine* rr) {
     assert(Current_routine);
     assert(Current_routine->state == RUNNING);
     trace(9990, "schedule") << current_routine_label() << end();
-//?     cerr << "schedule: " << current_routine_label() << '\n';
     run_current_routine();
     // Scheduler State Transitions
     if (Current_routine->completed())

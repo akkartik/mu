@@ -346,7 +346,6 @@ case WAIT_FOR_ROUTINE: {
   Current_routine->state = WAITING;
   Current_routine->waiting_on_routine = ingredients.at(0).at(0);
   trace(9998, "run") << "waiting for routine " << ingredients.at(0).at(0) << end();
-//?   cerr << Current_routine->id << ": waiting for routine " << ingredients.at(0).at(0) << '\n';
   break;
 }
 
@@ -365,7 +364,6 @@ for (int i = 0; i < SIZE(Routines); ++i) {
     if (waitee->id == id && waitee->state != RUNNING && waitee->state != WAITING) {
       // routine is COMPLETED or DISCONTINUED
       trace(9999, "schedule") << "waking up routine " << waiter->id << end();
-//?       cerr << id << " is now done (" << waitee->state << "); waking up waiting routine " << waiter->id << '\n';
       waiter->state = RUNNING;
       waiter->waiting_on_routine = 0;
     }

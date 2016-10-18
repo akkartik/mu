@@ -38,7 +38,6 @@ Transform.push_back(collect_surrounding_spaces);  // idempotent
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
   trace(9991, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
-//?   cerr << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << '\n';
   for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;

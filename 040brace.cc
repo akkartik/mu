@@ -40,7 +40,6 @@ void transform_braces(const recipe_ordinal r) {
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/int> > braces;
   trace(9991, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
-//?   cerr << "--- transform braces for recipe " << get(Recipe, r).name << '\n';
   for (int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
