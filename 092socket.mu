@@ -127,8 +127,6 @@ def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
       done?:bool <- greater-or-equal i, bytes-read
       break-if done?
       c:char <- index *req, i
-      end-of-request?:bool <- equal c, 10/newline
-      break-if end-of-request? # To be safe, for now.
       sink <- write sink, c
       i <- add i, 1
       loop
