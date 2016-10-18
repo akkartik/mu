@@ -141,6 +141,14 @@ case _READ_FROM_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two product, but got '" << inst.original_string << "'\n" << end();
     break;
   }
+  if (!is_mu_text(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a text (address array character), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+    break;
+  }
+  if (!is_mu_boolean(inst.products.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-socket' should be a boolean (eof?), but got '" << to_string(inst.products.at(1)) << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -151,11 +159,12 @@ case _READ_FROM_SOCKET: {
   int socket_fd = socket->fd;
   char contents[bytes];
   bzero(contents, bytes);
-  int bytes_read = read(socket_fd, contents, bytes - 1 /* null-terminated */);
+  int bytes_read = read(socket_fd, contents, bytes-/*terminal null*/1);
 //?   cerr << "Read:\n" << string(contents) << "\n";
+//?   cerr << "bytes read: " << bytes_read << '\n';
   products.resize(2);
   products.at(0).push_back(new_mu_text(contents));
-  products.at(1).push_back(bytes_read);
+  products.at(1).push_back(bytes_read < bytes-1);
   break;
 }
 

@@ -120,17 +120,20 @@ def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
-    req:text, bytes-read:num <- $read-from-socket session, 4096/bytes
-    $print [read ], bytes-read, [ bytes from socket], 10/newline
+    req:text, eof?:bool <- $read-from-socket session, 4096/bytes
+    bytes-read:num <- length *req
+#?     $print [read ], bytes-read, [ bytes from socket], 10/newline
     i:num <- copy 0
     {
+#?       $print [  write ], i, 10/newline
       done?:bool <- greater-or-equal i, bytes-read
       break-if done?
-      c:char <- index *req, i
+      c:char <- index *req, i  # todo: unicode
       sink <- write sink, c
       i <- add i, 1
       loop
     }
+    loop-unless eof?
   }
   sink <- close sink
 ]
