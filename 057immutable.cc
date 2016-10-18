@@ -563,8 +563,21 @@ $error: 0
 if (has_property(current_ingredient, "contained-in")) {
   const string_tree* tmp = property(current_ingredient, "contained-in");
   if (!tmp->atom
-      || !is_present_in_ingredients(caller, tmp->value)
-      || !is_present_in_products(caller, tmp->value))
+      || (!is_present_in_ingredients(caller, tmp->value)
+          && !is_present_in_products(caller, tmp->value))) {
     raise << maybe(caller.name) << "/contained-in can only point to another ingredient or product, but got '" << to_string(property(current_ingredient, "contained-in")) << "'\n" << end();
+  }
   continue;
 }
+
+:(scenario contained_in_check)
+container test-list [
+  value:num
+  next:&:test-list
+]
+def test-remove x:&:test-list/contained-in:result, from:&:test-list -> result:&:test-list [
+  local-scope
+  load-ingredients
+  result <- copy 0
+]
+$error: 0

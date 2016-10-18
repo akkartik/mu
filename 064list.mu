@@ -8,11 +8,12 @@ container list:_elem [
   next:&:list:_elem
 ]
 
-def push x:_elem, in:&:list:_elem -> result:&:list:_elem [
+def push x:_elem, l:&:list:_elem -> l:&:list:_elem [
   local-scope
   load-ingredients
-  result <- new {(list _elem): type}
-  *result <- merge x, in
+  result:&:list:_elem <- new {(list _elem): type}
+  *result <- merge x, l
+  reply result
 ]
 
 def first in:&:list:_elem -> result:_elem [
@@ -260,7 +261,7 @@ scenario removing-from-singleton-list [
 
 # reverse the elements of a list
 # (contributed by Caleb Couch)
-def reverse list:&:list:_elem temp:&:list:_elem -> result:&:list:_elem [
+def reverse list:&:list:_elem temp:&:list:_elem/contained-in:result -> result:&:list:_elem [
   local-scope
   load-ingredients
   reply-unless list, temp
