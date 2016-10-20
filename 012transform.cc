@@ -45,8 +45,8 @@ void initialize_transforms() {
 
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
-  for (int t = 0; t < SIZE(Transform); ++t) {
-    for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
+  for (int t = 0;  t < SIZE(Transform);  ++t) {
+    for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p) {
       recipe& r = p->second;
       if (r.transformed_until != t-1) continue;
       // End Transform Checks
@@ -72,15 +72,15 @@ int Num_calls_to_transform_all = 0;
 :(code)
 void parse_int_reagents() {
   trace(9991, "transform") << "--- parsing any uninitialized reagents as integers" << end();
-  for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin(); p != Recipe.end(); ++p) {
+  for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p) {
     recipe& r = p->second;
     if (r.steps.empty()) continue;
-    for (int index = 0; index < SIZE(r.steps); ++index) {
+    for (int index = 0;  index < SIZE(r.steps);  ++index) {
       instruction& inst = r.steps.at(index);
-      for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+      for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
         populate_value(inst.ingredients.at(i));
       }
-      for (int i = 0; i < SIZE(inst.products); ++i) {
+      for (int i = 0;  i < SIZE(inst.products);  ++i) {
         populate_value(inst.products.at(i));
       }
     }

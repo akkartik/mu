@@ -154,7 +154,7 @@ case _READ_FROM_SOCKET: {
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
-  int bytes = static_cast<int>(ingredients.at(1).at(0)); //? Should this be something with more bytes?
+  int bytes = static_cast<int>(ingredients.at(1).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
   int socket_fd = socket->fd;
   char contents[bytes];

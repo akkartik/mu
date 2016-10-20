@@ -67,7 +67,7 @@ size_t hash_mu_address(size_t h, reagent& r) {
 
 size_t hash_mu_text(size_t h, const reagent& r) {
   string input = read_mu_text(get_or_insert(Memory, r.value));
-  for (int i = 0; i < SIZE(input); ++i) {
+  for (int i = 0;  i < SIZE(input);  ++i) {
     h = hash_iter(h, static_cast<size_t>(input.at(i)));
 //?     cerr << i << ": " << h << '\n';
   }
@@ -79,7 +79,7 @@ size_t hash_mu_array(size_t h, const reagent& r) {
   reagent/*copy*/ elem = r;
   delete elem.type;
   elem.type = copy_array_element(r.type);
-  for (int i=0, address = r.value+1; i < size; ++i, address += size_of(elem)) {
+  for (int i=0, address = r.value+1;  i < size;  ++i, address += size_of(elem)) {
     reagent/*copy*/ tmp = elem;
     tmp.set_value(address);
     h = hash(h, tmp);
@@ -92,7 +92,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
   type_info& info = get(Type, root_type(r.type)->value);
   int address = r.value;
   int offset = 0;
-  for (int i = 0; i < SIZE(info.elements); ++i) {
+  for (int i = 0;  i < SIZE(info.elements);  ++i) {
     reagent/*copy*/ element = element_type(r.type, i);
     if (has_property(element, "ignore-for-hash")) continue;
     element.set_value(address+offset);
@@ -365,7 +365,7 @@ case HASH_OLD: {
   string input = read_mu_text(ingredients.at(0).at(0));
   size_t h = 0 ;
 
-  for (int i = 0; i < SIZE(input); ++i) {
+  for (int i = 0;  i < SIZE(input);  ++i) {
     h += static_cast<size_t>(input.at(i));
     h += (h<<10);
     h ^= (h>>6);

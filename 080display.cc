@@ -109,7 +109,7 @@ case CLEAR_LINE_ON_DISPLAY: {
 case CLEAR_LINE_ON_DISPLAY: {
   CHECK_SCREEN;
   int width = tb_width();
-  for (int x = Display_column; x < width; ++x) {
+  for (int x = Display_column;  x < width;  ++x) {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
@@ -546,8 +546,8 @@ case CLEAR_DISPLAY_FROM: {
   int left = ingredients.at(2).at(0);
   int right = ingredients.at(3).at(0);
   int height=tb_height();
-  for (; row < height; ++row, column=left) {  // start column from left in every inner loop except first
-    for (; column <= right; ++column) {
+  for (/*nada*/;  row < height;  ++row, column=left) {  // start column from left in every inner loop except first
+    for (/*nada*/;  column <= right;  ++column) {
       tb_change_cell(column, row, ' ', TB_WHITE, TB_BLACK);
     }
   }

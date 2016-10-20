@@ -49,7 +49,7 @@ int space_base(const reagent& x, int space_index, int base) {
 }
 
 int space_index(const reagent& x) {
-  for (int i = 0; i < SIZE(x.properties); ++i) {
+  for (int i = 0;  i < SIZE(x.properties);  ++i) {
     if (x.properties.at(i).first == "space") {
       if (!x.properties.at(i).second || x.properties.at(i).second->right)
         raise << maybe(current_recipe_name()) << "/space metadata should take exactly one value in '" << x.original_string << "'\n" << end();

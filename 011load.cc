@@ -121,7 +121,7 @@ bool next_instruction(istream& in, instruction* curr) {
 
   vector<string>::iterator p = words.begin();
   if (find(words.begin(), words.end(), "<-") != words.end()) {
-    for (; *p != "<-"; ++p)
+    for (;  *p != "<-";  ++p)
       curr->products.push_back(reagent(*p));
     ++p;  // skip <-
   }
@@ -133,14 +133,14 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->old_name = curr->name = *p;  ++p;
   // curr->operation will be set in a later layer
 
-  for (; p != words.end(); ++p)
+  for (;  p != words.end();  ++p)
     curr->ingredients.push_back(reagent(*p));
 
   trace(9993, "parse") << "instruction: " << curr->name << end();
   trace(9993, "parse") << "  number of ingredients: " << SIZE(curr->ingredients) << end();
-  for (vector<reagent>::iterator p = curr->ingredients.begin(); p != curr->ingredients.end(); ++p)
+  for (vector<reagent>::iterator p = curr->ingredients.begin();  p != curr->ingredients.end();  ++p)
     trace(9993, "parse") << "  ingredient: " << to_string(*p) << end();
-  for (vector<reagent>::iterator p = curr->products.begin(); p != curr->products.end(); ++p)
+  for (vector<reagent>::iterator p = curr->products.begin();  p != curr->products.end();  ++p)
     trace(9993, "parse") << "  product: " << to_string(*p) << end();
   if (!has_data(in)) {
     raise << "9: unbalanced '[' for recipe\n" << end();

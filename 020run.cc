@@ -62,7 +62,7 @@ void run(recipe_ordinal r) {
 void run_current_routine() {
   while (should_continue_running(Current_routine)) {  // beware: later layers modify Current_routine here
     // Running One Instruction
-    if (current_instruction().is_label) { ++current_step_index(); continue; }
+    if (current_instruction().is_label) { ++current_step_index();  continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
     if (get_or_insert(Memory, 0) != 0) {
       raise << "something wrote to location 0; this should never happen\n" << end();
@@ -71,7 +71,7 @@ void run_current_routine() {
     // read all ingredients from memory, each potentially spanning multiple locations
     vector<vector<double> > ingredients;
     if (should_copy_ingredients()) {
-      for (int i = 0; i < SIZE(current_instruction().ingredients); ++i)
+      for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i)
         ingredients.push_back(read_memory(current_instruction().ingredients.at(i)));
     }
     // instructions below will write to 'products'
@@ -92,7 +92,7 @@ void run_current_routine() {
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_original_string(current_instruction()) << '\n' << end();
     }
     else {
-      for (int i = 0; i < SIZE(current_instruction().products); ++i)
+      for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
         write_memory(current_instruction().products.at(i), products.at(i));
     }
     // End Write Products of Instruction
@@ -207,15 +207,15 @@ else if (is_equal(*arg, "--trace")) {
 
 :(code)
 void dump_profile() {
-  for (map<string, int>::iterator p = Instructions_running.begin(); p != Instructions_running.end(); ++p) {
+  for (map<string, int>::iterator p = Instructions_running.begin();  p != Instructions_running.end();  ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
   cerr << "== locations read\n";
-  for (map<string, int>::iterator p = Locations_read.begin(); p != Locations_read.end(); ++p) {
+  for (map<string, int>::iterator p = Locations_read.begin();  p != Locations_read.end();  ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
   cerr << "== locations read by instruction\n";
-  for (map<string, int>::iterator p = Locations_read_by_instruction.begin(); p != Locations_read_by_instruction.end(); ++p) {
+  for (map<string, int>::iterator p = Locations_read_by_instruction.begin();  p != Locations_read_by_instruction.end();  ++p) {
     cerr << p->first << ": " << p->second << '\n';
   }
 }
@@ -259,7 +259,7 @@ bool is_directory(string path) {
 void load_all(string dir) {
   dirent** files;
   int num_files = scandir(dir.c_str(), &files, NULL, alphasort);
-  for (int i = 0; i < num_files; ++i) {
+  for (int i = 0;  i < num_files;  ++i) {
     string curr_file = files[i]->d_name;
     if (isdigit(curr_file.at(0)))
       load_file_or_directory(dir+'/'+curr_file);
@@ -284,7 +284,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
   }
   // End Preprocess read_memory(x)
   int size = size_of(x);
-  for (int offset = 0; offset < size; ++offset) {
+  for (int offset = 0;  offset < size;  ++offset) {
     double val = get_or_insert(Memory, x.value+offset);
     trace(9999, "mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
@@ -311,7 +311,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
     return;
   }
   // End write_memory(x) Special-cases
-  for (int offset = 0; offset < SIZE(data); ++offset) {
+  for (int offset = 0;  offset < SIZE(data);  ++offset) {
     assert(x.value+offset > 0);
     trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
     put(Memory, x.value+offset, data.at(offset));

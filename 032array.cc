@@ -62,7 +62,7 @@ case CREATE_ARRAY: {
   int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << end();
   // initialize array
-  for (int i = 1; i <= size_of(product); ++i) {
+  for (int i = 1;  i <= size_of(product);  ++i) {
     put(Memory, base_address+i, 0);
   }
   // no need to update product
@@ -434,7 +434,7 @@ case PUT_INDEX: {
   // and writing the entire array
   vector<double> value = read_memory(current_instruction().ingredients.at(2));
   // Write Memory in PUT_INDEX in Run
-  for (int i = 0; i < SIZE(value); ++i) {
+  for (int i = 0;  i < SIZE(value);  ++i) {
     trace(9999, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
     put(Memory, address+i, value.at(i));
   }

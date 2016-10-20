@@ -53,9 +53,9 @@ if (Run_tests) {
   // we run some tests and then exit; assume no state need be maintained afterward
 
   // End Test Run Initialization
-  time_t t; time(&t);
+  time_t t;  time(&t);
   cerr << "C tests: " << ctime(&t);
-  for (size_t i=0; i < sizeof(Tests)/sizeof(Tests[0]); ++i) {
+  for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
 //?     cerr << i << '\n';
     run_test(i);
   }

@@ -170,7 +170,7 @@ string munge_resources_contents(const string& data, const string& filename, cons
     in.get();  // skip leading '|'
     string line;
     getline(in, line);
-    for (int i = 0; i < SIZE(line); ++i) {
+    for (int i = 0;  i < SIZE(line);  ++i) {
       if (line.at(i) == '|') break;
       if (line.at(i) == '\\') {
         ++i;  // skip
@@ -190,7 +190,7 @@ string munge_resources_contents(const string& data, const string& filename, cons
 void construct_resources_object(const map<string, string>& contents) {
   int resources_data_address = allocate(SIZE(contents)*2 + /*array length*/1);
   int curr = resources_data_address + /*skip refcount and length*/2;
-  for (map<string, string>::const_iterator p = contents.begin(); p != contents.end(); ++p) {
+  for (map<string, string>::const_iterator p = contents.begin();  p != contents.end();  ++p) {
     put(Memory, curr, new_mu_text(p->first));
     trace(9999, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);

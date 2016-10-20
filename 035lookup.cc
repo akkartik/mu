@@ -168,7 +168,7 @@ bool canonize_type(reagent& r) {
 }
 
 void drop_one_lookup(reagent& r) {
-  for (vector<pair<string, string_tree*> >::iterator p = r.properties.begin(); p != r.properties.end(); ++p) {
+  for (vector<pair<string, string_tree*> >::iterator p = r.properties.begin();  p != r.properties.end();  ++p) {
     if (p->first == "lookup") {
       r.properties.erase(p);
       return;

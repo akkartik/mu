@@ -46,7 +46,7 @@ void compute_exclusive_container_sizes(const type_info& exclusive_container_info
   // (So, like containers, it can only contain arrays if they're static and
   // include their length in the type.)
   container_metadata metadata;
-  for (int i = 0; i < SIZE(exclusive_container_info.elements); ++i) {
+  for (int i = 0;  i < SIZE(exclusive_container_info.elements);  ++i) {
     reagent/*copy*/ element = exclusive_container_info.elements.at(i);
     // Compute Exclusive Container Size(element, full_type)
     compute_container_sizes(element.type, pending_metadata);
@@ -166,7 +166,7 @@ case MAYBE_CONVERT: {
     put(Memory, status.value, 1);
     if (!is_dummy(product)) {
       // Write Memory in Successful MAYBE_CONVERT in Run
-      for (int i = 0; i < size_of(variant); ++i) {
+      for (int i = 0;  i < size_of(variant);  ++i) {
         double val = get_or_insert(Memory, base_address+/*skip tag*/1+i);
         trace(9999, "mem") << "storing " << no_scientific(val) << " in location " << product.value+i << end();
         put(Memory, product.value+i, val);

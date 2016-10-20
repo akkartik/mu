@@ -182,7 +182,7 @@ def main [
 :(after "Write Memory in Successful MAYBE_CONVERT")
 // TODO: double-check data here as well
 vector<double> data;
-for (int i = 0; i < size_of(product); ++i)
+for (int i = 0;  i < size_of(product);  ++i)
   data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
 update_any_refcounts(product, data);
 
@@ -286,12 +286,12 @@ Transform.push_back(compute_container_address_offsets);
 void compute_container_address_offsets(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9992, "transform") << "--- compute address offsets for " << caller.name << end();
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute address offsets for " << to_string(inst) << end();
-    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
       compute_container_address_offsets(inst.ingredients.at(i));
-    for (int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0;  i < SIZE(inst.products);  ++i)
       compute_container_address_offsets(inst.products.at(i));
   }
 }
@@ -341,7 +341,7 @@ void compute_container_address_offsets(const type_info& container_info, const ty
 void compute_exclusive_container_address_offsets(const type_info& exclusive_container_info, const type_tree* full_type) {
   container_metadata& metadata = get(Container_metadata, full_type);
   trace(9994, "transform") << "compute address offsets for exclusive container " << exclusive_container_info.name << end();
-  for (int tag = 0; tag < SIZE(exclusive_container_info.elements); ++tag) {
+  for (int tag = 0;  tag < SIZE(exclusive_container_info.elements);  ++tag) {
     set<tag_condition_info> key;
     key.insert(tag_condition_info(/*tag is at offset*/0, tag));
     append_addresses(/*skip tag offset*/1, variant_type(full_type, tag).type, metadata.address, key);
@@ -356,7 +356,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
   const type_tree* root = root_type(type);
   const type_info& info = get(Type, root->value);
   if (info.kind == CONTAINER) {
-    for (int curr_index = 0, curr_offset = base_offset; curr_index < SIZE(info.elements); ++curr_index) {
+    for (int curr_index = 0, curr_offset = base_offset;  curr_index < SIZE(info.elements);  ++curr_index) {
       trace(9993, "transform") << "checking container " << root->name << ", element " << curr_index << end();
       reagent/*copy*/ element = element_type(type, curr_index);  // not root
       // Compute Container Address Offset(element)
@@ -372,7 +372,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
       else if (is_mu_exclusive_container(element)) {
         const type_tree* element_root_type = root_type(element.type);
         const type_info& element_info = get(Type, element_root_type->value);
-        for (int tag = 0; tag < SIZE(element_info.elements); ++tag) {
+        for (int tag = 0;  tag < SIZE(element_info.elements);  ++tag) {
           set<tag_condition_info> new_key = key;
           new_key.insert(tag_condition_info(curr_offset, tag));
           if (!contains_key(out, new_key))
@@ -387,7 +387,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
     }
   }
   else if (info.kind == EXCLUSIVE_CONTAINER) {
-    for (int tag = 0; tag < SIZE(info.elements); ++tag) {
+    for (int tag = 0;  tag < SIZE(info.elements);  ++tag) {
       set<tag_condition_info> new_key = key;
       new_key.insert(tag_condition_info(base_offset, tag));
       if (!contains_key(out, new_key))
@@ -682,9 +682,9 @@ void test_container_address_offsets_from_repeated_address_and_array_types() {
 :(before "End Increment Refcounts(canonized_x)")
 if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
-  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;
-    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
+    for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info)
       increment_refcount(data.at(info->offset));
   }
 }
@@ -699,16 +699,16 @@ if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
   vector<double> data = read_memory(tmp);
   trace(9999, "mem") << "done reading old value of '" << to_string(canonized_x) << "'" << end();
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
-  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;
-    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info)
+    for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info)
       decrement_refcount(get_or_insert(Memory, canonized_x.value + info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
   }
 }
 
 :(code)
 bool all_match(const vector<double>& data, const set<tag_condition_info>& conditions) {
-  for (set<tag_condition_info>::const_iterator p = conditions.begin(); p != conditions.end(); ++p) {
+  for (set<tag_condition_info>::const_iterator p = conditions.begin();  p != conditions.end();  ++p) {
     if (data.at(p->offset) != p->tag)
       return false;
   }

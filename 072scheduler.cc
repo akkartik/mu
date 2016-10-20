@@ -80,7 +80,7 @@ void run(routine* rr) {
 }
 
 bool all_routines_done() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->state == RUNNING)
       return false;
   }
@@ -107,7 +107,7 @@ string current_routine_label() {
 string routine_label(routine* r) {
   ostringstream result;
   const call_stack& calls = r->calls;
-  for (call_stack::const_iterator p = calls.begin(); p != calls.end(); ++p) {
+  for (call_stack::const_iterator p = calls.begin();  p != calls.end();  ++p) {
     if (p != calls.begin()) result << '/';
     result << get(Recipe, p->running_recipe).name;
   }
@@ -115,7 +115,7 @@ string routine_label(routine* r) {
 }
 
 :(before "End Teardown")
-for (int i = 0; i < SIZE(Routines); ++i)
+for (int i = 0;  i < SIZE(Routines);  ++i)
   delete Routines.at(i);
 Routines.clear();
 Current_routine = NULL;
@@ -129,7 +129,7 @@ void run_main(int argc, char* argv[]) {
   // pass in commandline args as ingredients to main
   // todo: test this
   Current_routine = main_routine;
-  for (int i = 1; i < argc; ++i) {
+  for (int i = 1;  i < argc;  ++i) {
     vector<double> arg;
     arg.push_back(new_mu_text(argv[i]));
     current_call().ingredient_atoms.push_back(arg);
@@ -179,7 +179,7 @@ case START_RUNNING: {
   routine* new_routine = new routine(ingredients.at(0).at(0));
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
-  for (int i = 1; i < SIZE(current_instruction().ingredients); ++i) {
+  for (int i = 1;  i < SIZE(current_instruction().ingredients);  ++i) {
     new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     canonize_type(ingredient);
@@ -382,7 +382,7 @@ def f1 [
 -schedule: f1
 
 :(before "End Scheduler Cleanup")
-for (int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state == COMPLETED) continue;
   if (Routines.at(i)->parent_index < 0) continue;  // root thread
   // structured concurrency: http://250bpm.com/blog:71
@@ -393,7 +393,7 @@ for (int i = 0; i < SIZE(Routines); ++i) {
 
 :(code)
 bool has_completed_parent(int routine_index) {
-  for (int j = routine_index; j >= 0; j = Routines.at(j)->parent_index) {
+  for (int j = routine_index;  j >= 0;  j = Routines.at(j)->parent_index) {
     if (Routines.at(j)->state == COMPLETED)
       return true;
   }
@@ -437,7 +437,7 @@ case ROUTINE_STATE: {
 case ROUTINE_STATE: {
   int id = ingredients.at(0).at(0);
   int result = -1;
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->id == id) {
       result = Routines.at(i)->state;
       break;
@@ -469,7 +469,7 @@ case STOP: {
 :(before "End Primitive Recipe Implementations")
 case STOP: {
   int id = ingredients.at(0).at(0);
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->state = COMPLETED;
       break;
@@ -488,7 +488,7 @@ case _DUMP_ROUTINES: {
 }
 :(before "End Primitive Recipe Implementations")
 case _DUMP_ROUTINES: {
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     cerr << i << ": " << Routines.at(i)->id << ' ' << Routines.at(i)->state << ' ' << Routines.at(i)->parent_index << '\n';
   }
   break;
@@ -540,7 +540,7 @@ if (Passed && any_routines_with_error()) {
 
 :(code)
 bool any_routines_with_error() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->state == DISCONTINUED)
       return true;
   }
@@ -575,7 +575,7 @@ case LIMIT_TIME: {
 :(before "End Primitive Recipe Implementations")
 case LIMIT_TIME: {
   int id = ingredients.at(0).at(0);
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->id == id) {
       Routines.at(i)->limit = ingredients.at(1).at(0);
       break;
@@ -610,7 +610,7 @@ case NUMBER_OF_INSTRUCTIONS: {
 case NUMBER_OF_INSTRUCTIONS: {
   int id = ingredients.at(0).at(0);
   int result = -1;
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->id == id) {
       result = Routines.at(i)->instructions_run;
       break;

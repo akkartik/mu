@@ -7,7 +7,7 @@ put(Recipe_ordinal, "add", ADD);
 :(before "End Primitive Recipe Checks")
 case ADD: {
   // primary goal of these checks is to forbid address arithmetic
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'add' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -26,7 +26,7 @@ case ADD: {
 :(before "End Primitive Recipe Implementations")
 case ADD: {
   double result = 0;
-  for (int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0;  i < SIZE(ingredients);  ++i) {
     result += ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -78,7 +78,7 @@ case SUBTRACT: {
     raise << maybe(get(Recipe, r).name) << "'subtract' has no ingredients\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (is_raw(inst.ingredients.at(i))) continue;  // permit address offset computations in tests
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'subtract' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
@@ -98,7 +98,7 @@ case SUBTRACT: {
 :(before "End Primitive Recipe Implementations")
 case SUBTRACT: {
   double result = ingredients.at(0).at(0);
-  for (int i = 1; i < SIZE(ingredients); ++i)
+  for (int i = 1;  i < SIZE(ingredients);  ++i)
     result -= ingredients.at(i).at(0);
   products.resize(1);
   products.at(0).push_back(result);
@@ -135,7 +135,7 @@ MULTIPLY,
 put(Recipe_ordinal, "multiply", MULTIPLY);
 :(before "End Primitive Recipe Checks")
 case MULTIPLY: {
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'multiply' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -154,7 +154,7 @@ case MULTIPLY: {
 :(before "End Primitive Recipe Implementations")
 case MULTIPLY: {
   double result = 1;
-  for (int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0;  i < SIZE(ingredients);  ++i) {
     result *= ingredients.at(i).at(0);
   }
   products.resize(1);
@@ -192,7 +192,7 @@ case DIVIDE: {
     raise << maybe(get(Recipe, r).name) << "'divide' has no ingredients\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'divide' requires number ingredients, but got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -211,7 +211,7 @@ case DIVIDE: {
 :(before "End Primitive Recipe Implementations")
 case DIVIDE: {
   double result = ingredients.at(0).at(0);
-  for (int i = 1; i < SIZE(ingredients); ++i)
+  for (int i = 1;  i < SIZE(ingredients);  ++i)
     result /= ingredients.at(i).at(0);
   products.resize(1);
   products.at(0).push_back(result);
@@ -258,7 +258,7 @@ case DIVIDE_WITH_REMAINDER: {
     raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' yields two products in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0;  i < SIZE(inst.products);  ++i) {
     if (!is_dummy(inst.products.at(i)) && !is_mu_number(inst.products.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'divide-with-remainder' should yield a number, but got '" << inst.products.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -741,7 +741,7 @@ case CHARACTER_TO_CODE: {
 :(before "End Primitive Recipe Implementations")
 case CHARACTER_TO_CODE: {
   double result = 0;
-  for (int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0;  i < SIZE(ingredients);  ++i) {
     result += ingredients.at(i).at(0);
   }
   products.resize(1);

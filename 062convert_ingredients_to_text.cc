@@ -67,11 +67,11 @@ void convert_ingredients_to_text(recipe_ordinal r) {
 
 void convert_ingredients_to_text(recipe& caller) {
   vector<instruction> new_instructions;
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     // all these cases are getting hairy. how can we make this extensible?
     if (inst.name == "stash") {
-      for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+      for (int j = 0;  j < SIZE(inst.ingredients);  ++j) {
         if (is_literal_text(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "stash_" << i << '_' << j << ":address:array:character";
@@ -79,7 +79,7 @@ void convert_ingredients_to_text(recipe& caller) {
       }
     }
     else if (inst.name == "trace") {
-      for (int j = /*skip*/2; j < SIZE(inst.ingredients); ++j) {
+      for (int j = /*skip*/2;  j < SIZE(inst.ingredients);  ++j) {
         if (is_literal_text(inst.ingredients.at(j))) continue;
         ostringstream ingredient_name;
         ingredient_name << "trace_" << i << '_' << j << ":address:array:character";
@@ -93,7 +93,7 @@ void convert_ingredients_to_text(recipe& caller) {
       //   append _:text, ___
       // will never ever get used.
       if (is_literal_text(inst.ingredients.at(0)) || is_mu_text(inst.ingredients.at(0))) {
-        for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+        for (int j = 0;  j < SIZE(inst.ingredients);  ++j) {
           ostringstream ingredient_name;
           ingredient_name << "append_" << i << '_' << j << ":address:array:character";
           convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());

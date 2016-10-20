@@ -28,7 +28,7 @@ int next_ingredient_to_process;
 next_ingredient_to_process = 0;
 
 :(before "End Call Housekeeping")
-for (int i = 0; i < SIZE(ingredients); ++i) {
+for (int i = 0;  i < SIZE(ingredients);  ++i) {
   current_call().ingredient_atoms.push_back(ingredients.at(i));
   reagent/*copy*/ ingredient = call_instruction.ingredients.at(i);
   // End Compute Call Ingredient
@@ -78,7 +78,7 @@ case NEXT_INGREDIENT: {
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
     int size = size_of(current_instruction().products.at(0));
-    for (int i = 0; i < size; ++i)
+    for (int i = 0;  i < size;  ++i)
       products.at(0).push_back(0);
     products.at(1).push_back(0);
   }

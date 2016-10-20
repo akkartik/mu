@@ -37,7 +37,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
     int array_length = get_or_insert(Memory, address+/*skip refcount*/1);
     assert(element.type->name != "array");
     int element_size = size_of(element);
-    for (int i = 0; i < array_length; ++i) {
+    for (int i = 0;  i < array_length;  ++i) {
       element.set_value(address + /*skip refcount and length*/2 + i*element_size);
       decrement_any_refcounts(element);
     }
@@ -49,7 +49,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
     decrement_any_refcounts(tmp);
   }
   // clear memory
-  for (int curr = address; curr < address+payload_size; ++curr)
+  for (int curr = address;  curr < address+payload_size;  ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
   trace(9999, "abandon") << "saving " << address << " in free-list of size " << payload_size << end();
@@ -64,7 +64,7 @@ if (get_or_insert(Current_routine->free_list, size)) {
   trace(9999, "mem") << "new alloc from free list: " << result << end();
   put(Current_routine->free_list, size, get_or_insert(Memory, result));
   put(Memory, result, 0);
-  for (int curr = result; curr < result+size; ++curr) {
+  for (int curr = result;  curr < result+size;  ++curr) {
     if (get_or_insert(Memory, curr) != 0) {
       raise << maybe(current_recipe_name()) << "memory in free list was not zeroed out: " << curr << '/' << result << "; somebody wrote to us after free!!!\n" << end();
       break;  // always fatal

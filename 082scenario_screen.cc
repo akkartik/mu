@@ -262,7 +262,7 @@ void check_screen(const string& expected_contents, const int color) {
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
   int addr = screen_data_start+/*skip length*/1;
-  for (int row = 0; row < screen_height; ++row) {
+  for (int row = 0;  row < screen_height;  ++row) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     if (cursor.get() != '.') {
@@ -401,9 +401,9 @@ void dump_screen() {
   int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
   int curr = screen_data_start+1;  // skip length
-  for (int row = 0; row < screen_height; ++row) {
+  for (int row = 0;  row < screen_height;  ++row) {
     cerr << '.';
-    for (int col = 0; col < screen_width; ++col) {
+    for (int col = 0;  col < screen_width;  ++col) {
       if (get_or_insert(Memory, curr))
         cerr << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
       else

@@ -229,7 +229,7 @@ Transform.push_back(transform_new_to_allocate);  // idempotent
 :(code)
 void transform_new_to_allocate(const recipe_ordinal r) {
   trace(9991, "transform") << "--- convert 'new' to 'allocate' for recipe " << get(Recipe, r).name << end();
-  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
@@ -299,7 +299,7 @@ int allocate(int size) {
   const int result = Current_routine->alloc;
   trace(9999, "mem") << "new alloc: " << result << end();
   // initialize allocated space
-  for (int address = result; address < result+size; ++address) {
+  for (int address = result;  address < result+size;  ++address) {
     trace(9999, "mem") << "storing 0 in location " << address << end();
     put(Memory, address, 0);
   }

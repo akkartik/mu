@@ -48,7 +48,7 @@ while (argc > 1 && starts_with(*arg, "--")) {
   // End Commandline Options(*arg)
   else
     cerr << "skipping unknown option " << *arg << '\n';
-  --argc; ++argv; ++arg;
+  --argc;  ++argv;  ++arg;
 }
 
 //:: Helper function used by the above fragment of code (and later layers too,
@@ -67,7 +67,7 @@ bool is_equal(char* s, const char* lit) {
 
 bool starts_with(const string& s, const string& pat) {
   string::const_iterator a=s.begin(), b=pat.begin();
-  for (/*nada*/; a!=s.end() && b!=pat.end(); ++a, ++b)
+  for (/*nada*/;  a!=s.end() && b!=pat.end();  ++a, ++b)
     if (*a != *b) return false;
   return b == pat.end();
 }

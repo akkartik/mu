@@ -38,10 +38,10 @@ Transform.push_back(collect_surrounding_spaces);  // idempotent
 :(code)
 void collect_surrounding_spaces(const recipe_ordinal r) {
   trace(9991, "transform") << "--- collect surrounding spaces for recipe " << get(Recipe, r).name << end();
-  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.is_label) continue;
-    for (int j = 0; j < SIZE(inst.products); ++j) {
+    for (int j = 0;  j < SIZE(inst.products);  ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
       if (!is_space(inst.products.at(j))) {
@@ -100,7 +100,7 @@ int lookup_name(const reagent& x, const recipe_ordinal r, set<recipe_ordinal>& d
   if (!Name[r].empty()) return Name[r][x.name];
   if (contains_key(done, r)) {
     raise << "can't compute address of '" << to_string(x) << "' because\n" << end();
-    for (int i = 1; i < SIZE(path); ++i) {
+    for (int i = 1;  i < SIZE(path);  ++i) {
       raise << path.at(i-1) << " requires computing names of " << path.at(i) << '\n' << end();
     }
     raise << path.at(SIZE(path)-1) << " requires computing names of " << r << "..ad infinitum\n" << end();

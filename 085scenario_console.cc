@@ -63,7 +63,7 @@ case ASSUME_CONSOLE: {
   // store length
   put(Memory, event_data_address+/*skip refcount*/1, num_events);
   int curr_address = event_data_address + /*skip refcount and length*/2;
-  for (int i = 0; i < SIZE(r.steps); ++i) {
+  for (int i = 0;  i < SIZE(r.steps);  ++i) {
     const instruction& inst = r.steps.at(i);
     if (inst.name == "left-click") {
       trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
@@ -100,7 +100,7 @@ case ASSUME_CONSOLE: {
       const char* raw_contents = contents.c_str();
       int num_keyboard_events = unicode_length(contents);
       int curr = 0;
-      for (int i = 0; i < num_keyboard_events; ++i) {
+      for (int i = 0;  i < num_keyboard_events;  ++i) {
         trace(9999, "mem") << "storing 'text' tag at " << curr_address << end();
         put(Memory, curr_address, /*tag for 'text' variant of 'event' exclusive-container*/0);
         uint32_t curr_character;
@@ -270,10 +270,10 @@ case REPLACE_IN_CONSOLE: {
   int console_address = get_or_insert(Memory, CONSOLE);
   int console_data = get_or_insert(Memory, console_address+1);
   int length = get_or_insert(Memory, console_data);  // array length
-  for (int i = 0, curr = console_data+1; i < length; ++i, curr+=size_of_event()) {
+  for (int i = 0, curr = console_data+1;  i < length;  ++i, curr+=size_of_event()) {
     if (get_or_insert(Memory, curr) != /*text*/0) continue;
     if (get_or_insert(Memory, curr+1) != ingredients.at(0).at(0)) continue;
-    for (int n = 0; n < size_of_event(); ++n)
+    for (int n = 0;  n < size_of_event();  ++n)
       put(Memory, curr+n, ingredients.at(1).at(n));
   }
   break;
@@ -282,7 +282,7 @@ case REPLACE_IN_CONSOLE: {
 :(code)
 int count_events(const recipe& r) {
   int result = 0;
-  for (int i = 0; i < SIZE(r.steps); ++i) {
+  for (int i = 0;  i < SIZE(r.steps);  ++i) {
     const instruction& curr = r.steps.at(i);
     if (curr.name == "type")
       result += unicode_length(curr.ingredients.at(0).name);

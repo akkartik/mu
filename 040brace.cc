@@ -40,7 +40,7 @@ void transform_braces(const recipe_ordinal r) {
   // use signed integer for step index because we'll be doing arithmetic on it
   list<pair<int/*OPEN/CLOSE*/, /*step*/int> > braces;
   trace(9991, "transform") << "--- transform braces for recipe " << get(Recipe, r).name << end();
-  for (int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+  for (int index = 0;  index < SIZE(get(Recipe, r).steps);  ++index) {
     const instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
       trace(9993, "transform") << maybe(get(Recipe, r).name) << "push (open, " << index << ")" << end();
@@ -52,7 +52,7 @@ void transform_braces(const recipe_ordinal r) {
     }
   }
   stack</*step*/int> open_braces;
-  for (int index = 0; index < SIZE(get(Recipe, r).steps); ++index) {
+  for (int index = 0;  index < SIZE(get(Recipe, r).steps);  ++index) {
     instruction& inst = get(Recipe, r).steps.at(index);
     if (inst.label == "{") {
       open_braces.push(index);
@@ -134,7 +134,7 @@ void transform_braces(const recipe_ordinal r) {
 // enable future signed arithmetic
 int matching_brace(int index, const list<pair<int, int> >& braces, recipe_ordinal r) {
   int stacksize = 0;
-  for (list<pair<int, int> >::const_iterator p = braces.begin(); p != braces.end(); ++p) {
+  for (list<pair<int, int> >::const_iterator p = braces.begin();  p != braces.end();  ++p) {
     if (p->second < index) continue;
     stacksize += (p->first ? 1 : -1);
     if (stacksize == 0) return p->second;

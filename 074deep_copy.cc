@@ -277,9 +277,9 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
   if (!contains_key(Container_metadata, canonized_in.type)) return;
   trace(9991, "run") << "deep-copy: scanning for addresses in " << to_string(data) << end();
   const container_metadata& metadata = get(Container_metadata, canonized_in.type);
-  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin(); p != metadata.address.end(); ++p) {
+  for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;
-    for (set<address_element_info>::const_iterator info = p->second.begin(); info != p->second.end(); ++info) {
+    for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info) {
       // construct a fake reagent that reads directly from the appropriate
       // field of the container
       reagent curr;

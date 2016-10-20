@@ -23,8 +23,8 @@ case MERGE: {
 :(before "End Primitive Recipe Implementations")
 case MERGE: {
   products.resize(1);
-  for (int i = 0; i < SIZE(ingredients); ++i)
-    for (int j = 0; j < SIZE(ingredients.at(i)); ++j)
+  for (int i = 0;  i < SIZE(ingredients);  ++i)
+    for (int j = 0;  j < SIZE(ingredients.at(i));  ++j)
       products.at(0).push_back(ingredients.at(i).at(j));
   break;
 }
@@ -115,7 +115,7 @@ Transform.push_back(check_merge_calls);
 void check_merge_calls(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- type-check merge instructions in recipe " << caller.name << end();
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.name != "merge") continue;
     if (SIZE(inst.products) != 1) {

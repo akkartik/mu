@@ -107,7 +107,7 @@ restore_type_abbreviations();
 atexit(clear_type_abbreviations);
 :(code)
 void restore_type_abbreviations() {
-  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p) {
+  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin();  p != Type_abbreviations.end();  ++p) {
     if (!contains_key(Type_abbreviations_snapshot, p->first))
       delete p->second;
   }
@@ -115,7 +115,7 @@ void restore_type_abbreviations() {
   Type_abbreviations = Type_abbreviations_snapshot;
 }
 void clear_type_abbreviations() {
-  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin(); p != Type_abbreviations.end(); ++p)
+  for (map<string, type_tree*>::iterator p = Type_abbreviations.begin();  p != Type_abbreviations.end();  ++p)
     delete p->second;
   Type_abbreviations.clear();
 }
@@ -169,14 +169,14 @@ void expand_type_abbreviations(const recipe_ordinal r) {
 
 void expand_type_abbreviations(const recipe& caller) {
   trace(9991, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     trace(9991, "transform") << "instruction '" << inst.original_string << end();
-    for (long int i = 0; i < SIZE(inst.ingredients); ++i) {
+    for (long int i = 0;  i < SIZE(inst.ingredients);  ++i) {
       expand_type_abbreviations(inst.ingredients.at(i).type);
       trace(9992, "transform") << "ingredient type after expanding abbreviations: " << names_to_string(inst.ingredients.at(i).type) << end();
     }
-    for (long int i = 0; i < SIZE(inst.products); ++i) {
+    for (long int i = 0;  i < SIZE(inst.products);  ++i) {
       expand_type_abbreviations(inst.products.at(i).type);
       trace(9992, "transform") << "product type after expanding abbreviations: " << names_to_string(inst.products.at(i).type) << end();
     }

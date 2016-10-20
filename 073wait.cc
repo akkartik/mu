@@ -49,14 +49,14 @@ if (Passed && any_routines_with_error()) {
 }
 :(code)
 bool any_routines_waiting() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->state == WAITING)
       return true;
   }
   return false;
 }
 void dump_waiting_routines() {
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->state == WAITING)
       cerr << i << ": " << routine_label(Routines.at(i)) << '\n';
   }
@@ -132,7 +132,7 @@ case RESET: {
 //: scheduler tweak to get routines out of that state
 
 :(before "End Scheduler State Transitions")
-for (int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   int loc = Routines.at(i)->waiting_on_location;
   if (loc && get_or_insert(Memory, loc) == 0) {
@@ -213,7 +213,7 @@ case GET_LOCATION: {
   int offset = ingredients.at(1).at(0);
   if (offset < 0 || offset >= SIZE(get(Type, base_root_type->value).elements)) break;  // copied from Check above
   int result = base_address;
-  for (int i = 0; i < offset; ++i)
+  for (int i = 0;  i < offset;  ++i)
     result += size_of(element_type(base.type, i));
   trace(9998, "run") << "address to copy is " << result << end();
   products.resize(1);
@@ -353,13 +353,13 @@ case WAIT_FOR_ROUTINE: {
 // Wake up any routines waiting for other routines to complete.
 // Important: this must come after the scheduler loop above giving routines
 // waiting for locations to change a chance to wake up.
-for (int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   routine* waiter = Routines.at(i);
   if (!waiter->waiting_on_routine) continue;
   int id = waiter->waiting_on_routine;
   assert(id != waiter->id);  // routine can't wait on itself
-  for (int j = 0; j < SIZE(Routines); ++j) {
+  for (int j = 0;  j < SIZE(Routines);  ++j) {
     const routine* waitee = Routines.at(j);
     if (waitee->id == id && waitee->state != RUNNING && waitee->state != WAITING) {
       // routine is COMPLETED or DISCONTINUED
@@ -513,13 +513,13 @@ case WAIT_FOR_ROUTINE_TO_BLOCK: {
 
 :(before "End Scheduler State Transitions")
 // Wake up any routines waiting for other routines to stop running.
-for (int i = 0; i < SIZE(Routines); ++i) {
+for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   routine* waiter = Routines.at(i);
   if (!waiter->waiting_on_routine_to_block) continue;
   int id = waiter->waiting_on_routine_to_block;
   assert(id != waiter->id);  // routine can't wait on itself
-  for (int j = 0; j < SIZE(Routines); ++j) {
+  for (int j = 0;  j < SIZE(Routines);  ++j) {
     const routine* waitee = Routines.at(j);
     if (waitee->id != id) continue;
     if (waitee->state != RUNNING || waitee->blocked) {
@@ -551,7 +551,7 @@ case RESTART: {
 :(before "End Primitive Recipe Implementations")
 case RESTART: {
   int id = ingredients.at(0).at(0);
-  for (int i = 0; i < SIZE(Routines); ++i) {
+  for (int i = 0;  i < SIZE(Routines);  ++i) {
     if (Routines.at(i)->id == id) {
       if (Routines.at(i)->state == WAITING)
         Routines.at(i)->state = RUNNING;

@@ -63,7 +63,7 @@ struct reagent {
   void clear();
   reagent(const reagent& old);
   reagent& operator=(const reagent& old);
-  void set_value(double v) { value = v; initialized = true; }
+  void set_value(double v) { value = v;  initialized = true; }
 };
 
 :(before "struct reagent")
@@ -148,8 +148,8 @@ void setup_types() {
   // End Mu Types Initialization
 }
 void teardown_types() {
-  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    for (int i = 0; i < SIZE(p->second.elements); ++i)
+  for (map<type_ordinal, type_info>::iterator p = Type.begin();  p != Type.end();  ++p) {
+    for (int i = 0;  i < SIZE(p->second.elements);  ++i)
       p->second.elements.clear();
   }
   Type_ordinal.clear();
@@ -262,7 +262,7 @@ recipe::recipe() {
 instruction::instruction() :is_label(false), operation(IDLE) {
   // End instruction Constructor
 }
-void instruction::clear() { is_label=false; label.clear(); name.clear(); old_name.clear(); operation=IDLE; ingredients.clear(); products.clear(); original_string.clear(); }
+void instruction::clear() { is_label=false;  label.clear();  name.clear();  old_name.clear();  operation=IDLE;  ingredients.clear();  products.clear();  original_string.clear(); }
 bool instruction::is_empty() { return !is_label && name.empty(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
@@ -333,7 +333,7 @@ reagent::reagent(const reagent& other) {
   name = other.name;
   value = other.value;
   initialized = other.initialized;
-  for (int i = 0; i < SIZE(other.properties); ++i) {
+  for (int i = 0;  i < SIZE(other.properties);  ++i) {
     properties.push_back(pair<string, string_tree*>(other.properties.at(i).first,
                                                     other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
   }
@@ -446,10 +446,10 @@ string_tree::string_tree(const string_tree& old) {
 
 reagent& reagent::operator=(const reagent& other) {
   original_string = other.original_string;
-  for (int i = 0; i < SIZE(properties); ++i)
+  for (int i = 0;  i < SIZE(properties);  ++i)
     if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
-  for (int i = 0; i < SIZE(other.properties); ++i)
+  for (int i = 0;  i < SIZE(other.properties);  ++i)
     properties.push_back(pair<string, string_tree*>(other.properties.at(i).first, other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
   name = other.name;
   value = other.value;
@@ -465,7 +465,7 @@ reagent::~reagent() {
 }
 
 void reagent::clear() {
-  for (int i = 0; i < SIZE(properties); ++i) {
+  for (int i = 0;  i < SIZE(properties);  ++i) {
     if (properties.at(i).second) {
       delete properties.at(i).second;
       properties.at(i).second = NULL;
@@ -517,14 +517,14 @@ string slurp_until(istream& in, char delim) {
 }
 
 bool has_property(const reagent& x, const string& name) {
-  for (int i = 0; i < SIZE(x.properties); ++i) {
+  for (int i = 0;  i < SIZE(x.properties);  ++i) {
     if (x.properties.at(i).first == name) return true;
   }
   return false;
 }
 
 string_tree* property(const reagent& r, const string& name) {
-  for (int p = 0; p != SIZE(r.properties); ++p) {
+  for (int p = 0;  p != SIZE(r.properties);  ++p) {
     if (r.properties.at(p).first == name)
       return r.properties.at(p).second;
   }
@@ -545,7 +545,7 @@ void skip_whitespace_but_not_newline(istream& in) {
 }
 
 void dump_memory() {
-  for (map<int, double>::iterator p = Memory.begin(); p != Memory.end(); ++p) {
+  for (map<int, double>::iterator p = Memory.begin();  p != Memory.end();  ++p) {
     cout << p->first << ": " << no_scientific(p->second) << '\n';
   }
 }
@@ -559,7 +559,7 @@ void dump_memory() {
 string to_string(const recipe& r) {
   ostringstream out;
   out << "recipe " << r.name << " [\n";
-  for (int i = 0; i < SIZE(r.steps); ++i)
+  for (int i = 0;  i < SIZE(r.steps);  ++i)
     out << "  " << to_string(r.steps.at(i)) << '\n';
   out << "]\n";
   return out.str();
@@ -569,14 +569,14 @@ string debug_string(const recipe& x) {
   ostringstream out;
   out << "- recipe " << x.name << '\n';
   // Begin debug_string(recipe x)
-  for (int index = 0; index < SIZE(x.steps); ++index) {
+  for (int index = 0;  index < SIZE(x.steps);  ++index) {
     const instruction& inst = x.steps.at(index);
     out << "inst: " << to_string(inst) << '\n';
     out << "  ingredients\n";
-    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
       out << "    " << debug_string(inst.ingredients.at(i)) << '\n';
     out << "  products\n";
-    for (int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0;  i < SIZE(inst.products);  ++i)
       out << "    " << debug_string(inst.products.at(i)) << '\n';
   }
   return out.str();
@@ -585,13 +585,13 @@ string debug_string(const recipe& x) {
 string to_original_string(const instruction& inst) {
   if (inst.is_label) return inst.label;
   ostringstream out;
-  for (int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0;  i < SIZE(inst.products);  ++i) {
     if (i > 0) out << ", ";
     out << inst.products.at(i).original_string;
   }
   if (!inst.products.empty()) out << " <- ";
   out << inst.name << ' ';
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (i > 0) out << ", ";
     out << inst.ingredients.at(i).original_string;
   }
@@ -601,13 +601,13 @@ string to_original_string(const instruction& inst) {
 string to_string(const instruction& inst) {
   if (inst.is_label) return inst.label;
   ostringstream out;
-  for (int i = 0; i < SIZE(inst.products); ++i) {
+  for (int i = 0;  i < SIZE(inst.products);  ++i) {
     if (i > 0) out << ", ";
     out << to_string(inst.products.at(i));
   }
   if (!inst.products.empty()) out << " <- ";
   out << inst.name << ' ';
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (i > 0) out << ", ";
     out << to_string(inst.ingredients.at(i));
   }
@@ -620,7 +620,7 @@ string to_string(const reagent& r) {
   out << "{";
   out << r.name << ": " << names_to_string(r.type);
   if (!r.properties.empty()) {
-    for (int i = 0; i < SIZE(r.properties); ++i)
+    for (int i = 0;  i < SIZE(r.properties);  ++i)
       out << ", \"" << r.properties.at(i).first << "\": " << to_string(r.properties.at(i).second);
   }
   out << "}";

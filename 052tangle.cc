@@ -79,7 +79,7 @@ void insert_fragments(recipe& r) {
     made_progress = false;
     // create a new vector because insertions invalidate iterators
     vector<instruction> result;
-    for (int i = 0; i < SIZE(r.steps); ++i) {
+    for (int i = 0;  i < SIZE(r.steps);  ++i) {
       const instruction& inst = r.steps.at(i);
       if (!inst.is_label || !is_waypoint(inst.label) || inst.tangle_done) {
         result.push_back(inst);
@@ -115,12 +115,12 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
   // so we'll keep jump targets local to the specific before/after fragment
   // that introduces them.
   set<string> jump_targets;
-  for (int i = 0; i < SIZE(patch); ++i) {
+  for (int i = 0;  i < SIZE(patch);  ++i) {
     const instruction& inst = patch.at(i);
     if (inst.is_label && is_jump_target(inst.label))
       jump_targets.insert(inst.label);
   }
-  for (int i = 0; i < SIZE(patch); ++i) {
+  for (int i = 0;  i < SIZE(patch);  ++i) {
     instruction inst = patch.at(i);
     if (inst.is_label) {
       if (contains_key(jump_targets, inst.label))
@@ -128,7 +128,7 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
       base.push_back(inst);
       continue;
     }
-    for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+    for (int j = 0;  j < SIZE(inst.ingredients);  ++j) {
       reagent& x = inst.ingredients.at(j);
       if (!is_literal(x)) continue;
       if (x.type->name == "label" && contains_key(jump_targets, x.name))
@@ -152,11 +152,11 @@ bool is_waypoint(string label) {
 check_insert_fragments();
 :(code)
 void check_insert_fragments() {
-  for (map<string, recipe>::iterator p = Before_fragments.begin(); p != Before_fragments.end(); ++p) {
+  for (map<string, recipe>::iterator p = Before_fragments.begin();  p != Before_fragments.end();  ++p) {
     if (!contains_key(Fragments_used, p->first))
       raise << "could not locate insert before label " << p->first << '\n' << end();
   }
-  for (map<string, recipe>::iterator p = After_fragments.begin(); p != After_fragments.end(); ++p) {
+  for (map<string, recipe>::iterator p = After_fragments.begin();  p != After_fragments.end();  ++p) {
     if (!contains_key(Fragments_used, p->first))
       raise << "could not locate insert after label " << p->first << '\n' << end();
   }

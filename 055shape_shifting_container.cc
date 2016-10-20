@@ -177,7 +177,7 @@ bool slurp_type_ingredients(istream& in, map<string, type_ordinal>& out, const s
 
 bool type_ingredients_match(const map<string, type_ordinal>& a, const map<string, type_ordinal>& b) {
   if (SIZE(a) != SIZE(b)) return false;
-  for (map<string, type_ordinal>::const_iterator p = a.begin(); p != a.end(); ++p) {
+  for (map<string, type_ordinal>::const_iterator p = a.begin();  p != a.end();  ++p) {
     if (!contains_key(b, p->first)) return false;
     if (p->second != get(b, p->first)) return false;
   }
@@ -341,7 +341,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
 const type_tree* nth_type_ingredient(const type_tree* callsite_type, int type_ingredient_index, const type_info& container_info) {
   bool final = final_type_ingredient(type_ingredient_index, container_info);
   const type_tree* curr = callsite_type;
-  for (int i = 0; i < type_ingredient_index; ++i) {
+  for (int i = 0;  i < type_ingredient_index;  ++i) {
     assert(curr);
     assert(!curr->atom);
 //?     cerr << "type ingredient " << i << " is " << to_string(curr->left) << '\n';

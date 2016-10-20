@@ -24,7 +24,7 @@ Transform.push_back(transform_labels);  // idempotent
 :(code)
 void transform_labels(const recipe_ordinal r) {
   map<string, int> offset;
-  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
     if (starts_with(inst.label, "+")) {
       if (!contains_key(offset, inst.label)) {
@@ -37,7 +37,7 @@ void transform_labels(const recipe_ordinal r) {
       }
     }
   }
-  for (int i = 0; i < SIZE(get(Recipe, r).steps); ++i) {
+  for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
       if (inst.ingredients.empty()) {

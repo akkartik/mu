@@ -58,11 +58,11 @@ void initialize_recipe_literal(reagent& x) {
   x.set_value(get(Recipe_ordinal, x.name));
 }
 bool contains_reagent_with_type(const recipe& caller, const string& name) {
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
       if (is_matching_non_recipe_literal(inst.ingredients.at(i), name)) return true;
-    for (int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0;  i < SIZE(inst.products);  ++i)
       if (is_matching_non_recipe_literal(inst.products.at(i), name)) return true;
   }
   return false;
@@ -156,7 +156,7 @@ Transform.push_back(check_indirect_calls_against_header);  // idempotent
 void check_indirect_calls_against_header(const recipe_ordinal r) {
   trace(9991, "transform") << "--- type-check 'call' instructions inside recipe " << get(Recipe, r).name << end();
   const recipe& caller = get(Recipe, r);
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     if (inst.operation != CALL) continue;
     if (inst.ingredients.empty()) continue;  // error raised above
@@ -164,11 +164,11 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
     if (!is_mu_recipe(callee)) continue;  // error raised above
     const recipe callee_header = is_literal(callee) ? get(Recipe, callee.value) : from_reagent(inst.ingredients.at(0));
     if (!callee_header.has_header) continue;
-    for (long int i = /*skip callee*/1; i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1); ++i) {
+    for (long int i = /*skip callee*/1;  i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1);  ++i) {
       if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
         raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << inst.original_string << "'\n" << end();
     }
-    for (long int i = 0; i < min(SIZE(inst.products), SIZE(callee_header.products)); ++i) {
+    for (long int i = 0;  i < min(SIZE(inst.products), SIZE(callee_header.products));  ++i) {
       if (is_dummy(inst.products.at(i))) continue;
       if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
         raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.original_string << "'\n" << end();
@@ -186,7 +186,7 @@ recipe from_reagent(const reagent& r) {
   }
   assert(root_type(r.type)->name == "recipe");
   const type_tree* curr = r.type->right;
-  for (/*nada*/; curr && !curr->atom; curr = curr->right) {
+  for (/*nada*/;  curr && !curr->atom;  curr = curr->right) {
     if (curr->left->atom && curr->left->name == "->") {
       curr = curr->right;  // skip delimiter
       goto read_products;
@@ -199,7 +199,7 @@ recipe from_reagent(const reagent& r) {
     return result_header;  // no products
   }
   read_products:
-  for (/*nada*/; curr && !curr->atom; curr = curr->right)
+  for (/*nada*/;  curr && !curr->atom;  curr = curr->right)
     result_header.products.push_back(next_recipe_reagent(curr->left));
   if (curr) {
     assert(curr->atom);
@@ -286,11 +286,11 @@ if (is_mu_recipe(to)) {
   }
   const recipe& rrhs = get(Recipe, from.value);
   const recipe& rlhs = from_reagent(to);
-  for (long int i = 0; i < min(SIZE(rlhs.ingredients), SIZE(rrhs.ingredients)); ++i) {
+  for (long int i = 0;  i < min(SIZE(rlhs.ingredients), SIZE(rrhs.ingredients));  ++i) {
     if (!types_match(rlhs.ingredients.at(i), rrhs.ingredients.at(i)))
       return false;
   }
-  for (long int i = 0; i < min(SIZE(rlhs.products), SIZE(rrhs.products)); ++i) {
+  for (long int i = 0;  i < min(SIZE(rlhs.products), SIZE(rrhs.products));  ++i) {
     if (!types_match(rlhs.products.at(i), rrhs.products.at(i)))
       return false;
   }
@@ -331,7 +331,7 @@ check_for_recipe_literals(inst, get(Recipe, r));
 check_for_recipe_literals(inst, get(Recipe, r));
 :(code)
 void check_for_recipe_literals(const instruction& inst, const recipe& caller) {
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (is_mu_recipe(inst.ingredients.at(i)))
       raise << maybe(caller.name) << "missing type for " << inst.ingredients.at(i).original_string << " in '" << inst.original_string << "'\n" << end();
   }

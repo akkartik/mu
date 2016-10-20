@@ -35,7 +35,7 @@ case RETURN: {
   Current_routine->calls.pop_front();
   // just in case 'main' returns a value, drop it for now
   if (Current_routine->calls.empty()) goto stop_running_current_routine;
-  for (int i = 0; i < SIZE(ingredients); ++i)
+  for (int i = 0;  i < SIZE(ingredients);  ++i)
     trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
   // make reply products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
@@ -51,13 +51,13 @@ Transform.push_back(check_types_of_reply_instructions);
 void check_types_of_reply_instructions(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check types of reply instructions in recipe " << caller.name << end();
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& caller_instruction = caller.steps.at(i);
     if (caller_instruction.is_label) continue;
     if (caller_instruction.products.empty()) continue;
     if (caller_instruction.operation < MAX_PRIMITIVE_RECIPES) continue;
     const recipe& callee = get(Recipe, caller_instruction.operation);
-    for (int i = 0; i < SIZE(callee.steps); ++i) {
+    for (int i = 0;  i < SIZE(callee.steps);  ++i) {
       const instruction& reply_inst = callee.steps.at(i);
       if (reply_inst.operation != RETURN) continue;
       // check types with the caller
@@ -65,7 +65,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
         raise << maybe(caller.name) << "too few values returned from " << callee.name << '\n' << end();
         break;
       }
-      for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
+      for (int i = 0;  i < SIZE(caller_instruction.products);  ++i) {
         reagent/*copy*/ lhs = reply_inst.ingredients.at(i);
         reagent/*copy*/ rhs = caller_instruction.products.at(i);
         // End Check RETURN Copy(lhs, rhs)
@@ -77,7 +77,7 @@ void check_types_of_reply_instructions(recipe_ordinal r) {
       }
       // check that any reply ingredients with /same-as-ingredient connect up
       // the corresponding ingredient and product in the caller.
-      for (int i = 0; i < SIZE(caller_instruction.products); ++i) {
+      for (int i = 0;  i < SIZE(caller_instruction.products);  ++i) {
         if (has_property(reply_inst.ingredients.at(i), "same-as-ingredient")) {
           string_tree* tmp = property(reply_inst.ingredients.at(i), "same-as-ingredient");
           if (!tmp || !tmp->atom) {
@@ -149,7 +149,7 @@ string to_string(const vector<double>& in) {
     return out.str();
   }
   out << "[";
-  for (int i = 0; i < SIZE(in); ++i) {
+  for (int i = 0;  i < SIZE(in);  ++i) {
     if (i > 0) out << ", ";
     out << no_scientific(in.at(i));
   }

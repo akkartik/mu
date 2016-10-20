@@ -11,7 +11,7 @@ case EQUAL: {
     break;
   }
   const reagent& exemplar = inst.ingredients.at(0);
-  for (int i = /*skip exemplar*/1; i < SIZE(inst.ingredients); ++i) {
+  for (int i = /*skip exemplar*/1;  i < SIZE(inst.ingredients);  ++i) {
     if (!types_match(inst.ingredients.at(i), exemplar) && !types_match(exemplar, inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'equal' expects ingredients to be all of the same type, but got '" << inst.original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -31,7 +31,7 @@ case EQUAL: {
 case EQUAL: {
   vector<double>& exemplar = ingredients.at(0);
   bool result = true;
-  for (int i = /*skip exemplar*/1; i < SIZE(ingredients); ++i) {
+  for (int i = /*skip exemplar*/1;  i < SIZE(ingredients);  ++i) {
     if (!equal(ingredients.at(i).begin(), ingredients.at(i).end(), exemplar.begin())) {
       result = false;
       break;
@@ -138,7 +138,7 @@ case GREATER_THAN: {
     raise << maybe(get(Recipe, r).name) << "'greater-than' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'greater-than' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -157,7 +157,7 @@ case GREATER_THAN: {
 :(before "End Primitive Recipe Implementations")
 case GREATER_THAN: {
   bool result = true;
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i-1).at(0) <= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -205,7 +205,7 @@ case LESSER_THAN: {
     raise << maybe(get(Recipe, r).name) << "'lesser-than' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'lesser-than' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -224,7 +224,7 @@ case LESSER_THAN: {
 :(before "End Primitive Recipe Implementations")
 case LESSER_THAN: {
   bool result = true;
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i-1).at(0) >= ingredients.at(i).at(0)) {
       result = false;
     }
@@ -272,7 +272,7 @@ case GREATER_OR_EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'greater-or-equal' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'greater-or-equal' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -291,7 +291,7 @@ case GREATER_OR_EQUAL: {
 :(before "End Primitive Recipe Implementations")
 case GREATER_OR_EQUAL: {
   bool result = true;
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i-1).at(0) < ingredients.at(i).at(0)) {
       result = false;
     }
@@ -347,7 +347,7 @@ case LESSER_OR_EQUAL: {
     raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'lesser-or-equal' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -366,7 +366,7 @@ case LESSER_OR_EQUAL: {
 :(before "End Primitive Recipe Implementations")
 case LESSER_OR_EQUAL: {
   bool result = true;
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i-1).at(0) > ingredients.at(i).at(0)) {
       result = false;
     }
@@ -422,7 +422,7 @@ case MAX: {
     raise << maybe(get(Recipe, r).name) << "'max' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'max' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -441,7 +441,7 @@ case MAX: {
 :(before "End Primitive Recipe Implementations")
 case MAX: {
   int result = ingredients.at(0).at(0);
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i).at(0) > result) {
       result = ingredients.at(i).at(0);
     }
@@ -461,7 +461,7 @@ case MIN: {
     raise << maybe(get(Recipe, r).name) << "'min' needs at least two ingredients to compare in '" << inst.original_string << "'\n" << end();
     break;
   }
-  for (int i = 0; i < SIZE(inst.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (!is_mu_number(inst.ingredients.at(i))) {
       raise << maybe(get(Recipe, r).name) << "'min' can only compare numbers; got '" << inst.ingredients.at(i).original_string << "'\n" << end();
       goto finish_checking_instruction;
@@ -480,7 +480,7 @@ case MIN: {
 :(before "End Primitive Recipe Implementations")
 case MIN: {
   int result = ingredients.at(0).at(0);
-  for (int i = /**/1; i < SIZE(ingredients); ++i) {
+  for (int i = /**/1;  i < SIZE(ingredients);  ++i) {
     if (ingredients.at(i).at(0) < result) {
       result = ingredients.at(i).at(0);
     }

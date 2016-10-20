@@ -65,7 +65,7 @@ if (!candidates.empty()) {
   // perform all transforms on the new specialization
   if (!variant.steps.empty()) {
     trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
-    for (int t = 0; t < SIZE(Transform); ++t) {
+    for (int t = 0;  t < SIZE(Transform);  ++t) {
       // one exception: skip tangle, which would have already occurred inside new_variant above
       if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
         continue;
@@ -99,7 +99,7 @@ bool types_strictly_match_except_literal_zero_against_address(const reagent& to,
 // phase 3 of static dispatch
 vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
-  for (int i = 0; i < SIZE(variants); ++i) {
+  for (int i = 0;  i < SIZE(variants);  ++i) {
     if (variants.at(i) == -1) continue;
     if (!any_type_ingredient_in_header(variants.at(i))) continue;
     if (!all_concrete_header_reagents_strictly_match(inst, get(Recipe, variants.at(i)))) continue;
@@ -109,13 +109,13 @@ vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instructi
 }
 
 bool all_concrete_header_reagents_strictly_match(const instruction& inst, const recipe& variant) {
-  for (int i = 0; i < min(SIZE(inst.ingredients), SIZE(variant.ingredients)); ++i) {
+  for (int i = 0;  i < min(SIZE(inst.ingredients), SIZE(variant.ingredients));  ++i) {
     if (!concrete_type_names_strictly_match(variant.ingredients.at(i), inst.ingredients.at(i))) {
       trace(9993, "transform") << "concrete-type match failed: ingredient " << i << end();
       return false;
     }
   }
-  for (int i = 0; i < min(SIZE(inst.products), SIZE(variant.ingredients)); ++i) {
+  for (int i = 0;  i < min(SIZE(inst.products), SIZE(variant.ingredients));  ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!concrete_type_names_strictly_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "strict match failed: product " << i << end();
@@ -130,7 +130,7 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
   assert(!candidates.empty());
   // primary score
   int max_score = -1;
-  for (int i = 0; i < SIZE(candidates); ++i) {
+  for (int i = 0;  i < SIZE(candidates);  ++i) {
     int score = number_of_concrete_type_names(candidates.at(i));
     assert(score > -1);
     if (score > max_score) max_score = score;
@@ -138,7 +138,7 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
   // break any ties at max_score by a secondary score
   int min_score2 = 999;
   int best_index = 0;
-  for (int i = 0; i < SIZE(candidates); ++i) {
+  for (int i = 0;  i < SIZE(candidates);  ++i) {
     int score1 = number_of_concrete_type_names(candidates.at(i));
     assert(score1 <= max_score);
     if (score1 != max_score) continue;
@@ -156,11 +156,11 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recip
 
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
   const recipe& caller = get(Recipe, variant);
-  for (int i = 0; i < SIZE(caller.ingredients); ++i) {
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i) {
     if (contains_type_ingredient_name(caller.ingredients.at(i)))
       return true;
   }
-  for (int i = 0; i < SIZE(caller.products); ++i) {
+  for (int i = 0;  i < SIZE(caller.products);  ++i) {
     if (contains_type_ingredient_name(caller.products.at(i)))
       return true;
   }
@@ -176,9 +176,9 @@ bool concrete_type_names_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from
 int number_of_concrete_type_names(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   int result = 0;
-  for (int i = 0; i < SIZE(caller.ingredients); ++i)
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
     result += number_of_concrete_type_names(caller.ingredients.at(i));
-  for (int i = 0; i < SIZE(caller.products); ++i)
+  for (int i = 0;  i < SIZE(caller.products);  ++i)
     result += number_of_concrete_type_names(caller.products.at(i));
   return result;
 }
@@ -252,7 +252,7 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     compute_type_ingredient_mappings(get(Recipe, exemplar), inst, mappings, caller_recipe, &error);
     if (!error) error = (SIZE(mappings) != type_ingredient_count_in_header(exemplar));
     if (!error) replace_type_ingredients(new_recipe, mappings);
-    for (map<string, const type_tree*>::iterator p = mappings.begin(); p != mappings.end(); ++p)
+    for (map<string, const type_tree*>::iterator p = mappings.begin();  p != mappings.end();  ++p)
       delete p->second;
     if (error) return 0;
   }
@@ -264,16 +264,16 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
 void compute_type_names(recipe& variant) {
   trace(9993, "transform") << "-- compute type names: " << variant.name << end();
   map<string, type_tree*> type_names;
-  for (int i = 0; i < SIZE(variant.ingredients); ++i)
+  for (int i = 0;  i < SIZE(variant.ingredients);  ++i)
     save_or_deduce_type_name(variant.ingredients.at(i), type_names, variant, "");
-  for (int i = 0; i < SIZE(variant.products); ++i)
+  for (int i = 0;  i < SIZE(variant.products);  ++i)
     save_or_deduce_type_name(variant.products.at(i), type_names, variant, "");
-  for (int i = 0; i < SIZE(variant.steps); ++i) {
+  for (int i = 0;  i < SIZE(variant.steps);  ++i) {
     instruction& inst = variant.steps.at(i);
     trace(9993, "transform") << "  instruction: " << to_string(inst) << end();
-    for (int in = 0; in < SIZE(inst.ingredients); ++in)
+    for (int in = 0;  in < SIZE(inst.ingredients);  ++in)
       save_or_deduce_type_name(inst.ingredients.at(in), type_names, variant, " in '" + inst.original_string + "'");
-    for (int out = 0; out < SIZE(inst.products); ++out)
+    for (int out = 0;  out < SIZE(inst.products);  ++out)
       save_or_deduce_type_name(inst.products.at(out), type_names, variant, " in '" + inst.original_string + "'");
   }
 }
@@ -297,7 +297,7 @@ void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const r
 
 void compute_type_ingredient_mappings(const recipe& exemplar, const instruction& inst, map<string, const type_tree*>& mappings, const recipe& caller_recipe, bool* error) {
   int limit = min(SIZE(inst.ingredients), SIZE(exemplar.ingredients));
-  for (int i = 0; i < limit; ++i) {
+  for (int i = 0;  i < limit;  ++i) {
     const reagent& exemplar_reagent = exemplar.ingredients.at(i);
     reagent/*copy*/ ingredient = inst.ingredients.at(i);
     canonize_type(ingredient);
@@ -305,7 +305,7 @@ void compute_type_ingredient_mappings(const recipe& exemplar, const instruction&
     accumulate_type_ingredients(exemplar_reagent, ingredient, mappings, exemplar, inst, caller_recipe, error);
   }
   limit = min(SIZE(inst.products), SIZE(exemplar.products));
-  for (int i = 0; i < limit; ++i) {
+  for (int i = 0;  i < limit;  ++i) {
     const reagent& exemplar_reagent = exemplar.products.at(i);
     reagent/*copy*/ product = inst.products.at(i);
     if (is_dummy(product)) continue;
@@ -363,18 +363,18 @@ void replace_type_ingredients(recipe& new_recipe, const map<string, const type_t
   // update its header
   if (mappings.empty()) return;
   trace(9993, "transform") << "replacing in recipe header ingredients" << end();
-  for (int i = 0; i < SIZE(new_recipe.ingredients); ++i)
+  for (int i = 0;  i < SIZE(new_recipe.ingredients);  ++i)
     replace_type_ingredients(new_recipe.ingredients.at(i), mappings, new_recipe);
   trace(9993, "transform") << "replacing in recipe header products" << end();
-  for (int i = 0; i < SIZE(new_recipe.products); ++i)
+  for (int i = 0;  i < SIZE(new_recipe.products);  ++i)
     replace_type_ingredients(new_recipe.products.at(i), mappings, new_recipe);
   // update its body
-  for (int i = 0; i < SIZE(new_recipe.steps); ++i) {
+  for (int i = 0;  i < SIZE(new_recipe.steps);  ++i) {
     instruction& inst = new_recipe.steps.at(i);
     trace(9993, "transform") << "replacing in instruction '" << to_string(inst) << "'" << end();
-    for (int j = 0; j < SIZE(inst.ingredients); ++j)
+    for (int j = 0;  j < SIZE(inst.ingredients);  ++j)
       replace_type_ingredients(inst.ingredients.at(j), mappings, new_recipe);
-    for (int j = 0; j < SIZE(inst.products); ++j)
+    for (int j = 0;  j < SIZE(inst.products);  ++j)
       replace_type_ingredients(inst.products.at(j), mappings, new_recipe);
     // special-case for new: replace type ingredient in first ingredient *value*
     if (inst.name == "new" && inst.ingredients.at(0).type->name != "literal-string") {
@@ -425,9 +425,9 @@ void replace_type_ingredients(type_tree* type, const map<string, const type_tree
 int type_ingredient_count_in_header(recipe_ordinal variant) {
   const recipe& caller = get(Recipe, variant);
   set<string> type_ingredients;
-  for (int i = 0; i < SIZE(caller.ingredients); ++i)
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
     accumulate_type_ingredients(caller.ingredients.at(i).type, type_ingredients);
-  for (int i = 0; i < SIZE(caller.products); ++i)
+  for (int i = 0;  i < SIZE(caller.products);  ++i)
     accumulate_type_ingredients(caller.products.at(i).type, type_ingredients);
   return SIZE(type_ingredients);
 }
@@ -458,7 +458,7 @@ void dump_inspect(const type_tree* x, ostream& out) {
     return;
   }
   out << '(';
-  for (const type_tree* curr = x; curr; curr = curr->right) {
+  for (const type_tree* curr = x;  curr;  curr = curr->right) {
     if (curr != x) out << ' ';
     if (curr->left)
       dump_inspect(curr->left, out);
@@ -470,15 +470,15 @@ void dump_inspect(const type_tree* x, ostream& out) {
 
 void ensure_all_concrete_types(/*const*/ recipe& new_recipe, const recipe& exemplar) {
   trace(9993, "transform") << "-- ensure all concrete types in recipe " << new_recipe.name << end();
-  for (int i = 0; i < SIZE(new_recipe.ingredients); ++i)
+  for (int i = 0;  i < SIZE(new_recipe.ingredients);  ++i)
     ensure_all_concrete_types(new_recipe.ingredients.at(i), exemplar);
-  for (int i = 0; i < SIZE(new_recipe.products); ++i)
+  for (int i = 0;  i < SIZE(new_recipe.products);  ++i)
     ensure_all_concrete_types(new_recipe.products.at(i), exemplar);
-  for (int i = 0; i < SIZE(new_recipe.steps); ++i) {
+  for (int i = 0;  i < SIZE(new_recipe.steps);  ++i) {
     instruction& inst = new_recipe.steps.at(i);
-    for (int j = 0; j < SIZE(inst.ingredients); ++j)
+    for (int j = 0;  j < SIZE(inst.ingredients);  ++j)
       ensure_all_concrete_types(inst.ingredients.at(j), exemplar);
-    for (int j = 0; j < SIZE(inst.products); ++j)
+    for (int j = 0;  j < SIZE(inst.products);  ++j)
       ensure_all_concrete_types(inst.products.at(j), exemplar);
   }
 }

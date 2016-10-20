@@ -122,7 +122,7 @@ atexit(clear_container_metadata);
 :(code)
 // invariant: Container_metadata always contains a superset of Container_metadata_snapshot
 void restore_container_metadata() {
-  for (int i = 0; i < SIZE(Container_metadata); ++i) {
+  for (int i = 0;  i < SIZE(Container_metadata);  ++i) {
     assert(Container_metadata.at(i).first);
     if (i < SIZE(Container_metadata_snapshot)) {
       assert(Container_metadata.at(i).first == Container_metadata_snapshot.at(i).first);
@@ -135,7 +135,7 @@ void restore_container_metadata() {
 }
 void clear_container_metadata() {
   Container_metadata_snapshot.clear();
-  for (int i = 0; i < SIZE(Container_metadata); ++i) {
+  for (int i = 0;  i < SIZE(Container_metadata);  ++i) {
     delete Container_metadata.at(i).first;
     Container_metadata.at(i).first = NULL;
   }
@@ -180,12 +180,12 @@ Transform.push_back(compute_container_sizes);
 void compute_container_sizes(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9992, "transform") << "--- compute container sizes for " << caller.name << end();
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute container sizes for " << to_string(inst) << end();
-    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
       compute_container_sizes(inst.ingredients.at(i));
-    for (int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0;  i < SIZE(inst.products);  ++i)
       compute_container_sizes(inst.products.at(i));
   }
 }
@@ -237,7 +237,7 @@ void compute_container_sizes(const type_info& container_info, const type_tree* f
   // (So it can only contain arrays if they're static and include their
   // length in the type.)
   container_metadata metadata;
-  for (int i = 0; i < SIZE(container_info.elements); ++i) {
+  for (int i = 0;  i < SIZE(container_info.elements);  ++i) {
     reagent/*copy*/ element = container_info.elements.at(i);
     // Compute Container Size(element, full_type)
     compute_container_sizes(element.type, pending_metadata);
@@ -248,7 +248,7 @@ void compute_container_sizes(const type_info& container_info, const type_tree* f
 }
 
 container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
-  for (int i = 0; i < SIZE(all); ++i) {
+  for (int i = 0;  i < SIZE(all);  ++i) {
     if (matches(all.at(i).first, key))
       return all.at(i).second;
   }
@@ -258,7 +258,7 @@ container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, cons
 }
 
 bool contains_key(const vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {
-  for (int i = 0; i < SIZE(all); ++i) {
+  for (int i = 0;  i < SIZE(all);  ++i) {
     if (matches(all.at(i).first, key))
       return true;
   }
@@ -635,7 +635,7 @@ case PUT: {
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
   // Write Memory in PUT in Run
-  for (int i = 0; i < SIZE(ingredients.at(2)); ++i) {
+  for (int i = 0;  i < SIZE(ingredients.at(2));  ++i) {
     trace(9999, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));
   }
@@ -815,8 +815,8 @@ Transform.push_back(expand_type_abbreviations_in_containers);
 // extremely inefficient; we process all types over and over again, once for every single recipe
 // but it doesn't seem to cause any noticeable slowdown
 void expand_type_abbreviations_in_containers(unused const recipe_ordinal r) {
-  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
-    for (int i = 0; i < SIZE(p->second.elements); ++i)
+  for (map<type_ordinal, type_info>::iterator p = Type.begin();  p != Type.end();  ++p) {
+    for (int i = 0;  i < SIZE(p->second.elements);  ++i)
       expand_type_abbreviations(p->second.elements.at(i).type);
   }
 }
@@ -871,11 +871,11 @@ Transform.push_back(check_or_set_invalid_types);  // idempotent
 void check_or_set_invalid_types(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check for invalid types in recipe " << caller.name << end();
-  for (int index = 0; index < SIZE(caller.steps); ++index) {
+  for (int index = 0;  index < SIZE(caller.steps);  ++index) {
     instruction& inst = caller.steps.at(index);
-    for (int i = 0; i < SIZE(inst.ingredients); ++i)
+    for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
       check_or_set_invalid_types(inst.ingredients.at(i), caller, inst);
-    for (int i = 0; i < SIZE(inst.products); ++i)
+    for (int i = 0;  i < SIZE(inst.products);  ++i)
       check_or_set_invalid_types(inst.products.at(i), caller, inst);
   }
   // End check_or_set_invalid_types
@@ -933,10 +933,10 @@ check_container_field_types();
 
 :(code)
 void check_container_field_types() {
-  for (map<type_ordinal, type_info>::iterator p = Type.begin(); p != Type.end(); ++p) {
+  for (map<type_ordinal, type_info>::iterator p = Type.begin();  p != Type.end();  ++p) {
     const type_info& info = p->second;
     // Check Container Field Types(info)
-    for (int i = 0; i < SIZE(info.elements); ++i)
+    for (int i = 0;  i < SIZE(info.elements);  ++i)
       check_invalid_types(info.elements.at(i).type, maybe(info.name), info.elements.at(i).name);
   }
 }

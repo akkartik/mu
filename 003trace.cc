@@ -149,7 +149,7 @@ void trace_stream::newline() {
 string trace_stream::readable_contents(string label) {
   ostringstream output;
   label = trim(label);
-  for (vector<trace_line>::iterator p = past_lines.begin(); p != past_lines.end(); ++p)
+  for (vector<trace_line>::iterator p = past_lines.begin();  p != past_lines.end();  ++p)
     if (label.empty() || label == p->label) {
       output << std::setw(4) << p->depth << ' ' << p->label << ": " << p->contents << '\n';
     }
@@ -250,7 +250,7 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
   if (curr_expected_line == SIZE(expected_lines)) return true;
   string label, contents;
   split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
-  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label != p->label) continue;
     if (contents != trim(p->contents)) continue;
     ++curr_expected_line;
@@ -287,7 +287,7 @@ void split_label_contents(const string& s, string* label, string* contents) {
 }
 
 bool line_exists_anywhere(const string& label, const string& contents) {
-  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label != p->label) continue;
     if (contents == trim(p->contents)) return true;
   }
@@ -301,7 +301,7 @@ int trace_count(string label) {
 int trace_count(string label, string line) {
   if (!Trace_stream) return 0;
   long result = 0;
-  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label == p->label) {
       if (line == "" || trim(line) == trim(p->contents))
         ++result;
@@ -313,7 +313,7 @@ int trace_count(string label, string line) {
 int trace_count_prefix(string label, string prefix) {
   if (!Trace_stream) return 0;
   long result = 0;
-  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin(); p != Trace_stream->past_lines.end(); ++p) {
+  for (vector<trace_line>::iterator p = Trace_stream->past_lines.begin();  p != Trace_stream->past_lines.end();  ++p) {
     if (label == p->label) {
       if (starts_with(trim(p->contents), trim(prefix)))
         ++result;

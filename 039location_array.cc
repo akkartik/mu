@@ -40,7 +40,7 @@ case TO_LOCATION_ARRAY: {
   // initialize array length
   put(Memory, result+1, array_size);
   // now copy over data
-  for (int i = 0; i < array_size; ++i)
+  for (int i = 0;  i < array_size;  ++i)
     put(Memory, result+2+i, ingredients.at(0).at(i));
   break;
 }

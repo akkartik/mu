@@ -39,10 +39,10 @@ void rewrite_literal_string_to_text(recipe_ordinal r) {
   trace(9991, "transform") << "--- rewrite literal strings in recipe " << caller.name << end();
   if (contains_numeric_locations(caller)) return;
   vector<instruction> new_instructions;
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     if (recipes_taking_literal_strings.find(inst.name) == recipes_taking_literal_strings.end()) {
-      for (int j = 0; j < SIZE(inst.ingredients); ++j) {
+      for (int j = 0;  j < SIZE(inst.ingredients);  ++j) {
         if (!is_literal_text(inst.ingredients.at(j))) continue;
         instruction def;
         ostringstream ingredient_name;
@@ -61,12 +61,12 @@ void rewrite_literal_string_to_text(recipe_ordinal r) {
 }
 
 bool contains_numeric_locations(const recipe& caller) {
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    for (int in = 0; in < SIZE(inst.ingredients); ++in)
+    for (int in = 0;  in < SIZE(inst.ingredients);  ++in)
       if (is_numeric_location(inst.ingredients.at(in)))
         return true;
-    for (int out = 0; out < SIZE(inst.products); ++out)
+    for (int out = 0;  out < SIZE(inst.products);  ++out)
       if (is_numeric_location(inst.products.at(out)))
         return true;
   }

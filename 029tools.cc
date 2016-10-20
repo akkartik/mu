@@ -31,7 +31,7 @@ case TRACE: {
   int depth = ingredients.at(0).at(0);
   string label = current_instruction().ingredients.at(1).name;
   ostringstream out;
-  for (int i = 2; i < SIZE(current_instruction().ingredients); ++i) {
+  for (int i = 2;  i < SIZE(current_instruction().ingredients);  ++i) {
     if (i > 2) out << ' ';
     out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
   }
@@ -52,7 +52,7 @@ case STASH: {
 :(before "End Primitive Recipe Implementations")
 case STASH: {
   ostringstream out;
-  for (int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+  for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
     if (i) out << ' ';
     out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
   }
@@ -85,7 +85,7 @@ string print_mu(const reagent& r, const vector<double>& data) {
     return r.name;
   // End print Special-cases(r, data)
   ostringstream out;
-  for (long long i = 0; i < SIZE(data); ++i) {
+  for (long long i = 0;  i < SIZE(data);  ++i) {
     if (i) out << ' ';
     out << no_scientific(data.at(i));
   }
@@ -236,7 +236,7 @@ case _PRINT: {
 }
 :(before "End Primitive Recipe Implementations")
 case _PRINT: {
-  for (int i = 0; i < SIZE(ingredients); ++i) {
+  for (int i = 0;  i < SIZE(ingredients);  ++i) {
     if (is_literal(current_instruction().ingredients.at(i))) {
       trace(9998, "run") << "$print: " << current_instruction().ingredients.at(i).name << end();
       if (!has_property(current_instruction().ingredients.at(i), "newline")) {
@@ -249,7 +249,7 @@ case _PRINT: {
       }
     }
     else {
-      for (int j = 0; j < SIZE(ingredients.at(i)); ++j) {
+      for (int j = 0;  j < SIZE(ingredients.at(i));  ++j) {
         trace(9998, "run") << "$print: " << ingredients.at(i).at(j) << end();
         if (j > 0) cout << " ";
         cout << no_scientific(ingredients.at(i).at(j));
@@ -330,7 +330,7 @@ case _LOG: {
 :(before "End Primitive Recipe Implementations")
 case _LOG: {
   ostringstream out;
-  for (int i = 0; i < SIZE(current_instruction().ingredients); ++i) {
+  for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
     out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
   }
   LOG << out.str() << '\n';

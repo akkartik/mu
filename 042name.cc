@@ -43,11 +43,11 @@ void transform_names(const recipe_ordinal r) {
   // store the indices 'used' so far in the map
   int& curr_idx = names[""];
   ++curr_idx;  // avoid using index 0, benign skip in some other cases
-  for (int i = 0; i < SIZE(caller.steps); ++i) {
+  for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     // End transform_names(inst) Special-cases
     // map names to addresses
-    for (int in = 0; in < SIZE(inst.ingredients); ++in) {
+    for (int in = 0;  in < SIZE(inst.ingredients);  ++in) {
       reagent& ingredient = inst.ingredients.at(in);
       // Begin transform_names Ingredient Special-cases(ingredient, inst, caller)
       if (is_disqualified(ingredient, inst, caller.name)) continue;
@@ -68,7 +68,7 @@ void transform_names(const recipe_ordinal r) {
         return;
       }
     }
-    for (int out = 0; out < SIZE(inst.products); ++out) {
+    for (int out = 0;  out < SIZE(inst.products);  ++out) {
       reagent& product = inst.products.at(out);
       // Begin transform_names Product Special-cases(product, inst, caller)
       if (is_disqualified(product, inst, caller.name)) continue;
@@ -124,7 +124,7 @@ type_ordinal skip_addresses(type_tree* type) {
 
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {
   const type_info& container = get(Type, t);
-  for (int i = 0; i < SIZE(container.elements); ++i)
+  for (int i = 0;  i < SIZE(container.elements);  ++i)
     if (container.elements.at(i).name == name) return i;
   raise << maybe(recipe_name) << "unknown element '" << name << "' in container '" << get(Type, t).name << "'\n" << end();
   return -1;

@@ -49,7 +49,7 @@ int new_mu_text(const string& contents) {
   ++curr_address;  // skip length
   int curr = 0;
   const char* raw_contents = contents.c_str();
-  for (int i = 0; i < string_length; ++i) {
+  for (int i = 0;  i < string_length;  ++i) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
@@ -132,7 +132,7 @@ string read_mu_text(int address) {
   int size = get_or_insert(Memory, address);
   if (size == 0) return "";
   ostringstream tmp;
-  for (int curr = address+1; curr <= address+size; ++curr) {
+  for (int curr = address+1;  curr <= address+size;  ++curr) {
     tmp << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
   }
   return tmp.str();
