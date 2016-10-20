@@ -57,6 +57,51 @@ scenario write-to-fake-socket [
   ]
 ]
 
+def start-reading-from-network resources:&:resources, host:text, path:text -> contents:&:source:char [
+  local-scope
+  load-ingredients
+  {
+    break-if resources
+    # real network
+    socket:num <- $open-client-socket host, 80/http-port
+    assert socket, [contents]
+    req:text <- interpolate [GET _ HTTP/1.1], path
+    request-socket socket, req
+    contents:&:source:char, sink:&:sink:char <- new-channel 10000
+    start-running receive-from-socket socket, sink
+    return
+  }
+  # fake network
+#?   i:num <- copy 0
+#?   data:&:@:resource <- get *fs, data:offset
+#?   len:num <- length *data
+#?   {
+#?     done?:bool <- greater-or-equal i, len
+#?     break-if done?
+#?     tmp:resource <- index *data, i
+#?     i <- add i, 1
+#?     curr-filename:text <- get tmp, name:offset
+#?     found?:bool <- equal filename, curr-filename
+#?     loop-unless found?
+#?     contents:&:source:char, sink:&:sink:char <- new-channel 30
+#?     curr-contents:text <- get tmp, contents:offset
+#?     start-running transmit-from-text curr-contents, sink
+#?     return
+#?   }
+  return 0/not-found
+]
+
+def request-socket socket:num, s:text -> socket:num [
+  local-scope
+  load-ingredients
+  write-to-socket socket, s
+  $write-to-socket socket, 13/cr
+  $write-to-socket socket, 10/lf
+  # empty line to delimit request
+  $write-to-socket socket, 13/cr
+  $write-to-socket socket, 10/lf
+]
+
 def start-writing-socket network:&:local-network, port:num -> sink:&:sink:char, routine-id:num [
   local-scope
   load-ingredients
@@ -122,10 +167,8 @@ def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   {
     req:text, eof?:bool <- $read-from-socket session, 4096/bytes
     bytes-read:num <- length *req
-#?     $print [read ], bytes-read, [ bytes from socket], 10/newline
     i:num <- copy 0
     {
-#?       $print [  write ], i, 10/newline
       done?:bool <- greater-or-equal i, bytes-read
       break-if done?
       c:char <- index *req, i  # todo: unicode
@@ -138,7 +181,7 @@ def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
   sink <- close sink
 ]
 
-def write-to-socket session-socket:num, s:text [
+def write-to-socket socket:num, s:text [
   local-scope
   load-ingredients
   len:num <- length *s
@@ -147,8 +190,7 @@ def write-to-socket session-socket:num, s:text [
     done?:bool <- greater-or-equal i, len
     break-if done?
     c:char <- index *s, i
-    $print [writing to socket: ], i, [ ], c, 10/newline
-    $write-to-socket session-socket, c
+    $write-to-socket socket, c
     i <- add i, 1
     loop
   }
