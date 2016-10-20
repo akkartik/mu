@@ -186,7 +186,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
   {
     break-if pair?
     # atom
-    b:&:buffer <- new-buffer 30
+    buf:&:buffer <- new-buffer 30
     {
       done?:bool <- end-of-stream? in
       break-if done?
@@ -197,10 +197,10 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
       done? <- space? c
       break-if done?
       c <- read in
-      b <- append b, c
+      buf <- append buf, c
       loop
     }
-    s:text <- buffer-to-array b
+    s:text <- buffer-to-array buf
     out <- new-atom s
   }
   {
