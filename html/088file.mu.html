@@ -31,51 +31,51 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># Wrappers around file system primitives that take a 'filesystem' object and</span>
+<span class="Comment"># Wrappers around file system primitives that take a 'resources' object and</span>
 <span class="Comment"># are thus easier to test.</span>
 
-<span class="muData">container</span> filesystem [
-  data:&amp;:@:file-mapping
+<span class="muData">container</span> resources [
+  data:&amp;:@:resource
 ]
 
-<span class="muData">container</span> file-mapping [
+<span class="muData">container</span> resource [
   name:text
   contents:text
 ]
 
-<span class="muRecipe">def</span> start-reading fs:&amp;:filesystem, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
+<span class="muRecipe">def</span> start-reading resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> fs
+    <span class="muControl">break-if</span> resources
     <span class="Comment"># real file system</span>
     file:num<span class="Special"> &lt;- </span>$open-file-for-reading filename
     assert file, <span class="Constant">[file not found]</span>
     contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-    start-running transmit-from-file file, sink
+    start-running receive-from-file file, sink
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># fake file system</span>
   i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  data:&amp;:@:file-mapping<span class="Special"> &lt;- </span>get *fs, <span class="Constant">data:offset</span>
+  data:&amp;:@:resource<span class="Special"> &lt;- </span>get *resources, <span class="Constant">data:offset</span>
   len:num<span class="Special"> &lt;- </span>length *data
   <span class="Delimiter">{</span>
     done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
-    tmp:file-mapping<span class="Special"> &lt;- </span>index *data, i
+    tmp:resource<span class="Special"> &lt;- </span>index *data, i
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     curr-filename:text<span class="Special"> &lt;- </span>get tmp, <span class="Constant">name:offset</span>
     found?:bool<span class="Special"> &lt;- </span>equal filename, curr-filename
     <span class="muControl">loop-unless</span> found?
     contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
     curr-contents:text<span class="Special"> &lt;- </span>get tmp, <span class="Constant">contents:offset</span>
-    start-running transmit-from-text curr-contents, sink
+    start-running receive-from-text curr-contents, sink
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="muControl">return</span> <span class="Constant">0/not-found</span>
 ]
 
-<span class="muRecipe">def</span> transmit-from-file file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span class="muRecipe">def</span> receive-from-file file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -88,7 +88,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file<span class="Special"> &lt;- </span>$close-file file
 ]
 
-<span class="muRecipe">def</span> transmit-from-text contents:text, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span class="muRecipe">def</span> receive-from-text contents:text, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -104,12 +104,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sink<span class="Special"> &lt;- </span>close sink
 ]
 
-<span class="muRecipe">def</span> start-writing fs:&amp;:filesystem, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num [
+<span class="muRecipe">def</span> start-writing resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> fs
+    <span class="muControl">break-if</span> resources
     <span class="Comment"># real file system</span>
     file:num<span class="Special"> &lt;- </span>$open-file-for-writing filename
     assert file, <span class="Constant">[no such file]</span>
@@ -118,7 +118,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># fake file system</span>
   <span class="Comment"># beware: doesn't support multiple concurrent writes yet</span>
-  routine-id<span class="Special"> &lt;- </span>start-running transmit-to-fake-file fs, filename, source
+  routine-id<span class="Special"> &lt;- </span>start-running transmit-to-fake-file resources, filename, source
 ]
 
 <span class="muRecipe">def</span> transmit-to-file file:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
@@ -133,7 +133,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file<span class="Special"> &lt;- </span>$close-file file
 ]
 
-<span class="muRecipe">def</span> transmit-to-fake-file fs:&amp;:filesystem, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>fs:&amp;:filesystem, source:&amp;:source:char [
+<span class="muRecipe">def</span> transmit-to-fake-file resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute new file contents</span>
@@ -145,37 +145,37 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   contents:text<span class="Special"> &lt;- </span>buffer-to-array buf
-  new-file-mapping:file-mapping<span class="Special"> &lt;- </span>merge filename, contents
-  <span class="Comment"># write to filesystem</span>
+  new-resource:resource<span class="Special"> &lt;- </span>merge filename, contents
+  <span class="Comment"># write to resources</span>
   curr-filename:text<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  data:&amp;:@:file-mapping<span class="Special"> &lt;- </span>get *fs, <span class="Constant">data:offset</span>
+  data:&amp;:@:resource<span class="Special"> &lt;- </span>get *resources, <span class="Constant">data:offset</span>
   <span class="Comment"># replace file contents if it already exists</span>
   i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   len:num<span class="Special"> &lt;- </span>length *data
   <span class="Delimiter">{</span>
     done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
-    tmp:file-mapping<span class="Special"> &lt;- </span>index *data, i
+    tmp:resource<span class="Special"> &lt;- </span>index *data, i
     curr-filename<span class="Special"> &lt;- </span>get tmp, <span class="Constant">name:offset</span>
     found?:bool<span class="Special"> &lt;- </span>equal filename, curr-filename
     <span class="muControl">loop-unless</span> found?
-    put-index *data, i, new-file-mapping
+    put-index *data, i, new-resource
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if file didn't already exist, make room for it</span>
   new-len:num<span class="Special"> &lt;- </span>add len, <span class="Constant">1</span>
-  new-data:&amp;:@:file-mapping<span class="Special"> &lt;- </span>new <span class="Constant">file-mapping:type</span>, new-len
-  put *fs, <span class="Constant">data:offset</span>, new-data
+  new-data:&amp;:@:resource<span class="Special"> &lt;- </span>new <span class="Constant">resource:type</span>, new-len
+  put *resources, <span class="Constant">data:offset</span>, new-data
   <span class="Comment"># copy over old files</span>
   i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
     done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
     <span class="muControl">break-if</span> done?
-    tmp:file-mapping<span class="Special"> &lt;- </span>index *data, i
+    tmp:resource<span class="Special"> &lt;- </span>index *data, i
     put-index *new-data, i, tmp
   <span class="Delimiter">}</span>
   <span class="Comment"># write new file</span>
-  put-index *new-data, len, new-file-mapping
+  put-index *new-data, len, new-resource
 ]
 </pre>
 </body>

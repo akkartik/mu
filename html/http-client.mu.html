@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - http-client.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
+* { font-size: 12pt; font-size: 1em; }
+.Delimiter { color: #800080; }
+.muControl { color: #c0a020; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.CommentedCode { color: #6c6c6c; }
+.muRecipe { color: #ff8700; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">local-scope</span>
+  google:&amp;:source:char<span class="Special"> &lt;- </span>start-reading-from-network <span class="Constant">0/real-resources</span>, <span class="Constant">[google.com]</span>, <span class="Constant">[/]</span>
+  n:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  b:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  <span class="Delimiter">{</span>
+    c:char, done?:bool<span class="Special"> &lt;- </span>read google
+    <span class="muControl">break-if</span> done?
+<span class="CommentedCode">#?     $print c, 10/newline</span>
+    n<span class="Special"> &lt;- </span>add n, <span class="Constant">1</span>
+<span class="CommentedCode">#?     skip?:bool &lt;- lesser-than n, 10000</span>
+<span class="CommentedCode">#?     loop-if skip?</span>
+    b<span class="Special"> &lt;- </span>append b, c
+<span class="CommentedCode">#?     trunc?:bool &lt;- greater-or-equal n, 10000</span>
+<span class="CommentedCode">#?     loop-unless trunc?</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  result:text<span class="Special"> &lt;- </span>buffer-to-array b
+  open-console
+  len:num<span class="Special"> &lt;- </span>length *result
+  print <span class="Constant">0/real-screen</span>, result
+  wait-for-some-interaction
+  close-console
+]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

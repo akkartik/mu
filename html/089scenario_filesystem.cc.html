@@ -33,16 +33,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment">//: Clean syntax to manipulate and check the file system in scenarios.</span>
-<span class="Comment">//: Instructions 'assume-filesystem' and 'filesystem-should-contain' implicitly create</span>
-<span class="Comment">//: a variable called 'filesystem' that is accessible to later instructions in</span>
-<span class="Comment">//: the scenario. 'filesystem-should-contain' can check unicode characters in</span>
-<span class="Comment">//: the fake filesystem</span>
+<span class="Comment">//: Instruction 'assume-resources' implicitly creates a variable called</span>
+<span class="Comment">//: 'resources' that is accessible to later instructions in the scenario.</span>
 
 <span class="Delimiter">:(scenarios run_mu_scenario)</span>
 <span class="Delimiter">:(scenario simple_filesystem)</span>
-<span class="muScenario">scenario</span> assume-filesystem [
+<span class="muScenario">scenario</span> simple-filesystem [
   local-scope
-  assume-filesystem [
+  assume-resources [
     <span class="Comment"># file 'a' containing two lines of data</span>
     [a]<span class="Special"> &lt;- </span>[
       |a bc|
@@ -54,18 +52,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       |xyz|
     ]
   ]
-  <span class="Normal">data</span>:&amp;:@:file-mapping<span class="Special"> &lt;- </span>get *filesystem:&amp;:filesystem<span class="Delimiter">,</span> <span class="Constant">data:offset</span>
-  <span class="Normal">file1</span>:file-mapping<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Normal">data</span>:&amp;:@:resource<span class="Special"> &lt;- </span>get *resources<span class="Delimiter">,</span> <span class="Constant">data:offset</span>
+  <span class="Normal">file1</span>:resource<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">0</span>
   file1-name:text<span class="Special"> &lt;- </span>get file1<span class="Delimiter">,</span> <span class="Constant">name:offset</span>
   <span class="Constant">10</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file1-name
   file1-contents:text<span class="Special"> &lt;- </span>get file1<span class="Delimiter">,</span> <span class="Constant">contents:offset</span>
   <span class="Constant">100</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file1-contents
-  <span class="Normal">file2</span>:file-mapping<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">1</span>
+  <span class="Normal">file2</span>:resource<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">1</span>
   file2-name:text<span class="Special"> &lt;- </span>get file2<span class="Delimiter">,</span> <span class="Constant">name:offset</span>
   <span class="Constant">30</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file2-name
   file2-contents:text<span class="Special"> &lt;- </span>get file2<span class="Delimiter">,</span> <span class="Constant">contents:offset</span>
   <span class="Constant">40</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file2-contents
-  <span class="Normal">file3</span>:file-mapping<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">2</span>
+  <span class="Normal">file3</span>:resource<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">2</span>
   file3-name:text<span class="Special"> &lt;- </span>get file3<span class="Delimiter">,</span> <span class="Constant">name:offset</span>
   <span class="Constant">50</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file3-name
   file3-contents:text<span class="Special"> &lt;- </span>get file3<span class="Delimiter">,</span> <span class="Constant">contents:offset</span>
@@ -84,17 +82,17 @@ de f
 ]
 
 <span class="Delimiter">:(scenario escaping_file_contents)</span>
-<span class="muScenario">scenario</span> assume-filesystem [
+<span class="muScenario">scenario</span> escaping-file-contents [
   local-scope
-  assume-filesystem [
+  assume-resources [
     <span class="Comment"># file 'a' containing a '|'</span>
     <span class="Comment"># need to escape '\' once for each block</span>
     [a]<span class="Special"> &lt;- </span>[
       |x\\\\|yz|
     ]
   ]
-  <span class="Normal">data</span>:&amp;:@:file-mapping<span class="Special"> &lt;- </span>get *filesystem:&amp;:filesystem<span class="Delimiter">,</span> <span class="Constant">data:offset</span>
-  <span class="Normal">file1</span>:file-mapping<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">0</span>
+  <span class="Normal">data</span>:&amp;:@:resource<span class="Special"> &lt;- </span>get *resources<span class="Delimiter">,</span> <span class="Constant">data:offset</span>
+  <span class="Normal">file1</span>:resource<span class="Special"> &lt;- </span>index *data<span class="Delimiter">,</span> <span class="Constant">0</span>
   file1-name:text<span class="Special"> &lt;- </span>get file1<span class="Delimiter">,</span> <span class="Constant">name:offset</span>
   <span class="Constant">10</span>:@:<span class="Normal">char</span>/<span class="Special">raw &lt;- </span>copy *file1-name
   file1-contents:text<span class="Special"> &lt;- </span>get file1<span class="Delimiter">,</span> <span class="Constant">contents:offset</span>
@@ -107,41 +105,43 @@ de f
 ]
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> FILESYSTEM = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
-<span class="Comment">//: give 'filesystem' a fixed location in scenarios</span>
+<span class="Normal">extern</span> <span class="Normal">const</span> <span class="Normal">int</span> RESOURCES = Next_predefined_global_for_scenarios++<span class="Delimiter">;</span>
+<span class="Comment">//: give 'resources' a fixed location in scenarios</span>
 <span class="Delimiter">:(before &quot;End Special Scenario Variable Names(r)&quot;)</span>
-Name[r][<span class="Constant">&quot;filesystem&quot;</span>] = FILESYSTEM<span class="Delimiter">;</span>
-<span class="Comment">//: make 'filesystem' always a raw location in scenarios</span>
+Name[r][<span class="Constant">&quot;resources&quot;</span>] = RESOURCES<span class="Delimiter">;</span>
+<span class="Comment">//: make 'resources' always a raw location in scenarios</span>
 <span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;filesystem&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span class="Delimiter">:(before &quot;End Initialize Type Of Special Name In Scenario(r)&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>name == <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">)</span> r<span class="Delimiter">.</span>type = new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address:resources&quot;</span><span class="Delimiter">);</span>
 
 <span class="Delimiter">:(before &quot;End initialize_transform_rewrite_literal_string_to_text()&quot;)</span>
-recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;assume-filesystem&quot;</span><span class="Delimiter">);</span>
+recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;assume-resources&quot;</span><span class="Delimiter">);</span>
 
 <span class="Comment">//: screen-should-contain is a regular instruction</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-ASSUME_FILESYSTEM<span class="Delimiter">,</span>
+ASSUME_RESOURCES<span class="Delimiter">,</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assume-filesystem&quot;</span><span class="Delimiter">,</span> ASSUME_FILESYSTEM<span class="Delimiter">);</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assume-resources&quot;</span><span class="Delimiter">,</span> ASSUME_RESOURCES<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> ASSUME_FILESYSTEM: <span class="Delimiter">{</span>
+<span class="Normal">case</span> ASSUME_RESOURCES: <span class="Delimiter">{</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> ASSUME_FILESYSTEM: <span class="Delimiter">{</span>
+<span class="Normal">case</span> ASSUME_RESOURCES: <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
-  assume_filesystem<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> current_recipe_name<span class="Delimiter">());</span>
+  assume_resources<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">,</span> current_recipe_name<span class="Delimiter">());</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> assume_filesystem<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> assume_resources<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   map&lt;string<span class="Delimiter">,</span> string&gt; contents<span class="Delimiter">;</span>
-  parse_filesystem<span class="Delimiter">(</span>data<span class="Delimiter">,</span> contents<span class="Delimiter">,</span> caller<span class="Delimiter">);</span>
-  construct_filesystem_object<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
+  parse_resources<span class="Delimiter">(</span>data<span class="Delimiter">,</span> contents<span class="Delimiter">,</span> caller<span class="Delimiter">);</span>
+  construct_resources_object<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> parse_filesystem<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> string&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> parse_resources<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> map&lt;string<span class="Delimiter">,</span> string&gt;&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   istringstream in<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -150,44 +150,44 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string filename = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must end with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must end with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     filename<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
     filename<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>filename<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string arrow = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>arrow != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' after '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: no data for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' after '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string contents = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must end with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must end with a ']'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     contents<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
     contents<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
-    put<span class="Delimiter">(</span>out<span class="Delimiter">,</span> filename<span class="Delimiter">,</span> munge_filesystem_contents<span class="Delimiter">(</span>contents<span class="Delimiter">,</span> filename<span class="Delimiter">,</span> caller<span class="Delimiter">));</span>
+    put<span class="Delimiter">(</span>out<span class="Delimiter">,</span> filename<span class="Delimiter">,</span> munge_resources_contents<span class="Delimiter">(</span>contents<span class="Delimiter">,</span> filename<span class="Delimiter">,</span> caller<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-string munge_filesystem_contents<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; filename<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+string munge_resources_contents<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; data<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; filename<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>data<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
   istringstream in<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
   in &gt;&gt; std::noskipws<span class="Delimiter">;</span>
@@ -198,18 +198,18 @@ string munge_filesystem_contents<span class="Delimiter">(</span><span class="Nor
     skip_whitespace<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'|'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: file contents for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must be delimited in '|'s</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must be delimited in '|'s</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip leading '|'</span>
     string line<span class="Delimiter">;</span>
     getline<span class="Delimiter">(</span>in<span class="Delimiter">,</span> line<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>line<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>line<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>line<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="Constant">'|'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>line<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> == <span class="cSpecial">'\\'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
         ++i<span class="Delimiter">;</span>  <span class="Comment">// skip</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>i == SIZE<span class="Delimiter">(</span>line<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-          raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-filesystem: file contents can't end a line with '</span><span class="cSpecial">\\</span><span class="Constant">'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+          raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents can't end a line with '</span><span class="cSpecial">\\</span><span class="Constant">'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
           <span class="Identifier">break</span><span class="Delimiter">;</span>
         <span class="Delimiter">}</span>
       <span class="Delimiter">}</span>
@@ -221,10 +221,10 @@ string munge_filesystem_contents<span class="Delimiter">(</span><span class="Nor
   <span class="Identifier">return</span> out<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> construct_filesystem_object<span class="Delimiter">(</span><span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> string&gt;&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">int</span> filesystem_data_address = allocate<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">)</span>*<span class="Constant">2</span> + <span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  <span class="Normal">int</span> curr = filesystem_data_address + <span class="Comment">/*</span><span class="Comment">skip refcount and length</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::const_iterator p = contents<span class="Delimiter">.</span>begin<span class="Delimiter">();</span> p != contents<span class="Delimiter">.</span>end<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> construct_resources_object<span class="Delimiter">(</span><span class="Normal">const</span> map&lt;string<span class="Delimiter">,</span> string&gt;&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">int</span> resources_data_address = allocate<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">)</span>*<span class="Constant">2</span> + <span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">int</span> curr = resources_data_address + <span class="Comment">/*</span><span class="Comment">skip refcount and length</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;string<span class="Delimiter">,</span> string&gt;::const_iterator p = contents<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != contents<span class="Delimiter">.</span>end<span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> new_mu_text<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing file name &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; end<span class="Delimiter">();</span>
     put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
@@ -236,29 +236,29 @@ string munge_filesystem_contents<span class="Delimiter">(</span><span class="Nor
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing refcount 1 in location &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
     ++curr<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  curr = filesystem_data_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+  curr = resources_data_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>  <span class="Comment">// size of array</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing filesystem size &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; end<span class="Delimiter">();</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> filesystem_data_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// initialize refcount</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing refcount 1 in location &quot;</span> &lt;&lt; filesystem_data_address &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Comment">// wrap the filesystem data in a filesystem object</span>
-  <span class="Normal">int</span> filesystem_address = allocate<span class="Delimiter">(</span>size_of_filesystem<span class="Delimiter">());</span>
-  curr = filesystem_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> filesystem_data_address<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing filesystem data address &quot;</span> &lt;&lt; filesystem_data_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; end<span class="Delimiter">();</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> filesystem_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// initialize refcount</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing refcount 1 in location &quot;</span> &lt;&lt; filesystem_address &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources size &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> resources_data_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// initialize refcount</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing refcount 1 in location &quot;</span> &lt;&lt; resources_data_address &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Comment">// wrap the resources data in a 'resources' object</span>
+  <span class="Normal">int</span> resources_address = allocate<span class="Delimiter">(</span>size_of_resources<span class="Delimiter">());</span>
+  curr = resources_address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">,</span> resources_data_address<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources data address &quot;</span> &lt;&lt; resources_data_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> resources_address<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// initialize refcount</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing refcount 1 in location &quot;</span> &lt;&lt; resources_address &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// save in product</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> FILESYSTEM<span class="Delimiter">,</span> filesystem_address<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing filesystem address &quot;</span> &lt;&lt; filesystem_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; FILESYSTEM &lt;&lt; end<span class="Delimiter">();</span>
+  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> RESOURCES<span class="Delimiter">,</span> resources_address<span class="Delimiter">);</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing resources address &quot;</span> &lt;&lt; resources_address &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; RESOURCES &lt;&lt; end<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">int</span> size_of_filesystem<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span class="Normal">int</span> size_of_resources<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Comment">// memoize result if already computed</span>
   <span class="Normal">static</span> <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;filesystem&quot;</span><span class="Delimiter">));</span>
-  type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;filesystem&quot;</span><span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">));</span>
+  type_tree* type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;resources&quot;</span><span class="Delimiter">);</span>
   result = size_of<span class="Delimiter">(</span>type<span class="Delimiter">)</span>+<span class="Comment">/*</span><span class="Comment">refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
   <span class="Normal">delete</span> type<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>

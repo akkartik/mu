@@ -23,7 +23,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #fcb165; }
 -->
 </style>
@@ -75,18 +74,17 @@ Name = Name_snapshot<span class="Delimiter">;</span>
 <span class="Normal">void</span> transform_names<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- transform names for recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- transform names for recipe &quot; &lt;&lt; caller.name &lt;&lt; '\n';</span>
   <span class="Normal">bool</span> names_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">bool</span> numeric_locations_used = <span class="Constant">false</span><span class="Delimiter">;</span>
   map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; names = Name[r]<span class="Delimiter">;</span>
   <span class="Comment">// store the indices 'used' so far in the map</span>
   <span class="Normal">int</span>&amp; curr_idx = names[<span class="Constant">&quot;&quot;</span>]<span class="Delimiter">;</span>
   ++curr_idx<span class="Delimiter">;</span>  <span class="Comment">// avoid using index 0, benign skip in some other cases</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Comment">// End transform_names(inst) Special-cases</span>
     <span class="Comment">// map names to addresses</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span> in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span>  in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       reagent&amp; ingredient = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
       <span class="Comment">// Begin transform_names Ingredient Special-cases(ingredient, inst, caller)</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_disqualified<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -107,7 +105,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span> out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span> ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span>  out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       reagent&amp; product = inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">);</span>
       <span class="Comment">// Begin transform_names Product Special-cases(product, inst, caller)</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_disqualified<span class="Delimiter">(</span>product<span class="Delimiter">,</span> inst<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -163,7 +161,7 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
 
 <span class="Normal">int</span> find_element_name<span class="Delimiter">(</span><span class="Normal">const</span> type_ordinal t<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">const</span> type_info&amp; container = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>container<span class="Delimiter">.</span>elements<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == name<span class="Delimiter">)</span> <span class="Identifier">return</span> i<span class="Delimiter">;</span>
   raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;unknown element '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' in container '&quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> t<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>

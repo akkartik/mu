@@ -46,7 +46,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="muControl">return-unless</span> socket
   session:num<span class="Special"> &lt;- </span>$accept socket
   contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-  sink<span class="Special"> &lt;- </span>start-running transmit-from-socket session, sink
+  sink<span class="Special"> &lt;- </span>start-running receive-from-socket session, sink
   buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
   <span class="Delimiter">{</span>
     c:char, done?:bool, contents<span class="Special"> &lt;- </span>read contents
@@ -64,43 +64,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   $print <span class="Constant">10/newline</span>, <span class="Constant">[Wrote to and closing socket...]</span>, <span class="Constant">10/newline</span>
   $close-socket session
   $close-socket socket
-]
-
-<span class="muRecipe">def</span> write-to-socket session-socket:num, s:text [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  len:num<span class="Special"> &lt;- </span>length *s
-  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, len
-    <span class="muControl">break-if</span> done?
-    c:char<span class="Special"> &lt;- </span>index *s, i
-    $print <span class="Constant">[writing to socket: ]</span>, i, <span class="Constant">[ ]</span>, c, <span class="Constant">10/newline</span>
-    $write-to-socket session-socket, c
-    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-]
-
-<span class="muRecipe">def</span> transmit-from-socket session:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Delimiter">{</span>
-    req:text, bytes-read:num<span class="Special"> &lt;- </span>$read-from-socket session, <span class="Constant">4096/bytes</span>
-    $print <span class="Constant">[read ]</span>, bytes-read, <span class="Constant">[ bytes from socket]</span>, <span class="Constant">10/newline</span>
-    i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-    <span class="Delimiter">{</span>
-      done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, bytes-read
-      <span class="muControl">break-if</span> done?
-      c:char<span class="Special"> &lt;- </span>index *req, i
-      end-of-request?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
-      <span class="muControl">break-if</span> end-of-request? <span class="Comment"># To be safe, for now.</span>
-      sink<span class="Special"> &lt;- </span>write sink, c
-      i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
-      <span class="muControl">loop</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  sink<span class="Special"> &lt;- </span>close sink
 ]
 </pre>
 </body>

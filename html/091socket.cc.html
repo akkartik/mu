@@ -14,7 +14,6 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.CommentedCode { color: #6c6c6c; }
 .cSpecial { color: #008000; }
 .Delimiter { color: #800080; }
 .Identifier { color: #fcb165; }
@@ -36,11 +35,76 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Normal">struct</span> socket_t <span class="Delimiter">{</span>
   <span class="Normal">int</span> fd<span class="Delimiter">;</span>
   sockaddr_in addr<span class="Delimiter">;</span>
+  <span class="Normal">bool</span> polled<span class="Delimiter">;</span>
   socket_t<span class="Delimiter">()</span> <span class="Delimiter">{</span>
     fd = <span class="Constant">0</span><span class="Delimiter">;</span>
+    polled = <span class="Constant">false</span><span class="Delimiter">;</span>
     bzero<span class="Delimiter">(</span>&amp;addr<span class="Delimiter">,</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>addr<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_OPEN_CLIENT_SOCKET<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$open-client-socket&quot;</span><span class="Delimiter">,</span> _OPEN_CLIENT_SOCKET<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _OPEN_CLIENT_SOCKET: <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$open-client-socket' requires exactly two ingredients, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of '$open-client-socket' should be text (the hostname), but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of '$open-client-socket' should be a number (the port of the hostname to connect to), but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$open-client-socket' requires exactly one product, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first product of '$open-client-socket' should be a number (socket handle), but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _OPEN_CLIENT_SOCKET: <span class="Delimiter">{</span>
+  string host = read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">int</span> port = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  socket_t* client = client_socket<span class="Delimiter">(</span>host<span class="Delimiter">,</span> port<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>client<span class="Delimiter">-&gt;</span>fd &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// error</span>
+    <span class="Normal">delete</span> client<span class="Delimiter">;</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>client<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">double</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(code)</span>
+socket_t* client_socket<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; host<span class="Delimiter">,</span> <span class="Normal">int</span> port<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  socket_t* result = <span class="Normal">new</span> socket_t<span class="Delimiter">;</span>
+  result<span class="Delimiter">-&gt;</span>fd = socket<span class="Delimiter">(</span>AF_INET<span class="Delimiter">,</span> SOCK_STREAM<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>fd &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;Failed to create socket.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  result<span class="Delimiter">-&gt;</span>addr<span class="Delimiter">.</span>sin_family = AF_INET<span class="Delimiter">;</span>
+  hostent* tmp = gethostbyname<span class="Delimiter">(</span>host<span class="Delimiter">.</span>c_str<span class="Delimiter">());</span>
+  bcopy<span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>h_addr<span class="Delimiter">,</span> <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">char</span>*&gt;<span class="Delimiter">(</span>&amp;result<span class="Delimiter">-&gt;</span>addr<span class="Delimiter">.</span>sin_addr<span class="Delimiter">.</span>s_addr<span class="Delimiter">),</span> tmp<span class="Delimiter">-&gt;</span>h_length<span class="Delimiter">);</span>
+  result<span class="Delimiter">-&gt;</span>addr<span class="Delimiter">.</span>sin_port = htons<span class="Delimiter">(</span>port<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>connect<span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> <span class="Normal">reinterpret_cast</span>&lt;sockaddr*&gt;<span class="Delimiter">(</span>&amp;result<span class="Delimiter">-&gt;</span>addr<span class="Delimiter">),</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>addr<span class="Delimiter">))</span> &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    close<span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">);</span>
+    result<span class="Delimiter">-&gt;</span>fd = -<span class="Constant">1</span><span class="Delimiter">;</span>
+    raise &lt;&lt; <span class="Constant">&quot;Failed to connect to &quot;</span> &lt;&lt; host &lt;&lt; <span class="Constant">':'</span> &lt;&lt; port &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
 _OPEN_SERVER_SOCKET<span class="Delimiter">,</span>
@@ -86,8 +150,7 @@ socket_t* server_socket<span class="Delimiter">(</span><span class="Normal">int<
   result<span class="Delimiter">-&gt;</span>fd = socket<span class="Delimiter">(</span>AF_INET<span class="Delimiter">,</span> SOCK_STREAM<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>fd &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; <span class="Constant">&quot;Failed to create server socket.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">delete</span> result<span class="Delimiter">;</span>
-    <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">int</span> dummy = <span class="Constant">0</span><span class="Delimiter">;</span>
   setsockopt<span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> SOL_SOCKET<span class="Delimiter">,</span> SO_REUSEADDR<span class="Delimiter">,</span> &amp;dummy<span class="Delimiter">,</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>dummy<span class="Delimiter">));</span>
@@ -176,21 +239,48 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'$read-from-socket' requires exactly two product, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first product of '$read-from-socket' should be a text (address array character), but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_boolean<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second product of '$read-from-socket' should be a boolean (eof?), but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> _READ_FROM_SOCKET: <span class="Delimiter">{</span>
   <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  <span class="Normal">int</span> bytes = <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span> <span class="CommentedCode">//? Should this be something with more bytes?</span>
   socket_t* socket = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-  <span class="Normal">int</span> socket_fd = socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">;</span>
-  <span class="Normal">char</span> contents[bytes]<span class="Delimiter">;</span>
+  <span class="Comment">// 1. we'd like to simply read() from the socket</span>
+  <span class="Comment">// however read() on a socket never returns EOF, so we wouldn't know when to stop</span>
+  <span class="Comment">// 2. recv() can signal EOF, but it also signals &quot;no data yet&quot; in the beginning</span>
+  <span class="Comment">// so use poll() in the beginning to wait for data before calling recv()</span>
+  <span class="Comment">// 3. but poll() will block on EOF, so only use poll() on the very first</span>
+  <span class="Comment">// $read-from-socket on a socket</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!socket<span class="Delimiter">-&gt;</span>polled<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    socket<span class="Delimiter">-&gt;</span>polled = <span class="Constant">true</span><span class="Delimiter">;</span>
+    pollfd p<span class="Delimiter">;</span>
+    bzero<span class="Delimiter">(</span>&amp;p<span class="Delimiter">,</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>p<span class="Delimiter">));</span>
+    p<span class="Delimiter">.</span>fd = socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">;</span>
+    p<span class="Delimiter">.</span>events = POLLIN | POLLHUP<span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>poll<span class="Delimiter">(</span>&amp;p<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">num pollfds</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">no timeout</span><span class="Comment">*/</span>-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;error in $read-from-socket</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
+      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">int</span> bytes = <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+  <span class="Normal">char</span>* contents = <span class="Normal">new</span> <span class="Normal">char</span>[bytes]<span class="Delimiter">;</span>
   bzero<span class="Delimiter">(</span>contents<span class="Delimiter">,</span> bytes<span class="Delimiter">);</span>
-  <span class="Normal">int</span> bytes_read = read<span class="Delimiter">(</span>socket_fd<span class="Delimiter">,</span> contents<span class="Delimiter">,</span> bytes - <span class="Constant">1</span> <span class="Comment">/*</span><span class="Comment"> null-terminated </span><span class="Comment">*/</span><span class="Delimiter">);</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;Read:\n&quot; &lt;&lt; string(contents) &lt;&lt; &quot;\n&quot;;</span>
+  <span class="Normal">int</span> bytes_read = recv<span class="Delimiter">(</span>socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> contents<span class="Delimiter">,</span> bytes-<span class="Comment">/*</span><span class="Comment">terminal null</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> MSG_DONTWAIT<span class="Delimiter">);</span>
   products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>string<span class="Delimiter">(</span>contents<span class="Delimiter">)));</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>bytes_read<span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>bytes_read &lt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+  <span class="Normal">delete</span> contents<span class="Delimiter">;</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -210,7 +300,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Normal">case</span> _WRITE_TO_SOCKET: <span class="Delimiter">{</span>
   <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   socket_t* session = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-  <span class="Comment">// Write one character to a session at a time.</span>
+  <span class="Comment">// write just one character at a time to the session socket</span>
   <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> y = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Normal">char</span> c = <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>y<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>write<span class="Delimiter">(</span>session<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">,</span> &amp;c<span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -249,6 +339,8 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;netinet/in.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;netdb.h&gt;</span>
+<span class="PreProc">#include </span><span class="Constant">&lt;poll.h&gt;</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;sys/socket.h&gt;</span>
 <span class="PreProc">#include </span><span class="Constant">&lt;unistd.h&gt;</span>
 </pre>

@@ -21,7 +21,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .muData { color: #ffff00; }
-.CommentedCode { color: #6c6c6c; }
 .Identifier { color: #fcb165; }
 -->
 </style>
@@ -96,7 +95,6 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Normal">void</span> convert_ingredients_to_text<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- convert some ingredients to text in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-<span class="CommentedCode">//?   cerr &lt;&lt; &quot;--- convert some ingredients to text in recipe &quot; &lt;&lt; caller.name &lt;&lt; '\n';</span>
   <span class="Comment">// in recipes without named locations, 'stash' is still not extensible</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   convert_ingredients_to_text<span class="Delimiter">(</span>caller<span class="Delimiter">);</span>
@@ -104,11 +102,11 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 
 <span class="Normal">void</span> convert_ingredients_to_text<span class="Delimiter">(</span>recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   vector&lt;instruction&gt; new_instructions<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Comment">// all these cases are getting hairy. how can we make this extensible?</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;stash&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         ostringstream ingredient_name<span class="Delimiter">;</span>
         ingredient_name &lt;&lt; <span class="Constant">&quot;stash_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
@@ -116,7 +114,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Delimiter">}</span>
     <span class="Delimiter">}</span>
     <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span><span class="Constant">2</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
         <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
         ostringstream ingredient_name<span class="Delimiter">;</span>
         ingredient_name &lt;&lt; <span class="Constant">&quot;trace_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
@@ -130,7 +128,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Comment">//   append _:text, ___</span>
       <span class="Comment">// will never ever get used.</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-        <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span> j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+        <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
           ostringstream ingredient_name<span class="Delimiter">;</span>
           ingredient_name &lt;&lt; <span class="Constant">&quot;append_&quot;</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:address:array:character&quot;</span><span class="Delimiter">;</span>
           convert_ingredient_to_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">),</span> new_instructions<span class="Delimiter">,</span> ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
