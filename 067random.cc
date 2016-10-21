@@ -28,3 +28,7 @@ case MAKE_RANDOM_NONDETERMINISTIC: {
   srand(time(NULL));
   break;
 }
+
+// undo non-determinism in later tests
+:(before "End Setup")
+srand(0);
