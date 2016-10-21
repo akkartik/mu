@@ -11,6 +11,14 @@ set -e  # stop immediately on error
 # non-zero exit status only on error during building
 UNTIL_LAYER=${2:-zzz}
 
+# there's two mechanisms for fast builds here:
+# - if a command is quick to run, always run it but update the result only on any change
+# - otherwise run it only if the output is 'older_than' the inputs
+#
+# avoid combining both mechanisms for a single file
+# otherwise you'll see spurious messages about files being updated
+# risk: a file may unnecessarily update without changes, causing unnecessary work downstream
+
 test $CXX || export CXX=c++
 test $CC || export CC=cc
 test $CFLAGS || export CFLAGS="-g -O3"
@@ -71,22 +79,14 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
 (
   older_than tangle/tangle tangle/*.cc && {
     noisy_cd tangle
-      older_than type_list [0-9]*.cc && {
+      {
         grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/'
         grep -h "^typedef " [0-9]*.cc
       } |update type_list
-      older_than function_list [0-9]*.cc && {
-        grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' |update function_list
-      }
-      older_than file_list [0-9]*.cc && {
-        ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' |update file_list
-      }
-      older_than test_file_list [0-9]*.test.cc && {
-        ls [0-9]*.test.cc |sed 's/.*/#include "&"/' |update test_file_list
-      }
-      older_than test_list [0-9]*.cc && {
-        grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' |update test_list
-      }
+      grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' |update function_list
+      ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' |update file_list
+      ls [0-9]*.test.cc |sed 's/.*/#include "&"/' |update test_file_list
+      grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' |update test_list
       $CXX $CFLAGS boot.cc -o tangle
     noisy_cd ..  # no effect; just to show us returning to the parent directory
   }
@@ -94,32 +94,23 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
 )
 
 LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep -v '.mu$')
-older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
-  ./tangle/tangle $LAYERS |update mu.cc
-}
-older_than function_list mu.cc && {
-  grep -h "^[^[:space:]#].*) {$" mu.cc |grep -v ":.*(" |sed 's/ {.*/;/' |update function_list
-}
-older_than test_list mu.cc && {
-  grep -h "^\s*void test_" mu.cc |sed 's/^\s*void \(.*\)() {.*/\1,/' |update test_list
-}
+./tangle/tangle $LAYERS |update mu.cc
 
 older_than cleave/cleave cleave/cleave.cc && {
   $CXX -O3 -Wall -Wextra -fno-strict-aliasing cleave/cleave.cc -o cleave/cleave
   rm -rf .build
 }
 
+mkdir -p .build
+grep -h "^[^[:space:]#].*) {$" mu.cc |grep -v ":.*(" |sed 's/ {.*/;/' |update .build/function_list
+grep -h "^\s*void test_" mu.cc |sed 's/^\s*void \(.*\)() {.*/\1,/' |update .build/test_list
+mkdir -p .build/termbox
+update_cp termbox/termbox.h .build/termbox
+
 older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
-  mkdir -p .build
-  update_cp function_list .build
-  update_cp test_list .build
-  mkdir -p .build/termbox
-  cp termbox/termbox.h .build/termbox
   ./cleave/cleave mu.cc .build
   noisy_cd .build
-    older_than global_declarations_list global_definitions_list && {
-      grep ';' global_definitions_list |sed 's/[=(].*/;/' |sed 's/^[^\/# ]/extern &/' |sed 's/^extern extern /extern /' |update global_declarations_list
-    }
+    grep ';' global_definitions_list |sed 's/[=(].*/;/' |sed 's/^[^\/# ]/extern &/' |sed 's/^extern extern /extern /' |update global_declarations_list
     for f in mu_*.cc
     do
       older_than `echo $f |sed 's/\.cc$/.o/'` $f header global_declarations_list function_list test_list && {
@@ -144,8 +135,6 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
 ## [0-9]*.mu -> core.mu
 
 MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep '.mu$') || exit 0  # ok if no .mu files
-older_than core.mu $MU_LAYERS enumerate/enumerate && {
-  cat $MU_LAYERS |update core.mu
-}
+cat $MU_LAYERS |update core.mu
 
 exit 0
