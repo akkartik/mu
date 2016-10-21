@@ -94,7 +94,12 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
 )
 
 LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep -v '.mu$')
-./tangle/tangle $LAYERS |update mu.cc
+older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
+  # exception to the rules above: we combine 'older_than' and 'update' here
+  # because we sometimes want to hack directly on mu.cc and not lose our
+  # changes if they're newer.
+  ./tangle/tangle $LAYERS |update mu.cc
+}
 
 older_than cleave/cleave cleave/cleave.cc && {
   $CXX -O3 -Wall -Wextra -fno-strict-aliasing cleave/cleave.cc -o cleave/cleave
