@@ -114,10 +114,10 @@ case CALL: {
     raise << maybe(current_recipe_name()) << "tried to call empty recipe in '" << to_string(current_instruction()) << "'" << end();
     break;
   }
-  const instruction& caller_instruction = current_instruction();
+  const instruction& call_instruction = current_instruction();
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
-  finish_call_housekeeping(caller_instruction, ingredients);
+  finish_call_housekeeping(call_instruction, ingredients);
   continue;
 }
 
