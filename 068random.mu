@@ -53,3 +53,22 @@ scenario random-numbers-in-scenario [
     8 <- 1  # end of stream
   ]
 ]
+
+def random-in-range generator:&:stream:num, start:num, end:num -> result:num, fail?:bool, generator:&:stream:num [
+  local-scope
+  load-ingredients
+  result, fail?, generator <- random generator
+  return-if fail?
+  delta:num <- subtract end, start
+  _, result <- divide-with-remainder result, delta
+  result <- add result, start
+]
+
+scenario random-in-range [
+  local-scope
+  source:&:stream:num <- assume-random-numbers 91
+  1:num/raw <- random-in-range source, 40, 50
+  memory-should-contain [
+    1 <- 41
+  ]
+]
