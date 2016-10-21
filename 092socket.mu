@@ -161,11 +161,11 @@ def transmit-to-fake-socket network:&:local-network, port:num, source:&:source:c
   put-index *new-port-connections, len, *new-port-connection
 ]
 
-def receive-from-socket session:num, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
-    req:text, eof?:bool <- $read-from-socket session, 4096/bytes
+    req:text, eof?:bool <- $read-from-socket socket, 4096/bytes
     bytes-read:num <- length *req
     i:num <- copy 0
     {
