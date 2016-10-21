@@ -178,9 +178,9 @@ void run_mu_scenario(const scenario& s) {
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.front());
+  // End Mu Test Teardown
   if (!Hide_errors && trace_count("error") > 0)
     Passed = false;
-  // End Mu Test Teardown
   if (!Passed)
     ++Num_failures;
   if (not_already_inside_test && Trace_stream) {

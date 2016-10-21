@@ -33,20 +33,16 @@ int waiting_on_location;
 waiting_on_location = 0;
 
 :(before "End Mu Test Teardown")
-if (Passed && any_routines_waiting()) {
-  Passed = false;
+if (Passed && any_routines_waiting())
   raise << Current_scenario->name << ": deadlock!\n" << end();
-}
 :(before "End Run Routine")
 if (any_routines_waiting()) {
   raise << "deadlock!\n" << end();
   dump_waiting_routines();
 }
 :(before "End Test Teardown")
-if (Passed && any_routines_with_error()) {
-  Passed = false;
+if (Passed && any_routines_with_error())
   raise << "some routines died with errors\n" << end();
-}
 :(code)
 bool any_routines_waiting() {
   for (int i = 0;  i < SIZE(Routines);  ++i) {
