@@ -279,6 +279,23 @@ if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHO
   return false;
 }
 
+// ensure this works with indirect calls using 'call' as well
+:(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)
+% Scheduling_interval = 1;
+def main [
+  local-scope
+  n:&:num <- new number:type
+  *n <- copy 34
+  call f1, n
+  1:num/raw <- copy *n
+]
+def f1 n:&:num [
+  local-scope
+  load-ingredients
+]
+# check that n wasn't reclaimed when f1 returned
++mem: storing 34 in location 1
+
 :(scenario next_ingredient_never_leaks_refcounts)
 def create-space n:&:num -> default-space:space [
   default-space <- new location:type, 2
