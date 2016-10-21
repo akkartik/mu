@@ -24,7 +24,6 @@ long Num_failures = 0;
 :(before "End Includes")
 #define CHECK(X) \
   if (Passed && !(X)) { \
-    ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << '\n'; \
     Passed = false; \
     return;  /* Currently we stop at the very first failure. */ \
@@ -32,7 +31,6 @@ long Num_failures = 0;
 
 #define CHECK_EQ(X, Y) \
   if (Passed && (X) != (Y)) { \
-    ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): " << #X << " == " << #Y << '\n'; \
     cerr << "  got " << (X) << '\n';  /* BEWARE: multiple eval */ \
     Passed = false; \
@@ -82,6 +80,7 @@ void run_test(size_t i) {
   // End Test Teardown
   teardown();
   if (Passed) cerr << '.';
+  else ++Num_failures;
 }
 
 bool is_integer(const string& s) {

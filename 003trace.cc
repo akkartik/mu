@@ -178,7 +178,6 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 :(before "End Test Teardown")
 if (Passed && !Hide_errors && trace_count("error") > 0) {
   Passed = false;
-  ++Num_failures;
 }
 
 :(before "End Types")
@@ -220,7 +219,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
 #define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
 #define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
   if (Passed && trace_count("error") > 0) { \
-    ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
     DUMP("error"); \
     Passed = false; \
@@ -229,7 +227,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
 
 #define CHECK_TRACE_COUNT(label, count) \
   if (Passed && trace_count(label) != (count)) { \
-    ++Num_failures; \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): trace_count of " << label << " should be " << count << '\n'; \
     cerr << "  got " << trace_count(label) << '\n';  /* multiple eval */ \
     DUMP(label); \
@@ -260,7 +257,6 @@ bool check_trace_contents(string FUNCTION, string FILE, int LINE, string expecte
     split_label_contents(expected_lines.at(curr_expected_line), &label, &contents);
   }
 
-  ++Num_failures;
   if (line_exists_anywhere(label, contents)) {
     cerr << "\nF - " << FUNCTION << "(" << FILE << ":" << LINE << "): line [" << label << ": " << contents << "] out of order in trace:\n";
     DUMP("");
