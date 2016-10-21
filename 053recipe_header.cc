@@ -214,9 +214,7 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
   else {
     products.resize(2);
     // pad the first product with sufficient zeros to match its type
-    int size = size_of(current_instruction().products.at(0));
-    for (int i = 0;  i < size;  ++i)
-      products.at(0).push_back(0);
+    products.at(0).resize(size_of(current_instruction().products.at(0)));
     products.at(1).push_back(0);
   }
   break;
