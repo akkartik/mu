@@ -267,7 +267,7 @@ void check_screen(const string& expected_contents, const int color) {
     if (cursor.at_end()) break;
     if (cursor.get() != '.') {
       raise << Current_scenario->name << ": each row of the expected screen should start with a '.'\n" << end();
-      Passed = false;
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     for (int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
@@ -323,7 +323,7 @@ void check_screen(const string& expected_contents, const int color) {
     }
     if (cursor.get() != '.') {
       raise << Current_scenario->name << ": row " << row << " of the expected screen is too long\n" << end();
-      Passed = false;
+      if (!Scenario_testing_scenario) Passed = false;
       return;
     }
   }

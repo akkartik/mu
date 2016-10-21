@@ -179,7 +179,7 @@ void run_mu_scenario(const scenario& s) {
   transform_all();
   run(tmp.front());
   // End Mu Test Teardown
-  if (!Hide_errors && trace_count("error") > 0)
+  if (!Hide_errors && trace_count("error") > 0 && !Scenario_testing_scenario)
     Passed = false;
   if (!Passed)
     ++Num_failures;
@@ -533,7 +533,7 @@ void check_trace(const string& expected) {
           << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
   if (!Hide_errors)
     DUMP(expected_lines.at(curr_expected_line).label);
-  Passed = false;
+  if (!Scenario_testing_scenario) Passed = false;
 }
 
 vector<trace_line> parse_trace(const string& expected) {
@@ -621,7 +621,7 @@ bool check_trace_missing(const string& in) {
   for (int i = 0;  i < SIZE(lines);  ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
       raise << "unexpected [" << lines.at(i).contents << "] in trace with label '" << lines.at(i).label << "'\n" << end();
-      Passed = false;
+      if (!Scenario_testing_scenario) Passed = false;
       return false;
     }
   }
