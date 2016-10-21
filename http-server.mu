@@ -15,14 +15,7 @@ def main [
   session:num <- $accept socket
   contents:&:source:char, sink:&:sink:char <- new-channel 30
   sink <- start-running receive-from-socket session, sink
-  buf:&:buffer <- new-buffer 30
-  {
-    c:char, done?:bool, contents <- read contents
-    break-if done?
-    buf <- append buf, c
-    loop
-  }
-  socket-text:text <- buffer-to-array buf
+  query:text <- drain contents
   $print [Done reading from socket.], 10/newline
   write-to-socket session, [HTTP/1.0 200 OK
 Content-type: text/plain

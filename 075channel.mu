@@ -376,7 +376,8 @@ def capacity chan:&:channel:_elem -> result:num [
   result <- length *q
 ]
 
-# helper for channels of characters in particular
+## helpers for channels of characters in particular
+
 def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:sink:char, in:&:source:char [
   local-scope
   load-ingredients
@@ -474,4 +475,17 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
   trace-should-contain [
     test: reached end
   ]
+]
+
+def drain source:&:source:char -> result:text, source:&:source:char [
+  local-scope
+  load-ingredients
+  buf:&:buffer <- new-buffer 30
+  {
+    c:char, done?:bool <- read source
+    break-if done?
+    buf <- append buf, c
+    loop
+  }
+  result <- buffer-to-array buf
 ]
