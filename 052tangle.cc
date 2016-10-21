@@ -34,6 +34,11 @@ Fragments_used.clear();
 :(before "End Command Handlers")
 else if (command == "before") {
   string label = next_word(in);
+  if (label.empty()) {
+    assert(!has_data(in));
+    raise << "incomplete 'before' block at end of file\n" << end();
+    return result;
+  }
   recipe tmp;
   slurp_body(in, tmp);
   if (is_waypoint(label))
@@ -44,6 +49,11 @@ else if (command == "before") {
 }
 else if (command == "after") {
   string label = next_word(in);
+  if (label.empty()) {
+    assert(!has_data(in));
+    raise << "incomplete 'after' block at end of file\n" << end();
+    return result;
+  }
   recipe tmp;
   slurp_body(in, tmp);
   if (is_waypoint(label))

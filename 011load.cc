@@ -26,6 +26,10 @@ vector<recipe_ordinal> load(istream& in) {
     skip_whitespace_and_comments(in);
     if (!has_data(in)) break;
     string command = next_word(in);
+    if (command.empty()) {
+      assert(!has_data(in));
+      break;
+    }
     // Command Handlers
     if (command == "recipe" || command == "def") {
       recipe_ordinal r = slurp_recipe(in);
@@ -50,6 +54,11 @@ vector<recipe_ordinal> load(istream& in) {
 int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
+  if (result.name.empty()) {
+    assert(!has_data(in));
+    raise << "file ended with 'recipe'\n" << end();
+    return -1;
+  }
   // End Load Recipe Name
   skip_whitespace_but_not_newline(in);
   // End Recipe Refinements
@@ -89,7 +98,7 @@ bool next_instruction(istream& in, instruction* curr) {
   curr->clear();
   skip_whitespace_and_comments(in);
   if (!has_data(in)) {
-    raise << "0: unbalanced '[' for recipe\n" << end();
+    raise << "incomplete recipe at end of file (0)\n" << end();
     return false;
   }
 
@@ -97,10 +106,15 @@ bool next_instruction(istream& in, instruction* curr) {
   while (has_data(in) && in.peek() != '\n') {
     skip_whitespace_but_not_newline(in);
     if (!has_data(in)) {
-      raise << "1: unbalanced '[' for recipe\n" << end();
+      raise << "incomplete recipe at end of file (1)\n" << end();
       return false;
     }
     string word = next_word(in);
+    if (word.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete recipe at end of file (2)\n" << end();
+      return false;
+    }
     words.push_back(word);
     skip_whitespace_but_not_newline(in);
   }
@@ -113,7 +127,7 @@ bool next_instruction(istream& in, instruction* curr) {
     curr->label = words.at(0);
     trace(9993, "parse") << "label: " << curr->label << end();
     if (!has_data(in)) {
-      raise << "7: unbalanced '[' for recipe\n" << end();
+      raise << "incomplete recipe at end of file (3)\n" << end();
       return false;
     }
     return true;
@@ -149,6 +163,7 @@ bool next_instruction(istream& in, instruction* curr) {
   return true;
 }
 
+// can return empty string -- only if `in` has no more data
 string next_word(istream& in) {
   skip_whitespace_but_not_newline(in);
   // End next_word Special-cases

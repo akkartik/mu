@@ -78,6 +78,11 @@ else if (command == "pending-scenario") {
 scenario parse_scenario(istream& in) {
   scenario result;
   result.name = next_word(in);
+  if (result.name.empty()) {
+    assert(!has_data(in));
+    raise << "incomplete scenario at end of file\n" << end();
+    return result;
+  }
   skip_whitespace_and_comments(in);
   if (in.peek() != '[') {
     raise << "Expected '[' after scenario '" << result.name << "'\n" << end();
@@ -329,6 +334,11 @@ void check_memory(const string& s) {
     skip_whitespace_and_comments(in);
     if (!has_data(in)) break;
     string lhs = next_word(in);
+    if (lhs.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'memory-should-contain' block at end of file (0)\n" << end();
+      return;
+    }
     if (!is_integer(lhs)) {
       check_type(lhs, in);
       continue;
@@ -338,6 +348,11 @@ void check_memory(const string& s) {
     string _assign;  in >> _assign;  assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     string rhs = next_word(in);
+    if (rhs.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'memory-should-contain' block at end of file (1)\n" << end();
+      return;
+    }
     if (!is_integer(rhs) && !is_noninteger(rhs)) {
       if (Current_scenario && !Scenario_testing_scenario)
         // genuine test in a mu file
@@ -374,9 +389,19 @@ void check_type(const string& lhs, istream& in) {
     x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);
+    if (_assign.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'memory-should-contain' block at end of file (2)\n" << end();
+      return;
+    }
     assert(_assign == "<-");
     skip_whitespace_and_comments(in);
     string literal = next_word(in);
+    if (literal.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'memory-should-contain' block at end of file (3)\n" << end();
+      return;
+    }
     int address = x.value;
     // exclude quoting brackets
     assert(*literal.begin() == '[');  literal.erase(literal.begin());
@@ -750,6 +775,11 @@ void run_mu_scenario(const string& form) {
   in >> std::noskipws;
   skip_whitespace_and_comments(in);
   string _scenario = next_word(in);
+  if (_scenario.empty()) {
+    assert(!has_data(in));
+    raise << "no scenario in string passed into run_mu_scenario()\n" << end();
+    return;
+  }
   assert(_scenario == "scenario");
   scenario s = parse_scenario(in);
   run_mu_scenario(s);

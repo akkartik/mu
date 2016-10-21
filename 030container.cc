@@ -721,6 +721,11 @@ Num_calls_to_transform_all_at_first_definition = -1;
 void insert_container(const string& command, kind_of_type kind, istream& in) {
   skip_whitespace_but_not_newline(in);
   string name = next_word(in);
+  if (name.empty()) {
+    assert(!has_data(in));
+    raise << "incomplete container definition at end of file (0)\n" << end();
+    return;
+  }
   // End container Name Refinements
   trace(9991, "parse") << "--- defining " << command << ' ' << name << end();
   if (!contains_key(Type_ordinal, name)
@@ -744,6 +749,11 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
   while (has_data(in)) {
     skip_whitespace_and_comments(in);
     string element = next_word(in);
+    if (element.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete container definition at end of file (1)\n" << end();
+      return;
+    }
     if (element == "]") break;
     if (in.peek() != '\n') {
       raise << command << " '" << name << "' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.\n" << end();

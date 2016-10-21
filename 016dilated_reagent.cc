@@ -107,7 +107,13 @@ if (starts_with(s, "{")) {
     return;
   }
   {
-    string_tree* type_names = new string_tree(next_word(in));
+    string s = next_word(in);
+    if (s.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete dilated reagent at end of file (0)\n" << end();
+      return;
+    }
+    string_tree* type_names = new string_tree(s);
     // End Parsing Dilated Reagent Type Property(type_names)
     type = new_type_tree(type_names);
     delete type_names;
@@ -116,7 +122,13 @@ if (starts_with(s, "{")) {
     string key = slurp_key(in);
     if (key.empty()) continue;
     if (key == "}") continue;
-    string_tree* value = new string_tree(next_word(in));
+    string s = next_word(in);
+    if (s.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete dilated reagent at end of file (1)\n" << end();
+      return;
+    }
+    string_tree* value = new string_tree(s);
     // End Parsing Dilated Reagent Property(value)
     properties.push_back(pair<string, string_tree*>(key, value));
   }
@@ -126,6 +138,11 @@ if (starts_with(s, "{")) {
 :(code)
 string slurp_key(istream& in) {
   string result = next_word(in);
+  if (result.empty()) {
+    assert(!has_data(in));
+    raise << "incomplete dilated reagent at end of file (2)\n" << end();
+    return result;
+  }
   while (!result.empty() && *result.rbegin() == ':')
     strip_last(result);
   while (isspace(in.peek()) || in.peek() == ':')

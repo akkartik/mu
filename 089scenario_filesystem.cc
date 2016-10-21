@@ -115,6 +115,11 @@ void parse_resources(const string& data, map<string, string>& out, const string&
     skip_whitespace_and_comments(in);
     if (!has_data(in)) break;
     string filename = next_word(in);
+    if (filename.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'resources' block at end of file (0)\n" << end();
+      return;
+    }
     if (*filename.begin() != '[') {
       raise << caller << ": assume-resources: filename '" << filename << "' must begin with a '['\n" << end();
       break;
@@ -130,6 +135,11 @@ void parse_resources(const string& data, map<string, string>& out, const string&
       break;
     }
     string arrow = next_word(in);
+    if (arrow.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'resources' block at end of file (1)\n" << end();
+      return;
+    }
     if (arrow != "<-") {
       raise << caller << ": assume-resources: expected '<-' after filename '" << filename << "' but got '" << arrow << "'\n" << end();
       break;
@@ -139,6 +149,11 @@ void parse_resources(const string& data, map<string, string>& out, const string&
       break;
     }
     string contents = next_word(in);
+    if (contents.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete 'resources' block at end of file (2)\n" << end();
+      return;
+    }
     if (*contents.begin() != '[') {
       raise << caller << ": assume-resources: file contents '" << contents << "' for filename '" << filename << "' must begin with a '['\n" << end();
       break;

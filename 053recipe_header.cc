@@ -33,6 +33,11 @@ void load_recipe_header(istream& in, recipe& result) {
   result.has_header = true;
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
+    if (s.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete recipe header at end of file (0)\n" << end();
+      return;
+    }
     if (s == "<-")
       raise << "recipe " << result.name << " should say '->' and not '<-'\n" << end();
     if (s == "->") break;
@@ -42,6 +47,11 @@ void load_recipe_header(istream& in, recipe& result) {
   }
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
     string s = next_word(in);
+    if (s.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete recipe header at end of file (1)\n" << end();
+      return;
+    }
     result.products.push_back(reagent(s));
     trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
     skip_whitespace_but_not_newline(in);

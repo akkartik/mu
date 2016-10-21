@@ -46,7 +46,13 @@ string_tree* parse_string_tree(istream& in) {
     return NULL;
   }
   if (in.peek() != '(') {
-    string_tree* result = new string_tree(next_word(in));
+    string s = next_word(in);
+    if (s.empty()) {
+      assert(!has_data(in));
+      raise << "incomplete string tree at end of file (0)\n" << end();
+      return NULL;
+    }
+    string_tree* result = new string_tree(s);
     return result;
   }
   in.get();  // skip '('
@@ -57,10 +63,18 @@ string_tree* parse_string_tree(istream& in) {
     assert(has_data(in));
     if (in.peek() == ')') break;
     *curr = new string_tree(NULL, NULL);
-    if (in.peek() == '(')
+    if (in.peek() == '(') {
       (*curr)->left = parse_string_tree(in);
-    else
-      (*curr)->left = new string_tree(next_word(in));
+    }
+    else {
+      string s = next_word(in);
+      if (s.empty()) {
+        assert(!has_data(in));
+        raise << "incomplete string tree at end of file (1)\n" << end();
+        return NULL;
+      }
+      (*curr)->left = new string_tree(s);
+    }
     curr = &(*curr)->right;
   }
   in.get();  // skip ')'
