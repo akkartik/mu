@@ -239,6 +239,21 @@ def f2 [
 ]
 +mem: storing 4 in location 2
 
+//: type-checking for 'start-running'
+
+:(scenario start_running_checks_types)
+% Hide_errors = true;
+def f1 [
+  start-running f2, 3
+]
+def f2 n:&:num [
+]
++error: f1: ingredient 0 has the wrong type at 'start-running f2, 3'
+
+// 'start-running' only uses the ingredients of the callee, not its products
+:(before "End is_indirect_call_with_ingredients Special-cases")
+if (r == START_RUNNING) return true;
+
 //: more complex: refcounting management when starting up new routines
 
 :(scenario start_running_immediately_updates_refcounts_of_ingredients)

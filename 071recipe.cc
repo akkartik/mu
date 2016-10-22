@@ -160,22 +160,36 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    if (inst.operation != CALL) continue;
-    if (inst.ingredients.empty()) continue;  // error raised above
+    if (inst.ingredients.empty()) continue;  // if indirect call, error raised above
     const reagent& callee = inst.ingredients.at(0);
-    if (!is_mu_recipe(callee)) continue;  // error raised above
+    if (!is_mu_recipe(callee)) continue;  // if indirect call, error raised above
     const recipe callee_header = is_literal(callee) ? get(Recipe, callee.value) : from_reagent(inst.ingredients.at(0));
     if (!callee_header.has_header) continue;
-    for (long int i = /*skip callee*/1;  i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1);  ++i) {
-      if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
-        raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << inst.original_string << "'\n" << end();
+    if (is_indirect_call_with_ingredients(inst.operation)) {
+      for (long int i = /*skip callee*/1;  i < min(SIZE(inst.ingredients), SIZE(callee_header.ingredients)+/*skip callee*/1);  ++i) {
+        if (!types_coercible(callee_header.ingredients.at(i-/*skip callee*/1), inst.ingredients.at(i)))
+          raise << maybe(caller.name) << "ingredient " << i-/*skip callee*/1 << " has the wrong type at '" << inst.original_string << "'\n" << end();
+      }
     }
-    for (long int i = 0;  i < min(SIZE(inst.products), SIZE(callee_header.products));  ++i) {
-      if (is_dummy(inst.products.at(i))) continue;
-      if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
-        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.original_string << "'\n" << end();
+    if (is_indirect_call_with_products(inst.operation)) {
+      for (long int i = 0;  i < min(SIZE(inst.products), SIZE(callee_header.products));  ++i) {
+        if (is_dummy(inst.products.at(i))) continue;
+        if (!types_coercible(callee_header.products.at(i), inst.products.at(i)))
+          raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.original_string << "'\n" << end();
+      }
     }
   }
+}
+
+bool is_indirect_call_with_ingredients(const recipe_ordinal r) {
+  if (r == CALL) return true;
+  // End is_indirect_call_with_ingredients Special-cases
+  return false;
+}
+bool is_indirect_call_with_products(const recipe_ordinal r) {
+  if (r == CALL) return true;
+  // End is_indirect_call_with_products Special-cases
+  return false;
 }
 
 recipe from_reagent(const reagent& r) {
