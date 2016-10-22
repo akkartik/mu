@@ -14,6 +14,7 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
@@ -21,7 +22,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .muData { color: #ffff00; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -81,7 +82,13 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
     <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    string_tree* result = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete string tree at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    string_tree* result = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
     <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip '('</span>
@@ -92,10 +99,18 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
     assert<span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">')'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     *curr = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">'('</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = parse_string_tree<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-    <span class="Normal">else</span>
-      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">else</span> <span class="Delimiter">{</span>
+      string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+        assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+        raise &lt;&lt; <span class="Constant">&quot;incomplete string tree at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
+      <span class="Delimiter">}</span>
+      <span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>left = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
+    <span class="Delimiter">}</span>
     curr = &amp;<span class="Delimiter">(</span>*curr<span class="Delimiter">)-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>

@@ -13,7 +13,6 @@
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Delimiter { color: #800080; }
 .muControl { color: #c0a020; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
@@ -47,14 +46,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   session:num<span class="Special"> &lt;- </span>$accept socket
   contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
   sink<span class="Special"> &lt;- </span>start-running receive-from-socket session, sink
-  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
-  <span class="Delimiter">{</span>
-    c:char, done?:bool, contents<span class="Special"> &lt;- </span>read contents
-    <span class="muControl">break-if</span> done?
-    buf<span class="Special"> &lt;- </span>append buf, c
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  socket-text:text<span class="Special"> &lt;- </span>buffer-to-array buf
+  query:text<span class="Special"> &lt;- </span>drain contents
   $print <span class="Constant">[Done reading from socket.]</span>, <span class="Constant">10/newline</span>
   write-to-socket session, <span class="Constant">[HTTP/1.0 200 OK</span>
 <span class="Constant">Content-type: text/plain</span>

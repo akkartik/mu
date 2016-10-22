@@ -22,7 +22,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -70,6 +70,11 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;before&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    raise &lt;&lt; <span class="Constant">&quot;incomplete 'before' block at end of file</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   recipe tmp<span class="Delimiter">;</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_waypoint<span class="Delimiter">(</span>label<span class="Delimiter">))</span>
@@ -80,6 +85,11 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
 <span class="Delimiter">}</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string label = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>label<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    raise &lt;&lt; <span class="Constant">&quot;incomplete 'after' block at end of file</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   recipe tmp<span class="Delimiter">;</span>
   slurp_body<span class="Delimiter">(</span>in<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_waypoint<span class="Delimiter">(</span>label<span class="Delimiter">))</span>

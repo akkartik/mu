@@ -21,7 +21,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
 .SalientComment { color: #00ffff; }
@@ -71,6 +71,11 @@ has_header = <span class="Constant">false</span><span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>has_header = <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete recipe header at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span>
       raise &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; should say '-&gt;' and not '&lt;-'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -80,6 +85,11 @@ has_header = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="Constant">'['</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete recipe header at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     result<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>s<span class="Delimiter">));</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;header product: &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>products<span class="Delimiter">.</span>back<span class="Delimiter">().</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -242,9 +252,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">else</span> <span class="Delimiter">{</span>
     products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
     <span class="Comment">// pad the first product with sufficient zeros to match its type</span>
-    <span class="Normal">int</span> size = size_of<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; size<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span>
-      products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>resize<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
     products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">break</span><span class="Delimiter">;</span>

@@ -24,7 +24,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .muData { color: #ffff00; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -759,6 +759,11 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
 <span class="Normal">void</span> insert_container<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; command<span class="Delimiter">,</span> kind_of_type kind<span class="Delimiter">,</span> istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   string name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    raise &lt;&lt; <span class="Constant">&quot;incomplete container definition at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Comment">// End container Name Refinements</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- defining &quot;</span> &lt;&lt; command &lt;&lt; <span class="Constant">' '</span> &lt;&lt; name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> name<span class="Delimiter">)</span>
@@ -782,6 +787,11 @@ Num_calls_to_transform_all_at_first_definition = -<span class="Constant">1</span
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     string element = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>element<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete container definition at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>element == <span class="Constant">&quot;]&quot;</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; command &lt;&lt; <span class="Constant">&quot; '&quot;</span> &lt;&lt; name &lt;&lt; <span class="Constant">&quot;' contains multiple elements on a single line. Containers and exclusive containers must only contain elements, one to a line, no code.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>

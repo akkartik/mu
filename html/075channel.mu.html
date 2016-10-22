@@ -412,7 +412,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   result<span class="Special"> &lt;- </span>length *q
 ]
 
-<span class="Comment"># helper for channels of characters in particular</span>
+<span class="SalientComment">## helpers for channels of characters in particular</span>
+
 <span class="muRecipe">def</span> buffer-lines in:&amp;:source:char, buffered-out:&amp;:sink:char<span class="muRecipe"> -&gt; </span>buffered-out:&amp;:sink:char, in:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
@@ -510,6 +511,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-should-contain [
     test: reached end
   ]
+]
+
+<span class="muRecipe">def</span> drain source:&amp;:source:char<span class="muRecipe"> -&gt; </span>result:text, source:&amp;:source:char [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">30</span>
+  <span class="Delimiter">{</span>
+    c:char, done?:bool<span class="Special"> &lt;- </span>read source
+    <span class="muControl">break-if</span> done?
+    buf<span class="Special"> &lt;- </span>append buf, c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  result<span class="Special"> &lt;- </span>buffer-to-array buf
 ]
 </pre>
 </body>

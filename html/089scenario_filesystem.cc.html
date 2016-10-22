@@ -19,7 +19,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
@@ -149,6 +149,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string filename = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>filename<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*filename<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -164,6 +169,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string arrow = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>arrow<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>arrow != <span class="Constant">&quot;&lt;-&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: expected '&lt;-' after filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' but got '&quot;</span> &lt;&lt; arrow &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -173,6 +183,11 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string contents = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete 'resources' block at end of file (2)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>*contents<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> != <span class="Constant">'['</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; caller &lt;&lt; <span class="Constant">&quot;: assume-resources: file contents '&quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;' for filename '&quot;</span> &lt;&lt; filename &lt;&lt; <span class="Constant">&quot;' must begin with a '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>

@@ -17,7 +17,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
 -->
@@ -211,7 +211,6 @@ trace_stream* Trace_stream = <span class="Constant">NULL</span><span class="Deli
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; !Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
-  ++Num_failures<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
@@ -253,7 +252,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
 <span class="PreProc">#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">)</span>
 <span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \</span>
 <span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; trace_count(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">) &gt; </span><span class="Constant">0</span><span class="PreProc">) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): unexpected errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    DUMP(</span><span class="Constant">&quot;error&quot;</span><span class="PreProc">)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -262,7 +260,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
 
 <span class="PreProc">#define CHECK_TRACE_COUNT(label</span><span class="Delimiter">,</span><span class="PreProc"> count) \</span>
 <span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; trace_count(label) != (count)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): trace_count of &quot;</span><span class="PreProc"> &lt;&lt; label &lt;&lt; </span><span class="Constant">&quot; should be &quot;</span><span class="PreProc"> &lt;&lt; count &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; trace_count(label) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
 <span class="PreProc">    DUMP(label)</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -293,7 +290,6 @@ START_TRACING_UNTIL_END_OF_SCOPE
     split_label_contents<span class="Delimiter">(</span>expected_lines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>curr_expected_line<span class="Delimiter">),</span> &amp;label<span class="Delimiter">,</span> &amp;contents<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
 
-  ++Num_failures<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>line_exists_anywhere<span class="Delimiter">(</span>label<span class="Delimiter">,</span> contents<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     cerr &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; FUNCTION &lt;&lt; <span class="Constant">&quot;(&quot;</span> &lt;&lt; <span class="Normal">FILE</span> &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; LINE &lt;&lt; <span class="Constant">&quot;): line [&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; contents &lt;&lt; <span class="Constant">&quot;] out of order in trace:</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
     DUMP<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>

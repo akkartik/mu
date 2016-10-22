@@ -23,7 +23,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -316,6 +316,23 @@ increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="De
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">// ensure this works with indirect calls using 'call' as well</span>
+<span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)</span>
+<span class="Special">% Scheduling_interval = 1;</span>
+<span class="muRecipe">def</span> main [
+  local-scope
+  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+  call f1<span class="Delimiter">,</span> n
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *n
+]
+<span class="muRecipe">def</span> f1 n:&amp;:num [
+  local-scope
+  load-ingredients
+]
+<span class="Comment"># check that n wasn't reclaimed when f1 returned</span>
+<span class="traceContains">+mem: storing 34 in location 1</span>
+
 <span class="Delimiter">:(scenario next_ingredient_never_leaks_refcounts)</span>
 <span class="muRecipe">def</span> create-space n:&amp;:num<span class="muRecipe"> -&gt; </span><span class="Normal">default</span>-space:space [
   <span class="Normal">default</span>-space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">2</span>
@@ -565,15 +582,11 @@ DISCONTINUED<span class="Delimiter">,</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
   raise &lt;&lt; <span class="Constant">&quot;some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Mu Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
   raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> any_routines_with_error<span class="Delimiter">()</span> <span class="Delimiter">{</span>

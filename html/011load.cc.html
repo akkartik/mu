@@ -22,7 +22,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -62,6 +62,10 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
     skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
     string command = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>command<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     <span class="Comment">// Command Handlers</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;recipe&quot;</span> || command == <span class="Constant">&quot;def&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       recipe_ordinal r = slurp_recipe<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
@@ -86,6 +90,11 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
 <span class="Normal">int</span> slurp_recipe<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">.</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    raise &lt;&lt; <span class="Constant">&quot;file ended with 'recipe'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Comment">// End Load Recipe Name</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End Recipe Refinements</span>
@@ -125,7 +134,7 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   curr<span class="Delimiter">-&gt;</span>clear<span class="Delimiter">();</span>
   skip_whitespace_and_comments<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;0: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;incomplete recipe at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
 
@@ -133,10 +142,15 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   <span class="Normal">while</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> != <span class="cSpecial">'\n'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; <span class="Constant">&quot;1: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete recipe at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     string word = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>word<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete recipe at end of file (2)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
     words<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>word<span class="Delimiter">);</span>
     skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -149,7 +163,7 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
     curr<span class="Delimiter">-&gt;</span>label = words<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
     trace<span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;parse&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;label: &quot;</span> &lt;&lt; curr<span class="Delimiter">-&gt;</span>label &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-      raise &lt;&lt; <span class="Constant">&quot;7: unbalanced '[' for recipe</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete recipe at end of file (3)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
@@ -185,6 +199,7 @@ vector&lt;recipe_ordinal&gt; load<span class="Delimiter">(</span>istream&amp; in
   <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">// can return empty string -- only if `in` has no more data</span>
 string next_word<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// End next_word Special-cases</span>

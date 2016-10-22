@@ -86,6 +86,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># end of stream</span>
   ]
 ]
+
+<span class="muRecipe">def</span> random-in-range generator:&amp;:stream:num, start:num, end:num<span class="muRecipe"> -&gt; </span>result:num, fail?:bool, generator:&amp;:stream:num [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  result, fail?, generator<span class="Special"> &lt;- </span>random generator
+  <span class="muControl">return-if</span> fail?
+  delta:num<span class="Special"> &lt;- </span>subtract end, start
+  _, result<span class="Special"> &lt;- </span>divide-with-remainder result, delta
+  result<span class="Special"> &lt;- </span>add result, start
+]
+
+<span class="muScenario">scenario</span> random-in-range [
+  <span class="Constant">local-scope</span>
+  source:&amp;:stream:num<span class="Special"> &lt;- </span>assume-random-numbers <span class="Constant">91</span>
+  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>random-in-range source, <span class="Constant">40</span>, <span class="Constant">50</span>
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">41</span>
+  ]
+]
 </pre>
 </body>
 </html>

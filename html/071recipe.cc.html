@@ -22,7 +22,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Special { color: #c00000; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -150,10 +150,12 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to call empty recipe in '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Normal">const</span> instruction&amp; caller_instruction = current_instruction<span class="Delimiter">();</span>
+  instruction<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> call_instruction = current_instruction<span class="Delimiter">();</span>
+  call_instruction<span class="Delimiter">.</span>operation = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+  call_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>call_instruction<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>
   Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
   ingredients<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">());</span>  <span class="Comment">// drop the callee</span>
-  finish_call_housekeeping<span class="Delimiter">(</span>caller_instruction<span class="Delimiter">,</span> ingredients<span class="Delimiter">);</span>
+  finish_call_housekeeping<span class="Delimiter">(</span>call_instruction<span class="Delimiter">,</span> ingredients<span class="Delimiter">);</span>
   <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

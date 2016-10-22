@@ -23,7 +23,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .traceContains { color: #008000; }
 .Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
 .PreProc { color: #800080; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -144,7 +144,13 @@ string slurp_balanced_bracket<span class="Delimiter">(</span>istream&amp; in<spa
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    string_tree* type_names = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete dilated reagent at end of file (0)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    string_tree* type_names = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
     <span class="Comment">// End Parsing Dilated Reagent Type Property(type_names)</span>
     type = new_type_tree<span class="Delimiter">(</span>type_names<span class="Delimiter">);</span>
     <span class="Normal">delete</span> type_names<span class="Delimiter">;</span>
@@ -153,7 +159,13 @@ string slurp_balanced_bracket<span class="Delimiter">(</span>istream&amp; in<spa
     string key = slurp_key<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>key<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>key == <span class="Constant">&quot;}&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-    string_tree* value = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>next_word<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    string s = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>s<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+      assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+      raise &lt;&lt; <span class="Constant">&quot;incomplete dilated reagent at end of file (1)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    string_tree* value = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>s<span class="Delimiter">);</span>
     <span class="Comment">// End Parsing Dilated Reagent Property(value)</span>
     properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span>key<span class="Delimiter">,</span> value<span class="Delimiter">));</span>
   <span class="Delimiter">}</span>
@@ -163,6 +175,11 @@ string slurp_balanced_bracket<span class="Delimiter">(</span>istream&amp; in<spa
 <span class="Delimiter">:(code)</span>
 string slurp_key<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   string result = next_word<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+    assert<span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+    raise &lt;&lt; <span class="Constant">&quot;incomplete dilated reagent at end of file (2)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>!result<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; *result<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>
     strip_last<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
   <span class="Normal">while</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">())</span> || in<span class="Delimiter">.</span>peek<span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span>

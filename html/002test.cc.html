@@ -17,7 +17,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .cSpecial { color: #008000; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
 .CommentedCode { color: #6c6c6c; }
@@ -58,7 +58,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="PreProc">#define CHECK(X) \</span>
 <span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; !(X)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span><span class="PreProc"> \</span>
@@ -66,7 +65,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="PreProc">#define CHECK_EQ(X</span><span class="Delimiter">,</span><span class="PreProc"> Y) \</span>
 <span class="PreProc">  </span><span class="Normal">if</span><span class="PreProc"> (Passed &amp;&amp; (X) != (Y)) </span><span class="Delimiter">{</span><span class="PreProc"> \</span>
-<span class="PreProc">    ++Num_failures</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span><span class="PreProc"> &lt;&lt; __FUNCTION__ &lt;&lt; </span><span class="Constant">&quot;(&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__FILE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;:&quot;</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">__LINE__</span><span class="PreProc"> &lt;&lt; </span><span class="Constant">&quot;): &quot;</span><span class="PreProc"> &lt;&lt; #X &lt;&lt; </span><span class="Constant">&quot; == &quot;</span><span class="PreProc"> &lt;&lt; #Y &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
 <span class="PreProc">    cerr &lt;&lt; </span><span class="Constant">&quot;  got &quot;</span><span class="PreProc"> &lt;&lt; (X) &lt;&lt; </span><span class="cSpecial">'\n'</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> BEWARE: multiple eval </span><span class="Comment">*/</span><span class="PreProc"> \</span>
 <span class="PreProc">    Passed = </span><span class="Constant">false</span><span class="Delimiter">;</span><span class="PreProc"> \</span>
@@ -116,6 +114,7 @@ Passed = <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Comment">// End Test Teardown</span>
   teardown<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Passed<span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">'.'</span><span class="Delimiter">;</span>
+  <span class="Normal">else</span> ++Num_failures<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> is_integer<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>

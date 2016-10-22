@@ -23,7 +23,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .muData { color: #ffff00; }
-.Identifier { color: #fcb165; }
+.Identifier { color: #ecf32c; }
 -->
 </style>
 
@@ -70,20 +70,16 @@ WAITING<span class="Delimiter">,</span>
 waiting_on_location = <span class="Constant">0</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Mu Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_waiting<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_waiting<span class="Delimiter">())</span>
   raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: deadlock!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Run Routine&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>any_routines_waiting<span class="Delimiter">())</span> <span class="Delimiter">{</span>
   raise &lt;&lt; <span class="Constant">&quot;deadlock!</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   dump_waiting_routines<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-  Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
   raise &lt;&lt; <span class="Constant">&quot;some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
 <span class="Delimiter">:(code)</span>
 <span class="Normal">bool</span> any_routines_waiting<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
