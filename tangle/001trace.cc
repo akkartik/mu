@@ -54,7 +54,7 @@ trace_stream* Trace_stream = NULL;
 struct die {};
 ostream& operator<<(ostream& os, __attribute__((unused)) die) {
   if (Hide_warnings) return os;
-  os << "dying";
+  os << "dying\n";
   exit(1);
 }
 

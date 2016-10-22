@@ -159,7 +159,7 @@ void process_next_hunk(istream& in, const string& directive, const string& filen
   if (cmd == "before" || cmd == "after" || cmd == "replace" || cmd == "replace{}" || cmd == "delete" || cmd == "delete{}") {
     list<Line>::iterator target = locate_target(out, directive_stream);
     if (target == out.end()) {
-      raise << "Couldn't find target " << directive << '\n' << die();
+      raise << "couldn't find target " << directive << '\n' << die();
       return;
     }
 
