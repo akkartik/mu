@@ -521,6 +521,49 @@ def add2 x:num, y:num -> x:num [
 ]
 +error: main: '3:num <- add2 1:num, 2:num' should write to '1:num' rather than '3:num'
 
+//: One special-case is recipe 'main'. Make sure it's only ever taking in text
+//: ingredients, and returning a single number.
+
+:(scenario recipe_header_ingredients_constrained_for_main)
+% Hide_errors = true;
+def main x:num [
+]
++error: ingredients of recipe 'main' must all be text (address:array:character)
+
+:(scenario recipe_header_products_constrained_for_main)
+% Hide_errors = true;
+def main -> x:text [
+]
++error: recipe 'main' must return at most a single product, a number
+
+:(scenario recipe_header_products_constrained_for_main_2)
+% Hide_errors = true;
+def main -> x:num, y:num [
+]
++error: recipe 'main' must return at most a single product, a number
+
+:(after "Transform.push_back(expand_type_abbreviations)")
+Transform.push_back(check_recipe_header_constraints);
+:(code)
+void check_recipe_header_constraints(const recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  if (caller.name != "main") return;
+  if (!caller.has_header) return;
+  reagent/*local*/ expected_ingredient("x:address:array:character");
+  for (int i = 0; i < SIZE(caller.ingredients); ++i) {
+    if (!types_strictly_match(expected_ingredient, caller.ingredients.at(i))) {
+      raise << "ingredients of recipe 'main' must all be text (address:array:character)\n" << end();
+      break;
+    }
+  }
+  int nprod = SIZE(caller.products);
+  reagent/*local*/ expected_product("x:number");
+  if (nprod > 1
+      || (nprod == 1 && !types_strictly_match(expected_product, caller.products.at(0)))) {
+    raise << "recipe 'main' must return at most a single product, a number\n" << end();
+  }
+}
+
 :(before "End Includes")
 using std::min;
 using std::max;
