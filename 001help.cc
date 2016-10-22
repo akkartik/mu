@@ -58,8 +58,8 @@ while (argc > 1 && starts_with(*arg, "--")) {
 //: anywhere we like as long as we format the function header in a specific
 //: way: put it all on a single line without indent, end the line with ') {'
 //: and no trailing whitespace. As long as functions uniformly start this
-//: way, our makefile contains a little command to automatically generate
-//: declarations for them.
+//: way, our 'build' script contains a little command to automatically
+//: generate declarations for them.
 :(code)
 bool is_equal(char* s, const char* lit) {
   return strncmp(s, lit, strlen(lit)) == 0;

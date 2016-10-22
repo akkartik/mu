@@ -94,16 +94,16 @@
 // Types
 // End Types
 
-// Prototypes are auto-generated in the makefile; define your functions in any
-// order. Just be sure to declare each function header all on one line. Our
-// auto-generation scripts are too minimal and simple-minded to handle
+// Prototypes are auto-generated in the 'build' script; define your functions
+// in any order. Just be sure to declare each function header all on one line.
+// Our auto-generation scripts are too minimal and simple-minded to handle
 // anything else.
 #include "function_list"  // by convention, files ending with '_list' are auto-generated
 
 // Globals
 //
 // All statements in this section should always define a single variable on a
-// single line. The makefile will simple-mindedly auto-generate extern
+// single line. The 'build' script will simple-mindedly auto-generate extern
 // declarations for them. Don't forget to define (not just declare) constants
 // with extern linkage in this section, since C++ global constants have
 // internal linkage by default.
