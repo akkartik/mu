@@ -36,18 +36,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: 'test_'. To run all tests so defined, run:</span>
 <span class="Comment">//:   $ mu test</span>
 <span class="Comment">//:</span>
-<span class="Comment">//: So far it seems tasteful for layers to never ever reach back to modify</span>
-<span class="Comment">//: previously-defined tests. Every test is a contract once written, and should</span>
-<span class="Comment">//: pass as-is if it is included, regardless of how much later layers change</span>
-<span class="Comment">//: the program. Avoid writing 'temporary' tests that only work with some</span>
-<span class="Comment">//: subsets of the program.</span>
+<span class="Comment">//: Every layer should include tests, and can reach into previous layers.</span>
+<span class="Comment">//: However, it seems like a good idea never to reach into tests from previous</span>
+<span class="Comment">//: layers. Every test should be a contract that always passes as originally</span>
+<span class="Comment">//: written, regardless of any later layers. Avoid writing 'temporary' tests</span>
+<span class="Comment">//: that are only meant to work until some layer.</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Normal">typedef</span> <span class="Normal">void</span> <span class="Delimiter">(</span>*test_fn<span class="Delimiter">)(</span><span class="Normal">void</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;Globals&quot;)</span>
 <span class="Comment">// move a global ahead into types that we can't generate an extern declaration for</span>
 <span class="Normal">const</span> test_fn Tests[] = <span class="Delimiter">{</span>
-<span class="PreProc">  #include </span><span class="Constant">&quot;test_list&quot;</span>  <span class="Comment">// auto-generated; see makefile</span>
+<span class="PreProc">  #include </span><span class="Constant">&quot;test_list&quot;</span>  <span class="Comment">// auto-generated; see 'build' script</span>
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>

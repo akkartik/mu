@@ -120,7 +120,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       <span class="Comment"># todo: test this</span>
       touch-type:num<span class="Special"> &lt;- </span>get t, <span class="Constant">type:offset</span>
       is-left-click?:bool<span class="Special"> &lt;- </span>equal touch-type, <span class="Constant">65513/mouse-left</span>
-      <span class="muControl">loop-unless</span> is-left-click?, <span class="Constant">+next-event:label</span>
+      <span class="muControl">loop-unless</span> is-left-click?, +next-event
       click-row:num<span class="Special"> &lt;- </span>get t, <span class="Constant">row:offset</span>
       click-column:num<span class="Special"> &lt;- </span>get t, <span class="Constant">column:offset</span>
       <span class="Comment"># later exceptions for non-editor touches will go here</span>
@@ -130,7 +130,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       sandbox-in-focus?:bool<span class="Special"> &lt;- </span>move-cursor-in-editor screen, current-sandbox, t
       *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
       screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-      <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+      <span class="muControl">loop</span> +next-event
     <span class="Delimiter">}</span>
     <span class="Comment"># 'resize' event - redraw editor</span>
     <span class="Comment"># todo: test this after supporting resize in assume-console</span>
@@ -149,7 +149,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
         screen<span class="Special"> &lt;- </span>render-all screen, env, render-without-moving-cursor
         render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>  <span class="Comment"># full render done</span>
       <span class="Delimiter">}</span>
-      <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+      <span class="muControl">loop</span> +next-event
     <span class="Delimiter">}</span>
     <span class="Comment"># if it's not global and not a touch event, send to appropriate editor</span>
     <span class="Delimiter">{</span>
@@ -164,7 +164,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
         <span class="Delimiter">{</span>
           <span class="muControl">break-unless</span> more-events?
           render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>  <span class="Comment"># no rendering now, full rendering on some future event</span>
-          <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+          <span class="muControl">jump</span> +finish-event
         <span class="Delimiter">}</span>
         <span class="Delimiter">{</span>
           <span class="muControl">break-if</span> more-events?
@@ -173,13 +173,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
             <span class="Comment"># no more events, and we have to force render</span>
             screen<span class="Special"> &lt;- </span>render-all screen, env, render
             render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-            <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+            <span class="muControl">jump</span> +finish-event
           <span class="Delimiter">}</span>
           <span class="Comment"># no more events, no force render</span>
           <span class="Delimiter">{</span>
             <span class="muControl">break-unless</span> render?
             screen<span class="Special"> &lt;- </span>render-recipes screen, env, render
-            <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+            <span class="muControl">jump</span> +finish-event
           <span class="Delimiter">}</span>
         <span class="Delimiter">}</span>
       <span class="Delimiter">}</span>
@@ -192,7 +192,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
         <span class="Delimiter">{</span>
           <span class="muControl">break-unless</span> more-events?
           render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>  <span class="Comment"># no rendering now, full rendering on some future event</span>
-          <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+          <span class="muControl">jump</span> +finish-event
         <span class="Delimiter">}</span>
         <span class="Delimiter">{</span>
           <span class="muControl">break-if</span> more-events?
@@ -201,13 +201,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
             <span class="Comment"># no more events, and we have to force render</span>
             screen<span class="Special"> &lt;- </span>render-all screen, env, render
             render-all-on-no-more-events?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
-            <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+            <span class="muControl">jump</span> +finish-event
           <span class="Delimiter">}</span>
           <span class="Comment"># no more events, no force render</span>
           <span class="Delimiter">{</span>
             <span class="muControl">break-unless</span> render?
             screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
-            <span class="muControl">jump</span> <span class="Constant">+finish-event:label</span>
+            <span class="muControl">jump</span> +finish-event
           <span class="Delimiter">}</span>
         <span class="Delimiter">}</span>
       <span class="Delimiter">}</span>
@@ -298,7 +298,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
       curr<span class="Special"> &lt;- </span>next curr
       prev<span class="Special"> &lt;- </span>next prev
-      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
+      <span class="muControl">loop</span> +next-character
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       <span class="Comment"># at right? wrap. even if there's only one more letter left; we need</span>
@@ -312,7 +312,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
       <span class="Comment"># don't increment curr</span>
-      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
+      <span class="muControl">loop</span> +next-character
     <span class="Delimiter">}</span>
     print screen, c, color
     curr<span class="Special"> &lt;- </span>next curr
@@ -599,7 +599,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       column<span class="Special"> &lt;- </span>copy left
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>  <span class="Comment"># retry i</span>
+      <span class="muControl">loop</span> +next-character  <span class="Comment"># retry i</span>
     <span class="Delimiter">}</span>
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="Delimiter">{</span>
@@ -618,7 +618,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       column<span class="Special"> &lt;- </span>copy left
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-      <span class="muControl">loop</span> <span class="Constant">+next-character:label</span>
+      <span class="muControl">loop</span> +next-character
     <span class="Delimiter">}</span>
     print screen, c, color
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
@@ -641,7 +641,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> redraw-screen?
     screen<span class="Special"> &lt;- </span>render-all screen, env:&amp;:environment, render
     sync-screen screen
-    <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+    <span class="muControl">loop</span> +next-event
   <span class="Delimiter">}</span>
 ]
 
@@ -656,7 +656,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     sandbox-in-focus?<span class="Special"> &lt;- </span>not sandbox-in-focus?
     *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
     screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    <span class="muControl">loop</span> <span class="Constant">+next-event:label</span>
+    <span class="muControl">loop</span> +next-event
   <span class="Delimiter">}</span>
 ]
 

@@ -374,7 +374,7 @@ $error: <span class="Constant">0</span>
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_immutable_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> check_immutable_ingredients<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_immutable_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// to ensure an address reagent isn't modified, it suffices to show that</span>
   <span class="Comment">//   a) we never write to its contents directly,</span>
   <span class="Comment">//   b) we never call 'put' or 'put-index' on it, and</span>
@@ -520,7 +520,7 @@ set&lt;<span class="Normal">int</span>&gt; scan_contained_in_product_indices<spa
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">bool</span> is_modified_in_recipe<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">,</span> <span class="Normal">int</span> ingredient_index<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">bool</span> is_modified_in_recipe<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">,</span> <span class="Normal">const</span> <span class="Normal">int</span> ingredient_index<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">const</span> recipe&amp; callee = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!callee<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't check mutability of ingredients in recipe &quot;</span> &lt;&lt; callee<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; because it uses 'next-ingredient' directly, rather than a recipe header.</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>

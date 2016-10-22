@@ -458,7 +458,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_reply_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> fill_in_reply_ingredients<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> fill_in_reply_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- fill in reply ingredients from header for recipe &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
@@ -558,6 +558,49 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   load-ingredients
 ]
 <span class="traceContains">+error: main: '3:num &lt;- add2 1:num, 2:num' should write to '1:num' rather than '3:num'</span>
+
+<span class="Comment">//: One special-case is recipe 'main'. Make sure it's only ever taking in text</span>
+<span class="Comment">//: ingredients, and returning a single number.</span>
+
+<span class="Delimiter">:(scenario recipe_header_ingredients_constrained_for_main)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main x:num [
+]
+<span class="traceContains">+error: ingredients of recipe 'main' must all be text (address:array:character)</span>
+
+<span class="Delimiter">:(scenario recipe_header_products_constrained_for_main)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main<span class="muRecipe"> -&gt; </span>x:text [
+]
+<span class="traceContains">+error: recipe 'main' must return at most a single product, a number</span>
+
+<span class="Delimiter">:(scenario recipe_header_products_constrained_for_main_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main<span class="muRecipe"> -&gt; </span>x:num<span class="Delimiter">,</span> y:num [
+]
+<span class="traceContains">+error: recipe 'main' must return at most a single product, a number</span>
+
+<span class="Delimiter">:(after &quot;Transform.push_back(expand_type_abbreviations)&quot;)</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_recipe_header_constraints<span class="Delimiter">);</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> check_recipe_header_constraints<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name != <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_ingredient<span class="Delimiter">(</span><span class="Constant">&quot;x:address:array:character&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;ingredients of recipe 'main' must all be text (address:array:character)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">int</span> nprod = SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span>
+  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:number&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>nprod &gt; <span class="Constant">1</span>
+      || <span class="Delimiter">(</span>nprod == <span class="Constant">1</span> &amp;&amp; !types_strictly_match<span class="Delimiter">(</span>expected_product<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;recipe 'main' must return at most a single product, a number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(before &quot;End Includes&quot;)</span>
 <span class="Normal">using</span> std::min<span class="Delimiter">;</span>

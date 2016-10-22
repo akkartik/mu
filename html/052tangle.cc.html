@@ -15,14 +15,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
 .muRecipe { color: #ff8700; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
-.traceContains { color: #008000; }
-.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #c0a020; }
+.Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
 </style>
 
@@ -35,12 +35,20 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <body>
 <pre id='vimCodeElement'>
 <span class="Comment">//: Allow code for recipes to be pulled in from multiple places and inserted</span>
-<span class="Comment">//: at special labels called 'waypoints'. Unlike jump targets, a recipe can</span>
-<span class="Comment">//: have multiple ambiguous waypoints with the same name. Any 'before' and</span>
-<span class="Comment">//: 'after' fragments will simply be inserted at all applicable waypoints.</span>
+<span class="Comment">//: at special labels called 'waypoints' using two new top-level commands:</span>
+<span class="Comment">//:   before</span>
+<span class="Comment">//:   after</span>
+
+<span class="Comment">//: Most labels are local: they must be unique to a recipe, and are invisible</span>
+<span class="Comment">//: outside the recipe. However, waypoints are global: a recipe can have</span>
+<span class="Comment">//: multiple of them, you can't use them as jump targets.</span>
+<span class="Delimiter">:(before &quot;End is_jump_target Special-cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_waypoint<span class="Delimiter">(</span>label<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Comment">//: Waypoints are always surrounded by '&lt;&gt;', e.g. &lt;handle-request&gt;.</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: todo: switch recipe.steps to a more efficient data structure.</span>
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> is_waypoint<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Identifier">return</span> *label<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> == <span class="Constant">'&lt;'</span> &amp;&amp; *label<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">'&gt;'</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario tangle_before)</span>
 <span class="muRecipe">def</span> main [
@@ -80,7 +88,7 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_waypoint<span class="Delimiter">(</span>label<span class="Delimiter">))</span>
     Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>Before_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Normal">else</span>
-    raise &lt;&lt; <span class="Constant">&quot;can't tangle before label &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;can't tangle before non-waypoint &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// End before Command Handler</span>
 <span class="Delimiter">}</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;after&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -95,7 +103,7 @@ Fragments_used<span class="Delimiter">.</span>clear<span class="Delimiter">();</
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_waypoint<span class="Delimiter">(</span>label<span class="Delimiter">))</span>
     After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>After_fragments[label]<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> tmp<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>end<span class="Delimiter">());</span>
   <span class="Normal">else</span>
-    raise &lt;&lt; <span class="Constant">&quot;can't tangle after label &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;can't tangle after non-waypoint &quot;</span> &lt;&lt; label &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Comment">// End after Command Handler</span>
 <span class="Delimiter">}</span>
 
@@ -176,16 +184,11 @@ tangle_done = <span class="Constant">false</span><span class="Delimiter">;</span
     <span class="Delimiter">}</span>
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       reagent&amp; x = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">);</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;label&quot;</span> &amp;&amp; contains_key<span class="Delimiter">(</span>jump_targets<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_jump_target<span class="Delimiter">(</span>x<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &amp;&amp; contains_key<span class="Delimiter">(</span>jump_targets<span class="Delimiter">,</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
         x<span class="Delimiter">.</span>name = prefix+x<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
     base<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> is_waypoint<span class="Delimiter">(</span>string label<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> *label<span class="Delimiter">.</span>begin<span class="Delimiter">()</span> == <span class="Constant">'&lt;'</span> &amp;&amp; *label<span class="Delimiter">.</span>rbegin<span class="Delimiter">()</span> == <span class="Constant">'&gt;'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: complain about unapplied fragments</span>
@@ -238,7 +241,7 @@ $mem: <span class="Constant">4</span>
 <span class="muRecipe">before</span> +label1 [
   <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 ]
-<span class="traceContains">+error: can't tangle before label +label1</span>
+<span class="traceContains">+error: can't tangle before non-waypoint +label1</span>
 
 <span class="Delimiter">:(scenario tangle_keeps_labels_separate)</span>
 <span class="muRecipe">def</span> main [

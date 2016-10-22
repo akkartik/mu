@@ -2,11 +2,11 @@
 //: 'test_'. To run all tests so defined, run:
 //:   $ mu test
 //:
-//: So far it seems tasteful for layers to never ever reach back to modify
-//: previously-defined tests. Every test is a contract once written, and should
-//: pass as-is if it is included, regardless of how much later layers change
-//: the program. Avoid writing 'temporary' tests that only work with some
-//: subsets of the program.
+//: Every layer should include tests, and can reach into previous layers.
+//: However, it seems like a good idea never to reach into tests from previous
+//: layers. Every test should be a contract that always passes as originally
+//: written, regardless of any later layers. Avoid writing 'temporary' tests
+//: that are only meant to work until some layer.
 
 :(before "End Types")
 typedef void (*test_fn)(void);

@@ -47,7 +47,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Delimiter">:(before &quot;End Instruction Inserting/Deleting Transforms&quot;)</span>
 initialize_transform_rewrite_literal_string_to_text<span class="Delimiter">();</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_literal_string_to_text<span class="Delimiter">);</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_literal_string_to_text<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 set&lt;string&gt; recipes_taking_literal_strings<span class="Delimiter">;</span>
@@ -68,7 +68,7 @@ set&lt;string&gt; recipes_taking_literal_strings<span class="Delimiter">;</span>
   <span class="Comment">// End initialize_transform_rewrite_literal_string_to_text()</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> rewrite_literal_string_to_text<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> rewrite_literal_string_to_text<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite literal strings in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
