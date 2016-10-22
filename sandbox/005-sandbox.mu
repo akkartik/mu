@@ -118,7 +118,7 @@ after <global-keypress> [
       screen <- update-status screen, [                 ], 245/grey
     }
     screen <- update-cursor screen, current-sandbox, env
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -366,7 +366,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
-      loop +next-character:label  # retry i
+      loop +next-character  # retry i
     }
     i <- add i, 1
     {
@@ -385,7 +385,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
-      loop +next-character:label
+      loop +next-character
     }
     print screen, c, color
     column <- add column, 1
@@ -708,7 +708,7 @@ after <global-keypress> [
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     show-screen screen
-    jump +finish-event:label
+    jump +finish-event
   }
 ]
 
@@ -737,7 +737,7 @@ after <global-keypress> [
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     show-screen screen
-    jump +finish-event:label
+    jump +finish-event
   }
 ]
 

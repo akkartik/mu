@@ -162,7 +162,7 @@ before <insert-character-end> [
     typing <- put typing, after-column:offset, cursor-column
     typing <- put typing, after-top-of-screen:offset, top-after
     *op <- merge 0/insert-operation, typing
-    break +done-adding-insert-operation:label
+    break +done-adding-insert-operation
   }
   # if not, create a new operation
   insert-from:&:duplex-list:char <- next cursor-before
@@ -742,7 +742,7 @@ before <move-cursor-end> [
     move <- put move, after-column:offset, cursor-column
     move <- put move, after-top-of-screen:offset, top-after
     *op <- merge 1/move-operation, move
-    break +done-adding-move-operation:label
+    break +done-adding-move-operation
   }
   op:&:operation <- new operation:type
   *op <- merge 1/move-operation, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, undo-coalesce-tag
@@ -1441,7 +1441,7 @@ before <backspace-character-end> [
       deletion <- put deletion, after-column:offset, cursor-column
       deletion <- put deletion, after-top-of-screen:offset, top-after
       *op <- merge 2/delete-operation, deletion
-      break +done-adding-backspace-operation:label
+      break +done-adding-backspace-operation
     }
     # if not, create a new operation
     op:&:operation <- new operation:type
@@ -1668,7 +1668,7 @@ before <delete-character-end> [
       deletion <- put deletion, after-column:offset, cursor-column
       deletion <- put deletion, after-top-of-screen:offset, top-after
       *op <- merge 2/delete-operation, deletion
-      break +done-adding-delete-operation:label
+      break +done-adding-delete-operation
     }
     # if not, create a new operation
     op:&:operation <- new operation:type

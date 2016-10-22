@@ -37,6 +37,10 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
 
 void deduce_missing_type(set<reagent>& known, reagent& x) {
   if (x.type) return;
+  if (is_jump_target(x.name)) {
+    x.type = new type_tree("label");
+    return;
+  }
   if (known.find(x) == known.end()) return;
   x.type = new type_tree(*known.find(x)->type);
   trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
@@ -46,6 +50,11 @@ void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {
   if (is_literal(x)) return;
   if (is_integer(x.name)) return;  // if you use raw locations you're probably doing something unsafe
   if (!x.type) return;  // might get filled in by other logic later
+  if (is_jump_target(x.name)) {
+    if (!x.type->atom || x.type->name != "label")
+      raise << maybe(caller.name) << "non-label '" << x.name << "' must begin with a letter\n" << end();
+    return;
+  }
   if (known.find(x) == known.end()) {
     trace(9992, "transform") << x.name << " => " << names_to_string(x.type) << end();
     known.insert(x);
@@ -90,6 +99,14 @@ def main [
 # x is in location 1
 +mem: storing 2 in location 1
 
+:(scenario transform_fills_in_missing_label_type)
+def main [
+  jump +target
+  1:num <- copy 0
+  +target
+]
+-mem: storing 0 in location 1
+
 :(scenario transform_fails_on_missing_types_in_first_mention)
 % Hide_errors = true;
 def main [
@@ -97,6 +114,13 @@ def main [
   x:num <- copy 2
 ]
 +error: main: missing type for 'x' in 'x <- copy 1'
+
+:(scenario transform_fails_on_wrong_type_for_label)
+% Hide_errors = true;
+def main [
+  +foo:num <- copy 34
+]
++error: main: non-label '+foo' must begin with a letter
 
 :(scenario typo_in_address_type_fails)
 % Hide_errors = true;

@@ -197,7 +197,7 @@ after <global-touch> [
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     # no change in cursor
     show-screen screen
-    loop +next-event:label
+    loop +next-event
   }
 ]
 

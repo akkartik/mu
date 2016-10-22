@@ -404,7 +404,7 @@ def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:si
           *line <- put *line, length:offset, buffer-length
         }
         # and don't append this one
-        loop +next-character:label
+        loop +next-character
       }
       # append anything else
       line <- append line, c

@@ -90,7 +90,7 @@ def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:
       cursor-to-next-line screen
       screen <- print screen, [move: ]
       m:&:move, quit:bool, error:bool <- read-move buffered-stdin-in, screen
-      break-if quit, +quit:label
+      break-if quit, +quit
       buffered-stdin-in <- clear buffered-stdin-in  # cleanup after error. todo: test this?
       loop-if error
     }

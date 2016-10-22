@@ -71,7 +71,7 @@ after <global-touch> [
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env
     show-screen screen
-    loop +next-event:label
+    loop +next-event
   }
 ]
 

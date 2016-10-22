@@ -137,7 +137,7 @@ after <global-keypress> [
       screen <- update-status screen, [                 ], 245/grey
     }
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -380,7 +380,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
-      loop +next-character:label  # retry i
+      loop +next-character  # retry i
     }
     i <- add i, 1
     {
@@ -399,7 +399,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
-      loop +next-character:label
+      loop +next-character
     }
     print screen, c, color
     column <- add column, 1
@@ -706,7 +706,7 @@ after <global-keypress> [
     break-unless at-bottom-of-editor?
     more-to-scroll?:bool <- more-to-scroll? env, screen
     break-if more-to-scroll?
-    loop +next-event:label
+    loop +next-event
   }
   {
     break-if sandbox-in-focus?
@@ -714,7 +714,7 @@ after <global-keypress> [
     break-unless page-down?
     more-to-scroll?:bool <- more-to-scroll? env, screen
     break-if more-to-scroll?
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -725,7 +725,7 @@ after <global-type> [
     break-unless page-down?
     more-to-scroll?:bool <- more-to-scroll? env, screen
     break-if more-to-scroll?
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -863,14 +863,14 @@ after <global-keypress> [
       number-of-sandboxes:num <- get *env, number-of-sandboxes:offset
       max:num <- subtract number-of-sandboxes, 1
       at-end?:bool <- greater-or-equal render-from, max
-      jump-if at-end?, +finish-event:label  # render nothing
+      jump-if at-end?, +finish-event  # render nothing
       render-from <- add render-from, 1
       *env <- put *env, render-from:offset, render-from
     }
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     show-screen screen
-    jump +finish-event:label
+    jump +finish-event
   }
 ]
 
@@ -901,7 +901,7 @@ after <global-keypress> [
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     show-screen screen
-    jump +finish-event:label
+    jump +finish-event
   }
 ]
 

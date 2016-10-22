@@ -1242,7 +1242,7 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor, go-
       no-motion?:bool <- equal next-line, before-cursor
       break-unless no-motion?
       scroll?:bool <- greater-than cursor-row, 1
-      break-if scroll?, +try-to-scroll:label
+      break-if scroll?, +try-to-scroll
       go-render? <- copy 0/false
       return
     }

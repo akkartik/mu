@@ -131,7 +131,7 @@ after <global-touch> [
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
-    loop +next-event:label
+    loop +next-event
   }
 ]
 

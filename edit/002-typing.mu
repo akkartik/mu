@@ -29,7 +29,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
     {
       break-unless is-touch?
       move-cursor-in-editor screen, editor, t
-      loop +next-event:label
+      loop +next-event
     }
     # keyboard events
     {
@@ -125,7 +125,7 @@ def snap-cursor screen:&:screen, editor:&:editor, target-row:num, target-column:
       column <- copy left
       curr <- next curr
       prev <- next prev
-      loop +next-character:label
+      loop +next-character
     }
     {
       # at right? wrap. even if there's only one more letter left; we need
@@ -135,7 +135,7 @@ def snap-cursor screen:&:screen, editor:&:editor, target-row:num, target-column:
       column <- copy left
       row <- add row, 1
       # don't increment curr/prev
-      loop +next-character:label
+      loop +next-character
     }
     curr <- next curr
     prev <- next prev

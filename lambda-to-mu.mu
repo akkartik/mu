@@ -232,7 +232,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
         close-paren?:bool <- equal c, 41/close-paren
         break-unless close-paren?
         read in  # skip ')'
-        break +end-pair:label
+        break +end-pair
       }
       # still here? read next element of pair
       next:&:cell, in <- parse in

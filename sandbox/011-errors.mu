@@ -120,7 +120,7 @@ after <render-sandbox-trace-done> [
     }
     row, screen <- render-text screen, sandbox-errors, left, right, 1/red, row
     # don't try to print anything more for this sandbox
-    jump +render-sandbox-end:label
+    jump +render-sandbox-end
   }
 ]
 

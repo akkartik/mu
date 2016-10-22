@@ -85,7 +85,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
       # todo: test this
       touch-type:num <- get t, type:offset
       is-left-click?:bool <- equal touch-type, 65513/mouse-left
-      loop-unless is-left-click?, +next-event:label
+      loop-unless is-left-click?, +next-event
       click-row:num <- get t, row:offset
       click-column:num <- get t, column:offset
       # later exceptions for non-editor touches will go here
@@ -95,7 +95,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
       sandbox-in-focus?:bool <- move-cursor-in-editor screen, current-sandbox, t
       *env <- put *env, sandbox-in-focus?:offset, sandbox-in-focus?
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-      loop +next-event:label
+      loop +next-event
     }
     # 'resize' event - redraw editor
     # todo: test this after supporting resize in assume-console
@@ -114,7 +114,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
         screen <- render-all screen, env, render-without-moving-cursor
         render-all-on-no-more-events? <- copy 0/false  # full render done
       }
-      loop +next-event:label
+      loop +next-event
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
@@ -129,7 +129,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
         {
           break-unless more-events?
           render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          jump +finish-event:label
+          jump +finish-event
         }
         {
           break-if more-events?
@@ -138,13 +138,13 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
             # no more events, and we have to force render
             screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
-            jump +finish-event:label
+            jump +finish-event
           }
           # no more events, no force render
           {
             break-unless render?
             screen <- render-recipes screen, env, render
-            jump +finish-event:label
+            jump +finish-event
           }
         }
       }
@@ -157,7 +157,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
         {
           break-unless more-events?
           render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          jump +finish-event:label
+          jump +finish-event
         }
         {
           break-if more-events?
@@ -166,13 +166,13 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
             # no more events, and we have to force render
             screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
-            jump +finish-event:label
+            jump +finish-event
           }
           # no more events, no force render
           {
             break-unless render?
             screen <- render-sandbox-side screen, env, render
-            jump +finish-event:label
+            jump +finish-event
           }
         }
       }
@@ -263,7 +263,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
       screen <- move-cursor screen, row, column
       curr <- next curr
       prev <- next prev
-      loop +next-character:label
+      loop +next-character
     }
     {
       # at right? wrap. even if there's only one more letter left; we need
@@ -277,7 +277,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
       row <- add row, 1
       screen <- move-cursor screen, row, column
       # don't increment curr
-      loop +next-character:label
+      loop +next-character
     }
     print screen, c, color
     curr <- next curr
@@ -564,7 +564,7 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
       column <- copy left
       row <- add row, 1
       screen <- move-cursor screen, row, column
-      loop +next-character:label  # retry i
+      loop +next-character  # retry i
     }
     i <- add i, 1
     {
@@ -583,7 +583,7 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
-      loop +next-character:label
+      loop +next-character
     }
     print screen, c, color
     column <- add column, 1
@@ -606,7 +606,7 @@ after <global-type> [
     break-unless redraw-screen?
     screen <- render-all screen, env:&:environment, render
     sync-screen screen
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -621,7 +621,7 @@ after <global-type> [
     sandbox-in-focus? <- not sandbox-in-focus?
     *env <- put *env, sandbox-in-focus?:offset, sandbox-in-focus?
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    loop +next-event:label
+    loop +next-event
   }
 ]
 

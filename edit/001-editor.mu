@@ -180,7 +180,7 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
       screen <- move-cursor screen, row, column
       curr <- next curr
       prev <- next prev
-      loop +next-character:label
+      loop +next-character
     }
     {
       # at right? wrap. even if there's only one more letter left; we need
@@ -194,7 +194,7 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
       row <- add row, 1
       screen <- move-cursor screen, row, column
       # don't increment curr
-      loop +next-character:label
+      loop +next-character
     }
     print screen, c, color
     curr <- next curr
@@ -414,7 +414,7 @@ def get-color color:num, c:char -> color:num [
     break-unless starting-comment?
     trace 90, [app], [switch color back to blue]
     color <- copy 12/lightblue
-    jump +exit:label
+    jump +exit
   }
   # if color is blue and next character is newline, switch color to white
   {
@@ -424,7 +424,7 @@ def get-color color:num, c:char -> color:num [
     break-unless ending-comment?
     trace 90, [app], [switch color back to white]
     color <- copy 7/white
-    jump +exit:label
+    jump +exit
   }
   # if color is white (no comments) and next character is '<', switch color to red
   {
@@ -432,7 +432,7 @@ def get-color color:num, c:char -> color:num [
     starting-assignment?:bool <- equal c, 60/<
     break-unless starting-assignment?
     color <- copy 1/red
-    jump +exit:label
+    jump +exit
   }
   # if color is red and next character is space, switch color to white
   {
@@ -441,7 +441,7 @@ def get-color color:num, c:char -> color:num [
     ending-assignment?:bool <- equal c, 32/space
     break-unless ending-assignment?
     color <- copy 7/white
-    jump +exit:label
+    jump +exit
   }
   # otherwise no change
   +exit

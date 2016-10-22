@@ -178,7 +178,7 @@ string next_word(istream& in) {
 
 bool is_label_word(const string& word) {
   assert(!word.empty());
-  return !isalnum(word.at(0)) && word.at(0) != '$';
+  return !isalnum(word.at(0)) && string("$_-").find(word.at(0)) == string::npos;
 }
 
 bool ends_with(const string& s, const char c) {

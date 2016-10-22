@@ -506,7 +506,7 @@ def interpolate template:text -> result:text [
     {
       # while i < template.length
       tem-done?:bool <- greater-or-equal i, tem-len
-      break-if tem-done?, +done:label
+      break-if tem-done?, +done
       # while template[i] != '_'
       in:char <- index *template, i
       underscore?:bool <- equal in, 95/_

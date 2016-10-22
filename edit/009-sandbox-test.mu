@@ -134,7 +134,7 @@ after <global-touch> [
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     # no change in cursor
     show-screen screen
-    loop +next-event:label
+    loop +next-event
   }
 ]
 
@@ -197,7 +197,7 @@ after <render-sandbox-response> [
       break-unless response-is-expected?:bool
       row, screen <- render-text screen, sandbox-response, left, right, 2/green, row
     }
-    jump +render-sandbox-end:label
+    jump +render-sandbox-end
   }
 ]
 
