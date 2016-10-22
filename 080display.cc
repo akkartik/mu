@@ -43,9 +43,9 @@ case OPEN_CONSOLE: {
   int height = tb_height();
   if (width > 222 || height > 222) tb_shutdown();
   if (width > 222)
-    raise << "sorry, mu doesn't support windows wider than 222 characters in console mode. Please resize your window.\n" << end();
+    raise << "sorry, Mu doesn't support windows wider than 222 characters in console mode. Please resize your window.\n" << end();
   if (height > 222)
-    raise << "sorry, mu doesn't support windows taller than 222 characters in console mode. Please resize your window.\n" << end();
+    raise << "sorry, Mu doesn't support windows taller than 222 characters in console mode. Please resize your window.\n" << end();
   break;
 }
 
@@ -527,7 +527,7 @@ case INTERACTIONS_LEFT: {
   break;
 }
 
-//: a hack to make edit.mu more responsive
+//: hack to make text-mode apps more responsive under Unix
 
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY_FROM,

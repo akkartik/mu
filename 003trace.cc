@@ -99,7 +99,7 @@ Dump_trace = false;
 // compilation units. So no extern linkage.
 const int Max_depth = 9999;
 const int Error_depth = 0;  // definitely always print errors
-const int App_depth = 2;  // temporarily where all mu code will trace to
+const int App_depth = 2;  // temporarily where all Mu code will trace to
 
 struct trace_stream {
   vector<trace_line> past_lines;
@@ -393,7 +393,8 @@ using std::ofstream;
 //: Primitive statements will occupy 101-9989
 extern const int Initial_callstack_depth = 101;
 extern const int Max_callstack_depth = 9989;
-//: Finally, details of primitive mu statements will occupy depth 9990-9999 (more on that later as well)
+//: Finally, details of primitive Mu statements will occupy depth 9990-9999
+//: (more on that later as well)
 //:
 //: This framework should help us hide some details at each level, mixing
 //: static ideas like layers with the dynamic notion of call-stack depth.

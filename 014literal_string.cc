@@ -3,7 +3,7 @@
 //:
 //: Instead of quotes, we'll use [] to delimit strings. That'll reduce the
 //: need for escaping since we can support nested brackets. And we can also
-//: imagine that 'recipe' might one day itself be defined in mu, doing its own
+//: imagine that 'recipe' might one day itself be defined in Mu, doing its own
 //: parsing.
 
 :(scenarios load)

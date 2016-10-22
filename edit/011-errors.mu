@@ -4,7 +4,7 @@ container environment [
   recipe-errors:text
 ]
 
-# copy code from recipe editor, persist, load into mu, save any errors
+# copy code from recipe editor, persist to disk, load, save any errors
 def! update-recipes env:&:environment, screen:&:screen -> errors-found?:bool, env:&:environment, screen:&:screen [
   local-scope
   load-ingredients

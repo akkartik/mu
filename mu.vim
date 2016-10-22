@@ -20,7 +20,7 @@ set cpo&vim
 "? let b:syntax = "mu"
 
 setlocal iskeyword=@,48-57,?,!,_,$,-
-setlocal formatoptions-=t  " mu programs have long lines
+setlocal formatoptions-=t  " Mu programs have long lines
 setlocal formatoptions+=c  " but comments should still wrap
 
 syntax match muComment /#.*$/ | highlight link muComment Comment
@@ -31,16 +31,16 @@ set comments+=n:#
 syntax match CommentedCode "#? .*"
 let b:cmt_head = "#? "
 
-" mu strings are inside [ ... ] and can span multiple lines
+" Mu strings are inside [ ... ] and can span multiple lines
 " don't match '[' at end of line, that's usually code
 syntax region muString start=+\[[^\]]+ end=+\]+
 syntax match muString "\[\]"
 highlight link muString String
-" mu syntax for representing the screen in scenarios
+" Mu syntax for representing the screen in scenarios
 syntax region muScreen start=+ \.+ end=+\.$\|$+
 highlight link muScreen muString
 
-" mu literals
+" Mu literals
 syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+/[^ ,]*%

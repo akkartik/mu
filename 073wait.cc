@@ -1,5 +1,5 @@
 //: Routines can be put in a 'waiting' state, from which it will be ready to
-//: run again when a specific memory location changes its value. This is mu's
+//: run again when a specific memory location changes its value. This is Mu's
 //: basic technique for orchestrating the order in which different routines
 //: operate.
 

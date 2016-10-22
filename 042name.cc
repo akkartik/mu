@@ -1,5 +1,5 @@
 //: A big convenience high-level languages provide is the ability to name memory
-//: locations. In mu, a transform called 'transform_names' provides this
+//: locations. In Mu, a transform called 'transform_names' provides this
 //: convenience.
 
 :(scenario transform_names)

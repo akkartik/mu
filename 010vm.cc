@@ -118,9 +118,9 @@ Memory.clear();
 // value 97 as the letter 'a', while a different location of type 'number'
 // would not.
 //
-// Unlike most computers today, mu stores types in a single big table, shared
-// by all the mu programs on the computer. This is useful in providing a
-// seamless experience to help understand arbitrary mu programs.
+// Unlike most computers today, Mu stores types in a single big table, shared
+// by all the Mu programs on the computer. This is useful in providing a
+// seamless experience to help understand arbitrary Mu programs.
 typedef int type_ordinal;
 :(before "End Globals")
 map<string, type_ordinal> Type_ordinal;
@@ -194,7 +194,7 @@ enum primitive_recipes {
 :(code)
 //: It's all very well to construct recipes out of other recipes, but we need
 //: to know how to do *something* out of the box. For the following
-//: recipes there are only codes, no entries in the book, because mu just knows
+//: recipes there are only codes, no entries in the book, because Mu just knows
 //: what to do for them.
 void setup_recipes() {
   Recipe.clear();  Recipe_ordinal.clear();
@@ -532,7 +532,7 @@ string_tree* property(const reagent& r, const string& name) {
 }
 
 :(before "End Globals")
-extern const string Ignore(",");  // commas are ignored in mu except within [] strings
+extern const string Ignore(",");  // commas are ignored in Mu except within [] strings
 :(code)
 void skip_whitespace_but_not_newline(istream& in) {
   while (true) {

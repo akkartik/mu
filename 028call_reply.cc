@@ -112,10 +112,12 @@ def f [
 ]
 +error: f: return ingredient '14:point' can't be saved in '3:num'
 
-//: In mu we'd like to assume that any instruction doesn't modify its
+//: In Mu we'd like to assume that any instruction doesn't modify its
 //: ingredients unless they're also products. The /same-as-ingredient inside
-//: the recipe's 'reply' will help catch accidental misuse of such
-//: 'ingredient-products' (sometimes called in-out parameters in other languages).
+//: the recipe's 'reply' indicates that an ingredient is intended to be
+//: modified in place, and will help catch accidental misuse of such
+//: 'ingredient-products' (sometimes called in-out parameters in other
+//: languages).
 
 :(scenario return_same_as_ingredient)
 % Hide_errors = true;

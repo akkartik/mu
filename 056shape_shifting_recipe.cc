@@ -78,8 +78,8 @@ if (!candidates.empty()) {
 }
 skip_shape_shifting_variants:;
 
-//: make sure we have no unspecialized shape-shifting recipes being called
-//: before running mu programs
+//: before running Mu programs, make sure no unspecialized shape-shifting
+//: recipes can be called
 
 :(before "End Instruction Operation Checks")
 if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES

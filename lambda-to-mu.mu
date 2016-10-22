@@ -1,5 +1,5 @@
 ## experimental compiler to translate programs written in a generic
-## expression-oriented language called 'lambda' into mu
+## expression-oriented language called 'lambda' into Mu
 
 scenario convert-lambda [
   run [
@@ -564,7 +564,7 @@ scenario parse-dotted-list-of-more-than-two-atoms [
   ]
 ]
 
-## convert tree of cells to mu text
+## convert tree of cells to Mu text
 
 def to-mu in:&:cell -> out:text [
   local-scope

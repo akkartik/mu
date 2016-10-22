@@ -17,13 +17,13 @@ function! HighlightTangledFile()
   highlight traceAbsent ctermfg=darkred
   syntax match tangleScenarioSetup /^\s*% .*/ | highlight link tangleScenarioSetup SpecialChar
 
-  " Our C++ files can have mu code in scenarios, so highlight mu comments like
+  " Our C++ files can have Mu code in scenarios, so highlight Mu comments like
   " regular comments.
   syntax match muComment /# .*$/ | highlight link muComment Comment
   syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   set comments+=n:#
-  " Some other bare-bones mu highlighting.
+  " Some other bare-bones Mu highlighting.
   syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
   syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
   syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%

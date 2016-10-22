@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Compile mu if necessary before running it.
+# Compile Mu if necessary before running it.
 
 ./build || exit 1
 

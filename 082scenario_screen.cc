@@ -282,7 +282,7 @@ void check_screen(const string& expected_contents, const int color) {
         if (color == -1 || color == get_or_insert(Memory, addr+cell_color_offset)) continue;
         // contents match but color is off
         if (Current_scenario && !Scenario_testing_scenario) {
-          // genuine test in a mu file
+          // genuine test in a .mu file
           raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
           dump_screen();
         }
@@ -310,7 +310,7 @@ void check_screen(const string& expected_contents, const int color) {
       ostringstream color_phrase;
       if (color != -1) color_phrase << " in color " << color;
       if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a mu file
+        // genuine test in a .mu file
         raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
         dump_screen();
       }

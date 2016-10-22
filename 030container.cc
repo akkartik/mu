@@ -652,7 +652,7 @@ def main [
 ]
 +error: main: product of 'put' must be first ingredient '1:point', but got '3:point'
 
-//:: Allow containers to be defined in mu code.
+//:: Allow containers to be defined in Mu code.
 
 :(scenarios load)
 :(scenario container)

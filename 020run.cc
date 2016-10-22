@@ -1,10 +1,10 @@
 //: Phase 3: Start running a loaded and transformed recipe.
 //:
-//:   The process of running mu code:
+//:   The process of running Mu code:
 //:     load -> transform -> run
 //:
 //: So far we've seen recipes as lists of instructions, and instructions point
-//: at other recipes. To kick things off mu needs to know how to run certain
+//: at other recipes. To kick things off Mu needs to know how to run certain
 //: 'primitive' recipes. That will then give the ability to run recipes
 //: containing these primitives.
 //:
@@ -145,7 +145,7 @@ const vector<instruction>& routine::steps() const {
 
 //: Step 1: load all .mu files with numeric prefixes (in order)
 :(before "End Load Recipes")
-// Load .mu Core
+// Load Mu Prelude
 //? Save_trace = true;
 //? START_TRACING_UNTIL_END_OF_SCOPE;
 load_file_or_directory("core.mu");
@@ -390,7 +390,7 @@ def main [
 ]
 -mem: storing 34 in location 0
 
-//: mu is robust to various combinations of commas and spaces. You just have
+//: Mu is robust to various combinations of commas and spaces. You just have
 //: to put spaces around the '<-'.
 
 :(scenario comma_without_space)

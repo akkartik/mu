@@ -388,11 +388,11 @@ bool Hide_missing_default_space_errors = true;
 Transform.push_back(check_default_space);  // idempotent
 :(code)
 void check_default_space(const recipe_ordinal r) {
-  if (Hide_missing_default_space_errors) return;  // skip previous core tests; this is only for mu code
+  if (Hide_missing_default_space_errors) return;  // skip previous core tests; this is only for Mu code
   const recipe& caller = get(Recipe, r);
   // skip scenarios (later layer)
   // user code should never create recipes with underscores in their names
-  if (caller.name.find("scenario_") == 0) return;  // skip mu scenarios which will use raw memory locations
+  if (caller.name.find("scenario_") == 0) return;  // skip Mu scenarios which will use raw memory locations
   if (caller.name.find("run_") == 0) return;  // skip calls to 'run', which should be in scenarios and will also use raw memory locations
   // assume recipes with only numeric addresses know what they're doing (usually tests)
   if (!contains_non_special_name(r)) return;
@@ -403,7 +403,7 @@ void check_default_space(const recipe_ordinal r) {
     raise << caller.name << " does not seem to start with default-space or local-scope\n" << end();
   }
 }
-:(after "Load .mu Core")
+:(after "Load Mu Prelude")
 Hide_missing_default_space_errors = false;
 :(after "Test Runs")
 Hide_missing_default_space_errors = true;

@@ -184,7 +184,7 @@ def run-sandboxes env:&:environment, screen:&:screen -> errors-found?:bool, env:
   <run-sandboxes-end>
 ]
 
-# copy code from recipe editor, persist, load into mu
+# copy code from recipe editor, persist to disk, load
 # replaced in a later layer (whereupon errors-found? will actually be set)
 def update-recipes env:&:environment, screen:&:screen -> errors-found?:bool, env:&:environment, screen:&:screen [
   local-scope

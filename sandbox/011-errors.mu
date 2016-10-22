@@ -4,7 +4,7 @@ container environment [
   recipe-errors:text
 ]
 
-# copy code from recipe editor, persist, load into mu, save any errors
+# copy code from recipe editor, save to disk, load, save any errors
 # test-recipes is a hook for testing
 def! update-recipes env:&:environment, screen:&:screen, test-recipes:text -> errors-found?:bool, env:&:environment, screen:&:screen [
   local-scope

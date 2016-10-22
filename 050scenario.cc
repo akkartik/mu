@@ -112,7 +112,7 @@ scenario foo [
 ]
 +run: {1: ("address" "array" "character")} <- new {"# not a comment": "literal-string"}
 
-//:: Run scenarios when we run 'mu test'.
+//:: Run scenarios when we run './mu test'.
 //: Treat the text of the scenario as a regular series of instructions.
 
 :(before "End Globals")
@@ -257,7 +257,8 @@ def scenario-foo [
   if (recipe_name.find("scenario-") == 0) return true;
 
 //:: The special instructions we want to support inside scenarios.
-//: In a compiler for the mu VM these will require more work.
+//: These are easy to support in an interpreter, but will require more work
+//: when we eventually build a compiler.
 
 //: 'run' is a purely lexical convenience to separate the code actually being
 //: tested from any setup or teardown
@@ -355,7 +356,7 @@ void check_memory(const string& s) {
     }
     if (!is_integer(rhs) && !is_noninteger(rhs)) {
       if (Current_scenario && !Scenario_testing_scenario)
-        // genuine test in a mu file
+        // genuine test in a .mu file
         raise << "\nF - " << Current_scenario->name << ": location '" << address << "' can't contain non-number " << rhs << "\n" << end();
       else
         // just testing scenario support
@@ -369,7 +370,7 @@ void check_memory(const string& s) {
     trace(9999, "run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {
       if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a mu file
+        // genuine test in a .mu file
         raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
       }
       else {
@@ -428,7 +429,7 @@ void check_string(int address, const string& literal) {
     trace(9999, "run") << "checking location " << address+i << end();
     if (get_or_insert(Memory, address+i) != literal.at(i)) {
       if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a mu file
+        // genuine test in a .mu file
         raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << " ('" << static_cast<char>(get_or_insert(Memory, address+i)) << "')\n" << end();
       }
       else {
@@ -712,7 +713,7 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   int count = trace_count(label);
   if (count != expected_count) {
     if (Current_scenario && !Scenario_testing_scenario) {
-      // genuine test in a mu file
+      // genuine test in a .mu file
       raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
       DUMP(label);
     }
@@ -737,7 +738,7 @@ def main [
 +error: main: expected 2 lines in trace with label 'a' in trace
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
-//: with them is by definition impossible to test through mu.
+//: with them is by definition impossible to test through Mu.
 :(after "case _SYSTEM:")
   if (Current_scenario) break;
 

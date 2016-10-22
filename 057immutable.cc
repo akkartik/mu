@@ -524,7 +524,7 @@ set<int> ingredient_indices(const instruction& inst, const set<reagent>& ingredi
 //: can't pass both pointers back out, because if a caller tries to make both
 //: identical then you can't tell which value will be written on the way out.
 //:
-//: Experimental solution: just tell mu that one points inside the other.
+//: Experimental solution: just tell Mu that one points inside the other.
 //: This way we can return just one pointer as high up as necessary to capture
 //: all modifications performed by a recipe.
 //:

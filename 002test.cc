@@ -1,6 +1,6 @@
 //: A simple test harness. To create new tests define functions starting with
 //: 'test_'. To run all tests so defined, run:
-//:   $ mu test
+//:   $ ./mu test
 //:
 //: Every layer should include tests, and can reach into previous layers.
 //: However, it seems like a good idea never to reach into tests from previous

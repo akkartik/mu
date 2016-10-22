@@ -8,7 +8,7 @@
 //:
 //: Location 0 - unused (since it can help uncover bugs)
 //: Locations 1-899 - reserved for tests
-//: Locations 900-999 - reserved for predefined globals in mu scenarios, like keyboard, screen, etc.
+//: Locations 900-999 - reserved for predefined globals in Mu scenarios, like keyboard, screen, etc.
 :(before "End Setup")
 assert(Max_variables_in_scenarios == 900);
 //: Locations 1000 ('Reserved_for_tests') onward - available to the allocator in chunks of size Initial_memory_per_routine.
@@ -26,7 +26,7 @@ assert(Next_recipe_ordinal == 1000);
 //:: Depths for tracing
 //:
 //: 0 - unused
-//: 1-100 - app-level trace statements in mu
+//: 1-100 - app-level trace statements in Mu
 //: 101-9989 - call-stack statements (mostly label run)
 assert(Initial_callstack_depth == 101);
 assert(Max_callstack_depth == 9989);

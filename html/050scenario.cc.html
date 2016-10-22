@@ -151,7 +151,7 @@ vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
 ]
 <span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;character&quot;)} &lt;- new {&quot;# not a comment&quot;: &quot;literal-string&quot;}</span>
 
-<span class="SalientComment">//:: Run scenarios when we run 'mu test'.</span>
+<span class="SalientComment">//:: Run scenarios when we run './mu test'.</span>
 <span class="Comment">//: Treat the text of the scenario as a regular series of instructions.</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -296,7 +296,8 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
   <span class="Normal">if</span> <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario-&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: The special instructions we want to support inside scenarios.</span>
-<span class="Comment">//: In a compiler for the mu VM these will require more work.</span>
+<span class="Comment">//: These are easy to support in an interpreter, but will require more work</span>
+<span class="Comment">//: when we eventually build a compiler.</span>
 
 <span class="Comment">//: 'run' is a purely lexical convenience to separate the code actually being</span>
 <span class="Comment">//: tested from any setup or teardown</span>
@@ -394,7 +395,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     <span class="Delimiter">}</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span>rhs<span class="Delimiter">)</span> &amp;&amp; !is_noninteger<span class="Delimiter">(</span>rhs<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
-        <span class="Comment">// genuine test in a mu file</span>
+        <span class="Comment">// genuine test in a .mu file</span>
         raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: location '&quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot;' can't contain non-number &quot;</span> &lt;&lt; rhs &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Normal">else</span>
         <span class="Comment">// just testing scenario support</span>
@@ -408,7 +409,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; address &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">)</span> != value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        <span class="Comment">// genuine test in a mu file</span>
+        <span class="Comment">// genuine test in a .mu file</span>
         raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location '&quot;</span> &lt;&lt; address &lt;&lt; <span class="Constant">&quot;' to contain &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>value<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
       <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -467,7 +468,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;checking location &quot;</span> &lt;&lt; address+i &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">)</span> != literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        <span class="Comment">// genuine test in a mu file</span>
+        <span class="Comment">// genuine test in a .mu file</span>
         raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: expected location &quot;</span> &lt;&lt; <span class="Delimiter">(</span>address+i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; to contain &quot;</span> &lt;&lt; literal<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; but saw &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot; ('&quot;</span> &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+i<span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;')</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Delimiter">}</span>
       <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -751,7 +752,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">int</span> count = trace_count<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>count != expected_count<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      <span class="Comment">// genuine test in a mu file</span>
+      <span class="Comment">// genuine test in a .mu file</span>
       raise &lt;&lt; <span class="Constant">&quot;</span><span class="cSpecial">\n</span><span class="Constant">F - &quot;</span> &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;expected &quot;</span> &lt;&lt; expected_count &lt;&lt; <span class="Constant">&quot; lines in trace with label '&quot;</span> &lt;&lt; label &lt;&lt; <span class="Constant">&quot;' in trace: &quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       DUMP<span class="Delimiter">(</span>label<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
@@ -776,7 +777,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="traceContains">+error: main: expected 2 lines in trace with label 'a' in trace</span>
 
 <span class="Comment">//: Minor detail: ignore 'system' calls in scenarios, since anything we do</span>
-<span class="Comment">//: with them is by definition impossible to test through mu.</span>
+<span class="Comment">//: with them is by definition impossible to test through Mu.</span>
 <span class="Delimiter">:(after &quot;case _SYSTEM:&quot;)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Current_scenario<span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
 

@@ -7,8 +7,8 @@ def main [
 
   # The chessboard function takes keyboard and screen objects as 'ingredients'.
   #
-  # In mu it is good form (though not required) to explicitly show the
-  # hardware you rely on.
+  # In Mu it is good form (though not required) to explicitly state what
+  # hardware a function needs.
   #
   # Here the console and screen are both 0, which usually indicates real
   # hardware rather than a fake for testing as you'll see below.
@@ -17,7 +17,7 @@ def main [
   close-console  # clean up screen, keyboard and mouse
 ]
 
-## But enough about mu. Here's what it looks like to run the chessboard program.
+## But enough about Mu. Here's what it looks like to run the chessboard program.
 
 scenario print-board-and-read-move [
   local-scope

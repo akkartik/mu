@@ -1,6 +1,6 @@
 //: Structured programming
 //:
-//: Our jump recipes are quite inconvenient to use, so mu provides a
+//: Our jump recipes are quite inconvenient to use, so Mu provides a
 //: lightweight tool called 'transform_braces' to work in a slightly more
 //: convenient format with nested braces:
 //:

@@ -1,10 +1,10 @@
-//: Allow mu programs to log facts just like we've been doing in C++ so far.
+//: Allow Mu programs to log facts just like we've been doing in C++ so far.
 
 :(scenario trace)
 def main [
-  trace 1, [foo], [this is a trace in mu]
+  trace 1, [foo], [this is a trace in Mu]
 ]
-+foo: this is a trace in mu
++foo: this is a trace in Mu
 
 :(before "End Primitive Recipe Declarations")
 TRACE,
@@ -192,9 +192,9 @@ case _SAVE_TRACE: {
 :(scenario assert)
 % Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
 def main [
-  assert 0, [this is an assert in mu]
+  assert 0, [this is an assert in Mu]
 ]
-+error: this is an assert in mu
++error: this is an assert in Mu
 
 :(before "End Primitive Recipe Declarations")
 ASSERT,
@@ -337,7 +337,7 @@ case _LOG: {
   break;
 }
 
-//: set a variable from within mu code
+//: set a variable from within Mu code
 //: useful for selectively tracing or printing after some point
 :(before "End Globals")
 bool Foo = false;

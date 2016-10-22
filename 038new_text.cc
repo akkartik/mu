@@ -58,7 +58,7 @@ int new_mu_text(const string& contents) {
     curr += tb_utf8_char_length(raw_contents[curr]);
     ++curr_address;
   }
-  // mu strings are not null-terminated in memory
+  // Mu strings are not null-terminated in memory.
   return result;
 }
 

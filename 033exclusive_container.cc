@@ -216,7 +216,7 @@ def main [
 ]
 $error: 0
 
-//:: Allow exclusive containers to be defined in mu code.
+//:: Allow exclusive containers to be defined in Mu code.
 
 :(scenario exclusive_container)
 exclusive-container foo [

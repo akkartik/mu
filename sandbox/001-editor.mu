@@ -364,7 +364,7 @@ scenario editor-initializes-empty-text [
   ]
 ]
 
-# just a little color for mu code
+# just a little color for Mu code
 
 scenario render-colors-comments [
   local-scope

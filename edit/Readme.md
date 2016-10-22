@@ -1,6 +1,6 @@
-Environment for learning programming using mu: http://akkartik.name/post/mu
+Environment for learning programming using Mu: http://akkartik.name/post/mu
 
-Run it from the mu directory:
+Run it from the `mu` directory:
 
   ```shell
   $ ./mu edit

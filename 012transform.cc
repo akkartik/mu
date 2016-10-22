@@ -1,12 +1,12 @@
 //: Phase 2: Filter loaded recipes through an extensible list of 'transforms'.
 //:
-//:   The process of running mu code:
+//:   The process of running Mu code:
 //:     load -> transform -> run
 //:
 //: The hope is that this framework of transform tools will provide a
 //: deconstructed alternative to conventional compilers.
 //:
-//: We're going to have many transforms in mu, and getting their order right
+//: We're going to have many transforms in Mu, and getting their order right
 //: (not the same as ordering of layers) is a well-known problem. Some tips:
 //:   a) Design each layer to rely on as few previous layers as possible.
 //:

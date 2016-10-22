@@ -1,5 +1,5 @@
-//: Helper for various programming environments: run arbitrary mu code and
-//: return some result in string form.
+//: Helper for various programming environments: run arbitrary Mu code and
+//: return some result in text form.
 
 :(scenario run_interactive_code)
 def main [
