@@ -46,7 +46,7 @@ case RETURN: {
 //: Types in reply instructions are checked ahead of time.
 
 :(before "End Checks")
-Transform.push_back(check_types_of_reply_instructions);
+Transform.push_back(check_types_of_reply_instructions);  // idempotent
 :(code)
 void check_types_of_reply_instructions(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);

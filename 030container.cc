@@ -175,7 +175,7 @@ const type_tree* root_type(const type_tree* t) {
 //: also store a copy in each reagent in each instruction in each recipe
 
 :(after "End Type Modifying Transforms")
-Transform.push_back(compute_container_sizes);
+Transform.push_back(compute_container_sizes);  // idempotent
 :(code)
 void compute_container_sizes(recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
@@ -820,7 +820,7 @@ def main [
 +mem: storing 34 in location 2
 
 :(after "Transform.push_back(expand_type_abbreviations)")
-Transform.push_back(expand_type_abbreviations_in_containers);
+Transform.push_back(expand_type_abbreviations_in_containers);  // idempotent
 :(code)
 // extremely inefficient; we process all types over and over again, once for every single recipe
 // but it doesn't seem to cause any noticeable slowdown

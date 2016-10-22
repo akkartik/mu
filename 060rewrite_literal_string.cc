@@ -13,7 +13,7 @@ def foo x:text -> n:num [
 
 :(before "End Instruction Inserting/Deleting Transforms")
 initialize_transform_rewrite_literal_string_to_text();
-Transform.push_back(rewrite_literal_string_to_text);
+Transform.push_back(rewrite_literal_string_to_text);  // idempotent
 
 :(before "End Globals")
 set<string> recipes_taking_literal_strings;

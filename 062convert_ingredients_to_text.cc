@@ -54,7 +54,7 @@ def bar -> x:foo [
 //: misplaced; should be in instruction inserting/deleting transforms, but has
 //: prerequisites: deduce_types_from_header and check_or_set_types_by_name
 :(after "Transform.push_back(deduce_types_from_header)")
-Transform.push_back(convert_ingredients_to_text);
+Transform.push_back(convert_ingredients_to_text);  // idempotent
 
 :(code)
 void convert_ingredients_to_text(recipe_ordinal r) {

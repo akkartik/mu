@@ -281,7 +281,7 @@ bool operator<(const address_element_info& a, const address_element_info& b) {
 //: already knowing the sizes of all types
 
 :(after "Transform.push_back(compute_container_sizes)")
-Transform.push_back(compute_container_address_offsets);
+Transform.push_back(compute_container_address_offsets);  // idempotent
 :(code)
 void compute_container_address_offsets(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);

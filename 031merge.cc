@@ -110,7 +110,7 @@ struct merge_check_state {
 };
 
 :(before "End Checks")
-Transform.push_back(check_merge_calls);
+Transform.push_back(check_merge_calls);  // idempotent
 :(code)
 void check_merge_calls(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
