@@ -1,4 +1,4 @@
-//: A program is a book of 'recipes' (functions)
+//: A Mu program is a book of 'recipes' (functions)
 :(before "End Globals")
 //: Each recipe is stored at a specific page number, or ordinal.
 map<recipe_ordinal, recipe> Recipe;
