@@ -1,8 +1,6 @@
 #!/bin/bash
 # Regenerate html files.
 
-rm html/*.html html/edit/*.html
-
 process() {
   vim -c TOhtml -c write -c qall $1
 
@@ -21,6 +19,17 @@ process() {
 
   mv -i $1.html html/`dirname $1`
 }
+
+if [ $# -gt 0 ]
+then
+  for f in $*
+  do
+    process $f
+  done
+  exit 0
+fi
+
+rm html/*.html html/edit/*.html
 
 for f in *.cc *.mu edit/*.mu
 do
