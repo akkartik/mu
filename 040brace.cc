@@ -12,8 +12,8 @@
 //:   }
 //:
 //: Braces are just labels, they require no special parsing. The pseudo
-//: recipes 'loop' and 'break' jump to just after the enclosing '{' and '}'
-//: respectively.
+//: instructions 'loop' and 'break' jump to just after the enclosing '{' and
+//: '}' respectively.
 //:
 //: Conditional and unconditional 'loop' and 'break' should give us 80% of the
 //: benefits of the control-flow primitives we're used to in other languages,

@@ -1,10 +1,18 @@
 //: Allow code for recipes to be pulled in from multiple places and inserted
-//: at special labels called 'waypoints'. Unlike jump targets, a recipe can
-//: have multiple ambiguous waypoints with the same name. Any 'before' and
-//: 'after' fragments will simply be inserted at all applicable waypoints.
+//: at special labels called 'waypoints' using two new top-level commands:
+//:   before
+//:   after
+
+//: Most labels are local: they must be unique to a recipe, and are invisible
+//: outside the recipe. However, waypoints are global: a recipe can have
+//: multiple of them, you can't use them as jump targets.
+:(before "End is_jump_target Special-cases")
+if (is_waypoint(label)) return false;
 //: Waypoints are always surrounded by '<>', e.g. <handle-request>.
-//:
-//: todo: switch recipe.steps to a more efficient data structure.
+:(code)
+bool is_waypoint(string label) {
+  return *label.begin() == '<' && *label.rbegin() == '>';
+}
 
 :(scenario tangle_before)
 def main [
@@ -44,7 +52,7 @@ else if (command == "before") {
   if (is_waypoint(label))
     Before_fragments[label].steps.insert(Before_fragments[label].steps.end(), tmp.steps.begin(), tmp.steps.end());
   else
-    raise << "can't tangle before label " << label << '\n' << end();
+    raise << "can't tangle before non-waypoint " << label << '\n' << end();
   // End before Command Handler
 }
 else if (command == "after") {
@@ -59,7 +67,7 @@ else if (command == "after") {
   if (is_waypoint(label))
     After_fragments[label].steps.insert(After_fragments[label].steps.begin(), tmp.steps.begin(), tmp.steps.end());
   else
-    raise << "can't tangle after label " << label << '\n' << end();
+    raise << "can't tangle after non-waypoint " << label << '\n' << end();
   // End after Command Handler
 }
 
@@ -148,10 +156,6 @@ void append_fragment(vector<instruction>& base, const vector<instruction>& patch
   }
 }
 
-bool is_waypoint(string label) {
-  return *label.begin() == '<' && *label.rbegin() == '>';
-}
-
 //: complain about unapplied fragments
 //: This can't run during transform because later (shape-shifting recipes)
 //: we'll encounter situations where fragments might get used long after
@@ -202,7 +206,7 @@ def main [
 before +label1 [
   2:num <- copy 0
 ]
-+error: can't tangle before label +label1
++error: can't tangle before non-waypoint +label1
 
 :(scenario tangle_keeps_labels_separate)
 def main [

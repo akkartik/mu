@@ -1,11 +1,18 @@
-//: Support jumps to special labels called 'targets'. Targets must be in the
-//: same recipe as the jump, and must be unique in that recipe. Targets always
-//: start with a '+'.
+//: Support jumps to a specific label (the 'jump target') in the same recipe.
+//: Jump targets must be unique and unambiguous within any recipe.
 //:
-//: We'll also treat 'break' and 'loop' as jumps. The choice of name is
-//: just documentation about intent; use 'break' to indicate you're exiting
-//: one or more loop nests, and 'loop' to indicate you're skipping to the next
-//: iteration of some containing loop nest.
+//: The 'break' and 'loop' pseudo instructions can also take jump targets.
+//: Which instruction you use is just documentation about intent; use 'break'
+//: to indicate you're exiting one or more loop nests, and 'loop' to indicate
+//: you're skipping to the next iteration of some containing loop nest.
+
+//: Since they have to be unique in a recipe, not all labels can be jump
+//: targets.
+bool is_jump_target(const string& label) {
+  if (label == "{" || label == "}") return false;
+  // End is_jump_target Special-cases
+  return is_label_word(label);
+}
 
 :(scenario jump_to_label)
 def main [
@@ -26,7 +33,8 @@ void transform_labels(const recipe_ordinal r) {
   map<string, int> offset;
   for (int i = 0;  i < SIZE(get(Recipe, r).steps);  ++i) {
     const instruction& inst = get(Recipe, r).steps.at(i);
-    if (starts_with(inst.label, "+")) {
+    if (!inst.is_label) continue;
+    if (is_jump_target(inst.label)) {
       if (!contains_key(offset, inst.label)) {
         put(offset, inst.label, i);
       }
@@ -65,7 +73,6 @@ void transform_labels(const recipe_ordinal r) {
   }
 }
 
-:(code)
 void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int current_offset, const recipe_ordinal r) {
   if (!is_literal(x)) {
     raise << maybe(get(Recipe, r).name) << "jump target must be offset or label but is '" << x.original_string << "'\n" << end();
@@ -85,10 +92,6 @@ void replace_offset(reagent& x, /*const*/ map<string, int>& offset, const int cu
     return;
   }
   x.set_value(get(offset, x.name) - current_offset);
-}
-
-bool is_jump_target(string label) {
-  return starts_with(label, "+");
 }
 
 :(scenario break_to_label)

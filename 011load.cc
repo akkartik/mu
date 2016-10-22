@@ -122,7 +122,7 @@ bool next_instruction(istream& in, instruction* curr) {
   if (SIZE(words) == 1 && words.at(0) == "]")
     return false;  // end of recipe
 
-  if (SIZE(words) == 1 && !isalnum(words.at(0).at(0)) && words.at(0).at(0) != '$') {
+  if (SIZE(words) == 1 && is_label_word(words.at(0))) {
     curr->is_label = true;
     curr->label = words.at(0);
     trace(9993, "parse") << "label: " << curr->label << end();
@@ -174,6 +174,11 @@ string next_word(istream& in) {
   if (result != "[" && ends_with(result, '['))
     raise << "insert a space before '[' in '" << result << "'\n" << end();
   return result;
+}
+
+bool is_label_word(const string& word) {
+  assert(!word.empty());
+  return !isalnum(word.at(0)) && word.at(0) != '$';
 }
 
 bool ends_with(const string& s, const char c) {

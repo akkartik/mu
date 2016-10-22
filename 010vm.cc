@@ -28,7 +28,7 @@ struct recipe {
 //   product1, product2, product3, ... <- operation ingredient1, ingredient2, ingredient3, ...
 // or just a single 'label' starting with a non-alphanumeric character
 //   +label
-// Labels don't do anything, they're just waypoints.
+// Labels don't do anything, they're just named locations in a recipe.
 struct instruction {
   bool is_label;
   string label;  // only if is_label
