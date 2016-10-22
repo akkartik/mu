@@ -53,8 +53,8 @@ int Current_routine_index = 0;
 :(before "End Setup")
 Scheduling_interval = 500;
 Routines.clear();
-:(replace{} "void run(recipe_ordinal r)")
-void run(recipe_ordinal r) {
+:(replace{} "void run(const recipe_ordinal r)")
+void run(const recipe_ordinal r) {
   run(new routine(r));
 }
 

@@ -22,7 +22,7 @@ int transformed_until;
 transformed_until = -1;
 
 :(before "End Types")
-typedef void (*transform_fn)(recipe_ordinal);
+typedef void (*transform_fn)(const recipe_ordinal);
 
 :(before "End Globals")
 vector<transform_fn> Transform;

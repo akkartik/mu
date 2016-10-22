@@ -150,7 +150,7 @@ Transform.push_back(resolve_ambiguous_calls);  // idempotent
 list<call> resolve_stack;
 
 :(code)
-void resolve_ambiguous_calls(recipe_ordinal r) {
+void resolve_ambiguous_calls(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   trace(9991, "transform") << "--- resolve ambiguous calls for recipe " << caller_recipe.name << end();
   for (int index = 0;  index < SIZE(caller_recipe.steps);  ++index) {
@@ -558,7 +558,7 @@ def foo x:num -> y:num [
 +mem: storing 35 in location 1
 
 :(code)
-string header_label(recipe_ordinal r) {
+string header_label(const recipe_ordinal r) {
   return header_label(get(Recipe, r));
 }
 string header_label(const recipe& caller) {

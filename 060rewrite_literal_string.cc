@@ -34,7 +34,7 @@ void initialize_transform_rewrite_literal_string_to_text() {
   // End initialize_transform_rewrite_literal_string_to_text()
 }
 
-void rewrite_literal_string_to_text(recipe_ordinal r) {
+void rewrite_literal_string_to_text(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- rewrite literal strings in recipe " << caller.name << end();
   if (contains_numeric_locations(caller)) return;

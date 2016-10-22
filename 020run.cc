@@ -53,7 +53,7 @@ map<string, int> Locations_read;
 map<string, int> Locations_read_by_instruction;
 
 :(code)
-void run(recipe_ordinal r) {
+void run(const recipe_ordinal r) {
   routine rr(r);
   Current_routine = &rr;
   run_current_routine();

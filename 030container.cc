@@ -177,7 +177,7 @@ const type_tree* root_type(const type_tree* t) {
 :(after "End Type Modifying Transforms")
 Transform.push_back(compute_container_sizes);  // idempotent
 :(code)
-void compute_container_sizes(recipe_ordinal r) {
+void compute_container_sizes(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9992, "transform") << "--- compute container sizes for " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {

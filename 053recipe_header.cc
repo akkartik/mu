@@ -420,7 +420,7 @@ def add2 x:num, y:num -> z:num [
 Transform.push_back(fill_in_reply_ingredients);  // idempotent
 
 :(code)
-void fill_in_reply_ingredients(recipe_ordinal r) {
+void fill_in_reply_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (!caller_recipe.has_header) return;
   trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << caller_recipe.name << end();

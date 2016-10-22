@@ -202,7 +202,7 @@ void run_mu_scenario(const scenario& s) {
 //: Some variables for fake resources always get special /raw addresses in scenarios.
 
 // Should contain everything passed by is_special_name but failed by is_disqualified.
-void bind_special_scenario_names(recipe_ordinal r) {
+void bind_special_scenario_names(const recipe_ordinal r) {
   // Special Scenario Variable Names(r)
   // End Special Scenario Variable Names(r)
 }

@@ -57,7 +57,7 @@ def bar -> x:foo [
 Transform.push_back(convert_ingredients_to_text);  // idempotent
 
 :(code)
-void convert_ingredients_to_text(recipe_ordinal r) {
+void convert_ingredients_to_text(const recipe_ordinal r) {
   recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- convert some ingredients to text in recipe " << caller.name << end();
   // in recipes without named locations, 'stash' is still not extensible

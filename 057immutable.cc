@@ -337,7 +337,7 @@ $error: 0
 Transform.push_back(check_immutable_ingredients);  // idempotent
 
 :(code)
-void check_immutable_ingredients(recipe_ordinal r) {
+void check_immutable_ingredients(const recipe_ordinal r) {
   // to ensure an address reagent isn't modified, it suffices to show that
   //   a) we never write to its contents directly,
   //   b) we never call 'put' or 'put-index' on it, and
@@ -483,7 +483,7 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
   }
 }
 
-bool is_modified_in_recipe(recipe_ordinal r, int ingredient_index, const recipe& caller) {
+bool is_modified_in_recipe(const recipe_ordinal r, const int ingredient_index, const recipe& caller) {
   const recipe& callee = get(Recipe, r);
   if (!callee.has_header) {
     raise << maybe(caller.name) << "can't check mutability of ingredients in recipe " << callee.name << " because it uses 'next-ingredient' directly, rather than a recipe header.\n" << end();

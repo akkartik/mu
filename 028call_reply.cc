@@ -48,7 +48,7 @@ case RETURN: {
 :(before "End Checks")
 Transform.push_back(check_types_of_reply_instructions);  // idempotent
 :(code)
-void check_types_of_reply_instructions(recipe_ordinal r) {
+void check_types_of_reply_instructions(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   trace(9991, "transform") << "--- check types of reply instructions in recipe " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
