@@ -61,7 +61,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
-    e:event, console, found?:bool, quit?:bool <- read-event console
+    e:event, found?:bool, quit?:bool, console <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
     trace 10, [app], [next-event]

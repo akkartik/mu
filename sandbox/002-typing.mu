@@ -20,7 +20,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
     cursor-row:num <- get *editor, cursor-row:offset
     cursor-column:num <- get *editor, cursor-column:offset
     screen <- move-cursor screen, cursor-row, cursor-column
-    e:event, console, found?:bool, quit?:bool <- read-event console
+    e:event, found?:bool, quit?:bool, console <- read-event console
     loop-unless found?
     break-if quit?  # only in tests
     trace 10, [app], [next-event]
