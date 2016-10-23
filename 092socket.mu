@@ -57,12 +57,13 @@ scenario write-to-fake-socket [
   ]
 ]
 
-def start-reading-from-network resources:&:resources, host:text, path:text -> contents:&:source:char [
+def start-reading-from-network resources:&:resources, uri:text -> contents:&:source:char [
   local-scope
   load-ingredients
   {
     break-if resources
     # real network
+    host:text, path:text <- split-at uri, 47/slash
     socket:num <- $open-client-socket host, 80/http-port
     assert socket, [contents]
     req:text <- interpolate [GET _ HTTP/1.1], path
@@ -194,4 +195,36 @@ def write-to-socket socket:num, s:text [
     i <- add i, 1
     loop
   }
+]
+
+# like split-first, but don't eat the delimiter
+def split-at text:text, delim:char -> x:text, y:text [
+  local-scope
+  load-ingredients
+  # empty text? return empty texts
+  len:num <- length *text
+  {
+    empty?:bool <- equal len, 0
+    break-unless empty?
+    x:text <- new []
+    y:text <- new []
+    return
+  }
+  idx:num <- find-next text, delim, 0
+  x:text <- copy-range text, 0, idx
+  y:text <- copy-range text, idx, len
+]
+
+scenario text-split-at [
+  local-scope
+  x:text <- new [a/b]
+  run [
+    y:text, z:text <- split-at x, 47/slash
+    10:@:char/raw <- copy *y
+    20:@:char/raw <- copy *z
+  ]
+  memory-should-contain [
+    10:array:character <- [a]
+    20:array:character <- [/b]
+  ]
 ]

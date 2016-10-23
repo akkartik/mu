@@ -2,7 +2,7 @@
 
 def main [
   local-scope
-  google:&:source:char <- start-reading-from-network 0/real-resources, [google.com], [/]
+  google:&:source:char <- start-reading-from-network 0/real-resources, [google.com/]
   n:num <- copy 0
   buf:&:buffer <- new-buffer 30
   {
