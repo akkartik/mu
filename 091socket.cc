@@ -203,7 +203,7 @@ case _READ_FROM_SOCKET: {
     break;
   }
   if (SIZE(inst.products) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two products, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_text(inst.products.at(0))) {
