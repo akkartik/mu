@@ -251,7 +251,6 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">}</span>
 <span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span class="Normal">case</span> _READ_FROM_SOCKET: <span class="Delimiter">{</span>
-  cerr &lt;&lt; <span class="Constant">&quot;$read-from-socket</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   <span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span> x = <span class="Normal">static_cast</span>&lt;<span class="Normal">long</span> <span class="Normal">long</span> <span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   socket_t* socket = <span class="Normal">reinterpret_cast</span>&lt;socket_t*&gt;<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
   <span class="Comment">// 1. we'd like to simply read() from the socket</span>
@@ -261,22 +260,19 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Comment">// 3. but poll() will block on EOF, so only use poll() on the very first</span>
   <span class="Comment">// $read-from-socket on a socket</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!socket<span class="Delimiter">-&gt;</span>polled<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    socket<span class="Delimiter">-&gt;</span>polled = <span class="Constant">true</span><span class="Delimiter">;</span>
     pollfd p<span class="Delimiter">;</span>
     bzero<span class="Delimiter">(</span>&amp;p<span class="Delimiter">,</span> <span class="Normal">sizeof</span><span class="Delimiter">(</span>p<span class="Delimiter">));</span>
     p<span class="Delimiter">.</span>fd = socket<span class="Delimiter">-&gt;</span>fd<span class="Delimiter">;</span>
     p<span class="Delimiter">.</span>events = POLLIN | POLLHUP<span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>poll<span class="Delimiter">(</span>&amp;p<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">num pollfds</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">timeout</span><span class="Comment">*/</span><span class="Constant">100</span><span class="Comment">/*</span><span class="Comment">ms</span><span class="Comment">*/</span><span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>poll<span class="Delimiter">(</span>&amp;p<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">num pollfds</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">no timeout</span><span class="Comment">*/</span>-<span class="Constant">1</span><span class="Delimiter">)</span> &lt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;error in $read-from-socket</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
       products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
       products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">);</span>
       <span class="Identifier">break</span><span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
-    cerr &lt;&lt; <span class="Constant">&quot;poll output: &quot;</span> &lt;&lt; p<span class="Delimiter">.</span>revents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-    cerr &lt;&lt; <span class="Constant">&quot;setting socket-&gt;polled</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-    socket<span class="Delimiter">-&gt;</span>polled = <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  cerr &lt;&lt; <span class="Constant">&quot;$read-from-socket &quot;</span> &lt;&lt; x &lt;&lt; <span class="Constant">&quot; continuing</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
   <span class="Normal">int</span> bytes = <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   <span class="Normal">char</span>* contents = <span class="Normal">new</span> <span class="Normal">char</span>[bytes]<span class="Delimiter">;</span>
   bzero<span class="Delimiter">(</span>contents<span class="Delimiter">,</span> bytes<span class="Delimiter">);</span>

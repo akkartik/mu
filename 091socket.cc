@@ -218,7 +218,6 @@ case _READ_FROM_SOCKET: {
 }
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
-  cerr << "$read-from-socket\n";
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
   // 1. we'd like to simply read() from the socket
@@ -228,22 +227,19 @@ case _READ_FROM_SOCKET: {
   // 3. but poll() will block on EOF, so only use poll() on the very first
   // $read-from-socket on a socket
   if (!socket->polled) {
+    socket->polled = true;
     pollfd p;
     bzero(&p, sizeof(p));
     p.fd = socket->fd;
     p.events = POLLIN | POLLHUP;
-    if (poll(&p, /*num pollfds*/1, /*timeout*/100/*ms*/) <= 0) {
+    if (poll(&p, /*num pollfds*/1, /*no timeout*/-1) <= 0) {
       raise << maybe(current_recipe_name()) << "error in $read-from-socket\n" << end();
       products.resize(2);
       products.at(0).push_back(0);
       products.at(1).push_back(false);
       break;
     }
-    cerr << "poll output: " << p.revents << '\n';
-    cerr << "setting socket->polled\n";
-    socket->polled = true;
   }
-  cerr << "$read-from-socket " << x << " continuing\n";
   int bytes = static_cast<int>(ingredients.at(1).at(0));
   char* contents = new char[bytes];
   bzero(contents, bytes);
