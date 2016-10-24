@@ -66,10 +66,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
   ]
   run [
-    screen:&amp;:screen, console:&amp;:console<span class="Special"> &lt;- </span>chessboard screen:&amp;:screen, console:&amp;:console
+    screen:&amp;:screen, console:&amp;:console <span class="Special">&lt;-</span> chessboard screen:&amp;:screen, console:&amp;:console
     <span class="Comment"># icon for the cursor</span>
-    cursor-icon:char<span class="Special"> &lt;- </span>copy <span class="Constant">9251/␣</span>
-    screen<span class="Special"> &lt;- </span>print screen, cursor-icon
+    cursor-icon:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+    screen <span class="Special">&lt;-</span> print screen, cursor-icon
   ]
   screen-should-contain [
   <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
@@ -104,12 +104,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> chessboard screen:&amp;:screen, console:&amp;:console<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  board:board<span class="Special"> &lt;- </span>initial-position
+  board:board <span class="Special">&lt;-</span> initial-position
   <span class="Comment"># hook up stdin</span>
-  stdin-in:&amp;:source:char, stdin-out:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
+  stdin-in:&amp;:source:char, stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
   start-running send-keys-to-channel, console, stdin-out, screen
   <span class="Comment"># buffer lines in stdin</span>
-  buffered-stdin-in:&amp;:source:char, buffered-stdin-out:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">10/capacity</span>
+  buffered-stdin-in:&amp;:source:char, buffered-stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
   start-running buffer-lines, stdin-in, buffered-stdin-out
   <span class="Delimiter">{</span>
     print screen, <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
@@ -124,14 +124,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">]</span>
     <span class="Delimiter">{</span>
       cursor-to-next-line screen
-      screen<span class="Special"> &lt;- </span>print screen, <span class="Constant">[move: ]</span>
-      m:&amp;:move, quit:bool, error:bool<span class="Special"> &lt;- </span>read-move buffered-stdin-in, screen
+      screen <span class="Special">&lt;-</span> print screen, <span class="Constant">[move: ]</span>
+      m:&amp;:move, quit:bool, error:bool <span class="Special">&lt;-</span> read-move buffered-stdin-in, screen
       <span class="muControl">break-if</span> quit, <span class="Constant">+quit</span>
-      buffered-stdin-in<span class="Special"> &lt;- </span>clear buffered-stdin-in  <span class="Comment"># cleanup after error. todo: test this?</span>
+      buffered-stdin-in <span class="Special">&lt;-</span> clear buffered-stdin-in  <span class="Comment"># cleanup after error. todo: test this?</span>
       <span class="muControl">loop-if</span> error
     <span class="Delimiter">}</span>
-    board<span class="Special"> &lt;- </span>make-move board, m
-    screen<span class="Special"> &lt;- </span>clear-screen screen
+    board <span class="Special">&lt;-</span> make-move board, m
+    screen <span class="Special">&lt;-</span> clear-screen screen
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 <span class="Constant">  +quit</span>
@@ -143,18 +143,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># assert(length(initial-position) == 64)</span>
-  len:num<span class="Special"> &lt;- </span>length *initial-position
-  correct-length?:bool<span class="Special"> &lt;- </span>equal len, <span class="Constant">64</span>
+  len:num <span class="Special">&lt;-</span> length *initial-position
+  correct-length?:bool <span class="Special">&lt;-</span> equal len,<span class="Constant"> 64</span>
   assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
   <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
-  board<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>, <span class="Constant">8</span>
-  col:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  board <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>,<span class="Constant"> 8</span>
+  col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>equal col, <span class="Constant">8</span>
+    done?:bool <span class="Special">&lt;-</span> equal col,<span class="Constant"> 8</span>
     <span class="muControl">break-if</span> done?
-    file:&amp;:@:char<span class="Special"> &lt;- </span>new-file initial-position, col
-    *board<span class="Special"> &lt;- </span>put-index *board, col, file
-    col<span class="Special"> &lt;- </span>add col, <span class="Constant">1</span>
+    file:&amp;:@:char <span class="Special">&lt;-</span> new-file initial-position, col
+    *board <span class="Special">&lt;-</span> put-index *board, col, file
+    col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
@@ -162,16 +162,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> new-file position:&amp;:@:char, index:num<span class="muRecipe"> -&gt; </span>result:&amp;:@:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  index<span class="Special"> &lt;- </span>multiply index, <span class="Constant">8</span>
-  result<span class="Special"> &lt;- </span>new <span class="Constant">character:type</span>, <span class="Constant">8</span>
-  row:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  index <span class="Special">&lt;-</span> multiply index,<span class="Constant"> 8</span>
+  result <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>,<span class="Constant"> 8</span>
+  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>equal row, <span class="Constant">8</span>
+    done?:bool <span class="Special">&lt;-</span> equal row,<span class="Constant"> 8</span>
     <span class="muControl">break-if</span> done?
-    square:char<span class="Special"> &lt;- </span>index *position, index
-    *result<span class="Special"> &lt;- </span>put-index *result, row, square
-    row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
-    index<span class="Special"> &lt;- </span>add index, <span class="Constant">1</span>
+    square:char <span class="Special">&lt;-</span> index *position, index
+    *result <span class="Special">&lt;-</span> put-index *result, row, square
+    row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+    index <span class="Special">&lt;-</span> add index,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
@@ -179,29 +179,29 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> print-board screen:&amp;:screen, board:board<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  row:num<span class="Special"> &lt;- </span>copy <span class="Constant">7</span>  <span class="Comment"># start printing from the top of the board</span>
-  space:char<span class="Special"> &lt;- </span>copy <span class="Constant">32/space</span>
+  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 7</span>  <span class="Comment"># start printing from the top of the board</span>
+  space:char <span class="Special">&lt;-</span> copy <span class="Constant">32/space</span>
   <span class="Comment"># print each row</span>
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>lesser-than row, <span class="Constant">0</span>
+    done?:bool <span class="Special">&lt;-</span> lesser-than row,<span class="Constant"> 0</span>
     <span class="muControl">break-if</span> done?
     <span class="Comment"># print rank number as a legend</span>
-    rank:num<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
+    rank:num <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
     print-integer screen, rank
     print screen, <span class="Constant">[ | ]</span>
     <span class="Comment"># print each square in the row</span>
-    col:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+    col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
     <span class="Delimiter">{</span>
-      done?:bool<span class="Special"> &lt;- </span>equal col:num, <span class="Constant">8</span>
+      done?:bool <span class="Special">&lt;-</span> equal col:num,<span class="Constant"> 8</span>
       <span class="muControl">break-if</span> done?:bool
-      f:&amp;:@:char<span class="Special"> &lt;- </span>index *board, col
-      c:char<span class="Special"> &lt;- </span>index *f, row
+      f:&amp;:@:char <span class="Special">&lt;-</span> index *board, col
+      c:char <span class="Special">&lt;-</span> index *f, row
       print screen, c
       print screen, space
-      col<span class="Special"> &lt;- </span>add col, <span class="Constant">1</span>
+      col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-    row<span class="Special"> &lt;- </span>subtract row, <span class="Constant">1</span>
+    row <span class="Special">&lt;-</span> subtract row,<span class="Constant"> 1</span>
     cursor-to-next-line screen
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -223,7 +223,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment">#   B P _ _ _ _ p B</span>
   <span class="Comment">#   N P _ _ _ _ p n</span>
   <span class="Comment">#   R P _ _ _ _ p r</span>
-  initial-position:&amp;:@:char<span class="Special"> &lt;- </span>new-array <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">81/Q</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">113/q</span>, <span class="Constant">75/K</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">107/k</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>
+  initial-position:&amp;:@:char <span class="Special">&lt;-</span> new-array <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">81/Q</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">113/q</span>, <span class="Constant">75/K</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">107/k</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>
 <span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,</span>
 <span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
 <span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, </span>
@@ -232,15 +232,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,</span>
 <span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
 <span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r</span>
-  board<span class="Special"> &lt;- </span>new-board initial-position
+  board <span class="Special">&lt;-</span> new-board initial-position
 ]
 
 <span class="muScenario">scenario</span> printing-the-board [
   <span class="Constant">local-scope</span>
-  board:board<span class="Special"> &lt;- </span>initial-position
+  board:board <span class="Special">&lt;-</span> initial-position
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
   run [
-    screen:&amp;:screen<span class="Special"> &lt;- </span>print-board screen:&amp;:screen, board
+    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>
@@ -273,27 +273,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> read-move stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:&amp;:move, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  from-file:num, quit?:bool, error?:bool<span class="Special"> &lt;- </span>read-file stdin, screen
+  from-file:num, quit?:bool, error?:bool <span class="Special">&lt;-</span> read-file stdin, screen
   <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
   <span class="Comment"># construct the move object</span>
-  result:&amp;:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">from-file:offset</span>, from-file
-  from-rank:num, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
+  result:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
+  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-file:offset</span>, from-file
+  from-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
   <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
-  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">from-rank:offset</span>, from-rank
-  error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
+  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-rank:offset</span>, from-rank
+  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
-  to-file:num, quit?, error?<span class="Special"> &lt;- </span>read-file stdin, screen
+  to-file:num, quit?, error? <span class="Special">&lt;-</span> read-file stdin, screen
   <span class="muControl">return-if</span> quit?:bool, <span class="Constant">0/dummy</span>
   <span class="muControl">return-if</span> error?:bool, <span class="Constant">0/dummy</span>
-  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">to-file:offset</span>, to-file
-  to-rank:num, quit?, error?<span class="Special"> &lt;- </span>read-rank stdin, screen
+  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-file:offset</span>, to-file
+  to-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
   <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
-  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">to-rank:offset</span>, to-rank
-  error?<span class="Special"> &lt;- </span>expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
+  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-rank:offset</span>, to-rank
+  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
   <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
 ]
 
@@ -301,33 +301,33 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> read-file stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>file:num, quit:bool, error:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
   <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
-    q-pressed?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">81/Q</span>
+    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">81/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
+    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    empty-fake-keyboard?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">0/eof</span>
+    empty-fake-keyboard?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">0/eof</span>
     <span class="muControl">break-unless</span> empty-fake-keyboard?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10/newline</span>
+    newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> newline?
     print screen, <span class="Constant">[that's not enough]</span>
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
-  file:num<span class="Special"> &lt;- </span>subtract c, <span class="Constant">97/a</span>
+  file:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">97/a</span>
   <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
   <span class="Delimiter">{</span>
-    above-min:bool<span class="Special"> &lt;- </span>greater-or-equal file, <span class="Constant">0</span>
+    above-min:bool <span class="Special">&lt;-</span> greater-or-equal file,<span class="Constant"> 0</span>
     <span class="muControl">break-if</span> above-min
     print screen, <span class="Constant">[file too low: ]</span>
     print screen, c
@@ -335,7 +335,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    below-max:bool<span class="Special"> &lt;- </span>lesser-than file, <span class="Constant">8</span>
+    below-max:bool <span class="Special">&lt;-</span> lesser-than file,<span class="Constant"> 8</span>
     <span class="muControl">break-if</span> below-max
     print screen, <span class="Constant">[file too high: ]</span>
     print screen, c
@@ -348,35 +348,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> read-rank stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>rank:num, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
   <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">{</span>
-    q-pressed?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">8/Q</span>
+    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">8/Q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    q-pressed?<span class="Special"> &lt;- </span>equal c, <span class="Constant">113/q</span>
+    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
     <span class="muControl">break-unless</span> q-pressed?
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    newline?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">10</span>  <span class="Comment"># newline</span>
+    newline?:bool <span class="Special">&lt;-</span> equal c,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
     <span class="muControl">break-unless</span> newline?
     print screen, <span class="Constant">[that's not enough]</span>
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
-  rank:num<span class="Special"> &lt;- </span>subtract c, <span class="Constant">49/'1'</span>
+  rank:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">49/'1'</span>
   <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
   <span class="Delimiter">{</span>
-    above-min:bool<span class="Special"> &lt;- </span>greater-or-equal rank, <span class="Constant">0</span>
+    above-min:bool <span class="Special">&lt;-</span> greater-or-equal rank,<span class="Constant"> 0</span>
     <span class="muControl">break-if</span> above-min
     print screen, <span class="Constant">[rank too low: ]</span>
     print screen, c
     <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
-    below-max:bool<span class="Special"> &lt;- </span>lesser-or-equal rank, <span class="Constant">7</span>
+    below-max:bool <span class="Special">&lt;-</span> lesser-or-equal rank,<span class="Constant"> 7</span>
     <span class="muControl">break-if</span> below-max
     print screen, <span class="Constant">[rank too high: ]</span>
     print screen, c
@@ -390,83 +390,83 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> expect-from-channel stdin:&amp;:source:char, expected:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool, stdin:&amp;:source:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  c:char, eof?:bool, stdin<span class="Special"> &lt;- </span>read stdin
+  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
   <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
   <span class="Delimiter">{</span>
-    match?:bool<span class="Special"> &lt;- </span>equal c, expected
+    match?:bool <span class="Special">&lt;-</span> equal c, expected
     <span class="muControl">break-if</span> match?
     print screen, <span class="Constant">[expected character not found]</span>
   <span class="Delimiter">}</span>
-  result<span class="Special"> &lt;- </span>not match?
+  result <span class="Special">&lt;-</span> not match?
 ]
 
 <span class="muScenario">scenario</span> read-move-blocking [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-  read-move-routine:num/routine<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
+  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num/routine <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
   run [
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'a'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a']</span>
     <span class="Comment"># press '2'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2']</span>
     <span class="Comment"># press '-'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">45/'-'</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">45/'-'</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after hyphen 'a2-']</span>
     <span class="Comment"># press 'a'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after rank 'a2-a']</span>
     <span class="Comment"># press '4'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">52/'4'</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">52/'4'</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' still waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to pause after file 'a2-a4']</span>
     <span class="Comment"># press 'newline'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10</span>  <span class="Comment"># newline</span>
+    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' now completes</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    completed?:bool<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
     assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-blocking: routine failed to terminate on newline]</span>
-    trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
   ]
   trace-should-contain [
     test: reached end
@@ -476,25 +476,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-quit [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
+  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
   run [
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
     <span class="Comment"># press 'q'</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">113/q</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">113/q</span>
     restart read-move-routine
     <span class="Comment"># 'read-move' completes</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state<span class="Special"> &lt;- </span>routine-state read-move-routine
-    completed?:bool<span class="Special"> &lt;- </span>equal read-move-state, <span class="Constant">1/completed</span>
+    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
     assert completed?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-quit: routine failed to terminate on 'q']</span>
-    trace <span class="Constant">1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
   ]
   trace-should-contain [
     test: reached end
@@ -504,16 +504,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-illegal-file [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
+  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
   run [
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">50/'2'</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
     restart read-move-routine
     wait-for-routine-to-block read-move-routine
   ]
@@ -526,17 +526,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-illegal-rank [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
+  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
   run [
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
     restart read-move-routine
     wait-for-routine-to-block read-move-routine
   ]
@@ -549,17 +549,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> read-move-empty [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-  source:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">2/capacity</span>
-  read-move-routine:num<span class="Special"> &lt;- </span>start-running read-move, source, screen:&amp;:screen
+  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
   run [
     <span class="Comment"># 'read-move' is waiting for input</span>
     wait-for-routine-to-block read-move-routine
-    read-move-state:num<span class="Special"> &lt;- </span>routine-state read-move-routine
-    waiting?:bool<span class="Special"> &lt;- </span>not-equal read-move-state, <span class="Constant">2/discontinued</span>
+    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
     assert waiting?, <span class="Constant">[ </span>
 <span class="Constant">F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">10/newline</span>
-    sink<span class="Special"> &lt;- </span>write sink, <span class="Constant">97/a</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">10/newline</span>
+    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
     restart read-move-routine
     wait-for-routine-to-block read-move-routine
   ]
@@ -572,26 +572,26 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> make-move board:board, m:&amp;:move<span class="muRecipe"> -&gt; </span>board:board [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  from-file:num<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-file:offset</span>
-  from-rank:num<span class="Special"> &lt;- </span>get *m, <span class="Constant">from-rank:offset</span>
-  to-file:num<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-file:offset</span>
-  to-rank:num<span class="Special"> &lt;- </span>get *m, <span class="Constant">to-rank:offset</span>
-  from-f:&amp;:@:char<span class="Special"> &lt;- </span>index *board, from-file
-  to-f:&amp;:@:char<span class="Special"> &lt;- </span>index *board, to-file
-  src:char/square<span class="Special"> &lt;- </span>index *from-f, from-rank
-  *to-f<span class="Special"> &lt;- </span>put-index *to-f, to-rank, src
-  *from-f<span class="Special"> &lt;- </span>put-index *from-f, from-rank, <span class="Constant">32/space</span>
+  from-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-file:offset</span>
+  from-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-rank:offset</span>
+  to-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-file:offset</span>
+  to-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-rank:offset</span>
+  from-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, from-file
+  to-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, to-file
+  src:char/square <span class="Special">&lt;-</span> index *from-f, from-rank
+  *to-f <span class="Special">&lt;-</span> put-index *to-f, to-rank, src
+  *from-f <span class="Special">&lt;-</span> put-index *from-f, from-rank, <span class="Constant">32/space</span>
 ]
 
 <span class="muScenario">scenario</span> making-a-move [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
-  board:board<span class="Special"> &lt;- </span>initial-position
-  move:&amp;:move<span class="Special"> &lt;- </span>new <span class="Constant">move:type</span>
-  *move<span class="Special"> &lt;- </span>merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
+  board:board <span class="Special">&lt;-</span> initial-position
+  move:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
+  *move <span class="Special">&lt;-</span> merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
   run [
-    board<span class="Special"> &lt;- </span>make-move board, move
-    screen:&amp;:screen<span class="Special"> &lt;- </span>print-board screen:&amp;:screen, board
+    board <span class="Special">&lt;-</span> make-move board, move
+    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
   ]
   screen-should-contain [
   <span class="Comment">#  012345678901234567890123456789</span>

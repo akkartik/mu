@@ -43,8 +43,8 @@ highlight link muScreen muString
 
 " Mu literals
 syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
-syntax match muLiteral %\<[0-9-]\?[0-9]\+\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+/[^ ,]*%
+syntax match muLiteral % [0-9-]\?[0-9]\+[, ]\@=\| [0-9-]\?[0-9]\+$%
 syntax match muLiteral "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
 " labels
 syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
@@ -56,7 +56,9 @@ highlight link muLiteral Constant
 syntax keyword muKeyword default-space global-space new-default-space local-scope next-ingredient ingredient rewind-ingredients load-ingredients | highlight link muKeyword Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
-syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
+syntax match muAssign "<-"
+syntax match muAssign "\<raw\>"
+highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
 syntax keyword muControl reply reply-if reply-unless return return-if return-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords

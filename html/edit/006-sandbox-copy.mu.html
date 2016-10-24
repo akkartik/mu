@@ -40,11 +40,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
@@ -62,7 +62,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># click at left edge of 'copy' button</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">69</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 69</span>
   ]
   run [
     event-loop screen, console, env
@@ -102,11 +102,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
@@ -124,7 +124,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># click at right edge of 'copy' button (just before 'delete')</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">84</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 84</span>
   ]
   run [
     event-loop screen, console, env
@@ -162,13 +162,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
   <span class="Comment"># support 'copy' button</span>
   <span class="Delimiter">{</span>
-    copy?:bool<span class="Special"> &lt;- </span>should-attempt-copy? click-row, click-column, env
+    copy?:bool <span class="Special">&lt;-</span> should-attempt-copy? click-row, click-column, env
     <span class="muControl">break-unless</span> copy?
-    copy?, env<span class="Special"> &lt;- </span>try-copy-sandbox click-row, env
+    copy?, env <span class="Special">&lt;-</span> try-copy-sandbox click-row, env
     <span class="muControl">break-unless</span> copy?
     hide-screen screen
-    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
+    screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
@@ -179,47 +179,47 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># are we below the sandbox editor?</span>
-  click-sandbox-area?:bool<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
+  click-sandbox-area?:bool <span class="Special">&lt;-</span> click-on-sandbox-area? click-row, click-column, env
   <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
   <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
-  first-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
   assert first-sandbox, <span class="Constant">[!!]</span>
-  sandbox-left-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
-  sandbox-right-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
-  _, _, copy-button-left:num, copy-button-right:num, _<span class="Special"> &lt;- </span>sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  copy-button-vertical-area?:bool<span class="Special"> &lt;- </span>within-range? click-column, copy-button-left, copy-button-right
+  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
+  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
+  _, _, copy-button-left:num, copy-button-right:num, _ <span class="Special">&lt;-</span> sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  copy-button-vertical-area?:bool <span class="Special">&lt;-</span> within-range? click-column, copy-button-left, copy-button-right
   <span class="muControl">reply-unless</span> copy-button-vertical-area?, <span class="Constant">0/false</span>
   <span class="Comment"># finally, is sandbox editor empty?</span>
-  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  result<span class="Special"> &lt;- </span>empty-editor? current-sandbox
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+  result <span class="Special">&lt;-</span> empty-editor? current-sandbox
 ]
 
 <span class="muRecipe">def</span> try-copy-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-copy-button?:bool, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># identify the sandbox to copy, if the click was actually on the 'copy' button</span>
-  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> find-sandbox env, click-row
   <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
-  clicked-on-copy-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-  text:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  current-sandbox<span class="Special"> &lt;- </span>insert-text current-sandbox, text
+  clicked-on-copy-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
+  text:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox <span class="Special">&lt;-</span> insert-text current-sandbox, text
   <span class="Comment"># reset scroll</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
   <span class="Comment"># position cursor in sandbox editor</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
 ]
 
 <span class="muRecipe">def</span> find-sandbox env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>result:&amp;:sandbox [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> curr-sandbox
-    start:num<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-    found?:bool<span class="Special"> &lt;- </span>equal click-row, start
+    start:num <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+    found?:bool <span class="Special">&lt;-</span> equal click-row, start
     <span class="muControl">return-if</span> found?, curr-sandbox
-    curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">return</span> <span class="Constant">0/not-found</span>
@@ -228,30 +228,30 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> click-on-sandbox-area? click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  sandbox-left-margin:num<span class="Special"> &lt;- </span>get *current-sandbox, <span class="Constant">left:offset</span>
-  on-sandbox-side?:bool<span class="Special"> &lt;- </span>greater-or-equal click-column, sandbox-left-margin
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+  sandbox-left-margin:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
+  on-sandbox-side?:bool <span class="Special">&lt;-</span> greater-or-equal click-column, sandbox-left-margin
   <span class="muControl">return-unless</span> on-sandbox-side?, <span class="Constant">0/false</span>
-  first-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
+  first-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
   <span class="muControl">return-unless</span> first-sandbox, <span class="Constant">0/false</span>
-  first-sandbox-begins:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-  result<span class="Special"> &lt;- </span>greater-or-equal click-row, first-sandbox-begins
+  first-sandbox-begins:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+  result <span class="Special">&lt;-</span> greater-or-equal click-row, first-sandbox-begins
 ]
 
 <span class="muRecipe">def</span> empty-editor? editor:&amp;:editor<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  head:&amp;:duplex-list:char<span class="Special"> &lt;- </span>get *editor, <span class="Constant">data:offset</span>
-  first:&amp;:duplex-list:char<span class="Special"> &lt;- </span>next head
-  result<span class="Special"> &lt;- </span>not first
+  head:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
+  first:&amp;:duplex-list:char <span class="Special">&lt;-</span> next head
+  result <span class="Special">&lt;-</span> not first
 ]
 
 <span class="muRecipe">def</span> within-range? x:num, low:num, high:num<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  not-too-far-left?:bool<span class="Special"> &lt;- </span>greater-or-equal x, low
-  not-too-far-right?:bool<span class="Special"> &lt;- </span>lesser-or-equal x, high
-  result<span class="Special"> &lt;- </span>and not-too-far-left? not-too-far-right?
+  not-too-far-left?:bool <span class="Special">&lt;-</span> greater-or-equal x, low
+  not-too-far-right?:bool <span class="Special">&lt;-</span> lesser-or-equal x, high
+  result <span class="Special">&lt;-</span> and not-too-far-left? not-too-far-right?
 ]
 
 <span class="muScenario">scenario</span> copy-fails-if-sandbox-editor-not-empty [
@@ -259,11 +259,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
@@ -281,9 +281,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># type something into the sandbox editor, then click on the 'copy' button</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">70</span>  <span class="Comment"># put cursor in sandbox editor</span>
+    left-click<span class="Constant"> 2</span>,<span class="Constant"> 70</span>  <span class="Comment"># put cursor in sandbox editor</span>
     type <span class="Constant">[0]</span>  <span class="Comment"># type something</span>
-    left-click <span class="Constant">3</span>, <span class="Constant">70</span>  <span class="Comment"># click 'copy' button</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 70</span>  <span class="Comment"># click 'copy' button</span>
   ]
   run [
     event-loop screen, console, env

@@ -38,10 +38,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   <span class="Comment"># run a few commands</span>
   assume-console [
-    left-click <span class="Constant">1</span>, <span class="Constant">80</span>
+    left-click<span class="Constant"> 1</span>,<span class="Constant"> 80</span>
     type <span class="Constant">[divide-with-remainder 11, 3]</span>
     press F4
     type <span class="Constant">[add 2, 2]</span>
@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete second sandbox by clicking on left edge of 'delete' button</span>
   assume-console [
-    left-click <span class="Constant">7</span>, <span class="Constant">85</span>
+    left-click<span class="Constant"> 7</span>,<span class="Constant"> 85</span>
   ]
   run [
     event-loop screen, console, env
@@ -83,7 +83,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete first sandbox by clicking at right edge of 'delete' button</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">99</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
   ]
   run [
     event-loop screen, console, env
@@ -100,13 +100,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
   <span class="Comment"># support 'delete' button</span>
   <span class="Delimiter">{</span>
-    delete?:bool<span class="Special"> &lt;- </span>should-attempt-delete? click-row, click-column, env
+    delete?:bool <span class="Special">&lt;-</span> should-attempt-delete? click-row, click-column, env
     <span class="muControl">break-unless</span> delete?
-    delete?, env<span class="Special"> &lt;- </span>try-delete-sandbox click-row, env
+    delete?, env <span class="Special">&lt;-</span> try-delete-sandbox click-row, env
     <span class="muControl">break-unless</span> delete?
     hide-screen screen
-    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
+    screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
@@ -117,66 +117,66 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># are we below the sandbox editor?</span>
-  click-sandbox-area?:bool<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
+  click-sandbox-area?:bool <span class="Special">&lt;-</span> click-on-sandbox-area? click-row, click-column, env
   <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
   <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
-  first-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
   assert first-sandbox, <span class="Constant">[!!]</span>
-  sandbox-left-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
-  sandbox-right-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
-  _, _, _, _, delete-button-left:num<span class="Special"> &lt;- </span>sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  result<span class="Special"> &lt;- </span>within-range? click-column, delete-button-left, sandbox-right-margin
+  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
+  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
+  _, _, _, _, delete-button-left:num <span class="Special">&lt;-</span> sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  result <span class="Special">&lt;-</span> within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
 <span class="muRecipe">def</span> try-delete-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:bool, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># identify the sandbox to delete, if the click was actually on the 'delete' button</span>
-  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> find-sandbox env, click-row
   <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
-  clicked-on-delete-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
-  env<span class="Special"> &lt;- </span>delete-sandbox env, sandbox
+  clicked-on-delete-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
+  env <span class="Special">&lt;-</span> delete-sandbox env, sandbox
 ]
 
 <span class="muRecipe">def</span> delete-sandbox env:&amp;:environment, sandbox:&amp;:sandbox<span class="muRecipe"> -&gt; </span>env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
-  first-sandbox?:bool<span class="Special"> &lt;- </span>equal curr-sandbox, sandbox
+  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+  first-sandbox?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
   <span class="Delimiter">{</span>
     <span class="Comment"># first sandbox? pop</span>
     <span class="muControl">break-unless</span> first-sandbox?
-    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
+    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># not first sandbox?</span>
     <span class="muControl">break-if</span> first-sandbox?
-    prev-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>copy curr-sandbox
-    curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    prev-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> copy curr-sandbox
+    curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
     <span class="Delimiter">{</span>
       assert curr-sandbox, <span class="Constant">[sandbox not found! something is wrong.]</span>
-      found?:bool<span class="Special"> &lt;- </span>equal curr-sandbox, sandbox
+      found?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
       <span class="muControl">break-if</span> found?
-      prev-sandbox<span class="Special"> &lt;- </span>copy curr-sandbox
-      curr-sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+      prev-sandbox <span class="Special">&lt;-</span> copy curr-sandbox
+      curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
     <span class="Comment"># snip sandbox out of its list</span>
-    next-sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-    *prev-sandbox<span class="Special"> &lt;- </span>put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
+    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+    *prev-sandbox <span class="Special">&lt;-</span> put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
   <span class="Delimiter">}</span>
   <span class="Comment"># update sandbox count</span>
-  sandbox-count:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
-  sandbox-count<span class="Special"> &lt;- </span>subtract sandbox-count, <span class="Constant">1</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
+  sandbox-count:num <span class="Special">&lt;-</span> get *env, <span class="Constant">number-of-sandboxes:offset</span>
+  sandbox-count <span class="Special">&lt;-</span> subtract sandbox-count,<span class="Constant"> 1</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
   <span class="Comment"># reset scroll if deleted sandbox was last</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> next-sandbox
-    render-from:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">render-from:offset</span>
-    reset-scroll?:bool<span class="Special"> &lt;- </span>equal render-from, sandbox-count
+    render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
+    reset-scroll?:bool <span class="Special">&lt;-</span> equal render-from, sandbox-count
     <span class="muControl">break-unless</span> reset-scroll?
-    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
+    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -185,7 +185,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
@@ -208,7 +208,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">6</span>, <span class="Constant">99</span>
+    left-click<span class="Constant"> 6</span>,<span class="Constant"> 99</span>
   ]
   run [
     event-loop screen, console, env
@@ -230,7 +230,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
@@ -253,7 +253,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">99</span>
+    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
   ]
   run [
     event-loop screen, console, env
@@ -275,7 +275,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
@@ -299,7 +299,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">99</span>
+    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
   ]
   run [
     event-loop screen, console, env
@@ -322,7 +322,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
@@ -347,7 +347,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># delete the second sandbox, then try to scroll down twice</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">99</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
     press page-down
     press page-down
   ]

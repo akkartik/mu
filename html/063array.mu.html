@@ -34,39 +34,39 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> array-from-args [
   run [
     <span class="Constant">local-scope</span>
-    x:&amp;:@:num<span class="Special"> &lt;- </span>new-array <span class="Constant">0</span>, <span class="Constant">1</span>, <span class="Constant">2</span>
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *x
+    x:&amp;:@:num <span class="Special">&lt;-</span> new-array<span class="Constant"> 0</span>,<span class="Constant"> 1</span>,<span class="Constant"> 2</span>
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">3</span>  <span class="Comment"># array length</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>  <span class="Comment"># array length</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
   ]
 ]
 
 <span class="Comment"># create an array out of a list of args</span>
 <span class="muRecipe">def</span> new-array<span class="muRecipe"> -&gt; </span>result:&amp;:@:_elem [
   <span class="Constant">local-scope</span>
-  capacity:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  capacity:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
-    curr-value:_elem, exists?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    curr-value:_elem, exists?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> exists?
-    capacity<span class="Special"> &lt;- </span>add capacity, <span class="Constant">1</span>
+    capacity <span class="Special">&lt;-</span> add capacity,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  result<span class="Special"> &lt;- </span>new <span class="Constant">_elem:type</span>, capacity
+  result <span class="Special">&lt;-</span> new <span class="Constant">_elem:type</span>, capacity
   <span class="Constant">rewind-ingredients</span>
-  i:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># while read curr-value</span>
-    done?:bool<span class="Special"> &lt;- </span>greater-or-equal i, capacity
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, capacity
     <span class="muControl">break-if</span> done?
-    curr-value:_elem, exists?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    curr-value:_elem, exists?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
     assert exists?, <span class="Constant">[error in rewinding ingredients to new-array]</span>
-    *result<span class="Special"> &lt;- </span>put-index *result, i, curr-value
-    i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
+    *result <span class="Special">&lt;-</span> put-index *result, i, curr-value
+    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">return</span> result
@@ -77,62 +77,62 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> fill array:&amp;:@:num<span class="muRecipe"> -&gt; </span>array:&amp;:@:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  loopn:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  length:num<span class="Special"> &lt;- </span>length *array
+  loopn:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  length:num <span class="Special">&lt;-</span> length *array
   <span class="Delimiter">{</span>
-    length?:bool<span class="Special"> &lt;- </span>equal loopn, length
+    length?:bool <span class="Special">&lt;-</span> equal loopn, length
     <span class="muControl">break-if</span> length?
-    object:num, arg-received?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    object:num, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> arg-received?
-    *array<span class="Special"> &lt;- </span>put-index *array, loopn, object
-    loopn<span class="Special"> &lt;- </span>add loopn, <span class="Constant">1</span>
+    *array <span class="Special">&lt;-</span> put-index *array, loopn, object
+    loopn <span class="Special">&lt;-</span> add loopn,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muScenario">scenario</span> fill-on-an-empty-array [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 3</span>
   run [
-    array<span class="Special"> &lt;- </span>fill array, <span class="Constant">1</span> <span class="Constant">2</span> <span class="Constant">3</span>
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *array
+    array <span class="Special">&lt;-</span> fill array,<span class="Constant"> 1 2 3</span>
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *array
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> fill-overwrites-existing-values [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
-  *array<span class="Special"> &lt;- </span>put-index *array, <span class="Constant">0</span>, <span class="Constant">4</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 3</span>
+  *array <span class="Special">&lt;-</span> put-index *array,<span class="Constant"> 0</span>,<span class="Constant"> 4</span>
   run [
-    array<span class="Special"> &lt;- </span>fill array, <span class="Constant">1</span> <span class="Constant">2</span> <span class="Constant">3</span>
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *array
+    array <span class="Special">&lt;-</span> fill array,<span class="Constant"> 1 2 3</span>
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *array
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> fill-exits-gracefully-when-given-no-ingredients [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 3</span>
   run [
-    array<span class="Special"> &lt;- </span>fill array
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *array
+    array <span class="Special">&lt;-</span> fill array
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *array
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
   ]
 ]
 
@@ -141,24 +141,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> swap array:&amp;:@:num, index1:num, index2:num<span class="muRecipe"> -&gt; </span>array:&amp;:@:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  object1:num<span class="Special"> &lt;- </span>index *array, index1
-  object2:num<span class="Special"> &lt;- </span>index *array, index2
-  *array<span class="Special"> &lt;- </span>put-index *array, index1, object2
-  *array<span class="Special"> &lt;- </span>put-index *array, index2, object1
+  object1:num <span class="Special">&lt;-</span> index *array, index1
+  object2:num <span class="Special">&lt;-</span> index *array, index2
+  *array <span class="Special">&lt;-</span> put-index *array, index1, object2
+  *array <span class="Special">&lt;-</span> put-index *array, index2, object1
 ]
 
 <span class="muScenario">scenario</span> swap-works [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">4</span>
-  array<span class="Special"> &lt;- </span>fill array, <span class="Constant">4</span> <span class="Constant">3</span> <span class="Constant">2</span> <span class="Constant">1</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 4</span>
+  array <span class="Special">&lt;-</span> fill array,<span class="Constant"> 4 3 2 1</span>
   run [
-    array<span class="Special"> &lt;- </span>swap array, <span class="Constant">0</span>, <span class="Constant">2</span>
-    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>index *array, <span class="Constant">0</span>
-    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>index *array, <span class="Constant">2</span>
+    array <span class="Special">&lt;-</span> swap array,<span class="Constant"> 0</span>,<span class="Constant"> 2</span>
+    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> index *array,<span class="Constant"> 0</span>
+    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> index *array,<span class="Constant"> 2</span>
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
   ]
 ]
 
@@ -167,49 +167,49 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> reverse array:&amp;:@:_elem<span class="muRecipe"> -&gt; </span>array:&amp;:@:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  start:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  length:num<span class="Special"> &lt;- </span>length *array
-  end:num<span class="Special"> &lt;- </span>subtract length, <span class="Constant">1</span>
+  start:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  length:num <span class="Special">&lt;-</span> length *array
+  end:num <span class="Special">&lt;-</span> subtract length,<span class="Constant"> 1</span>
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>greater-or-equal start, end
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal start, end
     <span class="muControl">break-if</span> done?
-    array<span class="Special"> &lt;- </span>swap array, start, end
-    start<span class="Special"> &lt;- </span>add start, <span class="Constant">1</span>
-    end<span class="Special"> &lt;- </span>subtract end, <span class="Constant">1</span>
+    array <span class="Special">&lt;-</span> swap array, start, end
+    start <span class="Special">&lt;-</span> add start,<span class="Constant"> 1</span>
+    end <span class="Special">&lt;-</span> subtract end,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muScenario">scenario</span> reverse-array-odd-length [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">3</span>
-  array<span class="Special"> &lt;- </span>fill array, <span class="Constant">3</span> <span class="Constant">2</span> <span class="Constant">1</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 3</span>
+  array <span class="Special">&lt;-</span> fill array,<span class="Constant"> 3 2 1</span>
   run [
-    array<span class="Special"> &lt;- </span>reverse array
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *array
+    array <span class="Special">&lt;-</span> reverse array
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *array
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> reverse-array-even-length [
   <span class="Constant">local-scope</span>
-  array:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, <span class="Constant">4</span>
-  array<span class="Special"> &lt;- </span>fill array, <span class="Constant">4</span> <span class="Constant">3</span> <span class="Constant">2</span> <span class="Constant">1</span>
+  array:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>,<span class="Constant"> 4</span>
+  array <span class="Special">&lt;-</span> fill array,<span class="Constant"> 4 3 2 1</span>
   run [
-    array<span class="Special"> &lt;- </span>reverse array
-    <span class="Constant">10</span>:@:num/<span class="Special">raw &lt;- </span>copy *array
+    array <span class="Special">&lt;-</span> reverse array
+    10:@:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *array
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">1</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">2</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">14</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 14</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
   ]
 ]
 </pre>

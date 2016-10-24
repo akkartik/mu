@@ -39,11 +39,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
@@ -61,7 +61,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># click at left edge of 'edit' button</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">55</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 55</span>
   ]
   run [
     event-loop screen, console, env
@@ -99,11 +99,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  reply 4</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
@@ -121,7 +121,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># click at right edge of 'edit' button (just before 'copy')</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">68</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 68</span>
   ]
   run [
     event-loop screen, console, env
@@ -157,13 +157,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
   <span class="Comment"># support 'edit' button</span>
   <span class="Delimiter">{</span>
-    edit?:bool<span class="Special"> &lt;- </span>should-attempt-edit? click-row, click-column, env
+    edit?:bool <span class="Special">&lt;-</span> should-attempt-edit? click-row, click-column, env
     <span class="muControl">break-unless</span> edit?
-    edit?, env<span class="Special"> &lt;- </span>try-edit-sandbox click-row, env
+    edit?, env <span class="Special">&lt;-</span> try-edit-sandbox click-row, env
     <span class="muControl">break-unless</span> edit?
     hide-screen screen
-    screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
-    screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
+    screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     show-screen screen
     <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
@@ -174,37 +174,37 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># are we below the sandbox editor?</span>
-  click-sandbox-area?:bool<span class="Special"> &lt;- </span>click-on-sandbox-area? click-row, click-column, env
+  click-sandbox-area?:bool <span class="Special">&lt;-</span> click-on-sandbox-area? click-row, click-column, env
   <span class="muControl">reply-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
   <span class="Comment"># narrower, is the click in the columns spanning the 'edit' button?</span>
-  first-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
+  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
   assert first-sandbox, <span class="Constant">[!!]</span>
-  sandbox-left-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">left:offset</span>
-  sandbox-right-margin:num<span class="Special"> &lt;- </span>get *first-sandbox, <span class="Constant">right:offset</span>
-  edit-button-left:num, edit-button-right:num, _<span class="Special"> &lt;- </span>sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  edit-button-vertical-area?:bool<span class="Special"> &lt;- </span>within-range? click-column, edit-button-left, edit-button-right
+  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
+  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
+  edit-button-left:num, edit-button-right:num, _ <span class="Special">&lt;-</span> sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  edit-button-vertical-area?:bool <span class="Special">&lt;-</span> within-range? click-column, edit-button-left, edit-button-right
   <span class="muControl">reply-unless</span> edit-button-vertical-area?, <span class="Constant">0/false</span>
   <span class="Comment"># finally, is sandbox editor empty?</span>
-  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  result<span class="Special"> &lt;- </span>empty-editor? current-sandbox
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+  result <span class="Special">&lt;-</span> empty-editor? current-sandbox
 ]
 
 <span class="muRecipe">def</span> try-edit-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-edit-button?:bool, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># identify the sandbox to edit, if the click was actually on the 'edit' button</span>
-  sandbox:&amp;:sandbox<span class="Special"> &lt;- </span>find-sandbox env, click-row
+  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> find-sandbox env, click-row
   <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
-  clicked-on-edit-button?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
+  clicked-on-edit-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
   <span class="Comment"># 'edit' button = 'copy' button + 'delete' button</span>
-  text:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
-  current-sandbox<span class="Special"> &lt;- </span>insert-text current-sandbox, text
-  env<span class="Special"> &lt;- </span>delete-sandbox env, sandbox
+  text:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+  current-sandbox <span class="Special">&lt;-</span> insert-text current-sandbox, text
+  env <span class="Special">&lt;-</span> delete-sandbox env, sandbox
   <span class="Comment"># reset scroll</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, <span class="Constant">-1</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
   <span class="Comment"># position cursor in sandbox editor</span>
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
 ]
 
 <span class="muScenario">scenario</span> sandbox-with-print-can-be-edited [
@@ -213,7 +213,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
   <span class="Comment"># right editor contains an instruction</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[print-integer screen, 4]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[print-integer screen, 4]</span>
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
@@ -236,7 +236,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># edit the sandbox</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">65</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 65</span>
   ]
   run [
     event-loop screen, console, env
@@ -255,7 +255,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes and scroll to second</span>
   assume-console [
@@ -279,7 +279,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># edit the second sandbox</span>
   assume-console [
-    left-click <span class="Constant">2</span>, <span class="Constant">55</span>
+    left-click<span class="Constant"> 2</span>,<span class="Constant"> 55</span>
   ]
   run [
     event-loop screen, console, env
@@ -302,7 +302,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># initialize environment</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   render-all screen, env, render
   <span class="Comment"># create 2 sandboxes</span>
   assume-console [
@@ -327,7 +327,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># edit the second sandbox, then resave</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">60</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 60</span>
     press F4
   ]
   run [

@@ -45,139 +45,139 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> push x:_elem, l:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>l:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result:&amp;:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
-  *result<span class="Special"> &lt;- </span>merge x, l
+  result:&amp;:list:_elem <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  *result <span class="Special">&lt;-</span> merge x, l
   <span class="muControl">reply</span> result
 ]
 
 <span class="muRecipe">def</span> first in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
+  result <span class="Special">&lt;-</span> get *in, <span class="Constant">value:offset</span>
 ]
 
 <span class="muRecipe">def</span> rest in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:list:_elem/contained-in:in [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
+  result <span class="Special">&lt;-</span> get *in, <span class="Constant">next:offset</span>
 ]
 
 <span class="muScenario">scenario</span> list-handling [
   run [
     <span class="Constant">local-scope</span>
-    x:&amp;:list:num<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-    x<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, x
-    x<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, x
-    <span class="Constant">10</span>:num/<span class="Special">raw &lt;- </span>first x
-    x<span class="Special"> &lt;- </span>rest x
-    <span class="Constant">11</span>:num/<span class="Special">raw &lt;- </span>first x
-    x<span class="Special"> &lt;- </span>rest x
-    <span class="Constant">12</span>:num/<span class="Special">raw &lt;- </span>first x
-    <span class="Constant">20</span>:&amp;:list:num/<span class="Special">raw &lt;- </span>rest x
+    x:&amp;:list:num <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+    x <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, x
+    x <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, x
+    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> first x
+    x <span class="Special">&lt;-</span> rest x
+    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> first x
+    x <span class="Special">&lt;-</span> rest x
+    12:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> first x
+    20:&amp;:list:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> rest x
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># nothing left</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 20</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># nothing left</span>
   ]
 ]
 
 <span class="muRecipe">def</span> length l:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">return-unless</span> l, <span class="Constant">0</span>
-  rest:&amp;:list:_elem<span class="Special"> &lt;- </span>rest l
-  length-of-rest:num<span class="Special"> &lt;- </span>length rest
-  result<span class="Special"> &lt;- </span>add length-of-rest, <span class="Constant">1</span>
+  <span class="muControl">return-unless</span> l,<span class="Constant"> 0</span>
+  rest:&amp;:list:_elem <span class="Special">&lt;-</span> rest l
+  length-of-rest:num <span class="Special">&lt;-</span> length rest
+  result <span class="Special">&lt;-</span> add length-of-rest,<span class="Constant"> 1</span>
 ]
 
 <span class="Comment"># insert 'x' after 'in'</span>
 <span class="muRecipe">def</span> insert x:_elem, in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:list:_elem [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  new-node:&amp;:list:_elem<span class="Special"> &lt;- </span>new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
-  *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">value:offset</span>, x
-  next-node:&amp;:list:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">next:offset</span>
-  *in<span class="Special"> &lt;- </span>put *in, <span class="Constant">next:offset</span>, new-node
-  *new-node<span class="Special"> &lt;- </span>put *new-node, <span class="Constant">next:offset</span>, next-node
+  new-node:&amp;:list:_elem <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(list _elem): type<span class="Delimiter">}</span>
+  *new-node <span class="Special">&lt;-</span> put *new-node, <span class="Constant">value:offset</span>, x
+  next-node:&amp;:list:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">next:offset</span>
+  *in <span class="Special">&lt;-</span> put *in, <span class="Constant">next:offset</span>, new-node
+  *new-node <span class="Special">&lt;-</span> put *new-node, <span class="Constant">next:offset</span>, next-node
 ]
 
 <span class="muScenario">scenario</span> inserting-into-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
-    list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
+    list2:&amp;:list:char <span class="Special">&lt;-</span> rest list  <span class="Comment"># inside list</span>
+    list2 <span class="Special">&lt;-</span> insert<span class="Constant"> 6</span>, list2
     <span class="Comment"># check structure</span>
-    list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
+    list2 <span class="Special">&lt;-</span> copy list
+    10:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    12:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    13:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>  <span class="Comment"># scanning next</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># inserted element</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> inserting-at-end-of-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># inside list</span>
-    list2<span class="Special"> &lt;- </span>rest list2  <span class="Comment"># now at end of list</span>
-    list2<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list2
+    list2:&amp;:list:char <span class="Special">&lt;-</span> rest list  <span class="Comment"># inside list</span>
+    list2 <span class="Special">&lt;-</span> rest list2  <span class="Comment"># now at end of list</span>
+    list2 <span class="Special">&lt;-</span> insert<span class="Constant"> 6</span>, list2
     <span class="Comment"># check structure like before</span>
-    list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
+    list2 <span class="Special">&lt;-</span> copy list
+    10:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    12:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    13:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>  <span class="Comment"># scanning next</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># inserted element</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> inserting-after-start-of-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
-    list<span class="Special"> &lt;- </span>insert <span class="Constant">6</span>, list
+    list <span class="Special">&lt;-</span> insert<span class="Constant"> 6</span>, list
     <span class="Comment"># check structure like before</span>
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">13</span>:char/<span class="Special">raw &lt;- </span>first list2
+    list2:&amp;:list:char <span class="Special">&lt;-</span> copy list
+    10:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    12:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    13:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">6</span>  <span class="Comment"># inserted element</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">13</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>  <span class="Comment"># scanning next</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># inserted element</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
   ]
 ]
 
@@ -190,106 +190,106 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if 'x' is null, return</span>
   <span class="muControl">return-unless</span> x
-  next-node:&amp;:list:_elem<span class="Special"> &lt;- </span>rest x
+  next-node:&amp;:list:_elem <span class="Special">&lt;-</span> rest x
   <span class="Comment"># clear next pointer of 'x'</span>
-  *x<span class="Special"> &lt;- </span>put *x, <span class="Constant">next:offset</span>, <span class="Constant">0</span>
+  *x <span class="Special">&lt;-</span> put *x, <span class="Constant">next:offset</span>,<span class="Constant"> 0</span>
   <span class="Comment"># if 'x' is at the head of 'in', return the new head</span>
-  at-head?:bool<span class="Special"> &lt;- </span>equal x, in
+  at-head?:bool <span class="Special">&lt;-</span> equal x, in
   <span class="muControl">return-if</span> at-head?, next-node
   <span class="Comment"># compute prev-node</span>
-  prev-node:&amp;:list:_elem<span class="Special"> &lt;- </span>copy in
-  curr:&amp;:list:_elem<span class="Special"> &lt;- </span>rest prev-node
+  prev-node:&amp;:list:_elem <span class="Special">&lt;-</span> copy in
+  curr:&amp;:list:_elem <span class="Special">&lt;-</span> rest prev-node
   <span class="Delimiter">{</span>
     <span class="muControl">return-unless</span> curr
-    found?:bool<span class="Special"> &lt;- </span>equal curr, x
+    found?:bool <span class="Special">&lt;-</span> equal curr, x
     <span class="muControl">break-if</span> found?
-    prev-node<span class="Special"> &lt;- </span>copy curr
-    curr<span class="Special"> &lt;- </span>rest curr
+    prev-node <span class="Special">&lt;-</span> copy curr
+    curr <span class="Special">&lt;-</span> rest curr
   <span class="Delimiter">}</span>
   <span class="Comment"># set its next pointer to skip 'x'</span>
-  *prev-node<span class="Special"> &lt;- </span>put *prev-node, <span class="Constant">next:offset</span>, next-node
+  *prev-node <span class="Special">&lt;-</span> put *prev-node, <span class="Constant">next:offset</span>, next-node
 ]
 
 <span class="muScenario">scenario</span> removing-from-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list  <span class="Comment"># second element</span>
-    list<span class="Special"> &lt;- </span>remove list2, list
-    <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
+    list2:&amp;:list:char <span class="Special">&lt;-</span> rest list  <span class="Comment"># second element</span>
+    list <span class="Special">&lt;-</span> remove list2, list
+    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal list2,<span class="Constant"> 0</span>
     <span class="Comment"># check structure like before</span>
-    list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
+    list2 <span class="Special">&lt;-</span> copy list
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    12:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    20:&amp;:list:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> rest list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># remove returned non-null</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 20</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no more elements</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-start-of-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
-    list<span class="Special"> &lt;- </span>remove list, list
+    list <span class="Special">&lt;-</span> remove list, list
     <span class="Comment"># check structure like before</span>
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">10</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
+    list2:&amp;:list:char <span class="Special">&lt;-</span> copy list
+    10:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    20:&amp;:list:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> rest list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">4</span>  <span class="Comment"># scanning next, skipping deleted element</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">3</span>
-    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>
+   <span class="Constant"> 20</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no more elements</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-end-of-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">4</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">5</span>, list
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 4</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 5</span>, list
   run [
     <span class="Comment"># delete last element</span>
-    list2:&amp;:list:char<span class="Special"> &lt;- </span>rest list
-    list2<span class="Special"> &lt;- </span>rest list2
-    list<span class="Special"> &lt;- </span>remove list2, list
-    <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>equal list2, <span class="Constant">0</span>
+    list2:&amp;:list:char <span class="Special">&lt;-</span> rest list
+    list2 <span class="Special">&lt;-</span> rest list2
+    list <span class="Special">&lt;-</span> remove list2, list
+    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal list2,<span class="Constant"> 0</span>
     <span class="Comment"># check structure like before</span>
-    list2<span class="Special"> &lt;- </span>copy list
-    <span class="Constant">11</span>:char/<span class="Special">raw &lt;- </span>first list2
-    list2<span class="Special"> &lt;- </span>rest list2
-    <span class="Constant">12</span>:char/<span class="Special">raw &lt;- </span>first list2
-    <span class="Constant">20</span>:&amp;:list:char/<span class="Special">raw &lt;- </span>rest list2
+    list2 <span class="Special">&lt;-</span> copy list
+    11:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    list2 <span class="Special">&lt;-</span> rest list2
+    12:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> first list2
+    20:&amp;:list:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> rest list2
   ]
   memory-should-contain [
-    <span class="Constant">10</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># remove returned non-null</span>
-    <span class="Constant">11</span><span class="Special"> &lt;- </span><span class="Constant">5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
-    <span class="Constant">12</span><span class="Special"> &lt;- </span><span class="Constant">4</span>
-    <span class="Constant">20</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># no more elements</span>
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># remove returned non-null</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 5</span>  <span class="Comment"># scanning next, skipping deleted element</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>
+   <span class="Constant"> 20</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no more elements</span>
   ]
 ]
 
 <span class="muScenario">scenario</span> removing-from-singleton-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:char<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, <span class="Constant">0</span>
+  list:&amp;:list:char <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>,<span class="Constant"> 0</span>
   run [
-    list<span class="Special"> &lt;- </span>remove list, list
-    <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy list
+    list <span class="Special">&lt;-</span> remove list, list
+    1:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy list
   ]
   memory-should-contain [
-    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># back to an empty list</span>
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># back to an empty list</span>
   ]
 ]
 
@@ -299,43 +299,43 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="muControl">reply-unless</span> list, temp
-  object:_elem<span class="Special"> &lt;- </span>first, list
-  list<span class="Special"> &lt;- </span>rest list
-  temp<span class="Special"> &lt;- </span>push object, temp
-  result<span class="Special"> &lt;- </span>reverse list, temp
+  object:_elem <span class="Special">&lt;-</span> first, list
+  list <span class="Special">&lt;-</span> rest list
+  temp <span class="Special">&lt;-</span> push object, temp
+  result <span class="Special">&lt;-</span> reverse list, temp
 ]
 
 <span class="muScenario">scenario</span> reverse-list [
   <span class="Constant">local-scope</span>
-  list:&amp;:list:number<span class="Special"> &lt;- </span>push <span class="Constant">1</span>, <span class="Constant">0</span>
-  list<span class="Special"> &lt;- </span>push <span class="Constant">2</span>, list
-  list<span class="Special"> &lt;- </span>push <span class="Constant">3</span>, list
+  list:&amp;:list:number <span class="Special">&lt;-</span> push<span class="Constant"> 1</span>,<span class="Constant"> 0</span>
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 2</span>, list
+  list <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>, list
   run [
     stash <span class="Constant">[list:]</span>, list
-    list<span class="Special"> &lt;- </span>reverse list
+    list <span class="Special">&lt;-</span> reverse list
     stash <span class="Constant">[reversed:]</span>, list
   ]
   trace-should-contain [
-    app: list: <span class="Constant">3</span><span class="muRecipe"> -&gt; </span><span class="Constant">2</span><span class="muRecipe"> -&gt; </span><span class="Constant">1</span>
-    app: reversed: <span class="Constant">1</span><span class="muRecipe"> -&gt; </span><span class="Constant">2</span><span class="muRecipe"> -&gt; </span><span class="Constant">3</span>
+    app: list:<span class="Constant"> 3</span><span class="muRecipe"> -&gt; </span>2<span class="muRecipe"> -&gt; </span>1
+    app: reversed:<span class="Constant"> 1</span><span class="muRecipe"> -&gt; </span>2<span class="muRecipe"> -&gt; </span>3
   ]
 ]
 
 <span class="muRecipe">def</span> to-text in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
-  buf<span class="Special"> &lt;- </span>to-buffer in, buf
-  result<span class="Special"> &lt;- </span>buffer-to-array buf
+  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 80</span>
+  buf <span class="Special">&lt;-</span> to-buffer in, buf
+  result <span class="Special">&lt;-</span> buffer-to-array buf
 ]
 
 <span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
 <span class="muRecipe">def</span> to-text-line in:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>result:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  buf:&amp;:buffer<span class="Special"> &lt;- </span>new-buffer <span class="Constant">80</span>
-  buf<span class="Special"> &lt;- </span>to-buffer in, buf, <span class="Constant">6</span>  <span class="Comment"># max elements to display</span>
-  result<span class="Special"> &lt;- </span>buffer-to-array buf
+  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 80</span>
+  buf <span class="Special">&lt;-</span> to-buffer in, buf,<span class="Constant"> 6</span>  <span class="Comment"># max elements to display</span>
+  result <span class="Special">&lt;-</span> buffer-to-array buf
 ]
 
 <span class="muRecipe">def</span> to-buffer in:&amp;:list:_elem, buf:&amp;:buffer<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
@@ -343,30 +343,30 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> in
-    buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[[]</span>]
+    buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[[]</span>]
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># append in.value to buf</span>
-  val:_elem<span class="Special"> &lt;- </span>get *in, <span class="Constant">value:offset</span>
-  buf<span class="Special"> &lt;- </span>append buf, val
+  val:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">value:offset</span>
+  buf <span class="Special">&lt;-</span> append buf, val
   <span class="Comment"># now prepare next</span>
-  next:&amp;:list:_elem<span class="Special"> &lt;- </span>rest in
-  nextn:num<span class="Special"> &lt;- </span>copy next
+  next:&amp;:list:_elem <span class="Special">&lt;-</span> rest in
+  nextn:num <span class="Special">&lt;-</span> copy next
   <span class="muControl">return-unless</span> next
-  buf<span class="Special"> &lt;- </span>append buf, <span class="Constant">[ -&gt; ]</span>
+  buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[ -&gt; ]</span>
   <span class="Comment"># and recurse</span>
-  remaining:num, optional-ingredient-found?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+  remaining:num, optional-ingredient-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> optional-ingredient-found?
     <span class="Comment"># unlimited recursion</span>
-    buf<span class="Special"> &lt;- </span>to-buffer next, buf
+    buf <span class="Special">&lt;-</span> to-buffer next, buf
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> remaining
     <span class="Comment"># limited recursion</span>
-    remaining<span class="Special"> &lt;- </span>subtract remaining, <span class="Constant">1</span>
-    buf<span class="Special"> &lt;- </span>to-buffer next, buf, remaining
+    remaining <span class="Special">&lt;-</span> subtract remaining,<span class="Constant"> 1</span>
+    buf <span class="Special">&lt;-</span> to-buffer next, buf, remaining
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># past recursion depth; insert ellipses and stop</span>
@@ -375,7 +375,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muScenario">scenario</span> stash-empty-list [
   <span class="Constant">local-scope</span>
-  x:&amp;:list:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  x:&amp;:list:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   run [
     stash x
   ]

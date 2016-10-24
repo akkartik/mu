@@ -37,10 +37,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> generator
     <span class="Comment"># generator is 0? use real random-number generator</span>
-    result<span class="Special"> &lt;- </span>real-random
+    result <span class="Special">&lt;-</span> real-random
     <span class="muControl">reply</span> result, <span class="Constant">0/false</span>
   <span class="Delimiter">}</span>
-  result, fail?, generator<span class="Special"> &lt;- </span>read generator
+  result, fail?, generator <span class="Special">&lt;-</span> read generator
 ]
 
 <span class="Comment"># helper for tests</span>
@@ -48,61 +48,61 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># compute result-len, space to allocate in result</span>
-  result-len:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  result-len:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
-    _, arg-received?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    _, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> arg-received?
-    result-len<span class="Special"> &lt;- </span>add result-len, <span class="Constant">1</span>
+    result-len <span class="Special">&lt;-</span> add result-len,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Constant">rewind-ingredients</span>
-  result-data:&amp;:@:num<span class="Special"> &lt;- </span>new <span class="Constant">number:type</span>, result-len
-  idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  result-data:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>, result-len
+  idx:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
-    curr:num, arg-received?:bool<span class="Special"> &lt;- </span><span class="Constant">next-ingredient</span>
+    curr:num, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
     <span class="muControl">break-unless</span> arg-received?
-    *result-data<span class="Special"> &lt;- </span>put-index *result-data, idx, curr
-    idx<span class="Special"> &lt;- </span>add idx, <span class="Constant">1</span>
+    *result-data <span class="Special">&lt;-</span> put-index *result-data, idx, curr
+    idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  result<span class="Special"> &lt;- </span>new-stream result-data
+  result <span class="Special">&lt;-</span> new-stream result-data
 ]
 
 <span class="muScenario">scenario</span> random-numbers-in-scenario [
   <span class="Constant">local-scope</span>
-  source:&amp;:stream:num<span class="Special"> &lt;- </span>assume-random-numbers <span class="Constant">34</span>, <span class="Constant">35</span>, <span class="Constant">37</span>
-  <span class="Constant">1</span>:num/<span class="Special">raw</span>, <span class="Constant">2</span>:bool/<span class="Special">raw &lt;- </span>random source
-  <span class="Constant">3</span>:num/<span class="Special">raw</span>, <span class="Constant">4</span>:bool/<span class="Special">raw &lt;- </span>random source
-  <span class="Constant">5</span>:num/<span class="Special">raw</span>, <span class="Constant">6</span>:bool/<span class="Special">raw &lt;- </span>random source
-  <span class="Constant">7</span>:num/<span class="Special">raw</span>, <span class="Constant">8</span>:bool/<span class="Special">raw &lt;- </span>random source
+  source:&amp;:stream:num <span class="Special">&lt;-</span> assume-random-numbers<span class="Constant"> 34</span>,<span class="Constant"> 35</span>,<span class="Constant"> 37</span>
+  1:num/<span class="Special">raw</span>, 2:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> random source
+  3:num/<span class="Special">raw</span>, 4:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> random source
+  5:num/<span class="Special">raw</span>, 6:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> random source
+  7:num/<span class="Special">raw</span>, 8:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> random source
   memory-should-contain [
-    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">34</span>
-    <span class="Constant">2</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
-    <span class="Constant">3</span><span class="Special"> &lt;- </span><span class="Constant">35</span>
-    <span class="Constant">4</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
-    <span class="Constant">5</span><span class="Special"> &lt;- </span><span class="Constant">37</span>
-    <span class="Constant">6</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># everything went well</span>
-    <span class="Constant">7</span><span class="Special"> &lt;- </span><span class="Constant">0</span>  <span class="Comment"># empty result</span>
-    <span class="Constant">8</span><span class="Special"> &lt;- </span><span class="Constant">1</span>  <span class="Comment"># end of stream</span>
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 34</span>
+   <span class="Constant"> 2</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># everything went well</span>
+   <span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 35</span>
+   <span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># everything went well</span>
+   <span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 37</span>
+   <span class="Constant"> 6</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># everything went well</span>
+   <span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># empty result</span>
+   <span class="Constant"> 8</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># end of stream</span>
   ]
 ]
 
 <span class="muRecipe">def</span> random-in-range generator:&amp;:stream:num, start:num, end:num<span class="muRecipe"> -&gt; </span>result:num, fail?:bool, generator:&amp;:stream:num [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result, fail?, generator<span class="Special"> &lt;- </span>random generator
+  result, fail?, generator <span class="Special">&lt;-</span> random generator
   <span class="muControl">return-if</span> fail?
-  delta:num<span class="Special"> &lt;- </span>subtract end, start
-  _, result<span class="Special"> &lt;- </span>divide-with-remainder result, delta
-  result<span class="Special"> &lt;- </span>add result, start
+  delta:num <span class="Special">&lt;-</span> subtract end, start
+  _, result <span class="Special">&lt;-</span> divide-with-remainder result, delta
+  result <span class="Special">&lt;-</span> add result, start
 ]
 
 <span class="muScenario">scenario</span> random-in-range [
   <span class="Constant">local-scope</span>
-  source:&amp;:stream:num<span class="Special"> &lt;- </span>assume-random-numbers <span class="Constant">91</span>
-  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>random-in-range source, <span class="Constant">40</span>, <span class="Constant">50</span>
+  source:&amp;:stream:num <span class="Special">&lt;-</span> assume-random-numbers<span class="Constant"> 91</span>
+  1:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> random-in-range source,<span class="Constant"> 40</span>,<span class="Constant"> 50</span>
   memory-should-contain [
-    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">41</span>
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 41</span>
   ]
 ]
 </pre>

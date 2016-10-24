@@ -40,13 +40,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">def</span> main [
   <span class="Constant">local-scope</span>
-  socket:num<span class="Special"> &lt;- </span>$open-server-socket <span class="Constant">8080/port</span>
+  socket:num <span class="Special">&lt;-</span> $open-server-socket <span class="Constant">8080/port</span>
   $print <span class="Constant">[Mu socket creation returned ]</span>, socket, <span class="Constant">10/newline</span>
   <span class="muControl">return-unless</span> socket
-  session:num<span class="Special"> &lt;- </span>$accept socket
-  contents:&amp;:source:char, sink:&amp;:sink:char<span class="Special"> &lt;- </span>new-channel <span class="Constant">30</span>
-  sink<span class="Special"> &lt;- </span>start-running receive-from-socket session, sink
-  query:text<span class="Special"> &lt;- </span>drain contents
+  session:num <span class="Special">&lt;-</span> $accept socket
+  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+  sink <span class="Special">&lt;-</span> start-running receive-from-socket session, sink
+  query:text <span class="Special">&lt;-</span> drain contents
   $print <span class="Constant">[Done reading from socket.]</span>, <span class="Constant">10/newline</span>
   write-to-socket session, <span class="Constant">[HTTP/1.0 200 OK</span>
 <span class="Constant">Content-type: text/plain</span>

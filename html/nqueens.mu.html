@@ -45,35 +45,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if 'queens' is already long enough, print it and return</span>
-  added-so-far:num<span class="Special"> &lt;- </span>length queens
+  added-so-far:num <span class="Special">&lt;-</span> length queens
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>greater-or-equal added-so-far, n
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal added-so-far, n
     <span class="muControl">break-unless</span> done?
     stash queens
-    <span class="muControl">return</span> <span class="Constant">1</span>
+    <span class="muControl">return</span><span class="Constant"> 1</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># still work to do</span>
-  next-rank:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  next-rank:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> queens
-    first:square<span class="Special"> &lt;- </span>first queens
-    existing-rank:num<span class="Special"> &lt;- </span>get first, <span class="Constant">rank:offset</span>
-    next-rank<span class="Special"> &lt;- </span>add existing-rank, <span class="Constant">1</span>
+    first:square <span class="Special">&lt;-</span> first queens
+    existing-rank:num <span class="Special">&lt;-</span> get first, <span class="Constant">rank:offset</span>
+    next-rank <span class="Special">&lt;-</span> add existing-rank,<span class="Constant"> 1</span>
   <span class="Delimiter">}</span>
-  result<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  next-file:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  result <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  next-file:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Delimiter">{</span>
-    done?:bool<span class="Special"> &lt;- </span>greater-or-equal next-file, n
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal next-file, n
     <span class="muControl">break-if</span> done?
-    curr:square<span class="Special"> &lt;- </span>merge next-rank, next-file
+    curr:square <span class="Special">&lt;-</span> merge next-rank, next-file
     <span class="Delimiter">{</span>
-      curr-conflicts?:bool<span class="Special"> &lt;- </span>conflict? curr, queens
+      curr-conflicts?:bool <span class="Special">&lt;-</span> conflict? curr, queens
       <span class="muControl">break-if</span> curr-conflicts?
-      new-queens:&amp;:list:square<span class="Special"> &lt;- </span>push curr, queens
-      sub-result:num<span class="Special"> &lt;- </span>nqueens n, new-queens
-      result<span class="Special"> &lt;- </span>add result, sub-result
+      new-queens:&amp;:list:square <span class="Special">&lt;-</span> push curr, queens
+      sub-result:num <span class="Special">&lt;-</span> nqueens n, new-queens
+      result <span class="Special">&lt;-</span> add result, sub-result
     <span class="Delimiter">}</span>
-    next-file<span class="Special"> &lt;- </span>add next-file, <span class="Constant">1</span>
+    next-file <span class="Special">&lt;-</span> add next-file,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
@@ -81,23 +81,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> conflict? curr:square, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  result1:bool<span class="Special"> &lt;- </span>conflicting-file? curr, queens
+  result1:bool <span class="Special">&lt;-</span> conflicting-file? curr, queens
   <span class="muControl">reply-if</span> result1, result1
-  result2:bool<span class="Special"> &lt;- </span>conflicting-diagonal? curr, queens
+  result2:bool <span class="Special">&lt;-</span> conflicting-diagonal? curr, queens
   <span class="muControl">reply</span> result2
 ]
 
 <span class="muRecipe">def</span> conflicting-file? curr:square, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr-file:num<span class="Special"> &lt;- </span>get curr, <span class="Constant">file:offset</span>
+  curr-file:num <span class="Special">&lt;-</span> get curr, <span class="Constant">file:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> queens
-    q:square<span class="Special"> &lt;- </span>first queens
-    qfile:num<span class="Special"> &lt;- </span>get q, <span class="Constant">file:offset</span>
-    file-match?:bool<span class="Special"> &lt;- </span>equal curr-file, qfile
+    q:square <span class="Special">&lt;-</span> first queens
+    qfile:num <span class="Special">&lt;-</span> get q, <span class="Constant">file:offset</span>
+    file-match?:bool <span class="Special">&lt;-</span> equal curr-file, qfile
     <span class="muControl">reply-if</span> file-match?, <span class="Constant">1/conflict-found</span>
-    queens<span class="Special"> &lt;- </span>rest queens
+    queens <span class="Special">&lt;-</span> rest queens
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
@@ -106,27 +106,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> conflicting-diagonal? curr:square, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  curr-rank:num<span class="Special"> &lt;- </span>get curr, <span class="Constant">rank:offset</span>
-  curr-file:num<span class="Special"> &lt;- </span>get curr, <span class="Constant">file:offset</span>
+  curr-rank:num <span class="Special">&lt;-</span> get curr, <span class="Constant">rank:offset</span>
+  curr-file:num <span class="Special">&lt;-</span> get curr, <span class="Constant">file:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> queens
-    q:square<span class="Special"> &lt;- </span>first queens
-    qrank:num<span class="Special"> &lt;- </span>get q, <span class="Constant">rank:offset</span>
-    qfile:num<span class="Special"> &lt;- </span>get q, <span class="Constant">file:offset</span>
-    rank-delta:num<span class="Special"> &lt;- </span>subtract qrank, curr-rank
-    file-delta:num<span class="Special"> &lt;- </span>subtract qfile, curr-file
-    rank-delta<span class="Special"> &lt;- </span>abs rank-delta
-    file-delta<span class="Special"> &lt;- </span>abs file-delta
-    diagonal-match?:bool<span class="Special"> &lt;- </span>equal rank-delta, file-delta
+    q:square <span class="Special">&lt;-</span> first queens
+    qrank:num <span class="Special">&lt;-</span> get q, <span class="Constant">rank:offset</span>
+    qfile:num <span class="Special">&lt;-</span> get q, <span class="Constant">file:offset</span>
+    rank-delta:num <span class="Special">&lt;-</span> subtract qrank, curr-rank
+    file-delta:num <span class="Special">&lt;-</span> subtract qfile, curr-file
+    rank-delta <span class="Special">&lt;-</span> abs rank-delta
+    file-delta <span class="Special">&lt;-</span> abs file-delta
+    diagonal-match?:bool <span class="Special">&lt;-</span> equal rank-delta, file-delta
     <span class="muControl">reply-if</span> diagonal-match?, <span class="Constant">1/conflict-found</span>
-    queens<span class="Special"> &lt;- </span>rest queens
+    queens <span class="Special">&lt;-</span> rest queens
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
 ]
 
 <span class="muRecipe">def</span> main [
-  nqueens <span class="Constant">4</span>
+  nqueens<span class="Constant"> 4</span>
   $dump-trace <span class="Constant">[app]</span>
 ]
 </pre>

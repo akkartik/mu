@@ -43,24 +43,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> update-recipes env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  recipes:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipes:offset</span>
-  in:text<span class="Special"> &lt;- </span>editor-contents recipes
+  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+  in:text <span class="Special">&lt;-</span> editor-contents recipes
   save <span class="Constant">[recipes.mu]</span>, in
-  recipe-errors:text<span class="Special"> &lt;- </span>reload in
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">recipe-errors:offset</span>, recipe-errors
+  recipe-errors:text <span class="Special">&lt;-</span> reload in
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">recipe-errors:offset</span>, recipe-errors
   <span class="Comment"># if recipe editor has errors, stop</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> recipe-errors
     update-status screen, <span class="Constant">[errors found     ]</span>, <span class="Constant">1/red</span>
-    errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
+    errors-found? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
-  errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">0/false</span>
+  errors-found? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
-  trace <span class="Constant">11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render status]</span>
-  recipe-errors:text<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
+  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render status]</span>
+  recipe-errors:text <span class="Special">&lt;-</span> get *env, <span class="Constant">recipe-errors:offset</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> recipe-errors
     update-status screen, <span class="Constant">[errors found     ]</span>, <span class="Constant">1/red</span>
@@ -69,9 +69,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-recipe-components-end&gt;</span> [
   <span class="Delimiter">{</span>
-    recipe-errors:text<span class="Special"> &lt;- </span>get *env, <span class="Constant">recipe-errors:offset</span>
+    recipe-errors:text <span class="Special">&lt;-</span> get *env, <span class="Constant">recipe-errors:offset</span>
     <span class="muControl">break-unless</span> recipe-errors
-    row, screen<span class="Special"> &lt;- </span>render-text screen, recipe-errors, left, right, <span class="Constant">1/red</span>, row
+    row, screen <span class="Special">&lt;-</span> render-text screen, recipe-errors, left, right, <span class="Constant">1/red</span>, row
   <span class="Delimiter">}</span>
 ]
 
@@ -80,30 +80,30 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;programming-environment-initialization&gt;</span> [
-  *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">error-index:offset</span>, <span class="Constant">-1</span>
+  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">error-index:offset</span>,<span class="Constant"> -1</span>
 ]
 
 <span class="muRecipe">after</span> <span class="Constant">&lt;run-sandboxes-begin&gt;</span> [
-  *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">error-index:offset</span>, <span class="Constant">-1</span>
+  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">error-index:offset</span>,<span class="Constant"> -1</span>
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;run-sandboxes-end&gt;</span> [
   <span class="Delimiter">{</span>
-    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    sandboxes-completed-successfully?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num <span class="Special">&lt;-</span> get *env, <span class="Constant">error-index:offset</span>
+    sandboxes-completed-successfully?:bool <span class="Special">&lt;-</span> equal error-index,<span class="Constant"> -1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
-    errors-found?<span class="Special"> &lt;- </span>copy <span class="Constant">1/true</span>
+    errors-found? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
   <span class="Delimiter">}</span>
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;render-components-end&gt;</span> [
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> recipe-errors
-    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    sandboxes-completed-successfully?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num <span class="Special">&lt;-</span> get *env, <span class="Constant">error-index:offset</span>
+    sandboxes-completed-successfully?:bool <span class="Special">&lt;-</span> equal error-index,<span class="Constant"> -1</span>
     <span class="muControl">break-if</span> sandboxes-completed-successfully?
-    error-index-text:text<span class="Special"> &lt;- </span>to-text error-index
-    status:text<span class="Special"> &lt;- </span>interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
+    error-index-text:text <span class="Special">&lt;-</span> to-text error-index
+    status:text <span class="Special">&lt;-</span> interpolate <span class="Constant">[errors found (_)    ]</span>, error-index-text
     update-status screen, status, <span class="Constant">1/red</span>
   <span class="Delimiter">}</span>
 ]
@@ -115,35 +115,35 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> update-sandbox sandbox:&amp;:sandbox, env:&amp;:environment, idx:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox, env:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  data:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">data:offset</span>
-  response:text, errors:text, fake-screen:&amp;:screen, trace:text, completed?:bool<span class="Special"> &lt;- </span>run-sandboxed data
-  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response:offset</span>, response
-  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">errors:offset</span>, errors
-  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
-  *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">trace:offset</span>, trace
+  data:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
+  response:text, errors:text, fake-screen:&amp;:screen, trace:text, completed?:bool <span class="Special">&lt;-</span> run-sandboxed data
+  *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">response:offset</span>, response
+  *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">errors:offset</span>, errors
+  *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">screen:offset</span>, fake-screen
+  *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">trace:offset</span>, trace
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> errors
     <span class="muControl">break-if</span> completed?:bool
-    errors<span class="Special"> &lt;- </span>new <span class="Constant">[took too long!</span>
+    errors <span class="Special">&lt;-</span> new <span class="Constant">[took too long!</span>
 <span class="Constant">]</span>
-    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">errors:offset</span>, errors
+    *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">errors:offset</span>, errors
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> errors
-    error-index:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">error-index:offset</span>
-    error-not-set?:bool<span class="Special"> &lt;- </span>equal error-index, <span class="Constant">-1</span>
+    error-index:num <span class="Special">&lt;-</span> get *env, <span class="Constant">error-index:offset</span>
+    error-not-set?:bool <span class="Special">&lt;-</span> equal error-index,<span class="Constant"> -1</span>
     <span class="muControl">break-unless</span> error-not-set?
-    *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">error-index:offset</span>, idx
+    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">error-index:offset</span>, idx
   <span class="Delimiter">}</span>
 ]
 
 <span class="Comment"># make sure we render any trace</span>
 <span class="muRecipe">after</span> <span class="Constant">&lt;render-sandbox-trace-done&gt;</span> [
   <span class="Delimiter">{</span>
-    sandbox-errors:text<span class="Special"> &lt;- </span>get *sandbox, <span class="Constant">errors:offset</span>
+    sandbox-errors:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">errors:offset</span>
     <span class="muControl">break-unless</span> sandbox-errors
-    *sandbox<span class="Special"> &lt;- </span>put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>, <span class="Constant">0</span>  <span class="Comment"># no response</span>
-    row, screen<span class="Special"> &lt;- </span>render-text screen, sandbox-errors, left, right, <span class="Constant">1/red</span>, row
+    *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">response-starting-row-on-screen:offset</span>,<span class="Constant"> 0</span>  <span class="Comment"># no response</span>
+    row, screen <span class="Special">&lt;-</span> render-text screen, sandbox-errors, left, right, <span class="Constant">1/red</span>, row
     <span class="Comment"># don't try to print anything more for this sandbox</span>
     <span class="muControl">jump</span> <span class="Constant">+render-sandbox-end</span>
   <span class="Delimiter">}</span>
@@ -153,11 +153,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  get 123:num, foo:offset</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -193,9 +193,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">80</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 80</span>
     <span class="Comment"># create invalid sandbox 1</span>
     type <span class="Constant">[get foo, x:offset]</span>
     press F4
@@ -216,9 +216,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">80</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 80</span>
     <span class="Comment"># create invalid sandbox 2</span>
     type <span class="Constant">[get foo, x:offset]</span>
     press F4
@@ -242,7 +242,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
   assume-console [
     press F4  <span class="Comment"># generate error</span>
   ]
@@ -250,7 +250,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     event-loop screen, console, env
   ]
   assume-console [
-    left-click <span class="Constant">3</span>, <span class="Constant">58</span>
+    left-click<span class="Constant"> 3</span>,<span class="Constant"> 58</span>
     press ctrl-k
     type <span class="Constant">[add 2, 2]</span>  <span class="Comment"># valid code</span>
     press F4  <span class="Comment"># update sandbox</span>
@@ -276,13 +276,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># define a shape-shifting recipe with an error</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">load-ingredients</span>
 <span class="Constant">y:&amp;:num &lt;- copy 0</span>
 <span class="Constant">z &lt;- add x, y</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo 2]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo 2]</span>
   assume-console [
     press F4
   ]
@@ -324,12 +324,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># overload a well-known shape-shifting recipe</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe length l:&amp;:list:_elem -&gt; n:num [</span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe length l:&amp;:list:_elem -&gt; n:num [</span>
 <span class="Constant">]</span>]
   <span class="Comment"># call code that uses other variants of it, but not it itself</span>
-  sandbox:text<span class="Special"> &lt;- </span>new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
+  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
 <span class="Constant">to-text x]</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, sandbox
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, sandbox
   <span class="Comment"># run it once</span>
   assume-console [
     press F4
@@ -384,11 +384,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -410,11 +410,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe is incomplete (unbalanced '[')</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo \\[</span>
 <span class="Constant">  x &lt;- copy 0</span>
 <span class="Constant">]</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -437,13 +437,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:&amp;:point &lt;- new point:type</span>
 <span class="Constant">  get x:&amp;:point, 1:offset</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -469,14 +469,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:num &lt;- copy 0</span>
 <span class="Constant">  y:&amp;:point &lt;- new point:type</span>
 <span class="Constant">  get *y:&amp;:point, x:num</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -504,12 +504,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   <span class="Comment"># try to run a file with an error</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[ </span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
 <span class="Constant">recipe foo [</span>
 <span class="Constant">  local-scope</span>
 <span class="Constant">  x:num &lt;- copy y:num</span>
 <span class="Constant">]</span>]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
@@ -550,8 +550,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  sandbox:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, sandbox
+  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[get 1234:num, foo:offset]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, sandbox
   <span class="Comment"># run the code in the editors</span>
   assume-console [
     press F4
@@ -612,8 +612,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># right editor contains an illegal instruction</span>
-  sandbox:text<span class="Special"> &lt;- </span>new <span class="Constant">[get 1234:num, foo:offset]</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, <span class="Constant">[]</span>, sandbox
+  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[get 1234:num, foo:offset]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, sandbox
   <span class="Comment"># run the code in the editors multiple times</span>
   assume-console [
     press F4
@@ -642,13 +642,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
   <span class="Comment"># left editor is empty</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo [</span>
 <span class="Constant">  {</span>
 <span class="Constant">    loop</span>
 <span class="Constant">  }</span>
 <span class="Constant">]</span>]
   <span class="Comment"># right editor contains an instruction</span>
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
@@ -673,15 +673,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># generate a stash and a error</span>
-  recipes:text<span class="Special"> &lt;- </span>new <span class="Constant">[recipe foo [</span>
+  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo [</span>
 <span class="Constant">local-scope</span>
 <span class="Constant">a:num &lt;- next-ingredient</span>
 <span class="Constant">b:num &lt;- next-ingredient</span>
 <span class="Constant">stash [dividing by]</span>, b
-_, c:num<span class="Special"> &lt;- </span>divide-with-remainder a, b
+_, c:num <span class="Special">&lt;-</span> divide-with-remainder a, b
 <span class="muControl">reply</span> b
 ]]
-  env:&amp;:environment<span class="Special"> &lt;- </span>new-programming-environment screen, recipes, <span class="Constant">[foo 4, 0]</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo 4, 0]</span>
   <span class="Comment"># run</span>
   assume-console [
     press F4
@@ -701,7 +701,7 @@ _, c:num<span class="Special"> &lt;- </span>divide-with-remainder a, b
   ]
   <span class="Comment"># click on the call in the sandbox</span>
   assume-console [
-    left-click <span class="Constant">4</span>, <span class="Constant">55</span>
+    left-click<span class="Constant"> 4</span>,<span class="Constant"> 55</span>
   ]
   run [
     event-loop screen, console, env
