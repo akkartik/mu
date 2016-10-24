@@ -268,7 +268,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
         close-paren?:bool<span class="Special"> &lt;- </span>equal c, <span class="Constant">41/close-paren</span>
         <span class="muControl">break-unless</span> close-paren?
         read in  <span class="Comment"># skip ')'</span>
-        <span class="muControl">break</span> +end-pair
+        <span class="muControl">break</span> <span class="Constant">+end-pair</span>
       <span class="Delimiter">}</span>
       <span class="Comment"># still here? read next element of pair</span>
       next:&amp;:cell, in<span class="Special"> &lt;- </span>parse in
@@ -378,7 +378,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def)]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; abc | &lt; def | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+    app/parse: <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;</span> def <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -406,7 +406,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[ ( abc  def ) ]</span>  <span class="Comment"># extra spaces</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; abc | &lt; def | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+    app/parse: <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;</span> def <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -434,7 +434,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def ghi)]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; abc | &lt; def | &lt; ghi | <span class="Constant">&lt;&gt;</span> &gt; &gt; &gt;
+    app/parse: <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;</span> def <span class="Constant">|</span> <span class="Constant">&lt;</span> ghi <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -470,7 +470,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[((abc))]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; &lt; abc | <span class="Constant">&lt;&gt;</span> &gt; | <span class="Constant">&lt;&gt;</span> &gt;
+    app/parse: <span class="Constant">&lt;</span> <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -495,7 +495,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[((abc) def)]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; &lt; abc | <span class="Constant">&lt;&gt;</span> &gt; | &lt; def | <span class="Constant">&lt;&gt;</span> &gt; &gt;
+    app/parse: <span class="Constant">&lt;</span> <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">|</span> <span class="Constant">&lt;</span> def <span class="Constant">|</span> <span class="Constant">&lt;&gt;</span> <span class="Constant">&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -550,7 +550,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[(abc . def)]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; abc | def &gt;
+    app/parse: <span class="Constant">&lt;</span> abc <span class="Constant">|</span> def <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x
@@ -574,7 +574,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   s:text<span class="Special"> &lt;- </span>new <span class="Constant">[(abc def . ghi)]</span>
   x:&amp;:cell<span class="Special"> &lt;- </span>parse s
   trace-should-contain [
-    app/parse: &lt; abc | &lt; def | ghi &gt; &gt;
+    app/parse: <span class="Constant">&lt;</span> abc <span class="Constant">|</span> <span class="Constant">&lt;</span> def <span class="Constant">|</span> ghi <span class="Constant">&gt;</span> <span class="Constant">&gt;</span>
   ]
   <span class="Constant">10</span>:bool/<span class="Special">raw &lt;- </span>is-pair? x
   x1:&amp;:cell<span class="Special"> &lt;- </span>first x

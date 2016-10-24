@@ -172,7 +172,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       screen<span class="Special"> &lt;- </span>update-status screen, <span class="Constant">[                 ]</span>, <span class="Constant">245/grey</span>
     <span class="Delimiter">}</span>
     screen<span class="Special"> &lt;- </span>update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    <span class="muControl">loop</span> +next-event
+    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -253,7 +253,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   current-sandbox:&amp;:editor<span class="Special"> &lt;- </span>get *env, <span class="Constant">current-sandbox:offset</span>
   <span class="Comment"># first clear previous versions, in case we deleted some sandbox</span>
-  $system <span class="Constant">[rm lesson/[0-9]</span>* &gt;/dev/null <span class="Constant">2</span>&gt;/dev/null]  <span class="Comment"># some shells can't handle '&gt;&amp;'</span>
+  $system <span class="Constant">[rm lesson/[0-9]</span>* <span class="Constant">&gt;/dev/null</span> <span class="Constant">2</span>&gt;/dev/null]  <span class="Comment"># some shells can't handle '&gt;&amp;'</span>
   curr:&amp;:sandbox<span class="Special"> &lt;- </span>get *env, <span class="Constant">sandbox:offset</span>
   idx:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
   <span class="Delimiter">{</span>
@@ -415,7 +415,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       column<span class="Special"> &lt;- </span>copy left
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-      <span class="muControl">loop</span> +next-character  <span class="Comment"># retry i</span>
+      <span class="muControl">loop</span> <span class="Constant">+next-character</span>  <span class="Comment"># retry i</span>
     <span class="Delimiter">}</span>
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="Delimiter">{</span>
@@ -434,7 +434,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       row<span class="Special"> &lt;- </span>add row, <span class="Constant">1</span>
       column<span class="Special"> &lt;- </span>copy left
       screen<span class="Special"> &lt;- </span>move-cursor screen, row, column
-      <span class="muControl">loop</span> +next-character
+      <span class="muControl">loop</span> <span class="Constant">+next-character</span>
     <span class="Delimiter">}</span>
     print screen, c, color
     column<span class="Special"> &lt;- </span>add column, <span class="Constant">1</span>
@@ -741,7 +741,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> at-bottom-of-editor?
     more-to-scroll?:bool<span class="Special"> &lt;- </span>more-to-scroll? env, screen
     <span class="muControl">break-if</span> more-to-scroll?
-    <span class="muControl">loop</span> +next-event
+    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> sandbox-in-focus?
@@ -749,7 +749,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> page-down?
     more-to-scroll?:bool<span class="Special"> &lt;- </span>more-to-scroll? env, screen
     <span class="muControl">break-if</span> more-to-scroll?
-    <span class="muControl">loop</span> +next-event
+    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -760,7 +760,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> page-down?
     more-to-scroll?:bool<span class="Special"> &lt;- </span>more-to-scroll? env, screen
     <span class="muControl">break-if</span> more-to-scroll?
-    <span class="muControl">loop</span> +next-event
+    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -898,14 +898,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       number-of-sandboxes:num<span class="Special"> &lt;- </span>get *env, <span class="Constant">number-of-sandboxes:offset</span>
       max:num<span class="Special"> &lt;- </span>subtract number-of-sandboxes, <span class="Constant">1</span>
       at-end?:bool<span class="Special"> &lt;- </span>greater-or-equal render-from, max
-      <span class="muControl">jump-if</span> at-end?, +finish-event  <span class="Comment"># render nothing</span>
+      <span class="muControl">jump-if</span> at-end?, <span class="Constant">+finish-event</span>  <span class="Comment"># render nothing</span>
       render-from<span class="Special"> &lt;- </span>add render-from, <span class="Constant">1</span>
       *env<span class="Special"> &lt;- </span>put *env, <span class="Constant">render-from:offset</span>, render-from
     <span class="Delimiter">}</span>
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
     show-screen screen
-    <span class="muControl">jump</span> +finish-event
+    <span class="muControl">jump</span> <span class="Constant">+finish-event</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -936,7 +936,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     hide-screen screen
     screen<span class="Special"> &lt;- </span>render-sandbox-side screen, env, render
     show-screen screen
-    <span class="muControl">jump</span> +finish-event
+    <span class="muControl">jump</span> <span class="Constant">+finish-event</span>
   <span class="Delimiter">}</span>
 ]
 

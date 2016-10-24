@@ -33,6 +33,7 @@ let b:cmt_head = "#? "
 
 " Mu strings are inside [ ... ] and can span multiple lines
 " don't match '[' at end of line, that's usually code
+syntax match muLiteral %^[^ a-zA-Z0-9(){}\[\]#$_*@&,=-][^ ,]*\|[ ,]\@<=[^ a-zA-Z0-9(){}\[\]#$_*@&,=-][^ ,]*%
 syntax region muString start=+\[[^\]]+ end=+\]+
 syntax match muString "\[\]"
 highlight link muString String
@@ -45,8 +46,9 @@ syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+/[^ ,]*%
 syntax match muLiteral "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
+" labels
 syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
-syntax match muLiteral "<[^ ]*>"
+" other literal types
 syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
 syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
 syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
