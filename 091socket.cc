@@ -302,17 +302,17 @@ case _WRITE_TO_SOCKET: {
 :(before "End Primitive Recipe Implementations")
 case _WRITE_TO_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
-  socket_t* session = reinterpret_cast<socket_t*>(x);
-//?   cerr << "writing to socket " << session->fd << '\n';
-  // write just one character at a time to the session socket
+  socket_t* socket = reinterpret_cast<socket_t*>(x);
+//?   cerr << "writing to socket " << socket->fd << '\n';
+  // write just one character at a time to the socket
   long long int y = static_cast<long long int>(ingredients.at(1).at(0));
   char c = static_cast<char>(y);
 //?   cerr << "  " << c << '\n';
-  if (write(session->fd, &c, 1) != 1) {
+  if (write(socket->fd, &c, 1) != 1) {
     raise << maybe(current_recipe_name()) << "failed to write to socket\n" << end();
     exit(0);
   }
-  long long int result = reinterpret_cast<long long int>(session);
+  long long int result = reinterpret_cast<long long int>(socket);
   products.resize(1);
   products.at(0).push_back(result);
   break;
