@@ -312,9 +312,8 @@ case _WRITE_TO_SOCKET: {
     raise << maybe(current_recipe_name()) << "failed to write to socket\n" << end();
     exit(0);
   }
-  long long int result = reinterpret_cast<long long int>(socket);
   products.resize(1);
-  products.at(0).push_back(result);
+  products.at(0).push_back(ingredients.at(0).at(0));
   break;
 }
 
