@@ -58,7 +58,7 @@ def serve-one-request socket:num, request-handler:request-handler [
   assert session, [ 
 F - example-server-test: $accept failed]
   contents:&:source:char, sink:&:sink:char <- new-channel 30
-  sink <- start-running receive-from-socket session, sink
+  start-running receive-from-socket session, sink
   query:text <- drain contents
   response:text <- call request-handler, query
   write-to-socket session, response
