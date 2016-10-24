@@ -312,7 +312,7 @@ case _CLOSE_SOCKET: {
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a character, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   break;
