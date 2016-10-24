@@ -166,7 +166,14 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   {
-    req:text, eof?:bool <- $read-from-socket socket, 4096/bytes
+    +next-attempt
+    req:text, found?:bool, eof?:bool, error:num <- $read-from-socket socket, 4096/bytes
+    break-if error
+    {
+      break-if found?
+      switch
+      loop +next-attempt
+    }
     bytes-read:num <- length *req
     i:num <- copy 0
     {

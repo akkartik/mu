@@ -202,22 +202,32 @@ case _READ_FROM_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "second ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
-  if (SIZE(inst.products) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two products, but got '" << inst.original_string << "'\n" << end();
+  int nprod = SIZE(inst.products);
+  if (nprod == 0 || nprod > 4) {
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires 1-4 products, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_text(inst.products.at(0))) {
     raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a text (address array character), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
     break;
   }
-  if (!is_mu_boolean(inst.products.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-socket' should be a boolean (eof?), but got '" << to_string(inst.products.at(1)) << "'\n" << end();
+  if (nprod > 1 && !is_mu_boolean(inst.products.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second product of '$read-from-socket' should be a boolean (data received?), but got '" << to_string(inst.products.at(1)) << "'\n" << end();
+    break;
+  }
+  if (nprod > 2 && !is_mu_boolean(inst.products.at(2))) {
+    raise << maybe(get(Recipe, r).name) << "third product of '$read-from-socket' should be a boolean (eof?), but got '" << to_string(inst.products.at(2)) << "'\n" << end();
+    break;
+  }
+  if (nprod > 3 && !is_mu_number(inst.products.at(3))) {
+    raise << maybe(get(Recipe, r).name) << "fourth product of '$read-from-socket' should be a number (error code), but got '" << to_string(inst.products.at(3)) << "'\n" << end();
     break;
   }
   break;
 }
 :(before "End Primitive Recipe Implementations")
 case _READ_FROM_SOCKET: {
+  products.resize(4);
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
   // 1. we'd like to simply read() from the socket
@@ -227,26 +237,37 @@ case _READ_FROM_SOCKET: {
   // 3. but poll() will block on EOF, so only use poll() on the very first
   // $read-from-socket on a socket
   if (!socket->polled) {
-    socket->polled = true;
     pollfd p;
     bzero(&p, sizeof(p));
     p.fd = socket->fd;
     p.events = POLLIN | POLLHUP;
-    if (poll(&p, /*num pollfds*/1, /*no timeout*/-1) <= 0) {
-      raise << maybe(current_recipe_name()) << "error in $read-from-socket\n" << end();
-      products.resize(2);
-      products.at(0).push_back(0);
-      products.at(1).push_back(false);
+    int status = poll(&p, /*num pollfds*/1, /*timeout*/100/*ms*/);
+    if (status == 0) {
+      products.at(0).push_back(/*no data*/0);
+      products.at(1).push_back(/*found*/false);
+      products.at(2).push_back(/*eof*/false);
+      products.at(3).push_back(/*error*/0);
       break;
     }
+    else if (status < 0) {
+      int error_code = errno;
+      raise << maybe(current_recipe_name()) << "error in $read-from-socket\n" << end();
+      products.at(0).push_back(/*no data*/0);
+      products.at(1).push_back(/*found*/false);
+      products.at(2).push_back(/*eof*/false);
+      products.at(3).push_back(error_code);
+      break;
+    }
+    socket->polled = true;
   }
   int bytes = static_cast<int>(ingredients.at(1).at(0));
   char* contents = new char[bytes];
   bzero(contents, bytes);
   int bytes_read = recv(socket->fd, contents, bytes-/*terminal null*/1, MSG_DONTWAIT);
-  products.resize(2);
   products.at(0).push_back(new_mu_text(contents));
-  products.at(1).push_back(bytes_read <= 0);
+  products.at(1).push_back(/*found*/true);
+  products.at(2).push_back(/*eof*/bytes_read <= 0);
+  products.at(3).push_back(/*error*/0);
   delete contents;
   break;
 }
