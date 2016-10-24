@@ -100,10 +100,6 @@ def wait-for-event console:&:console -> console:&:console [
 def has-more-events? console:&:console -> result:bool [
   local-scope
   load-ingredients
-  {
-    break-unless console
-    # fake consoles should be plenty fast; never skip
-    return 0/false
-  }
+  return-if console, 0/false  # fake consoles should be plenty fast; never skip
   result <- interactions-left?
 ]

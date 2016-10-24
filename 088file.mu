@@ -14,16 +14,16 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
   local-scope
   load-ingredients
   {
-    break-if resources
-    # real file system
-    file:num <- $open-file-for-reading filename
-    assert file, [file not found]
-    contents:&:source:char, sink:&:sink:char <- new-channel 30
-    start-running receive-from-file file, sink
+    break-unless resources
+    # fake file system
+    contents <- start-reading-from-fake-resources resources, filename
     return
   }
-  # fake file system
-  contents <- start-reading-from-fake-resources resources, filename
+  # real file system
+  file:num <- $open-file-for-reading filename
+  assert file, [file not found]
+  contents:&:source:char, sink:&:sink:char <- new-channel 30
+  start-running receive-from-file file, sink
 ]
 
 def start-reading-from-fake-resources resources:&:resources, resource:text -> contents:&:source:char [
@@ -82,16 +82,16 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
   load-ingredients
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
-    break-if resources
-    # real file system
-    file:num <- $open-file-for-writing filename
-    assert file, [no such file]
-    routine-id <- start-running transmit-to-file file, source
+    break-unless resources
+    # fake file system
+    # beware: doesn't support multiple concurrent writes yet
+    routine-id <- start-running transmit-to-fake-file resources, filename, source
     reply
   }
-  # fake file system
-  # beware: doesn't support multiple concurrent writes yet
-  routine-id <- start-running transmit-to-fake-file resources, filename, source
+  # real file system
+  file:num <- $open-file-for-writing filename
+  assert file, [no such file]
+  routine-id <- start-running transmit-to-file file, source
 ]
 
 def transmit-to-file file:num, source:&:source:char -> source:&:source:char [

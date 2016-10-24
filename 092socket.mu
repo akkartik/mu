@@ -74,19 +74,19 @@ def start-reading-from-network resources:&:resources, uri:text -> contents:&:sou
     port <- copy 80/http-port
   }
   {
-    break-if resources
-    # real network
-    host:text, path:text <- split-at uri, 47/slash
-    socket:num <- $open-client-socket host, port
-    assert socket, [contents]
-    req:text <- interpolate [GET _ HTTP/1.1], path
-    request-socket socket, req
-    contents:&:source:char, sink:&:sink:char <- new-channel 10000
-    start-running receive-from-socket socket, sink
+    break-unless resources
+    # fake network
+    contents <- start-reading-from-fake-resources resources, uri
     return
   }
-  # fake network
-  contents <- start-reading-from-fake-resources resources, uri
+  # real network
+  host:text, path:text <- split-at uri, 47/slash
+  socket:num <- $open-client-socket host, port
+  assert socket, [contents]
+  req:text <- interpolate [GET _ HTTP/1.1], path
+  request-socket socket, req
+  contents:&:source:char, sink:&:sink:char <- new-channel 10000
+  start-running receive-from-socket socket, sink
 ]
 
 def request-socket socket:num, s:text -> socket:num [

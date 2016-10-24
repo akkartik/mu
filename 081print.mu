@@ -27,44 +27,40 @@ def new-fake-screen w:num, h:num -> result:&:screen [
 def clear-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists
   {
-    break-unless screen
-    # clear fake screen
-    buf:&:@:screen-cell <- get *screen, data:offset
-    max:num <- length *buf
-    i:num <- copy 0
-    {
-      done?:bool <- greater-or-equal i, max
-      break-if done?
-      curr:screen-cell <- merge 0/empty, 7/white
-      *buf <- put-index *buf, i, curr
-      i <- add i, 1
-      loop
-    }
-    # reset cursor
-    *screen <- put *screen, cursor-row:offset, 0
-    *screen <- put *screen, cursor-column:offset, 0
+    break-if screen
+    # real screen
+    clear-display
     return
   }
-  # otherwise, real screen
-  clear-display
+  # fake screen
+  buf:&:@:screen-cell <- get *screen, data:offset
+  max:num <- length *buf
+  i:num <- copy 0
+  {
+    done?:bool <- greater-or-equal i, max
+    break-if done?
+    curr:screen-cell <- merge 0/empty, 7/white
+    *buf <- put-index *buf, i, curr
+    i <- add i, 1
+    loop
+  }
+  # reset cursor
+  *screen <- put *screen, cursor-row:offset, 0
+  *screen <- put *screen, cursor-column:offset, 0
 ]
 
 def sync-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  {
-    break-if screen
-    sync-display
-  }
-  # do nothing for fake screens
+  return-if screen  # do nothing for fake screens
+  sync-display
 ]
 
 def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients
-  return-unless screen, 1/true
+  return-unless screen, 1/true  # do nothing for real screens
   buf:&:@:screen-cell <- get *screen, data:offset
   i:num <- copy 0
   len:num <- length *buf
@@ -99,76 +95,76 @@ def print screen:&:screen, c:char -> screen:&:screen [
   c2:num <- character-to-code c
   trace 90, [print-character], c2
   {
-    # if x exists
-    # (handle special cases exactly like in the real screen)
-    break-unless screen
-    width:num <- get *screen, num-columns:offset
-    height:num <- get *screen, num-rows:offset
-    # if cursor is out of bounds, silently exit
-    row:num <- get *screen, cursor-row:offset
-    legal?:bool <- greater-or-equal row, 0
-    return-unless legal?
-    legal? <- lesser-than row, height
-    return-unless legal?
-    column:num <- get *screen, cursor-column:offset
-    legal? <- greater-or-equal column, 0
-    return-unless legal?
-    legal? <- lesser-than column, width
-    return-unless legal?
+    # real screen
+    break-if screen
+    print-character-to-display c, color, bg-color
+    return
+  }
+  # fake screen
+  # (handle special cases exactly like in the real screen)
+  width:num <- get *screen, num-columns:offset
+  height:num <- get *screen, num-rows:offset
+  # if cursor is out of bounds, silently exit
+  row:num <- get *screen, cursor-row:offset
+  legal?:bool <- greater-or-equal row, 0
+  return-unless legal?
+  legal? <- lesser-than row, height
+  return-unless legal?
+  column:num <- get *screen, cursor-column:offset
+  legal? <- greater-or-equal column, 0
+  return-unless legal?
+  legal? <- lesser-than column, width
+  return-unless legal?
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
-    # special-case: newline
+  # special-case: newline
+  {
+    newline?:bool <- equal c, 10/newline
+    break-unless newline?
     {
-      newline?:bool <- equal c, 10/newline
-      break-unless newline?
-      {
-        # unless cursor is already at bottom
-        bottom:num <- subtract height, 1
-        at-bottom?:bool <- greater-or-equal row, bottom
-        break-if at-bottom?
-        # move it to the next row
-        column <- copy 0
-        *screen <- put *screen, cursor-column:offset, column
-        row <- add row, 1
-        *screen <- put *screen, cursor-row:offset, row
-      }
-      return
-    }
-    # save character in fake screen
-    index:num <- multiply row, width
-    index <- add index, column
-    buf:&:@:screen-cell <- get *screen, data:offset
-    len:num <- length *buf
-    # special-case: backspace
-    {
-      backspace?:bool <- equal c, 8
-      break-unless backspace?
-      {
-        # unless cursor is already at left margin
-        at-left?:bool <- lesser-or-equal column, 0
-        break-if at-left?
-        # clear previous location
-        column <- subtract column, 1
-        *screen <- put *screen, cursor-column:offset, column
-        index <- subtract index, 1
-        cursor:screen-cell <- merge 32/space, 7/white
-        *buf <- put-index *buf, index, cursor
-      }
-      return
-    }
-    cursor:screen-cell <- merge c, color
-    *buf <- put-index *buf, index, cursor
-    # increment column unless it's already all the way to the right
-    {
-      right:num <- subtract width, 1
-      at-right?:bool <- greater-or-equal column, right
-      break-if at-right?
-      column <- add column, 1
+      # unless cursor is already at bottom
+      bottom:num <- subtract height, 1
+      at-bottom?:bool <- greater-or-equal row, bottom
+      break-if at-bottom?
+      # move it to the next row
+      column <- copy 0
       *screen <- put *screen, cursor-column:offset, column
+      row <- add row, 1
+      *screen <- put *screen, cursor-row:offset, row
     }
     return
   }
-  # otherwise, real screen
-  print-character-to-display c, color, bg-color
+  # save character in fake screen
+  index:num <- multiply row, width
+  index <- add index, column
+  buf:&:@:screen-cell <- get *screen, data:offset
+  len:num <- length *buf
+  # special-case: backspace
+  {
+    backspace?:bool <- equal c, 8
+    break-unless backspace?
+    {
+      # unless cursor is already at left margin
+      at-left?:bool <- lesser-or-equal column, 0
+      break-if at-left?
+      # clear previous location
+      column <- subtract column, 1
+      *screen <- put *screen, cursor-column:offset, column
+      index <- subtract index, 1
+      cursor:screen-cell <- merge 32/space, 7/white
+      *buf <- put-index *buf, index, cursor
+    }
+    return
+  }
+  cursor:screen-cell <- merge c, color
+  *buf <- put-index *buf, index, cursor
+  # increment column unless it's already all the way to the right
+  {
+    right:num <- subtract width, 1
+    at-right?:bool <- greater-or-equal column, right
+    break-if at-right?
+    column <- add column, 1
+    *screen <- put *screen, cursor-column:offset, column
+  }
 ]
 
 scenario print-character-at-top-left [
@@ -365,27 +361,27 @@ def clear-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
   space:char <- copy 0/nul
-  # if x exists, clear line in fake screen
   {
-    break-unless screen
-    width:num <- get *screen, num-columns:offset
-    column:num <- get *screen, cursor-column:offset
-    original-column:num <- copy column
-    # space over the entire line
-    {
-      right:num <- subtract width, 1
-      done?:bool <- greater-or-equal column, right
-      break-if done?
-      print screen, space
-      column <- add column, 1
-      loop
-    }
-    # now back to where the cursor was
-    *screen <- put *screen, cursor-column:offset, original-column
+    break-if screen
+    # real screen
+    clear-line-on-display
     return
   }
-  # otherwise, real screen
-  clear-line-on-display
+  # fake screen
+  width:num <- get *screen, num-columns:offset
+  column:num <- get *screen, cursor-column:offset
+  original-column:num <- copy column
+  # space over the entire line
+  {
+    right:num <- subtract width, 1
+    done?:bool <- greater-or-equal column, right
+    break-if done?
+    print screen, space
+    column <- add column, 1
+    loop
+  }
+  # now back to where the cursor was
+  *screen <- put *screen, cursor-column:offset, original-column
 ]
 
 def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
@@ -411,28 +407,29 @@ def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
 def cursor-position screen:&:screen -> row:num, column:num [
   local-scope
   load-ingredients
-  # if x exists, lookup cursor in fake screen
   {
-    break-unless screen
-    row:num <- get *screen, cursor-row:offset
-    column:num <- get *screen, cursor-column:offset
+    break-if screen
+    # real screen
+    row, column <- cursor-position-on-display
     return
   }
-  row, column <- cursor-position-on-display
+  # fake screen
+  row:num <- get *screen, cursor-row:offset
+  column:num <- get *screen, cursor-column:offset
 ]
 
 def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
-    break-unless screen
-    *screen <- put *screen, cursor-row:offset, new-row
-    *screen <- put *screen, cursor-column:offset, new-column
+    break-if screen
+    # real screen
+    move-cursor-on-display new-row, new-column
     return
   }
-  # otherwise, real screen
-  move-cursor-on-display new-row, new-column
+  # fake screen
+  *screen <- put *screen, cursor-row:offset, new-row
+  *screen <- put *screen, cursor-column:offset, new-column
 ]
 
 scenario clear-line-erases-printed-characters [
@@ -469,85 +466,73 @@ scenario clear-line-erases-printed-characters [
 def cursor-down screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
-    break-unless screen
-    {
-      # increment row unless it's already all the way down
-      height:num <- get *screen, num-rows:offset
-      row:num <- get *screen, cursor-row:offset
-      max:num <- subtract height, 1
-      at-bottom?:bool <- greater-or-equal row, max
-      break-if at-bottom?
-      row <- add row, 1
-      *screen <- put *screen, cursor-row:offset, row
-    }
+    break-if screen
+    # real screen
+    move-cursor-down-on-display
     return
   }
-  # otherwise, real screen
-  move-cursor-down-on-display
+  # fake screen
+  height:num <- get *screen, num-rows:offset
+  row:num <- get *screen, cursor-row:offset
+  max:num <- subtract height, 1
+  at-bottom?:bool <- greater-or-equal row, max
+  return-if at-bottom?
+  row <- add row, 1
+  *screen <- put *screen, cursor-row:offset, row
 ]
 
 def cursor-up screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
-    break-unless screen
-    {
-      # decrement row unless it's already all the way up
-      row:num <- get *screen, cursor-row:offset
-      at-top?:bool <- lesser-or-equal row, 0
-      break-if at-top?
-      row <- subtract row, 1
-      *screen <- put *screen, cursor-row:offset, row
-    }
+    break-if screen
+    # real screen
+    move-cursor-up-on-display
     return
   }
-  # otherwise, real screen
-  move-cursor-up-on-display
+  # fake screen
+  row:num <- get *screen, cursor-row:offset
+  at-top?:bool <- lesser-or-equal row, 0
+  return-if at-top?
+  row <- subtract row, 1
+  *screen <- put *screen, cursor-row:offset, row
 ]
 
 def cursor-right screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
-    break-unless screen
-    {
-      # increment column unless it's already all the way to the right
-      width:num <- get *screen, num-columns:offset
-      column:num <- get *screen, cursor-column:offset
-      max:num <- subtract width, 1
-      at-bottom?:bool <- greater-or-equal column, max
-      break-if at-bottom?
-      column <- add column, 1
-      *screen <- put *screen, cursor-column:offset, column
-    }
+    break-if screen
+    # real screen
+    move-cursor-right-on-display
     return
   }
-  # otherwise, real screen
-  move-cursor-right-on-display
+  # fake screen
+  width:num <- get *screen, num-columns:offset
+  column:num <- get *screen, cursor-column:offset
+  max:num <- subtract width, 1
+  at-bottom?:bool <- greater-or-equal column, max
+  return-if at-bottom?
+  column <- add column, 1
+  *screen <- put *screen, cursor-column:offset, column
 ]
 
 def cursor-left screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
-    break-unless screen
-    {
-      # decrement column unless it's already all the way to the left
-      column:num <- get *screen, cursor-column:offset
-      at-top?:bool <- lesser-or-equal column, 0
-      break-if at-top?
-      column <- subtract column, 1
-      *screen <- put *screen, cursor-column:offset, column
-    }
+    break-if screen
+    # real screen
+    move-cursor-left-on-display
     return
   }
-  # otherwise, real screen
-  move-cursor-left-on-display
+  # fake screen
+  column:num <- get *screen, cursor-column:offset
+  at-top?:bool <- lesser-or-equal column, 0
+  return-if at-top?
+  column <- subtract column, 1
+  *screen <- put *screen, cursor-column:offset, column
 ]
 
 def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
@@ -575,76 +560,58 @@ def move-cursor-to-column screen:&:screen, column:num -> screen:&:screen [
 def screen-width screen:&:screen -> width:num [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
     break-unless screen
+    # fake screen
     width <- get *screen, num-columns:offset
     return
   }
-  # otherwise, real screen
+  # real screen
   width <- display-width
 ]
 
 def screen-height screen:&:screen -> height:num [
   local-scope
   load-ingredients
-  # if x exists, move cursor in fake screen
   {
     break-unless screen
+    # fake screen
     height <- get *screen, num-rows:offset
     return
   }
-  # otherwise, real screen
+  # real screen
   height <- display-height
 ]
 
 def hide-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists (not real display), do nothing
-  {
-    break-unless screen
-    return
-  }
-  # otherwise, real screen
+  reply-if screen  # fake screen; do nothing
+  # real screen
   hide-cursor-on-display
 ]
 
 def show-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists (not real display), do nothing
-  {
-    break-unless screen
-    return
-  }
-  # otherwise, real screen
+  reply-if screen  # fake screen; do nothing
+  # real screen
   show-cursor-on-display
 ]
 
 def hide-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists (not real display), do nothing
-  # todo: help test this
-  {
-    break-unless screen
-    return
-  }
-  # otherwise, real screen
+  reply-if screen  # fake screen; do nothing
+  # real screen
   hide-display
 ]
 
 def show-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  # if x exists (not real display), do nothing
-  # todo: help test this
-  {
-    break-unless screen
-    return
-  }
-  # otherwise, real screen
+  reply-if screen  # fake screen; do nothing
+  # real screen
   show-display
 ]
 
