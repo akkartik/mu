@@ -90,7 +90,9 @@ def wait-for-event console:&:console -> console:&:console [
   load-ingredients
   {
     _, found?:bool <- read-event console
-    loop-unless found?
+    break-if found?
+    switch
+    loop
   }
 ]
 
