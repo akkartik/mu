@@ -16,12 +16,10 @@ F - example-server-test: $open-server-socket failed]
   ]
   source:&:source:char <- start-reading-from-network 0/real-resources, [localhost/], port
   response:text <- drain source
-#?   $print [app: done draining], 10/newline
   10:@:char/raw <- copy *response
   memory-should-contain [
     10:array:character <- [abc]
   ]
-#?   $print [app: closing server socket], 10/newline
   $close-socket socket
 ]
 # helper just for this scenario
@@ -65,7 +63,6 @@ F - example-server-test: $accept failed]
   query:text <- drain contents
   response:text <- call request-handler, query
   write-to-socket session, response
-#?   $print [app: closing session socket], 10/newline
   $close-socket session
 ]
 
@@ -122,7 +119,6 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
       done?:bool <- greater-or-equal i, bytes-read
       break-if done?
       c:char <- index *req, i  # todo: unicode
-#?       $print [read ], c, 10/newline
       sink <- write sink, c
       i <- add i, 1
       loop
@@ -130,14 +126,12 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
     loop-unless eof?
   }
   sink <- close sink
-#?   $print [read status: ] found? [ ] eof? [ ] error 10/newline
 ]
 
 def receive-from-client-socket-and-close socket:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
   load-ingredients
   sink <- receive-from-socket socket, sink
-#?   $print [app: closing socket after reading], 10/newline
   $close-socket socket
 ]
 
@@ -149,7 +143,6 @@ def write-to-socket socket:num, s:text [
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-#?     $print i, 10/newline
     c:char <- index *s, i
     $write-to-socket socket, c
     i <- add i, 1

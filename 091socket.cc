@@ -50,7 +50,6 @@ case _OPEN_CLIENT_SOCKET: {
     break;
   }
   long long int result = reinterpret_cast<long long int>(client);
-//?   cerr << "$open-client-socket: " << client->fd << " -> " << result << '\n';
   products.at(0).push_back(static_cast<double>(result));
   break;
 }
@@ -109,7 +108,6 @@ case _OPEN_SERVER_SOCKET: {
     break;
   }
   long long int result = reinterpret_cast<long long int>(server);
-//?   cerr << "$open-server-socket: " << server->fd << " -> " << result << '\n';
   products.at(0).push_back(static_cast<double>(result));
   break;
 }
@@ -170,11 +168,9 @@ case _ACCEPT: {
   if (server) {
     socket_t* session = accept_session(server);
     long long int result = reinterpret_cast<long long int>(session);
-//?     cerr << "$accept from " << server->fd << ": " << session->fd << " -> " << result << '\n';
     products.at(0).push_back(static_cast<double>(result));
   }
   else {
-//?     cerr << "error in $accept from " << server->fd << '\n';
     products.at(0).push_back(0);
   }
   break;
@@ -234,7 +230,6 @@ case _READ_FROM_SOCKET: {
   products.resize(4);
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
-//?   cerr << "$read-from-socket: polling " << socket->fd << '\n';
   // 1. we'd like to simply read() from the socket
   // however read() on a socket never returns EOF, so we wouldn't know when to stop
   // 2. recv() can signal EOF, but it also signals "no data yet" in the beginning
@@ -248,7 +243,6 @@ case _READ_FROM_SOCKET: {
     p.events = POLLIN | POLLHUP;
     int poll_result = poll(&p, /*num pollfds*/1, /*timeout*/100/*ms*/);
     if (poll_result == 0) {
-//?       cerr << "$read-from-socket: poll() timeout\n";
       products.at(0).push_back(/*no data*/0);
       products.at(1).push_back(/*found*/false);
       products.at(2).push_back(/*eof*/false);
@@ -266,14 +260,12 @@ case _READ_FROM_SOCKET: {
     }
     socket->polled = true;
   }
-//?   cerr << "reading from socket " << socket->fd << '\n';
   int bytes = static_cast<int>(ingredients.at(1).at(0));
   char* contents = new char[bytes];
   bzero(contents, bytes);
   int error_code = 0;
   int bytes_read = recv(socket->fd, contents, bytes-/*terminal null*/1, MSG_DONTWAIT);
   if (bytes_read < 0) error_code = errno;
-//?   cerr << "bytes read: " << bytes_read << '\n';
 //?   if (error_code) {
 //?     ostringstream out;
 //?     out << "error in $read-from-socket " << socket->fd;
@@ -303,11 +295,9 @@ case _WRITE_TO_SOCKET: {
 case _WRITE_TO_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
-//?   cerr << "writing to socket " << socket->fd << '\n';
   // write just one character at a time to the socket
   long long int y = static_cast<long long int>(ingredients.at(1).at(0));
   char c = static_cast<char>(y);
-//?   cerr << "  " << c << '\n';
   if (write(socket->fd, &c, 1) != 1) {
     raise << maybe(current_recipe_name()) << "failed to write to socket\n" << end();
     exit(0);
@@ -337,7 +327,6 @@ case _CLOSE_SOCKET: {
 case _CLOSE_SOCKET: {
   long long int x = static_cast<long long int>(ingredients.at(0).at(0));
   socket_t* socket = reinterpret_cast<socket_t*>(x);
-//?   cerr << "closing " << socket->fd << '\n';
   close(socket->fd);
   delete socket;
   break;
