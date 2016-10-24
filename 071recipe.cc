@@ -339,7 +339,7 @@ def main [
   }
 ]
 # error should be as if foo is not a recipe
-+error: main: missing type for foo in 'break-if foo'
++error: main: missing type for 'foo' in 'break-if foo'
 
 :(before "End JUMP_IF Checks")
 check_for_recipe_literals(inst, get(Recipe, r));
@@ -349,6 +349,6 @@ check_for_recipe_literals(inst, get(Recipe, r));
 void check_for_recipe_literals(const instruction& inst, const recipe& caller) {
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (is_mu_recipe(inst.ingredients.at(i)))
-      raise << maybe(caller.name) << "missing type for " << inst.ingredients.at(i).original_string << " in '" << inst.original_string << "'\n" << end();
+      raise << maybe(caller.name) << "missing type for '" << inst.ingredients.at(i).original_string << "' in '" << inst.original_string << "'\n" << end();
   }
 }
