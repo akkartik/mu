@@ -216,12 +216,12 @@ Similarly you can fake the keyboard to pretend someone typed something:
 
 <img alt='fake console (keyboard, mouse, ..)' src='html/fake-console.png'>
 
-A fake file-system can map arbitrary paths to contents:
+Within tests you can map arbitrary paths (local files or URLs) to contents:
 
-<img alt='fake file-system' src='html/fake-filesystem.png'>
+<img alt='fake file-system and network' src='html/resources.png'>
 
-As we add network support, graphics, audio, and so on, we'll augment scenarios
-with corresponding abilities.
+As we add graphics, audio, and so on, we'll augment scenarios with
+corresponding abilities.
 
 ---
 
