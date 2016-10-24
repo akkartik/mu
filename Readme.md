@@ -1,3 +1,5 @@
+_by Stephen Malina and Kartik Agaram_
+
 Mu explores ways to turn arbitrary manual tests into reproducible automated
 tests. Hoped-for benefits:
 
@@ -30,8 +32,8 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
 
-   I'm building up similarly *dependency-injected* interfaces to the keyboard,
-   mouse, touch screen, disk, network, etc.
+   We're building up similarly *dependency-injected* interfaces to the
+   keyboard, mouse, disk, network, graphics card, speakers, etc.
 
 1. Support for testing side-effects like performance, deadlock-freedom,
    race-freeness, memory usage, etc. Mu's *white-box tests* can check not just
@@ -59,19 +61,18 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    enabling more peripheral features. Think of it as a cleaned-up `git log`
    for the project. ([More information.](http://akkartik.name/post/wart-layers))
 
-Since I don't understand how Linux and other modern platforms work, Mu is
-built on an idealized VM while I learn. Eventually the plan is to transplant
-what I learn back to Linux.
+Since we don't understand how Linux and other modern platforms work, Mu is
+built on an idealized VM while we [learn](https://github.com/akkartik/mu/wiki).
+Eventually the plan is to transplant Mu's interfaces back to Linux.
 
-To minimize my workload, Mu doesn't have a high-level language yet. Instead,
-I've been programming directly in the VM's idealized assembly language. I
-expected this to be painful, but it's had some surprising benefits. First,
-programs as lists of instructions seem to be easier for non-programmers to
-comprehend than programs as trees of expressions. Second, I've found that
-Literate Programming using layers makes assembly much more ergonomic. Third,
-labels for gotos turn out to be great waypoints to insert code at from future
-layers; when I tried to divide C programs into layers, I sometimes had to
-split statements in two so I could insert code between them.
+To minimize workload, Mu doesn't have a high-level language yet. Instead, we
+program directly in the VM's idealized assembly language. We expected this to
+be painful, but it's had some surprising benefits. First, programs as lists of
+instructions seem to be easier for non-programmers to comprehend than programs
+as trees of expressions. Second, we've found that Literate Programming using
+layers makes assembly much more ergonomic. Third, labels for gotos turn out to
+be great waypoints to insert code at from future layers, more powerful than
+nested expressions on a single line.
 
 High level languages today seem to provide three kinds of benefits:
 expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
@@ -102,7 +103,7 @@ As a simple example, here's a program with some arithmetic:
 
 <img alt='code example' src='html/example1.png'>
 
-As I said before, Mu functions are lists of instructions, one to a line. Each
+As stated before, Mu functions are lists of instructions, one to a line. Each
 instruction operates on some *ingredients* and returns some *products*.
 
   ```
@@ -167,10 +168,10 @@ replacing `load-ingredients` with explicit instructions to load each
 ingredient separately, and to explicitly return products to the caller. After
 this translation functions are once again just lists of instructions.
 
-This alternative syntax isn't just an implementation detail. I've actually
-found it easier to teach functions to non-programmers by starting with this
-syntax, so that they can visualize a pipe from caller to callee, and see the
-names of variables get translated one by one through the pipe.
+This alternative syntax isn't just an implementation detail. It turns out to
+be easier to teach functions to non-programmers by starting with this syntax,
+so that they can visualize a pipe from caller to callee, and see the names of
+variables get translated one by one through the pipe.
 
 ---
 
@@ -375,14 +376,14 @@ screen.
 If you're still reading, here are some more things to check out:
 
 a) Look at the [chessboard program](http://akkartik.github.io/mu/html/chessboard.mu.html)
-for a more complex example where I write tests showing blocking reads from the
-keyboard and what gets printed to the screen -- things we don't typically
-associate with automated tests.
+for a more complex example with tests of blocking reads from the keyboard and
+what gets printed to the screen -- things we don't typically associate with
+automated tests.
 
 b) Try skimming the [colorized source code](https://akkartik.github.io/mu).
-I'd like it to eventually be possible to get a pretty good sense for how
-things work just by skimming the files in order, skimming the top of each file
-and ignoring details lower down. Tell me how successful my efforts are.
+You should be able to get a pretty good sense for how things work just by
+skimming the files in order, skimming the top of each file and ignoring
+details lower down.
 
 c) Try running the tests:
 
