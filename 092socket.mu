@@ -20,7 +20,7 @@ F - example-server-test: $open-server-socket failed]
   memory-should-contain [
     10:array:character <- [abc]
   ]
-  $close-socket socket
+  socket <- $close-socket socket
 ]
 # helper just for this scenario
 def example-handler query:text -> response:text [
@@ -52,7 +52,7 @@ scenario example-client-test [
 
 type request-handler = (recipe text -> text)
 
-def serve-one-request socket:num, request-handler:request-handler [
+def serve-one-request socket:num, request-handler:request-handler -> socket:num [
   local-scope
   load-ingredients
   session:num <- $accept socket
@@ -63,7 +63,7 @@ F - example-server-test: $accept failed]
   query:text <- drain contents
   response:text <- call request-handler, query
   write-to-socket session, response
-  $close-socket session
+  session <- $close-socket session
 ]
 
 def start-reading-from-network resources:&:resources, uri:text -> contents:&:source:char [
@@ -101,7 +101,7 @@ def request-socket socket:num, s:text -> socket:num [
   $write-to-socket socket, 10/lf
 ]
 
-def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char, socket:num [
   local-scope
   load-ingredients
   {
@@ -128,11 +128,11 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char [
   sink <- close sink
 ]
 
-def receive-from-client-socket-and-close socket:num, sink:&:sink:char -> sink:&:sink:char [
+def receive-from-client-socket-and-close socket:num, sink:&:sink:char -> sink:&:sink:char, socket:num [
   local-scope
   load-ingredients
   sink <- receive-from-socket socket, sink
-  $close-socket socket
+  socket <- $close-socket socket
 ]
 
 def write-to-socket socket:num, s:text [

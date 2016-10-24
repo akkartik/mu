@@ -321,6 +321,14 @@ case _CLOSE_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "first ingredient of '$close-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
+  if (SIZE(inst.products) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (inst.products.at(0).name != inst.ingredients.at(0).name) {
+    raise << maybe(get(Recipe, r).name) << "product of '$close-socket' must be first ingredient '" << inst.ingredients.at(0).original_string << "', but got '" << inst.products.at(0).original_string << "'\n" << end();
+    break;
+  }
   break;
 }
 :(before "End Primitive Recipe Implementations")
@@ -329,6 +337,8 @@ case _CLOSE_SOCKET: {
   socket_t* socket = reinterpret_cast<socket_t*>(x);
   close(socket->fd);
   delete socket;
+  products.resize(1);
+  products.at(0).push_back(0);  // make sure we can't reuse the socket
   break;
 }
 
