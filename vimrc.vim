@@ -38,9 +38,10 @@ function! HighlightTangledFile()
   syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
   syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
 endfunction
-call HighlightTangledFile()
-autocmd BufRead,BufNewFile *.mu set ft=mu
-autocmd BufRead,BufNewFile [0-9]* call HighlightTangledFile()
+augroup LocalVimrc
+  autocmd BufRead,BufNewFile *.mu set ft=mu
+  autocmd BufRead,BufNewFile *.cc call HighlightTangledFile()
+augroup END
 
 " Scenarios considered:
 "   opening or starting vim with a new or existing file without an extension (should interpret as C++)
