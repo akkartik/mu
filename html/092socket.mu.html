@@ -19,7 +19,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
 .Special { color: #c00000; }
-.CommentedCode { color: #6c6c6c; }
 .muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
 -->
@@ -33,98 +32,95 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 </head>
 <body>
 <pre id='vimCodeElement'>
-<span class="Comment"># Wrappers around socket primitives that take a 'local-network' object and are</span>
-<span class="Comment"># thus easier to test.</span>
-<span class="Comment">#</span>
-<span class="Comment"># The current semantics of fake port-connections don't match UNIX socket ones,</span>
-<span class="Comment"># but we'll improve them as we learn more.</span>
+<span class="Comment"># Wrappers around socket primitives that are easier to test.</span>
 
-<span class="muData">container</span> local-network [
-  data:&amp;:@:port-connection
+<span class="Comment"># To test server operations, just run a real client against localhost.</span>
+<span class="muScenario">scenario</span> example-server-test [
+  <span class="Constant">local-scope</span>
+  <span class="Comment"># test server without a fake on a random (real) port</span>
+  <span class="Comment"># that way repeatedly running the test will give ports time to timeout and</span>
+  <span class="Comment"># close before reusing them</span>
+  make-random-nondeterministic
+  port:num <span class="Special">&lt;-</span> random-in-range <span class="Constant">0/real-random-numbers</span>,<span class="Constant"> 8000</span>,<span class="Constant"> 8100</span>
+  run [
+    socket:num <span class="Special">&lt;-</span> $open-server-socket port
+    assert socket, <span class="Constant">[ </span>
+<span class="Constant">F - example-server-test: $open-server-socket failed]</span>
+    handler-routine:number <span class="Special">&lt;-</span> start-running serve-one-request socket, example-handler
+  ]
+  source:&amp;:source:char <span class="Special">&lt;-</span> start-reading-from-network <span class="Constant">0/real-resources</span>, <span class="Constant">[localhost/]</span>, port
+  response:text <span class="Special">&lt;-</span> drain source
+  10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *response
+  memory-should-contain [
+    10:array:character <span class="Special">&lt;-</span> <span class="Constant">[abc]</span>
+  ]
 ]
-
-<span class="Comment"># Port connections represent connections to ports on localhost.</span>
-<span class="Comment"># Before passing a local-network object to network functions</span>
-<span class="Comment"># `start-reading-socket` and `start-writing-socket`, add port-connections to</span>
-<span class="Comment"># the local-network.</span>
-<span class="Comment">#</span>
-<span class="Comment"># For reading, `receive-from-socket` will check for a</span>
-<span class="Comment"># port-connection on the port parameter that's been passed in. If there's</span>
-<span class="Comment"># no port-connection for that port, it will return nothing and log an error.</span>
-<span class="Comment"># If there is a port-connection for that port, it will transmit the contents</span>
-<span class="Comment"># to the provided sink.</span>
-<span class="Comment">#</span>
-<span class="Comment"># For writing, `start-writing-socket` returns a sink connecting the</span>
-<span class="Comment"># caller to the socket on the passed-in port.</span>
-<span class="muData">container</span> port-connection [
-  port:num
-  contents:text
-]
-
-<span class="muRecipe">def</span> new-port-connection port:num, contents:text<span class="muRecipe"> -&gt; </span>p:&amp;:port-connection [
+<span class="Comment"># helper just for this scenario</span>
+<span class="muRecipe">def</span> example-handler query:text<span class="muRecipe"> -&gt; </span>response:text [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  p:&amp;:port-connection <span class="Special">&lt;-</span> new <span class="Constant">port-connection:type</span>
-  *p <span class="Special">&lt;-</span> merge port, contents
+  <span class="muControl">reply</span> <span class="Constant">[abc]</span>
 ]
 
-<span class="muRecipe">def</span> new-fake-network<span class="muRecipe"> -&gt; </span>n:&amp;:local-network [
+<span class="Comment"># To test client operations, use `assume-resources` with a filename that</span>
+<span class="Comment"># begins with a hostname. (Filenames starting with '/' are assumed to be</span>
+<span class="Comment"># local.)</span>
+<span class="muScenario">scenario</span> example-client-test [
   <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  n:&amp;:local-network <span class="Special">&lt;-</span> new <span class="Constant">local-network:type</span>
-  local-network-ports:&amp;:@:port-connection <span class="Special">&lt;-</span> new <span class="Constant">port-connection:type</span>,<span class="Constant"> 0</span>
-  *n <span class="Special">&lt;-</span> put *n, <span class="Constant">data:offset</span>, local-network-ports
-]
-
-<span class="muScenario">scenario</span> write-to-fake-socket [
-  <span class="Constant">local-scope</span>
-  single-port-network:&amp;:local-network <span class="Special">&lt;-</span> new-fake-network
-  sink:&amp;:sink:char, writer:num/routine <span class="Special">&lt;-</span> start-writing-socket single-port-network,<span class="Constant"> 8080</span>
-  sink <span class="Special">&lt;-</span> write sink, <span class="Constant">120/x</span>
-  close sink
-  wait-for-routine writer
-  tested-port-connections:&amp;:@:port-connection <span class="Special">&lt;-</span> get *single-port-network, <span class="Constant">data:offset</span>
-  tested-port-connection:port-connection <span class="Special">&lt;-</span> index *tested-port-connections,<span class="Constant"> 0</span>
-  contents:text <span class="Special">&lt;-</span> get tested-port-connection, <span class="Constant">contents:offset</span>
+  assume-resources [
+    <span class="Constant">[example.com/]</span> <span class="Special">&lt;-</span> [
+<span class="Constant">      |abc|</span>
+    ]
+  ]
+  run [
+    source:&amp;:source:char <span class="Special">&lt;-</span> start-reading-from-network resources, <span class="Constant">[example.com/]</span>
+  ]
+  contents:text <span class="Special">&lt;-</span> drain source
   10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *contents
   memory-should-contain [
-    10:array:character <span class="Special">&lt;-</span> <span class="Constant">[x]</span>
+    10:array:character <span class="Special">&lt;-</span> <span class="Constant">[abc</span>
+<span class="Constant">]</span>
   ]
+]
+
+<span class="muData">type</span> request-handler = (recipe text<span class="muRecipe"> -&gt; </span>text)
+
+<span class="muRecipe">def</span> serve-one-request socket:num, request-handler:request-handler [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  session:num <span class="Special">&lt;-</span> $accept socket
+  assert session, <span class="Constant">[ </span>
+<span class="Constant">F - example-server-test: $accept failed]</span>
+  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+  sink <span class="Special">&lt;-</span> start-running receive-from-socket session, sink
+  query:text <span class="Special">&lt;-</span> drain contents
+  response:text <span class="Special">&lt;-</span> call request-handler, query
+  write-to-socket session, response
+  $close-socket session
 ]
 
 <span class="muRecipe">def</span> start-reading-from-network resources:&amp;:resources, uri:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> resources
-    <span class="Comment"># real network</span>
-    host:text, path:text <span class="Special">&lt;-</span> split-at uri, <span class="Constant">47/slash</span>
-    socket:num <span class="Special">&lt;-</span> $open-client-socket host, <span class="Constant">80/http-port</span>
-    assert socket, <span class="Constant">[contents]</span>
-    req:text <span class="Special">&lt;-</span> interpolate <span class="Constant">[GET _ HTTP/1.1]</span>, path
-    request-socket socket, req
-    contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 10000</span>
-    start-running receive-from-socket socket, sink
+    port:num, port-found?:boolean <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+    <span class="muControl">break-if</span> port-found?
+    port <span class="Special">&lt;-</span> copy <span class="Constant">80/http-port</span>
+  <span class="Delimiter">}</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-unless</span> resources
+    <span class="Comment"># fake network</span>
+    contents <span class="Special">&lt;-</span> start-reading-from-fake-resources resources, uri
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
-  <span class="Comment"># fake network</span>
-<span class="CommentedCode">#?   i:num &lt;- copy 0</span>
-<span class="CommentedCode">#?   data:&amp;:@:resource &lt;- get *fs, data:offset</span>
-<span class="CommentedCode">#?   len:num &lt;- length *data</span>
-<span class="CommentedCode">#?   {</span>
-<span class="CommentedCode">#?     done?:bool &lt;- greater-or-equal i, len</span>
-<span class="CommentedCode">#?     break-if done?</span>
-<span class="CommentedCode">#?     tmp:resource &lt;- index *data, i</span>
-<span class="CommentedCode">#?     i &lt;- add i, 1</span>
-<span class="CommentedCode">#?     curr-filename:text &lt;- get tmp, name:offset</span>
-<span class="CommentedCode">#?     found?:bool &lt;- equal filename, curr-filename</span>
-<span class="CommentedCode">#?     loop-unless found?</span>
-<span class="CommentedCode">#?     contents:&amp;:source:char, sink:&amp;:sink:char &lt;- new-channel 30</span>
-<span class="CommentedCode">#?     curr-contents:text &lt;- get tmp, contents:offset</span>
-<span class="CommentedCode">#?     start-running transmit-from-text curr-contents, sink</span>
-<span class="CommentedCode">#?     return</span>
-<span class="CommentedCode">#?   }</span>
-  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
+  <span class="Comment"># real network</span>
+  host:text, path:text <span class="Special">&lt;-</span> split-at uri, <span class="Constant">47/slash</span>
+  socket:num <span class="Special">&lt;-</span> $open-client-socket host, port
+  assert socket, <span class="Constant">[contents]</span>
+  req:text <span class="Special">&lt;-</span> interpolate <span class="Constant">[GET _ HTTP/1.1]</span>, path
+  request-socket socket, req
+  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 10000</span>
+  start-running receive-from-socket socket, sink
 ]
 
 <span class="muRecipe">def</span> request-socket socket:num, s:text<span class="muRecipe"> -&gt; </span>socket:num [
@@ -138,70 +134,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   $write-to-socket socket, <span class="Constant">10/lf</span>
 ]
 
-<span class="muRecipe">def</span> start-writing-socket network:&amp;:local-network, port:num<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> network
-    socket:num <span class="Special">&lt;-</span> $open-server-socket port
-    session:num <span class="Special">&lt;-</span> $accept socket
-    <span class="Comment"># TODO Create channel implementation of write-to-socket.</span>
-    <span class="muControl">return</span> sink, <span class="Constant">0/routine-id</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment"># fake network</span>
-  routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-socket network, port, source
-]
-
-<span class="muRecipe">def</span> transmit-to-fake-socket network:&amp;:local-network, port:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>network:&amp;:local-network, source:&amp;:source:char [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Comment"># compute new port connection contents</span>
-  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
-  <span class="Delimiter">{</span>
-    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
-    <span class="muControl">break-unless</span> c
-    buf <span class="Special">&lt;-</span> append buf, c
-    <span class="muControl">break-if</span> done?
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  contents:text <span class="Special">&lt;-</span> buffer-to-array buf
-  new-port-connection:&amp;:port-connection <span class="Special">&lt;-</span> new-port-connection port, contents
-  <span class="Comment"># Got the contents of the channel, time to write to fake port.</span>
-  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-  port-connections:&amp;:@:port-connection <span class="Special">&lt;-</span> get *network, <span class="Constant">data:offset</span>
-  len:num <span class="Special">&lt;-</span> length *port-connections
-  <span class="Delimiter">{</span>
-    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-    <span class="muControl">break-if</span> done?
-    current:port-connection <span class="Special">&lt;-</span> index *port-connections, i
-    current-port:num <span class="Special">&lt;-</span> get current, <span class="Constant">port:offset</span>
-    ports-match?:bool <span class="Special">&lt;-</span> equal current-port, port
-    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-    <span class="muControl">loop-unless</span> ports-match?
-    <span class="Comment"># Found an existing connection on this port, overwrite.</span>
-    put-index *port-connections, i, *new-port-connection
-    <span class="muControl">reply</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment"># Couldn't find an existing connection on this port, initialize a new one.</span>
-  new-len:num <span class="Special">&lt;-</span> add len,<span class="Constant"> 1</span>
-  new-port-connections:&amp;:@:port-connection <span class="Special">&lt;-</span> new <span class="Constant">port-connection:type</span>, new-len
-  put *network, <span class="Constant">data:offset</span>, new-port-connections
-  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-  <span class="Delimiter">{</span>
-    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-    <span class="muControl">break-if</span> done?
-    tmp:port-connection <span class="Special">&lt;-</span> index *port-connections, i
-    put-index *new-port-connections, i, tmp
-  <span class="Delimiter">}</span>
-  put-index *new-port-connections, len, *new-port-connection
-]
-
 <span class="muRecipe">def</span> receive-from-socket socket:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    req:text, eof?:bool <span class="Special">&lt;-</span> $read-from-socket socket, <span class="Constant">4096/bytes</span>
+<span class="Constant">    +next-attempt</span>
+    req:text, found?:bool, eof?:bool, error:num <span class="Special">&lt;-</span> $read-from-socket socket, <span class="Constant">4096/bytes</span>
+    <span class="muControl">break-if</span> error
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-if</span> found?
+      switch
+      <span class="muControl">loop</span> <span class="Constant">+next-attempt</span>
+    <span class="Delimiter">}</span>
     bytes-read:num <span class="Special">&lt;-</span> length *req
     i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
     <span class="Delimiter">{</span>

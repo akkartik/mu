@@ -93,6 +93,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>ingredient<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!already_transformed<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> names<span class="Delimiter">))</span> <span class="Delimiter">{</span>
         raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;use before set: '&quot;</span> &lt;&lt; ingredient<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        <span class="Comment">// use-before-set Error</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>
       <span class="Normal">int</span> v = lookup_name<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
@@ -135,6 +136,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
 <span class="Normal">bool</span> is_disqualified<span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">mutable</span><span class="Comment">*/</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>recipe_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for '&quot;</span> &lt;&lt; x<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;' in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Comment">// missing-type Error 1</span>
     <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>

@@ -258,6 +258,34 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: more useful error messages if someone forgets 'load-ingredients'</span>
+
+<span class="Delimiter">:(scenario load_ingredients_missing_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> foo a:num [
+  local-scope
+  <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>add a:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+]
+<span class="traceContains">+error: foo: use before set: 'a'</span>
+<span class="traceContains">+error:   did you forget 'load-ingredients'?</span>
+
+<span class="Delimiter">:(after &quot;use-before-set Error&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_present_in_ingredients<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> ingredient<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+  raise &lt;&lt; <span class="Constant">&quot;  did you forget 'load-ingredients'?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(scenario load_ingredients_missing_error_2)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> foo a:num [
+  local-scope
+  <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>add a<span class="Delimiter">,</span> <span class="Constant">1</span>
+]
+<span class="traceContains">+error: foo: missing type for 'a' in 'b:num &lt;- add a, 1'</span>
+<span class="traceContains">+error:   did you forget 'load-ingredients'?</span>
+
+<span class="Delimiter">:(after &quot;missing-type Error 1&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>is_present_in_ingredients<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> recipe_name<span class="Delimiter">)),</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
+  raise &lt;&lt; <span class="Constant">&quot;  did you forget 'load-ingredients'?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+
 <span class="SalientComment">//:: Check all calls against headers.</span>
 
 <span class="Delimiter">:(scenario show_clear_error_on_bad_call)</span>

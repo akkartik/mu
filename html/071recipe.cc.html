@@ -375,7 +375,7 @@ $error: <span class="Constant">0</span>
   <span class="Delimiter">}</span>
 ]
 <span class="Comment"># error should be as if foo is not a recipe</span>
-<span class="traceContains">+error: main: missing type for foo in 'break-if foo'</span>
+<span class="traceContains">+error: main: missing type for 'foo' in 'break-if foo'</span>
 
 <span class="Delimiter">:(before &quot;End JUMP_IF Checks&quot;)</span>
 check_for_recipe_literals<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">));</span>
@@ -384,10 +384,22 @@ check_for_recipe_literals<span class="Delimiter">(</span>inst<span class="Delimi
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> check_for_recipe_literals<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span>
-      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot; in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;missing type for '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>is_present_in_ingredients<span class="Delimiter">(</span>caller<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span>
+        raise &lt;&lt; <span class="Constant">&quot;  did you forget 'load-ingredients'?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
+
+<span class="Delimiter">:(scenario load_ingredients_missing_error_3)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> foo <span class="Delimiter">{</span>f: <span class="Delimiter">(</span>recipe num<span class="muRecipe"> -&gt; </span>num<span class="Delimiter">)}</span> [
+  local-scope
+  <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>call f<span class="Delimiter">,</span> <span class="Constant">1</span>
+]
+<span class="traceContains">+error: foo: missing type for 'f' in 'b:num &lt;- call f, 1'</span>
+<span class="traceContains">+error:   did you forget 'load-ingredients'?</span>
 </pre>
 </body>
 </html>

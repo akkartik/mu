@@ -123,7 +123,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     _, found?:bool <span class="Special">&lt;-</span> read-event console
-    <span class="muControl">loop-unless</span> found?
+    <span class="muControl">break-if</span> found?
+    switch
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -131,11 +133,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> has-more-events? console:&amp;:console<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-unless</span> console
-    <span class="Comment"># fake consoles should be plenty fast; never skip</span>
-    <span class="muControl">return</span> <span class="Constant">0/false</span>
-  <span class="Delimiter">}</span>
+  <span class="muControl">return-if</span> console, <span class="Constant">0/false</span>  <span class="Comment"># fake consoles should be plenty fast; never skip</span>
   result <span class="Special">&lt;-</span> interactions-left?
 ]
 </pre>
