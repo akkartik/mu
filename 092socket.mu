@@ -28,6 +28,27 @@ def example-handler query:text -> response:text [
   reply [abc]
 ]
 
+# To test client operations, use `assume-resources` with a filename that
+# begins with a hostname. (Filenames starting with '/' are assumed to be
+# local.)
+scenario example-client-test [
+  local-scope
+  assume-resources [
+    [example.com/] <- [
+      |abc|
+    ]
+  ]
+  run [
+    source:&:source:char <- start-reading-from-network resources, [example.com/]
+  ]
+  contents:text <- drain source
+  10:@:char/raw <- copy *contents
+  memory-should-contain [
+    10:array:character <- [abc
+]
+  ]
+]
+
 type request-handler = (recipe text -> text)
 
 def serve-one-request socket:num, request-handler:request-handler [
@@ -64,8 +85,8 @@ def start-reading-from-network resources:&:resources, uri:text -> contents:&:sou
     start-running receive-from-socket socket, sink
     return
   }
-  # todo: fake network
-  return 0/not-found
+  # fake network
+  contents <- start-reading-from-fake-resources resources, uri
 ]
 
 def request-socket socket:num, s:text -> socket:num [

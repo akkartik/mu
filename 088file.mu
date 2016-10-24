@@ -23,6 +23,12 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
     return
   }
   # fake file system
+  contents <- start-reading-from-fake-resources resources, filename
+]
+
+def start-reading-from-fake-resources resources:&:resources, resource:text -> contents:&:source:char [
+  local-scope
+  load-ingredients
   i:num <- copy 0
   data:&:@:resource <- get *resources, data:offset
   len:num <- length *data
@@ -31,8 +37,8 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
     break-if done?
     tmp:resource <- index *data, i
     i <- add i, 1
-    curr-filename:text <- get tmp, name:offset
-    found?:bool <- equal filename, curr-filename
+    curr-resource:text <- get tmp, name:offset
+    found?:bool <- equal resource, curr-resource
     loop-unless found?
     contents:&:source:char, sink:&:sink:char <- new-channel 30
     curr-contents:text <- get tmp, contents:offset
