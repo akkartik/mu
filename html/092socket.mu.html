@@ -92,12 +92,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muRecipe">def</span> start-reading-from-network resources:&amp;:resources, host:text, path:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
+<span class="muRecipe">def</span> start-reading-from-network resources:&amp;:resources, uri:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> resources
     <span class="Comment"># real network</span>
+    host:text, path:text<span class="Special"> &lt;- </span>split-at uri, <span class="Constant">47/slash</span>
     socket:num<span class="Special"> &lt;- </span>$open-client-socket host, <span class="Constant">80/http-port</span>
     assert socket, <span class="Constant">[contents]</span>
     req:text<span class="Special"> &lt;- </span>interpolate <span class="Constant">[GET _ HTTP/1.1]</span>, path
@@ -229,6 +230,38 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     i<span class="Special"> &lt;- </span>add i, <span class="Constant">1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
+]
+
+<span class="Comment"># like split-first, but don't eat the delimiter</span>
+<span class="muRecipe">def</span> split-at text:text, delim:char<span class="muRecipe"> -&gt; </span>x:text, y:text [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># empty text? return empty texts</span>
+  len:num<span class="Special"> &lt;- </span>length *text
+  <span class="Delimiter">{</span>
+    empty?:bool<span class="Special"> &lt;- </span>equal len, <span class="Constant">0</span>
+    <span class="muControl">break-unless</span> empty?
+    x:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    y:text<span class="Special"> &lt;- </span>new <span class="Constant">[]</span>
+    <span class="muControl">return</span>
+  <span class="Delimiter">}</span>
+  idx:num<span class="Special"> &lt;- </span>find-next text, delim, <span class="Constant">0</span>
+  x:text<span class="Special"> &lt;- </span>copy-range text, <span class="Constant">0</span>, idx
+  y:text<span class="Special"> &lt;- </span>copy-range text, idx, len
+]
+
+<span class="muScenario">scenario</span> text-split-at [
+  <span class="Constant">local-scope</span>
+  x:text<span class="Special"> &lt;- </span>new <span class="Constant">[a/b]</span>
+  run [
+    y:text, z:text<span class="Special"> &lt;- </span>split-at x, <span class="Constant">47/slash</span>
+    <span class="Constant">10</span>:@:char/<span class="Special">raw &lt;- </span>copy *y
+    <span class="Constant">20</span>:@:char/<span class="Special">raw &lt;- </span>copy *z
+  ]
+  memory-should-contain [
+    <span class="Constant">10</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[a]</span>
+    <span class="Constant">20</span>:array:character<span class="Special"> &lt;- </span><span class="Constant">[/b]</span>
+  ]
 ]
 </pre>
 </body>

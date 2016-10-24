@@ -65,7 +65,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result<span class="Special"> &lt;- </span>put *result, <span class="Constant">events:offset</span>, events
 ]
 
-<span class="muRecipe">def</span> read-event console:&amp;:console<span class="muRecipe"> -&gt; </span>result:event, console:&amp;:console, found?:bool, quit?:bool [
+<span class="muRecipe">def</span> read-event console:&amp;:console<span class="muRecipe"> -&gt; </span>result:event, found?:bool, quit?:bool, console:&amp;:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
@@ -77,37 +77,37 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       done?:bool<span class="Special"> &lt;- </span>greater-or-equal current-event-index, max
       <span class="muControl">break-unless</span> done?
       dummy:&amp;:event<span class="Special"> &lt;- </span>new <span class="Constant">event:type</span>
-      <span class="muControl">return</span> *dummy, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
+      <span class="muControl">return</span> *dummy, <span class="Constant">1/found</span>, <span class="Constant">1/quit</span>
     <span class="Delimiter">}</span>
     result<span class="Special"> &lt;- </span>index *buf, current-event-index
     current-event-index<span class="Special"> &lt;- </span>add current-event-index, <span class="Constant">1</span>
     *console<span class="Special"> &lt;- </span>put *console, <span class="Constant">current-event-index:offset</span>, current-event-index
-    <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
+    <span class="muControl">return</span> result, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
   <span class="Delimiter">}</span>
   switch  <span class="Comment"># real event source is infrequent; avoid polling it too much</span>
   result:event, found?:bool<span class="Special"> &lt;- </span>check-for-interaction
-  <span class="muControl">return</span> result, console/same-as-ingredient:<span class="Constant">0</span>, found?, <span class="Constant">0/quit</span>
+  <span class="muControl">return</span> result, found?, <span class="Constant">0/quit</span>
 ]
 
 <span class="Comment"># variant of read-event for just keyboard events. Discards everything that</span>
 <span class="Comment"># isn't unicode, so no arrow keys, page-up/page-down, etc. But you still get</span>
 <span class="Comment"># newlines, tabs, ctrl-d..</span>
-<span class="muRecipe">def</span> read-key console:&amp;:console<span class="muRecipe"> -&gt; </span>result:char, console:&amp;:console, found?:bool, quit?:bool [
+<span class="muRecipe">def</span> read-key console:&amp;:console<span class="muRecipe"> -&gt; </span>result:char, found?:bool, quit?:bool, console:&amp;:console [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  x:event, console, found?:bool, quit?:bool<span class="Special"> &lt;- </span>read-event console
-  <span class="muControl">return-if</span> quit?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
-  <span class="muControl">return-unless</span> found?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, found?, quit?
+  x:event, found?:bool, quit?:bool, console<span class="Special"> &lt;- </span>read-event console
+  <span class="muControl">return-if</span> quit?, <span class="Constant">0</span>, found?, quit?
+  <span class="muControl">return-unless</span> found?, <span class="Constant">0</span>, found?, quit?
   c:char, converted?:bool<span class="Special"> &lt;- </span>maybe-convert x, <span class="Constant">text:variant</span>
-  <span class="muControl">return-unless</span> converted?, <span class="Constant">0</span>, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
-  <span class="muControl">return</span> c, console/same-as-ingredient:<span class="Constant">0</span>, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
+  <span class="muControl">return-unless</span> converted?, <span class="Constant">0</span>, <span class="Constant">0/found</span>, <span class="Constant">0/quit</span>
+  <span class="muControl">return</span> c, <span class="Constant">1/found</span>, <span class="Constant">0/quit</span>
 ]
 
 <span class="muRecipe">def</span> send-keys-to-channel console:&amp;:console, chan:&amp;:sink:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>console:&amp;:console, chan:&amp;:sink:char, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    c:char, console, found?:bool, quit?:bool<span class="Special"> &lt;- </span>read-key console
+    c:char, found?:bool, quit?:bool, console<span class="Special"> &lt;- </span>read-key console
     <span class="muControl">loop-unless</span> found?
     <span class="muControl">break-if</span> quit?
     assert c, <span class="Constant">[invalid event, expected text]</span>
@@ -122,7 +122,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
-    _, console, found?:bool<span class="Special"> &lt;- </span>read-event console
+    _, found?:bool<span class="Special"> &lt;- </span>read-event console
     <span class="muControl">loop-unless</span> found?
   <span class="Delimiter">}</span>
 ]
