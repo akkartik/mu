@@ -501,14 +501,6 @@ bool is_present_in_products(const recipe& callee, const string& ingredient_name)
   return false;
 }
 
-bool is_present_in_ingredients(const recipe& callee, const string& ingredient_name) {
-  for (int i = 0;  i < SIZE(callee.ingredients);  ++i) {
-    if (callee.ingredients.at(i).name == ingredient_name)
-      return true;
-  }
-  return false;
-}
-
 set<int> ingredient_indices(const instruction& inst, const set<reagent>& ingredient_names) {
   set<int> result;
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {

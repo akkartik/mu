@@ -248,6 +248,15 @@ def foo a:num [
 if (is_present_in_ingredients(get(Recipe, get(Recipe_ordinal, recipe_name)), x.name))
   raise << "  did you forget 'load-ingredients'?\n" << end();
 
+:(code)
+bool is_present_in_ingredients(const recipe& callee, const string& ingredient_name) {
+  for (int i = 0;  i < SIZE(callee.ingredients);  ++i) {
+    if (callee.ingredients.at(i).name == ingredient_name)
+      return true;
+  }
+  return false;
+}
+
 //:: Check all calls against headers.
 
 :(scenario show_clear_error_on_bad_call)
