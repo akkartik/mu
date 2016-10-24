@@ -16,6 +16,23 @@ tests. Hoped-for benefits:
 1. It becomes easier to teach programming by emphasizing tests far earlier
    than we do today.
 
+The hypothesis is that designing the OS to be testable from day 1 would
+radically impact the culture of an eco-system in a way that no bolted-on tool
+or service at higher levels can replicate. It would make it easier to write
+programs that can be [easily understood by newcomers](http://akkartik.name/about).
+It would reassure authors that an app is free from regression if all automated
+tests pass. It would make the stack easy to rewrite and simplify by dropping
+features, without fear that a subset of targeted apps might break. As a result
+people might fork projects more easily, and also exchange code between
+disparate forks more easily (copy the tests over, then try copying code over
+and making tests pass, rewriting and polishing where necessary). The community
+would have in effect a diversified portfolio of forks, a “wavefront” of
+possible combinations of features and alternative implementations of features
+instead of the single trunk with monotonically growing complexity that we get
+today. Application writers who wrote thorough tests for their apps (something
+they just can’t do today) would be able to bounce around between forks more
+easily without getting locked in to a single one as currently happens.
+
 In this quest, Mu is currently experimenting with the following mechanisms:
 
 1. New, testable interfaces for the operating system. Currently manual tests
