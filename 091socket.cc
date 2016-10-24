@@ -246,8 +246,8 @@ case _READ_FROM_SOCKET: {
     bzero(&p, sizeof(p));
     p.fd = socket->fd;
     p.events = POLLIN | POLLHUP;
-    int status = poll(&p, /*num pollfds*/1, /*timeout*/100/*ms*/);
-    if (status == 0) {
+    int poll_result = poll(&p, /*num pollfds*/1, /*timeout*/100/*ms*/);
+    if (poll_result == 0) {
 //?       cerr << "$read-from-socket: poll() timeout\n";
       products.at(0).push_back(/*no data*/0);
       products.at(1).push_back(/*found*/false);
@@ -255,7 +255,7 @@ case _READ_FROM_SOCKET: {
       products.at(3).push_back(/*error*/0);
       break;
     }
-    else if (status < 0) {
+    else if (poll_result < 0) {
       int error_code = errno;
       raise << maybe(current_recipe_name()) << "error in $read-from-socket\n" << end();
       products.at(0).push_back(/*no data*/0);
