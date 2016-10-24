@@ -348,7 +348,19 @@ check_for_recipe_literals(inst, get(Recipe, r));
 :(code)
 void check_for_recipe_literals(const instruction& inst, const recipe& caller) {
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
-    if (is_mu_recipe(inst.ingredients.at(i)))
+    if (is_mu_recipe(inst.ingredients.at(i))) {
       raise << maybe(caller.name) << "missing type for '" << inst.ingredients.at(i).original_string << "' in '" << inst.original_string << "'\n" << end();
+      if (is_present_in_ingredients(caller, inst.ingredients.at(i).name))
+        raise << "  did you forget 'load-ingredients'?\n" << end();
+    }
   }
 }
+
+:(scenario load_ingredients_missing_error_3)
+% Hide_errors = true;
+def foo {f: (recipe num -> num)} [
+  local-scope
+  b:num <- call f, 1
+]
++error: foo: missing type for 'f' in 'b:num <- call f, 1'
++error:   did you forget 'load-ingredients'?

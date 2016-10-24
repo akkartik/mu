@@ -56,6 +56,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_integer(ingredient.name)) continue;
       if (!already_transformed(ingredient, names)) {
         raise << maybe(caller.name) << "use before set: '" << ingredient.name << "'\n" << end();
+        // use-before-set Error
         return;
       }
       int v = lookup_name(ingredient, r);
@@ -98,6 +99,7 @@ void transform_names(const recipe_ordinal r) {
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
     raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << inst.original_string << "'\n" << end();
+    // missing-type Error 1
     return true;
   }
   if (is_raw(x)) return true;

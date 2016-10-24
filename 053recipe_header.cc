@@ -220,6 +220,34 @@ case NEXT_INGREDIENT_WITHOUT_TYPECHECKING: {
   break;
 }
 
+//: more useful error messages if someone forgets 'load-ingredients'
+
+:(scenario load_ingredients_missing_error)
+% Hide_errors = true;
+def foo a:num [
+  local-scope
+  b:num <- add a:num, 1
+]
++error: foo: use before set: 'a'
++error:   did you forget 'load-ingredients'?
+
+:(after "use-before-set Error")
+if (is_present_in_ingredients(caller, ingredient.name))
+  raise << "  did you forget 'load-ingredients'?\n" << end();
+
+:(scenario load_ingredients_missing_error_2)
+% Hide_errors = true;
+def foo a:num [
+  local-scope
+  b:num <- add a, 1
+]
++error: foo: missing type for 'a' in 'b:num <- add a, 1'
++error:   did you forget 'load-ingredients'?
+
+:(after "missing-type Error 1")
+if (is_present_in_ingredients(get(Recipe, get(Recipe_ordinal, recipe_name)), x.name))
+  raise << "  did you forget 'load-ingredients'?\n" << end();
+
 //:: Check all calls against headers.
 
 :(scenario show_clear_error_on_bad_call)
