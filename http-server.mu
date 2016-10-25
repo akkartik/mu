@@ -23,6 +23,6 @@ Content-type: text/plain
 SUCCESS!
 ]
   $print 10/newline, [Wrote to and closing socket...], 10/newline
-  $close-socket session
-  $close-socket socket
+  session <- $close-socket session
+  socket <- $close-socket socket
 ]
