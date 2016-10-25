@@ -122,7 +122,7 @@ socket_t* server_socket(int port) {
   int dummy = 0;
   setsockopt(result->fd, SOL_SOCKET, SO_REUSEADDR, &dummy, sizeof(dummy));
   result->addr.sin_family = AF_INET;
-  result->addr.sin_addr.s_addr = INADDR_ANY;
+  result->addr.sin_addr.s_addr = Current_scenario ? htonl(INADDR_LOOPBACK) : INADDR_ANY;  // run tests without running afoul of any firewall
   result->addr.sin_port = htons(port);
   if (bind(result->fd, reinterpret_cast<sockaddr*>(&result->addr), sizeof(result->addr)) >= 0) {
     listen(result->fd, /*queue length*/5);
