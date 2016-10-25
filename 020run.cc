@@ -51,12 +51,15 @@ routine* Current_routine = NULL;
 map<string, int> Instructions_running;
 map<string, int> Locations_read;
 map<string, int> Locations_read_by_instruction;
+:(before "End Setup")
+Current_routine = NULL;
 
 :(code)
 void run(const recipe_ordinal r) {
   routine rr(r);
   Current_routine = &rr;
   run_current_routine();
+  Current_routine = NULL;
 }
 
 void run_current_routine() {
