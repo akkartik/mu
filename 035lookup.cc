@@ -67,6 +67,15 @@ def main [
 -mem: storing 34 in location 0
 +error: can't write to location 0 in '1:address:num/lookup <- copy 34'
 
+//: attempts to /lookup address 0 always loudly fail
+:(scenario lookup_0_fails)
+% Hide_errors = true;
+def main [
+  1:address:num <- copy 0
+  2:num <- copy 1:address:num/lookup
+]
++error: tried to /lookup 0 in '2:num <- copy 1:address:num/lookup'
+
 :(code)
 void canonize(reagent& x) {
   if (is_literal(x)) return;
@@ -85,10 +94,10 @@ void lookup_memory(reagent& x) {
     raise << maybe(current_recipe_name()) << "tried to /lookup 0\n" << end();
     return;
   }
-  lookup_memory_core(x);
+  lookup_memory_core(x, /*check_for_null*/true);
 }
 
-void lookup_memory_core(reagent& x) {
+void lookup_memory_core(reagent& x, bool check_for_null) {
   if (x.value == 0) return;
   trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
@@ -96,6 +105,12 @@ void lookup_memory_core(reagent& x) {
   if (x.value) {
     trace(9999, "mem") << "skipping refcount at " << x.value << end();
     x.set_value(x.value+1);  // skip refcount
+  }
+  else if (check_for_null) {
+    if (Current_routine)
+      raise << "tried to /lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    else
+      raise << "tried to /lookup 0\n" << end();
   }
   drop_one_lookup(x);
 }
@@ -110,6 +125,7 @@ void test_lookup_address_skips_refcount() {
 }
 
 void test_lookup_zero_address_does_not_skip_refcount() {
+  Hide_errors = true;
   reagent x("*x:address:num");
   x.set_value(34);  // unsafe
   put(Memory, 34, 0);
