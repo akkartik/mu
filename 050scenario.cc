@@ -121,13 +121,14 @@ int Num_core_mu_scenarios = 0;
 Num_core_mu_scenarios = SIZE(Scenarios);
 :(before "End Tests")
 Hide_missing_default_space_errors = false;
-if (Num_core_mu_scenarios) {
+if (Num_core_mu_scenarios > 0) {
   time(&t);
   cerr << "Mu tests: " << ctime(&t);
   for (int i = 0;  i < Num_core_mu_scenarios;  ++i) {
 //?     cerr << '\n' << i << ": " << Scenarios.at(i).name;
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".";
+    else ++Num_failures;
   }
   cerr << "\n";
 }
