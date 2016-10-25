@@ -16,10 +16,10 @@ tests. Hoped-for benefits:
 1. It becomes easier to teach programming by emphasizing tests far earlier
    than we do today.
 
-The hypothesis is that designing the OS to be testable from day 1 would
-radically impact the culture of an eco-system in a way that no bolted-on tool
-or service at higher levels can replicate. It would make it easier to write
-programs that can be [easily understood by newcomers](http://akkartik.name/about).
+The hypothesis is that designing the entire system to be testable from day 1
+and from the ground up would radically impact the culture of an eco-system in
+a way that no bolted-on tool or service at higher levels can replicate. It
+would make it easier to write programs that can be [easily understood by newcomers](http://akkartik.name/about).
 It would reassure authors that an app is free from regression if all automated
 tests pass. It would make the stack easy to rewrite and simplify by dropping
 features, without fear that a subset of targeted apps might break. As a result
