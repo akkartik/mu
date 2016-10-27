@@ -106,7 +106,7 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char, socket
   load-ingredients
   {
     +next-attempt
-    req:text, found?:bool, eof?:bool, error:num <- $read-from-socket socket, 4096/bytes
+    req:text, found?:bool, eof?:bool, error:num <- $read-from-socket socket, 1/byte
     break-if error
     {
       break-if found?
