@@ -261,10 +261,10 @@ case _READ_FROM_SOCKET: {
     socket->polled = true;
   }
   int bytes = static_cast<int>(ingredients.at(1).at(0));
-  char* contents = new char[bytes];
-  bzero(contents, bytes);
+  char* contents = new char[bytes+/*terminal null*/1];
+  bzero(contents, bytes+/*terminal null*/1);
   int error_code = 0;
-  int bytes_read = recv(socket->fd, contents, bytes-/*terminal null*/1, MSG_DONTWAIT);
+  int bytes_read = recv(socket->fd, contents, bytes, MSG_DONTWAIT);
   if (bytes_read < 0) error_code = errno;
 //?   if (error_code) {
 //?     ostringstream out;
