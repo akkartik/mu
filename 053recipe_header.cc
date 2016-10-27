@@ -228,7 +228,7 @@ def foo a:num [
   local-scope
   b:num <- add a:num, 1
 ]
-+error: foo: use before set: 'a'
++error: foo: tried to read ingredient 'a' in 'b:num <- add a:num, 1' but it hasn't been written to yet
 +error:   did you forget 'load-ingredients'?
 
 :(after "use-before-set Error")

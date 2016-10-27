@@ -15,7 +15,7 @@ def main [
 def main [
   x:num <- copy y:num
 ]
-+error: main: use before set: 'y'
++error: main: tried to read ingredient 'y' in 'x:num <- copy y:num' but it hasn't been written to yet
 # todo: detect conditional defines
 
 :(after "Transform.push_back(compute_container_sizes)")
@@ -55,7 +55,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(ingredient)) names_used = true;
       if (is_integer(ingredient.name)) continue;
       if (!already_transformed(ingredient, names)) {
-        raise << maybe(caller.name) << "use before set: '" << ingredient.name << "'\n" << end();
+        raise << maybe(caller.name) << "tried to read ingredient '" << ingredient.name << "' in '" << to_original_string(inst) << "' but it hasn't been written to yet\n" << end();
         // use-before-set Error
         return;
       }
