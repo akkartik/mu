@@ -13,17 +13,17 @@ bool Autodisplay = true;
 #define CHECK_SCREEN \
     if (!tb_is_active()) { \
       if (Run_tests) \
-        raise << maybe(current_recipe_name()) << "tried to print to real screen before 'open-console'\n" << end(); \
-      else \
         raise << maybe(current_recipe_name()) << "tried to print to real screen in a test!\n" << end(); \
+      else \
+        raise << maybe(current_recipe_name()) << "tried to print to real screen before 'open-console' or after 'close-console'\n" << end(); \
       break; \
     }
 #define CHECK_CONSOLE \
     if (!tb_is_active()) { \
       if (Run_tests) \
-        raise << maybe(current_recipe_name()) << "tried to read event from real keyboard/mouse before 'open-console'\n" << end(); \
-      else \
         raise << maybe(current_recipe_name()) << "tried to read event from real keyboard/mouse in a test!\n" << end(); \
+      else \
+        raise << maybe(current_recipe_name()) << "tried to read event from real keyboard/mouse before 'open-console' or after 'close-console'\n" << end(); \
       break; \
     }
 
