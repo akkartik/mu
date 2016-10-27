@@ -106,24 +106,18 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char, socket
   load-ingredients
   {
     +next-attempt
-    req:text, found?:bool, eof?:bool, error:num <- $read-from-socket socket, 1/byte
+    c:char, found?:bool, eof?:bool, error:num <- $read-from-socket socket
+    break-if eof?
     break-if error
+    {
+      break-unless found?
+      sink <- write sink, c
+    }
     {
       break-if found?
       switch
-      loop +next-attempt
     }
-    bytes-read:num <- length *req
-    i:num <- copy 0
-    {
-      done?:bool <- greater-or-equal i, bytes-read
-      break-if done?
-      c:char <- index *req, i  # todo: unicode
-      sink <- write sink, c
-      i <- add i, 1
-      loop
-    }
-    loop-unless eof?
+    loop
   }
   sink <- close sink
 ]

@@ -190,16 +190,12 @@ _READ_FROM_SOCKET,
 put(Recipe_ordinal, "$read-from-socket", _READ_FROM_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _READ_FROM_SOCKET: {
-  if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
-    break;
-  }
-  if (!is_mu_number(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "second ingredient of '$read-from-socket' should be a number, but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '$read-from-socket' should be a number (socket), but got '" << to_string(inst.ingredients.at(0)) << "'\n" << end();
     break;
   }
   int nprod = SIZE(inst.products);
@@ -207,8 +203,8 @@ case _READ_FROM_SOCKET: {
     raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires 1-4 products, but got '" << inst.original_string << "'\n" << end();
     break;
   }
-  if (!is_mu_text(inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a text (address array character), but got '" << to_string(inst.products.at(0)) << "'\n" << end();
+  if (!is_mu_character(inst.products.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first product of '$read-from-socket' should be a character, but got '" << to_string(inst.products.at(0)) << "'\n" << end();
     break;
   }
   if (nprod > 1 && !is_mu_boolean(inst.products.at(1))) {
@@ -236,6 +232,11 @@ case _READ_FROM_SOCKET: {
   // so use poll() in the beginning to wait for data before calling recv()
   // 3. but poll() will block on EOF, so only use poll() on the very first
   // $read-from-socket on a socket
+  //
+  // Also, there was an unresolved issue where attempts to read() a small
+  // number of bytes (less than 447 on Linux and Mac) would cause browsers to
+  // prematurely close the connection. See commit 3403. That seems to be gone
+  // after moving to recv()+poll(). It was never observed on OpenBSD.
   if (!socket->polled) {
     pollfd p;
     bzero(&p, sizeof(p));
@@ -260,22 +261,19 @@ case _READ_FROM_SOCKET: {
     }
     socket->polled = true;
   }
-  int bytes = static_cast<int>(ingredients.at(1).at(0));
-  char* contents = new char[bytes+/*terminal null*/1];
-  bzero(contents, bytes+/*terminal null*/1);
+  char c = '\0';
   int error_code = 0;
-  int bytes_read = recv(socket->fd, contents, bytes, MSG_DONTWAIT);
+  int bytes_read = recv(socket->fd, &c, /*single byte*/1, MSG_DONTWAIT);
   if (bytes_read < 0) error_code = errno;
 //?   if (error_code) {
 //?     ostringstream out;
 //?     out << "error in $read-from-socket " << socket->fd;
 //?     perror(out.str().c_str());
 //?   }
-  products.at(0).push_back(new_mu_text(contents));
+  products.at(0).push_back(c);
   products.at(1).push_back(/*found*/true);
   products.at(2).push_back(/*eof*/bytes_read <= 0);
   products.at(3).push_back(error_code);
-  delete[] contents;
   break;
 }
 
