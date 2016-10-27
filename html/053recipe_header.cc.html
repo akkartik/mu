@@ -266,7 +266,7 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   local-scope
   <span class="Normal">b</span>:num<span class="Special"> &lt;- </span>add a:num<span class="Delimiter">,</span> <span class="Constant">1</span>
 ]
-<span class="traceContains">+error: foo: use before set: 'a'</span>
+<span class="traceContains">+error: foo: tried to read ingredient 'a' in 'b:num &lt;- add a:num, 1' but it hasn't been written to yet</span>
 <span class="traceContains">+error:   did you forget 'load-ingredients'?</span>
 
 <span class="Delimiter">:(after &quot;use-before-set Error&quot;)</span>
@@ -285,6 +285,15 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 <span class="Delimiter">:(after &quot;missing-type Error 1&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>is_present_in_ingredients<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> recipe_name<span class="Delimiter">)),</span> x<span class="Delimiter">.</span>name<span class="Delimiter">))</span>
   raise &lt;&lt; <span class="Constant">&quot;  did you forget 'load-ingredients'?</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">bool</span> is_present_in_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; callee<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; ingredient_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>callee<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name == ingredient_name<span class="Delimiter">)</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
 
 <span class="SalientComment">//:: Check all calls against headers.</span>
 

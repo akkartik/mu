@@ -52,7 +52,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> main [
   <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy y:num
 ]
-<span class="traceContains">+error: main: use before set: 'y'</span>
+<span class="traceContains">+error: main: tried to read ingredient 'y' in 'x:num &lt;- copy y:num' but it hasn't been written to yet</span>
 <span class="Comment"># todo: detect conditional defines</span>
 
 <span class="Delimiter">:(after &quot;Transform.push_back(compute_container_sizes)&quot;)</span>
@@ -92,7 +92,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_named_location<span class="Delimiter">(</span>ingredient<span class="Delimiter">))</span> names_used = <span class="Constant">true</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>ingredient<span class="Delimiter">.</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>!already_transformed<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> names<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;use before set: '&quot;</span> &lt;&lt; ingredient<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+        raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;tried to read ingredient '&quot;</span> &lt;&lt; ingredient<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot;' in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;' but it hasn't been written to yet</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
         <span class="Comment">// use-before-set Error</span>
         <span class="Identifier">return</span><span class="Delimiter">;</span>
       <span class="Delimiter">}</span>

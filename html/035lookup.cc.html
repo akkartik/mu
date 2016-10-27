@@ -104,6 +104,15 @@ canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="traceAbsent">-mem: storing 34 in location 0</span>
 <span class="traceContains">+error: can't write to location 0 in '1:address:num/lookup &lt;- copy 34'</span>
 
+<span class="Comment">//: attempts to /lookup address 0 always loudly fail</span>
+<span class="Delimiter">:(scenario lookup_0_fails)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num/lookup
+]
+<span class="traceContains">+error: tried to /lookup 0 in '2:num &lt;- copy 1:address:num/lookup'</span>
+
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> canonize<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
@@ -122,10 +131,10 @@ canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;tried to /lookup 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  lookup_memory_core<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+  lookup_memory_core<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">check_for_null</span><span class="Comment">*/</span><span class="Constant">true</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Normal">void</span> lookup_memory_core<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> lookup_memory_core<span class="Delimiter">(</span>reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">bool</span> check_for_null<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;location &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; no_scientific<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">))</span> &lt;&lt; end<span class="Delimiter">();</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> x<span class="Delimiter">.</span>value<span class="Delimiter">));</span>
@@ -133,6 +142,12 @@ canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>value<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;skipping refcount at &quot;</span> &lt;&lt; x<span class="Delimiter">.</span>value &lt;&lt; end<span class="Delimiter">();</span>
     x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span>x<span class="Delimiter">.</span>value+<span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// skip refcount</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>check_for_null<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;tried to /lookup 0 in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Normal">else</span>
+      raise &lt;&lt; <span class="Constant">&quot;tried to /lookup 0</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   drop_one_lookup<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
@@ -147,6 +162,7 @@ canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> test_lookup_zero_address_does_not_skip_refcount<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  Hide_errors = <span class="Constant">true</span><span class="Delimiter">;</span>
   reagent x<span class="Delimiter">(</span><span class="Constant">&quot;*x:address:num&quot;</span><span class="Delimiter">);</span>
   x<span class="Delimiter">.</span>set_value<span class="Delimiter">(</span><span class="Constant">34</span><span class="Delimiter">);</span>  <span class="Comment">// unsafe</span>
   put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
