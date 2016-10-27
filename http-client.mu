@@ -10,8 +10,6 @@ def main [
     break-if done?
     n <- add n, 1
     buf <- append buf, c
-#?     trunc?:bool <- greater-or-equal n, 10000
-#?     loop-unless trunc?
     loop
   }
   result:text <- buffer-to-array buf
