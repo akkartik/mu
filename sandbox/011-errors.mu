@@ -462,7 +462,8 @@ recipe foo [
     .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: use before set: 'y'                          .
+    .foo: tried to read ingredient 'y' in 'x:num <- co↩.
+    .py y:num' but it hasn't been written to yet       .
   ]
   # rerun the file, check for the same error
   assume-console [
@@ -477,7 +478,8 @@ recipe foo [
     .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
     .foo                                               .
-    .foo: use before set: 'y'                          .
+    .foo: tried to read ingredient 'y' in 'x:num <- co↩.
+    .py y:num' but it hasn't been written to yet       .
   ]
 ]
 

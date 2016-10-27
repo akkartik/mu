@@ -486,7 +486,8 @@ recipe foo [
     .  local-scope                                     ┊                                                 .
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: use before set: 'y'                          ┊                                                 .
+    .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
+    .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
@@ -504,7 +505,8 @@ recipe foo [
     .  local-scope                                     ┊                                                 .
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
-    .foo: use before set: 'y'                          ┊                                                 .
+    .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
+    .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
