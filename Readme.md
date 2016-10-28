@@ -81,7 +81,7 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 You can see these mechanisms in action below in the context of a platform for
 teaching programming 1:1. It allows students to spin up a fake screen,
 keyboard, file system and network neighborhood in tests. The Basic-like
-assembly language of the Mu VM is as powerful as C for low-level pointer
+Assembly language of the Mu VM is as powerful as C for low-level pointer
 operations and manual memory management, but much safer, paying some run-time
 checking overhead to validate pointers. It is as powerful as high-level
 languages (providing strong type safety, general lexical scope, generic types,
