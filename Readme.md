@@ -49,8 +49,8 @@ In this quest, Mu is currently experimenting with the following mechanisms:
 
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img alt='a screen test' src='html/chessboard-test.png'>
 
-   We're building up similarly *dependency-injected* interfaces to the
-   keyboard, mouse, disk, network, graphics card, speakers, etc.
+   We've built up similarly *dependency-injected* interfaces to the keyboard,
+   mouse, disk and network.
 
 1. Support for testing side-effects like performance, deadlock-freedom,
    race-freeness, memory usage, etc. Mu's *white-box tests* can check not just
@@ -78,26 +78,36 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    enabling more peripheral features. Think of it as a cleaned-up `git log`
    for the project. ([More information.](http://akkartik.name/post/wart-layers))
 
-Since we don't understand how Linux and other modern platforms work, Mu is
-built on an idealized VM while we [learn](https://github.com/akkartik/mu/wiki).
-Eventually the plan is to transplant Mu's interfaces back to Linux.
+You can see these mechanisms in action below in the context of a platform for
+teaching programming 1:1. It allows students to spin up a fake screen,
+keyboard, file system and network neighborhood in tests. The Basic-like VM
+assembly language of the Mu VM is as powerful as C for low-level pointer
+operations and manual memory management, but much safer, paying some run-time
+checking overhead to validate pointers. It is as powerful as high-level
+languages (providing strong type safety, general lexical scope, generic types,
+and higher-order functions) but should be easier to write a compiler for since
+it gives up some expressiveness by not allowing recursive expressions. It is
+also *more* expressive than conventional high-level languages in some ways:
+Literate Programming turns out to be a great fit for a statement-oriented
+language and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
 
-To minimize workload, Mu doesn't have a high-level language yet. Instead, we
-program directly in the VM's idealized assembly language. We expected this to
-be painful, but it's had some surprising benefits. First, programs as lists of
-instructions seem to be easier for non-programmers to comprehend than programs
-as trees of expressions. Second, we've found that Literate Programming using
-layers makes assembly much more ergonomic. Third, labels for gotos turn out to
-be great waypoints to insert code at from future layers, more powerful than
-nested expressions on a single line.
+Balancing these strengths, however, Mu is currently interpreted and slow. Too
+slow for graphics or sound, among other things. Rather than try to build a
+compiler for it, our next milestone is to "backport" the lessons of Mu back to
+a real-world unix-like system: OpenBSD, a reasonable compromise between the
+complexity (*ahem* bloat) of Linux and the over-simplification of
+[xv6](https://github.com/mit-pdos/xv6-public). The goal is to continue to have
+a self-contained, self-hosting system without external dependencies as we add
+support for new kinds of tests. The goal is explicitly *not* to blindly
+reimplement our Basic-like language atop OpenBSD, or to port the OpenBSD
+sources to our language. Instead, we will modify the C compiler to provide
+some of the greater safety we prototyped here, and make use of it in the
+OpenBSD sources.
 
-High level languages today seem to provide three kinds of benefits:
-expressiveness (e.g. nested expressions, classes), safety (e.g. type checking)
-and automation (e.g. garbage collection). Mu gives up some expressiveness by
-not providing recursive expressions, but still supports lexical scope, generic
-types, and higher-order functions. It provides strong memory safety in spite
-of having manual memory management and supporting full-scale pointer
-operations (albeit at the cost of some runtime checks).
+Things are pretty open-ended right now as we learn about OpenBSD, so the
+action will mostly be on the [wiki](https://github.com/akkartik/mu/wiki) for
+some time to come. This project is still very much active, though. Questions,
+bug reports and Pull Requests will be promptly addressed.
 
 *Taking Mu for a spin*
 
@@ -407,9 +417,6 @@ c) Try running the tests:
   ```shell
   $ ./mu test
   ```
-
-The next major milestone on Mu's roadmap is dependency-injected interfaces for
-the network.
 
 **Credits**
 
