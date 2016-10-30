@@ -35,6 +35,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># are thus easier to test.</span>
 
 <span class="muData">container</span> resources [
+  lock:bool
   data:&amp;:@:resource
 ]
 
@@ -117,7 +118,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> resources
     <span class="Comment"># fake file system</span>
-    <span class="Comment"># beware: doesn't support multiple concurrent writes yet</span>
     routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-file resources, filename, source
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
@@ -142,6 +142,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> transmit-to-fake-file resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  lock:location <span class="Special">&lt;-</span> get-location *resources, <span class="Constant">lock:offset</span>
+  wait-for-reset-then-set lock
   <span class="Comment"># compute new file contents</span>
   buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
   <span class="Delimiter">{</span>
@@ -166,6 +168,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     found?:bool <span class="Special">&lt;-</span> equal filename, curr-filename
     <span class="muControl">loop-unless</span> found?
     put-index *data, i, new-resource
+    reset lock
     <span class="muControl">reply</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if file didn't already exist, make room for it</span>
@@ -182,6 +185,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># write new file</span>
   put-index *new-data, len, new-resource
+  reset lock
 ]
 </pre>
 </body>
