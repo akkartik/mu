@@ -224,7 +224,7 @@ void construct_resources_object(const map<string, string>& contents) {
   trace(9999, "mem") << "storing refcount 1 in location " << resources_data_address << end();
   // wrap the resources data in a 'resources' object
   int resources_address = allocate(size_of_resources());
-  curr = resources_address+/*skip refcount*/1;
+  curr = resources_address+/*skip refcount*/1+/*offset of 'data' element*/1;
   put(Memory, curr, resources_data_address);
   trace(9999, "mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
   put(Memory, resources_address, 1);  // initialize refcount

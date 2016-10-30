@@ -2,6 +2,7 @@
 # are thus easier to test.
 
 container resources [
+  lock:bool
   data:&:@:resource
 ]
 
@@ -84,7 +85,6 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
   {
     break-unless resources
     # fake file system
-    # beware: doesn't support multiple concurrent writes yet
     routine-id <- start-running transmit-to-fake-file resources, filename, source
     reply
   }
@@ -109,6 +109,8 @@ def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
 def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:char -> resources:&:resources, source:&:source:char [
   local-scope
   load-ingredients
+  lock:location <- get-location *resources, lock:offset
+  wait-for-reset-then-set lock
   # compute new file contents
   buf:&:buffer <- new-buffer 30
   {
@@ -133,6 +135,7 @@ def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:
     found?:bool <- equal filename, curr-filename
     loop-unless found?
     put-index *data, i, new-resource
+    reset lock
     reply
   }
   # if file didn't already exist, make room for it
@@ -149,4 +152,5 @@ def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:
   }
   # write new file
   put-index *new-data, len, new-resource
+  reset lock
 ]

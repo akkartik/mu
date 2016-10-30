@@ -9,6 +9,10 @@
 #   b) Writing to a channel implicitly performs a deep copy. This prevents
 #   addresses from being shared between routines, and therefore eliminates all
 #   possibility of race conditions.
+#
+# There's still a narrow window for race conditions: the ingredients passed in
+# to 'start-running'. Pass only channels into routines and you should be fine.
+# Any other mutable ingredients will require locks.
 
 scenario channel [
   run [
