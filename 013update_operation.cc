@@ -25,3 +25,10 @@ void update_instruction_operations(const recipe_ordinal r) {
 string maybe(string s) {
   return s + ": ";
 }
+
+:(scenario missing_arrow)
+% Hide_errors = true;
+def main [
+  1:number , copy 0  # typo: ',' instead of '<-'
+]
++error: main: instruction '1:number' has no recipe

@@ -160,9 +160,10 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    if (inst.ingredients.empty()) continue;  // if indirect call, error raised above
+    if (!is_indirect_call(inst.operation)) continue;
+    if (inst.ingredients.empty()) continue;  // error raised above
     const reagent& callee = inst.ingredients.at(0);
-    if (!is_mu_recipe(callee)) continue;  // if indirect call, error raised above
+    if (!is_mu_recipe(callee)) continue;  // error raised above
     const recipe callee_header = is_literal(callee) ? get(Recipe, callee.value) : from_reagent(inst.ingredients.at(0));
     if (!callee_header.has_header) continue;
     if (is_indirect_call_with_ingredients(inst.operation)) {
@@ -179,6 +180,10 @@ void check_indirect_calls_against_header(const recipe_ordinal r) {
       }
     }
   }
+}
+
+bool is_indirect_call(const recipe_ordinal r) {
+  return is_indirect_call_with_ingredients(r) || is_indirect_call_with_products(r);
 }
 
 bool is_indirect_call_with_ingredients(const recipe_ordinal r) {
