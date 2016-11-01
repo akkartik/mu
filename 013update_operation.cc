@@ -26,6 +26,7 @@ string maybe(string s) {
   return s + ": ";
 }
 
+:(scenarios transform)
 :(scenario missing_arrow)
 % Hide_errors = true;
 def main [
