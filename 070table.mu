@@ -62,14 +62,6 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
   *table-data <- put-index *table-data, hash-key, new-row
 ]
 
-def abs n:num -> result:num [
-  local-scope
-  load-ingredients
-  positive?:bool <- greater-or-equal n, 0
-  return-if positive?, n
-  result <- multiply n, -1
-]
-
 def index table:&:table:_key:_value, key:_key -> result:_value [
   local-scope
   load-ingredients
@@ -83,4 +75,12 @@ def index table:&:table:_key:_value, key:_key -> result:_value [
   occupied?:bool <- get x, occupied?:offset
   assert occupied?, [can't handle missing elements yet]
   result <- get x, value:offset
+]
+
+def abs n:num -> result:num [
+  local-scope
+  load-ingredients
+  positive?:bool <- greater-or-equal n, 0
+  return-if positive?, n
+  result <- multiply n, -1
 ]
