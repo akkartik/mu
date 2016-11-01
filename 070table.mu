@@ -15,11 +15,10 @@ scenario table-read-write [
 
 scenario table-read-write-non-integer [
   local-scope
-  key:text <- new [abc def]
-  {tab: (address table text number)} <- new-table 30
+  tab:&:table:text:num <- new-table 30
   run [
-    put-index tab, key, 34
-    1:num/raw <- index tab, key
+    put-index tab, [abc def], 34
+    1:num/raw <- index tab, [abc def]
   ]
   memory-should-contain [
     1 <- 34
