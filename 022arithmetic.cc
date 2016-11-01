@@ -269,8 +269,9 @@ case DIVIDE_WITH_REMAINDER: {
 :(before "End Primitive Recipe Implementations")
 case DIVIDE_WITH_REMAINDER: {
   products.resize(2);
-  int a = static_cast<int>(ingredients.at(0).at(0));
-  int b = static_cast<int>(ingredients.at(1).at(0));
+  // fractions will be dropped; very large numbers will overflow
+  long long int a = static_cast<long long int>(ingredients.at(0).at(0));
+  long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   if (b == 0) {
     raise << maybe(current_recipe_name()) << "divide by zero in '" << to_original_string(current_instruction()) << "'\n" << end();
     products.resize(2);
@@ -278,11 +279,10 @@ case DIVIDE_WITH_REMAINDER: {
     products.at(1).push_back(0);
     break;
   }
-  int quotient = a / b;
-  int remainder = a % b;
-  // very large integers will lose precision
-  products.at(0).push_back(quotient);
-  products.at(1).push_back(remainder);
+  long long int quotient = a / b;
+  long long int remainder = a % b;
+  products.at(0).push_back(static_cast<double>(quotient));
+  products.at(1).push_back(static_cast<double>(remainder));
   break;
 }
 

@@ -52,7 +52,7 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
   hash <- abs hash
   capacity:num <- get *table, capacity:offset
   _, hash-key:num <- divide-with-remainder hash, capacity
-  hash-key <- abs hash-key  # in case hash-key overflows into a negative integer
+  hash-key <- abs hash-key  # in case hash overflows from a double into a negative integer inside 'divide-with-remainder' above
   table-data:&:@:table-row:_key:_value <- get *table, data:offset
   x:table-row:_key:_value <- index *table-data, hash-key
   occupied?:bool <- get x, occupied?:offset
@@ -69,7 +69,7 @@ def index table:&:table:_key:_value, key:_key -> result:_value [
   hash <- abs hash
   capacity:num <- get *table, capacity:offset
   _, hash-key:num <- divide-with-remainder hash, capacity
-  hash-key <- abs hash-key  # in case hash-key overflows into a negative integer
+  hash-key <- abs hash-key  # in case hash overflows from a double into a negative integer inside 'divide-with-remainder' above
   table-data:&:@:table-row:_key:_value <- get *table, data:offset
   x:table-row:_key:_value <- index *table-data, hash-key
   occupied?:bool <- get x, occupied?:offset
