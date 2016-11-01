@@ -40,10 +40,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   tab:&amp;:table:num:num <span class="Special">&lt;-</span> new-table<span class="Constant"> 30</span>
   run [
     put-index tab,<span class="Constant"> 12</span>,<span class="Constant"> 34</span>
-    1:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> index tab,<span class="Constant"> 12</span>
+    60:num/<span class="Special">raw</span>, 61:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> index tab,<span class="Constant"> 12</span>
   ]
   memory-should-contain [
-   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 34</span>
+   <span class="Constant"> 60</span> <span class="Special">&lt;-</span><span class="Constant"> 34</span>
+   <span class="Constant"> 61</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># found</span>
   ]
 ]
 
@@ -52,10 +53,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   tab:&amp;:table:text:num <span class="Special">&lt;-</span> new-table<span class="Constant"> 30</span>
   run [
     put-index tab, <span class="Constant">[abc def]</span>,<span class="Constant"> 34</span>
-    1:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> index tab, <span class="Constant">[abc def]</span>
+    1:num/<span class="Special">raw</span>, 2:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> index tab, <span class="Constant">[abc def]</span>
   ]
   memory-should-contain [
    <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 34</span>
+   <span class="Constant"> 2</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># found</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> table-read-not-found [
+  <span class="Constant">local-scope</span>
+  tab:&amp;:table:text:num <span class="Special">&lt;-</span> new-table<span class="Constant"> 30</span>
+  run [
+    1:num/<span class="Special">raw</span>, 2:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> index tab, <span class="Constant">[abc def]</span>
+  ]
+  memory-should-contain [
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 2</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># not found</span>
   ]
 ]
 
@@ -96,7 +110,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *table-data <span class="Special">&lt;-</span> put-index *table-data, hash-key, new-row
 ]
 
-<span class="muRecipe">def</span> index table:&amp;:table:_key:_value, key:_key<span class="muRecipe"> -&gt; </span>result:_value [
+<span class="muRecipe">def</span> index table:&amp;:table:_key:_value, key:_key<span class="muRecipe"> -&gt; </span>result:_value, found?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   hash:num <span class="Special">&lt;-</span> hash key
@@ -106,8 +120,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   hash-key <span class="Special">&lt;-</span> abs hash-key  <span class="Comment"># in case hash overflows from a double into a negative integer inside 'divide-with-remainder' above</span>
   table-data:&amp;:@:table-row:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
   x:table-row:_key:_value <span class="Special">&lt;-</span> index *table-data, hash-key
-  occupied?:bool <span class="Special">&lt;-</span> get x, <span class="Constant">occupied?:offset</span>
-  assert occupied?, <span class="Constant">[can't handle missing elements yet]</span>
+  empty:&amp;:_value <span class="Special">&lt;-</span> new <span class="Constant">_value:type</span>
+  result <span class="Special">&lt;-</span> copy *empty
+  found?:bool <span class="Special">&lt;-</span> get x, <span class="Constant">occupied?:offset</span>
+  <span class="muControl">return-unless</span> found?
+  key2:_key <span class="Special">&lt;-</span> get x, <span class="Constant">key:offset</span>
+  found?:bool <span class="Special">&lt;-</span> equal key, key2
+  <span class="muControl">return-unless</span> found?
   result <span class="Special">&lt;-</span> get x, <span class="Constant">value:offset</span>
 ]
 
