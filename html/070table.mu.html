@@ -62,10 +62,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muData">container</span> table:_key:_value [
   length:num
   capacity:num
-  data:&amp;:@:table_row:_key:_value
+  data:&amp;:@:table-row:_key:_value
 ]
 
-<span class="muData">container</span> table_row:_key:_value [
+<span class="muData">container</span> table-row:_key:_value [
   occupied?:bool
   key:_key
   value:_value
@@ -75,7 +75,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table _key _value): type<span class="Delimiter">}</span>
-  data:&amp;:@:table_row:_key:_value <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table_row _key _value): type<span class="Delimiter">}</span>, capacity
+  data:&amp;:@:table-row:_key:_value <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table-row _key _value): type<span class="Delimiter">}</span>, capacity
   *result <span class="Special">&lt;-</span> merge <span class="Constant">0/length</span>, capacity, data
 ]
 
@@ -85,23 +85,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   hash:num <span class="Special">&lt;-</span> hash key
   hash <span class="Special">&lt;-</span> abs hash
   capacity:num <span class="Special">&lt;-</span> get *table, <span class="Constant">capacity:offset</span>
-  _, hash <span class="Special">&lt;-</span> divide-with-remainder hash, capacity
-  hash <span class="Special">&lt;-</span> abs hash  <span class="Comment"># in case hash overflows into a negative integer</span>
-  table-data:&amp;:@:table_row:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
-  x:table_row:_key:_value <span class="Special">&lt;-</span> index *table-data, hash
+  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, capacity
+  hash-key <span class="Special">&lt;-</span> abs hash-key  <span class="Comment"># in case hash-key overflows into a negative integer</span>
+  table-data:&amp;:@:table-row:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
+  x:table-row:_key:_value <span class="Special">&lt;-</span> index *table-data, hash-key
   occupied?:bool <span class="Special">&lt;-</span> get x, <span class="Constant">occupied?:offset</span>
   not-occupied?:bool <span class="Special">&lt;-</span> not occupied?:bool
   assert not-occupied?, <span class="Constant">[can't handle collisions yet]</span>
-  new-row:table_row:_key:_value <span class="Special">&lt;-</span> merge <span class="Constant">1/true</span>, key, value
-  *table-data <span class="Special">&lt;-</span> put-index *table-data, hash, new-row
-]
-
-<span class="muRecipe">def</span> abs n:num<span class="muRecipe"> -&gt; </span>result:num [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  positive?:bool <span class="Special">&lt;-</span> greater-or-equal n,<span class="Constant"> 0</span>
-  <span class="muControl">return-if</span> positive?, n
-  result <span class="Special">&lt;-</span> multiply n,<span class="Constant"> -1</span>
+  new-row:table-row:_key:_value <span class="Special">&lt;-</span> merge <span class="Constant">1/true</span>, key, value
+  *table-data <span class="Special">&lt;-</span> put-index *table-data, hash-key, new-row
 ]
 
 <span class="muRecipe">def</span> index table:&amp;:table:_key:_value, key:_key<span class="muRecipe"> -&gt; </span>result:_value [
@@ -110,13 +102,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   hash:num <span class="Special">&lt;-</span> hash key
   hash <span class="Special">&lt;-</span> abs hash
   capacity:num <span class="Special">&lt;-</span> get *table, <span class="Constant">capacity:offset</span>
-  _, hash <span class="Special">&lt;-</span> divide-with-remainder hash, capacity
-  hash <span class="Special">&lt;-</span> abs hash  <span class="Comment"># in case hash overflows into a negative integer</span>
-  table-data:&amp;:@:table_row:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
-  x:table_row:_key:_value <span class="Special">&lt;-</span> index *table-data, hash
+  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, capacity
+  hash-key <span class="Special">&lt;-</span> abs hash-key  <span class="Comment"># in case hash-key overflows into a negative integer</span>
+  table-data:&amp;:@:table-row:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
+  x:table-row:_key:_value <span class="Special">&lt;-</span> index *table-data, hash-key
   occupied?:bool <span class="Special">&lt;-</span> get x, <span class="Constant">occupied?:offset</span>
   assert occupied?, <span class="Constant">[can't handle missing elements yet]</span>
   result <span class="Special">&lt;-</span> get x, <span class="Constant">value:offset</span>
+]
+
+<span class="muRecipe">def</span> abs n:num<span class="muRecipe"> -&gt; </span>result:num [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  positive?:bool <span class="Special">&lt;-</span> greater-or-equal n,<span class="Constant"> 0</span>
+  <span class="muControl">return-if</span> positive?, n
+  result <span class="Special">&lt;-</span> multiply n,<span class="Constant"> -1</span>
 ]
 </pre>
 </body>
