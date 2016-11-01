@@ -28,10 +28,10 @@ scenario table-read-write-non-integer [
 container table:_key:_value [
   length:num
   capacity:num
-  data:&:@:table_row:_key:_value
+  data:&:@:table-row:_key:_value
 ]
 
-container table_row:_key:_value [
+container table-row:_key:_value [
   occupied?:bool
   key:_key
   value:_value
@@ -41,7 +41,7 @@ def new-table capacity:num -> result:&:table:_key:_value [
   local-scope
   load-ingredients
   result <- new {(table _key _value): type}
-  data:&:@:table_row:_key:_value <- new {(table_row _key _value): type}, capacity
+  data:&:@:table-row:_key:_value <- new {(table-row _key _value): type}, capacity
   *result <- merge 0/length, capacity, data
 ]
 
@@ -53,12 +53,12 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:&:@:table_row:_key:_value <- get *table, data:offset
-  x:table_row:_key:_value <- index *table-data, hash
+  table-data:&:@:table-row:_key:_value <- get *table, data:offset
+  x:table-row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   not-occupied?:bool <- not occupied?:bool
   assert not-occupied?, [can't handle collisions yet]
-  new-row:table_row:_key:_value <- merge 1/true, key, value
+  new-row:table-row:_key:_value <- merge 1/true, key, value
   *table-data <- put-index *table-data, hash, new-row
 ]
 
@@ -78,8 +78,8 @@ def index table:&:table:_key:_value, key:_key -> result:_value [
   capacity:num <- get *table, capacity:offset
   _, hash <- divide-with-remainder hash, capacity
   hash <- abs hash  # in case hash overflows into a negative integer
-  table-data:&:@:table_row:_key:_value <- get *table, data:offset
-  x:table_row:_key:_value <- index *table-data, hash
+  table-data:&:@:table-row:_key:_value <- get *table, data:offset
+  x:table-row:_key:_value <- index *table-data, hash
   occupied?:bool <- get x, occupied?:offset
   assert occupied?, [can't handle missing elements yet]
   result <- get x, value:offset
