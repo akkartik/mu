@@ -188,7 +188,7 @@ def main [
   2:num <- copy 14
   3:num <- copy 15
   4:num <- copy 16
-  5:num <- index 1:array:num:3, 0
+  5:num <- index 1:array:num:3, 0/index  # the index must be a non-negative whole number
 ]
 +mem: storing 14 in location 5
 

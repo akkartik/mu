@@ -1,5 +1,5 @@
-# A table is like an array, except that its keys are not integers but
-# arbitrary types.
+# A table is like an array, except that you can index it with arbitrary types
+# and not just non-negative whole numbers.
 
 scenario table-read-write [
   local-scope
