@@ -89,13 +89,13 @@ and higher-order functions) but should be easier to write a compiler for since
 it gives up some expressiveness by not allowing recursive expressions. It is
 also *more* expressive than conventional high-level languages in some ways:
 Literate Programming turns out to be a great fit for a statement-oriented
-language and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
+language, and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
 
 Balancing these strengths, however, Mu is currently interpreted and slow. Too
 slow for graphics or sound, among other things. Rather than try to build a
 compiler for it, our next milestone is to "backport" the lessons of Mu back to
 a real-world unix-like system: OpenBSD, a reasonable compromise between the
-complexity (*ahem* bloat) of Linux and the over-simplification of
+complexity (*ahem* bloat) of GNU and the over-simplification of
 [xv6](https://github.com/mit-pdos/xv6-public). The goal is to continue to have
 a self-contained, self-hosting system without external dependencies as we add
 support for new kinds of tests. The goal is explicitly *not* to blindly
