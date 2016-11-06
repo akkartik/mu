@@ -727,6 +727,41 @@ def main [
 +mem: storing -12 in location 1
 
 :(before "End Primitive Recipe Declarations")
+TRUNCATE,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "truncate", TRUNCATE);
+:(before "End Primitive Recipe Checks")
+case TRUNCATE: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'truncate' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'truncate' should be a number, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case TRUNCATE: {
+  products.resize(1);
+  products.at(0).push_back(trunc(ingredients.at(0).at(0)));
+  break;
+}
+
+:(scenario truncate_to_nearest_integer)
+def main [
+  1:num <- truncate 12.2
+]
++mem: storing 12 in location 1
+
+:(scenario truncate_negative)
+def main [
+  1:num <- truncate -12.2
+]
++mem: storing -12 in location 1
+
+:(before "End Primitive Recipe Declarations")
 CHARACTER_TO_CODE,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "character-to-code", CHARACTER_TO_CODE);
