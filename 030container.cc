@@ -896,12 +896,12 @@ void check_or_set_invalid_types(reagent& r, const recipe& caller, const instruct
   check_or_set_invalid_types(r.type, maybe(caller.name), "'"+inst.original_string+"'");
 }
 
-void check_or_set_invalid_types(type_tree* type, const string& block, const string& name) {
+void check_or_set_invalid_types(type_tree* type, const string& location_for_error_messages, const string& name_for_error_messages) {
   if (!type) return;
   // End Container Type Checks
   if (!type->atom) {
-    check_or_set_invalid_types(type->left, block, name);
-    check_or_set_invalid_types(type->right, block, name);
+    check_or_set_invalid_types(type->left, location_for_error_messages, name_for_error_messages);
+    check_or_set_invalid_types(type->right, location_for_error_messages, name_for_error_messages);
     return;
   }
   if (type->value == 0) return;
@@ -910,7 +910,7 @@ void check_or_set_invalid_types(type_tree* type, const string& block, const stri
     if (contains_key(Type_ordinal, type->name))
       type->value = get(Type_ordinal, type->name);
     else
-      raise << block << "unknown type " << type->name << " in " << name << '\n' << end();
+      raise << location_for_error_messages << "unknown type " << type->name << " in " << name_for_error_messages << '\n' << end();
   }
 }
 
@@ -951,15 +951,15 @@ void check_container_field_types() {
   }
 }
 
-void check_invalid_types(const type_tree* type, const string& block, const string& name) {
+void check_invalid_types(const type_tree* type, const string& location_for_error_messages, const string& name_for_error_messages) {
   if (!type) return;  // will throw a more precise error elsewhere
   if (!type->atom) {
-    check_invalid_types(type->left, block, name);
-    check_invalid_types(type->right, block, name);
+    check_invalid_types(type->left, location_for_error_messages, name_for_error_messages);
+    check_invalid_types(type->right, location_for_error_messages, name_for_error_messages);
     return;
   }
   if (type->value != 0) {  // value 0 = compound types (layer parse_tree) or type ingredients (layer shape_shifting_container)
     if (!contains_key(Type, type->value))
-      raise << block << "unknown type in " << name << '\n' << end();
+      raise << location_for_error_messages << "unknown type in " << name_for_error_messages << '\n' << end();
   }
 }
