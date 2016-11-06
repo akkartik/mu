@@ -122,9 +122,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
 <span class="Normal">bool</span> Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Normal">bool</span> Dump_trace = <span class="Constant">false</span><span class="Delimiter">;</span>
+string Dump_label = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span class="Delimiter">:(before &quot;End Setup&quot;)</span>
 Hide_errors = <span class="Constant">false</span><span class="Delimiter">;</span>
 Dump_trace = <span class="Constant">false</span><span class="Delimiter">;</span>
+Dump_label = <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Types&quot;)</span>
 <span class="Comment">// Pre-define some global constants that trace_stream needs to know about.</span>
@@ -170,7 +172,9 @@ Dump_trace = <span class="Constant">false</span><span class="Delimiter">;</span>
   string curr_contents = curr_stream<span class="Delimiter">-&gt;</span>str<span class="Delimiter">();</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!curr_contents<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
     past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>curr_depth<span class="Delimiter">,</span> trim<span class="Delimiter">(</span>curr_label<span class="Delimiter">),</span> curr_contents<span class="Delimiter">));</span>  <span class="Comment">// preserve indent in contents</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Dump_trace || <span class="Delimiter">(</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">))</span>
+    <span class="Normal">if</span> <span class="Delimiter">((</span>!Hide_errors &amp;&amp; curr_label == <span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span>
+        || Dump_trace
+        || <span class="Delimiter">(</span>!Dump_label<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; curr_label == Dump_label<span class="Delimiter">))</span>
       cerr &lt;&lt; curr_label &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; curr_contents &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">delete</span> curr_stream<span class="Delimiter">;</span>

@@ -89,9 +89,11 @@ struct trace_line {
 :(before "End Globals")
 bool Hide_errors = false;
 bool Dump_trace = false;
+string Dump_label = "";
 :(before "End Setup")
 Hide_errors = false;
 Dump_trace = false;
+Dump_label = "";
 
 :(before "End Types")
 // Pre-define some global constants that trace_stream needs to know about.
@@ -137,7 +139,9 @@ void trace_stream::newline() {
   string curr_contents = curr_stream->str();
   if (!curr_contents.empty()) {
     past_lines.push_back(trace_line(curr_depth, trim(curr_label), curr_contents));  // preserve indent in contents
-    if (Dump_trace || (!Hide_errors && curr_label == "error"))
+    if ((!Hide_errors && curr_label == "error")
+        || Dump_trace
+        || (!Dump_label.empty() && curr_label == Dump_label))
       cerr << curr_label << ": " << curr_contents << '\n';
   }
   delete curr_stream;
