@@ -129,6 +129,18 @@ def main [
 ]
 +mem: storing 0 in location 3
 
+:(scenario new_array)
+# call 'new' with a second ingredient to allocate an array of some type rather than a single copy
+def main [
+  1:address:array:num/raw <- new number:type, 5
+  2:address:num/raw <- new number:type
+  3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
+]
++run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
++mem: array length is 5
+# don't forget the extra location for array length, and the second extra location for the refcount
++mem: storing 7 in location 3
+
 :(scenario dilated_reagent_with_new)
 def main [
   1:address:address:num <- new {(address number): type}
@@ -360,15 +372,22 @@ def main [
 ]
 +mem: storing 0 in location 10
 
-:(scenario new_array)
+:(scenario new_size)
+def main [
+  11:address:num/raw <- new number:type
+  12:address:num/raw <- new number:type
+  13:num/raw <- subtract 12:address:num/raw, 11:address:num/raw
+]
+# size of number + refcount
++mem: storing 2 in location 13
+
+:(scenario new_array_size)
 def main [
   1:address:array:num/raw <- new number:type, 5
   2:address:num/raw <- new number:type
   3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
 ]
-+run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
-+mem: array length is 5
-# don't forget the extra location for array length, and the second extra location for the refcount
+# 5 locations for array contents + array length + refcount
 +mem: storing 7 in location 3
 
 :(scenario new_empty_array)
