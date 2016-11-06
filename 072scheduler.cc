@@ -132,6 +132,8 @@ void run_main(int argc, char* argv[]) {
   for (int i = 1;  i < argc;  ++i) {
     vector<double> arg;
     arg.push_back(new_mu_text(argv[i]));
+    assert(get(Memory, arg.back()) == 0);
+    put(Memory, arg.back(), 1);  // update refcount
     current_call().ingredient_atoms.push_back(arg);
   }
   run(main_routine);
