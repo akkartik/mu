@@ -224,11 +224,8 @@ def main [
 % CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
 
 :(before "End variant_type Special-cases")
-if (contains_type_ingredient(element)) {
-  if (!type->right)
-    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three while computing variant type of exclusive-container\n" << end();
-  replace_type_ingredients(element.type, type->right, info);
-}
+if (contains_type_ingredient(element))
+  replace_type_ingredients(element.type, type->right, info, " while computing variant type of exclusive-container");
 
 :(scenario get_on_shape_shifting_container)
 container foo:_t [
@@ -322,23 +319,23 @@ void replace_type_ingredients(reagent& element, const type_tree* caller_type, co
   if (contains_type_ingredient(element)) {
     if (!caller_type->right)
       raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
-    replace_type_ingredients(element.type, caller_type->right, info);
+    replace_type_ingredients(element.type, caller_type->right, info, location_for_error_messages);
   }
 }
 
 // replace all type_ingredients in element_type with corresponding elements of callsite_type
-void replace_type_ingredients(type_tree* element_type, const type_tree* callsite_type, const type_info& container_info) {
+void replace_type_ingredients(type_tree* element_type, const type_tree* callsite_type, const type_info& container_info, const string& location_for_error_messages) {
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (!element_type->atom) {
-    replace_type_ingredients(element_type->left, callsite_type, container_info);
-    replace_type_ingredients(element_type->right, callsite_type, container_info);
+    replace_type_ingredients(element_type->left, callsite_type, container_info, location_for_error_messages);
+    replace_type_ingredients(element_type->right, callsite_type, container_info, location_for_error_messages);
     return;
   }
   if (element_type->value < START_TYPE_INGREDIENTS) return;
   const int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
-    raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
     return;
   }
   *element_type = *nth_type_ingredient(callsite_type, type_ingredient_index, container_info);
