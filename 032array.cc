@@ -305,6 +305,17 @@ void test_array_length_compound() {
   CHECK_EQ(array_length(x), 3);
 }
 
+:(scenario index_truncates)
+def main [
+  1:array:num:3 <- create-array
+  2:num <- copy 14
+  3:num <- copy 15
+  4:num <- copy 16
+  5:num <- index 1:array:num:3, 1.5  # non-whole number
+]
+# fraction is truncated away
++mem: storing 15 in location 5
+
 :(scenario index_out_of_bounds)
 % Hide_errors = true;
 def main [
