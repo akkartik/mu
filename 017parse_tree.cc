@@ -79,10 +79,11 @@ string_tree* parse_string_tree(istream& in) {
   }
   in.get();  // skip ')'
   assert(*curr == NULL);
+  if (result->right == NULL) return result;
   // standardize the final element to always be on the right if it's an atom
   // (a b c) => (a b . c) in s-expression parlance
   string_tree* tmp = result;
-  while (tmp->right && tmp->right->right) tmp = tmp->right;
+  while (tmp->right->right) tmp = tmp->right;
   assert(!tmp->right->atom);
   if (!tmp->right->left->atom) return result;
   string_tree* tmp2 = tmp->right;
@@ -104,3 +105,9 @@ container foo [
 container bar [
 ]
 +parse:   product: {1: ("foo" ("address" "array" "character") ("bar" "number"))}
+
+:(scenario dilated_singleton_tree)
+def main [
+  {1: number, foo: (bar)} <- copy 34
+]
++parse:   product: {1: "number", "foo": ("bar")}

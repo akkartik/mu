@@ -115,10 +115,11 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
   assert<span class="Delimiter">(</span>*curr == <span class="Constant">NULL</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   <span class="Comment">// standardize the final element to always be on the right if it's an atom</span>
   <span class="Comment">// (a b c) =&gt; (a b . c) in s-expression parlance</span>
   string_tree* tmp = result<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>right &amp;&amp; tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> tmp = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> tmp = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   assert<span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
   string_tree* tmp2 = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
@@ -140,6 +141,12 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
 <span class="muData">container</span> bar [
 ]
 <span class="traceContains">+parse:   product: {1: (&quot;foo&quot; (&quot;address&quot; &quot;array&quot; &quot;character&quot;) (&quot;bar&quot; &quot;number&quot;))}</span>
+
+<span class="Delimiter">:(scenario dilated_singleton_tree)</span>
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: number<span class="Delimiter">,</span> foo: <span class="Delimiter">(</span>bar<span class="Delimiter">)}</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+]
+<span class="traceContains">+parse:   product: {1: &quot;number&quot;, &quot;foo&quot;: (&quot;bar&quot;)}</span>
 </pre>
 </body>
 </html>
