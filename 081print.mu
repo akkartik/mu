@@ -106,11 +106,13 @@ def print screen:&:screen, c:char -> screen:&:screen [
   height:num <- get *screen, num-rows:offset
   # if cursor is out of bounds, silently exit
   row:num <- get *screen, cursor-row:offset
+  row <- round row
   legal?:bool <- greater-or-equal row, 0
   return-unless legal?
   legal? <- lesser-than row, height
   return-unless legal?
   column:num <- get *screen, cursor-column:offset
+  column <- round column
   legal? <- greater-or-equal column, 0
   return-unless legal?
   legal? <- lesser-than column, width
@@ -172,6 +174,25 @@ scenario print-character-at-top-left [
   fake-screen:&:screen <- new-fake-screen 3/width, 2/height
   run [
     a:char <- copy 97/a
+    fake-screen <- print fake-screen, a:char
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    1:@:screen-cell/raw <- copy *cell
+  ]
+  memory-should-contain [
+    1 <- 6  # width*height
+    2 <- 97  # 'a'
+    3 <- 7  # white
+    # rest of screen is empty
+    4 <- 0
+  ]
+]
+
+scenario print-character-at-fractional-coordinate [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  a:char <- copy 97/a
+  run [
+    move-cursor fake-screen, 0.5, 0
     fake-screen <- print fake-screen, a:char
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     1:@:screen-cell/raw <- copy *cell

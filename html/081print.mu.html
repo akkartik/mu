@@ -141,11 +141,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   height:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">num-rows:offset</span>
   <span class="Comment"># if cursor is out of bounds, silently exit</span>
   row:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-row:offset</span>
+  row <span class="Special">&lt;-</span> round row
   legal?:bool <span class="Special">&lt;-</span> greater-or-equal row,<span class="Constant"> 0</span>
   <span class="muControl">return-unless</span> legal?
   legal? <span class="Special">&lt;-</span> lesser-than row, height
   <span class="muControl">return-unless</span> legal?
   column:num <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-column:offset</span>
+  column <span class="Special">&lt;-</span> round column
   legal? <span class="Special">&lt;-</span> greater-or-equal column,<span class="Constant"> 0</span>
   <span class="muControl">return-unless</span> legal?
   legal? <span class="Special">&lt;-</span> lesser-than column, width
@@ -207,6 +209,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
   run [
     a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
+    fake-screen <span class="Special">&lt;-</span> print fake-screen, a:char
+    cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
+    1:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell
+  ]
+  memory-should-contain [
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 6</span>  <span class="Comment"># width*height</span>
+   <span class="Constant"> 2</span> <span class="Special">&lt;-</span><span class="Constant"> 97</span>  <span class="Comment"># 'a'</span>
+   <span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 7</span>  <span class="Comment"># white</span>
+    <span class="Comment"># rest of screen is empty</span>
+   <span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> print-character-at-fractional-coordinate [
+  <span class="Constant">local-scope</span>
+  fake-screen:&amp;:screen <span class="Special">&lt;-</span> new-fake-screen <span class="Constant">3/width</span>, <span class="Constant">2/height</span>
+  a:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
+  run [
+    move-cursor fake-screen, 0.5,<span class="Constant"> 0</span>
     fake-screen <span class="Special">&lt;-</span> print fake-screen, a:char
     cell:&amp;:@:screen-cell <span class="Special">&lt;-</span> get *fake-screen, <span class="Constant">data:offset</span>
     1:@:screen-cell/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *cell

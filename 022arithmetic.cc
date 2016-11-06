@@ -714,6 +714,18 @@ def main [
 ]
 +mem: storing 12 in location 1
 
+:(scenario round_halves_toward_zero)
+def main [
+  1:num <- round 12.5
+]
++mem: storing 12 in location 1
+
+:(scenario round_halves_toward_zero_2)
+def main [
+  1:num <- round -12.5
+]
++mem: storing -12 in location 1
+
 :(before "End Primitive Recipe Declarations")
 CHARACTER_TO_CODE,
 :(before "End Primitive Recipe Numbers")
