@@ -286,20 +286,20 @@ def main [
 +mem: storing 1 in location 4
 
 :(before "End element_type Special-cases")
-replace_type_ingredients(element, type, info);
+replace_type_ingredients(element, type, info, " while computing element type of container");
 :(before "Compute Container Size(element, full_type)")
-replace_type_ingredients(element, full_type, container_info);
+replace_type_ingredients(element, full_type, container_info, location_for_error_messages);
 :(before "Compute Exclusive Container Size(element, full_type)")
-replace_type_ingredients(element, full_type, exclusive_container_info);
+replace_type_ingredients(element, full_type, exclusive_container_info, location_for_error_messages);
 :(before "Compute Container Address Offset(element)")
-replace_type_ingredients(element, type, info);
+replace_type_ingredients(element, type, info, location_for_error_messages);
 if (contains_type_ingredient(element)) return;  // error raised elsewhere
 
 :(code)
-void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info) {
+void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info, const string& location_for_error_messages) {
   if (contains_type_ingredient(element)) {
     if (!caller_type->right)
-      raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three\n" << end();
+      raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
     replace_type_ingredients(element.type, caller_type->right, info);
   }
 }
@@ -479,7 +479,7 @@ def main [
   10:foo:point <- merge 14, 15, 16
   1:num <- get 10:foo, 1:offset
 ]
-+error: illegal type "foo" seems to be missing a type ingredient or three
++error: illegal type "foo" seems to be missing a type ingredient or three in '1:num <- get 10:foo, 1:offset'
 
 //:: fix up previous layers
 
@@ -491,11 +491,11 @@ def main [
 const type_tree* root = root_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
-  compute_container_sizes(info, type, pending_metadata);
+  compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
   return;
 }
 if (info.kind == EXCLUSIVE_CONTAINER) {
-  compute_exclusive_container_sizes(info, type, pending_metadata);
+  compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
   return;
 }
 
@@ -506,7 +506,7 @@ void test_container_sizes_shape_shifting_container() {
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK_EQ(r.metadata.size, 3);
 }
 
@@ -516,10 +516,10 @@ void test_container_sizes_shape_shifting_exclusive_container() {
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK_EQ(r.metadata.size, 3);
   reagent r2("x:foo:num");
-  compute_container_sizes(r2);
+  compute_container_sizes(r2, "");
   CHECK_EQ(r2.metadata.size, 2);
 }
 
@@ -529,7 +529,7 @@ void test_container_sizes_compound_type_ingredient() {
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:&:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK_EQ(r.metadata.size, 2);
   // scan also pre-computes metadata for type ingredient
   reagent point("x:point");
@@ -543,7 +543,7 @@ void test_container_sizes_recursive_shape_shifting_container() {
       "  y:&:foo:_t\n"
       "]\n");
   reagent r2("x:foo:num");
-  compute_container_sizes(r2);
+  compute_container_sizes(r2, "");
   CHECK_EQ(r2.metadata.size, 2);
 }
 
@@ -551,11 +551,11 @@ void test_container_sizes_recursive_shape_shifting_container() {
 const type_tree* root = root_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
-  compute_container_address_offsets(info, type);
+  compute_container_address_offsets(info, type, location_for_error_messages);
   return;
 }
 if (info.kind == EXCLUSIVE_CONTAINER) {
-  compute_exclusive_container_address_offsets(info, type);
+  compute_exclusive_container_address_offsets(info, type, location_for_error_messages);
   return;
 }
 
@@ -566,8 +566,8 @@ void test_container_address_offsets_in_shape_shifting_container() {
       "  y:_t\n"
       "]\n");
   reagent r("x:foo:&:num");
-  compute_container_sizes(r);
-  compute_container_address_offsets(r);
+  compute_container_sizes(r, "");
+  compute_container_address_offsets(r, "");
   CHECK_EQ(SIZE(r.metadata.address), 1);
   CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
   set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
@@ -588,8 +588,8 @@ void test_container_address_offsets_in_nested_shape_shifting_container() {
       "]\n");
   reagent r("x:bar:&:num");
   CLEAR_TRACE;
-  compute_container_sizes(r);
-  compute_container_address_offsets(r);
+  compute_container_sizes(r, "");
+  compute_container_address_offsets(r, "");
   CHECK_EQ(SIZE(r.metadata.address), 1);
   CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
   set<address_element_info>& offset_info = get(r.metadata.address, set<tag_condition_info>());
@@ -685,6 +685,6 @@ def main [
 :(before "End variant_type Special-cases")
 if (contains_type_ingredient(element)) {
   if (!type->right)
-    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three\n" << end();
+    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three while computing variant type of exclusive-container\n" << end();
   replace_type_ingredients(element.type, type->right, info);
 }

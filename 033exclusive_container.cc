@@ -37,11 +37,11 @@ if (t.kind == EXCLUSIVE_CONTAINER) {
 }
 :(before "End compute_container_sizes Atom Cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
-  compute_exclusive_container_sizes(info, type, pending_metadata);
+  compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
 }
 
 :(code)
-void compute_exclusive_container_sizes(const type_info& exclusive_container_info, const type_tree* full_type, set<type_tree>& pending_metadata) {
+void compute_exclusive_container_sizes(const type_info& exclusive_container_info, const type_tree* full_type, set<type_tree>& pending_metadata, const string& location_for_error_messages) {
   // size of an exclusive container is the size of its largest variant
   // (So, like containers, it can only contain arrays if they're static and
   // include their length in the type.)
@@ -49,7 +49,7 @@ void compute_exclusive_container_sizes(const type_info& exclusive_container_info
   for (int i = 0;  i < SIZE(exclusive_container_info.elements);  ++i) {
     reagent/*copy*/ element = exclusive_container_info.elements.at(i);
     // Compute Exclusive Container Size(element, full_type)
-    compute_container_sizes(element.type, pending_metadata);
+    compute_container_sizes(element.type, pending_metadata, location_for_error_messages);
     int variant_size = size_of(element);
     if (variant_size > metadata.size) metadata.size = variant_size;
   }

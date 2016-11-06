@@ -290,65 +290,65 @@ void compute_container_address_offsets(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute address offsets for " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
-      compute_container_address_offsets(inst.ingredients.at(i));
+      compute_container_address_offsets(inst.ingredients.at(i), " in '"+to_original_string(inst)+"'");
     for (int i = 0;  i < SIZE(inst.products);  ++i)
-      compute_container_address_offsets(inst.products.at(i));
+      compute_container_address_offsets(inst.products.at(i), " in '"+to_original_string(inst)+"'");
   }
 }
 
-void compute_container_address_offsets(reagent& r) {
+void compute_container_address_offsets(reagent& r, const string& location_for_error_messages) {
   if (is_literal(r) || is_dummy(r)) return;
-  compute_container_address_offsets(r.type);
+  compute_container_address_offsets(r.type, location_for_error_messages);
   if (contains_key(Container_metadata, r.type))
     r.metadata = get(Container_metadata, r.type);
 }
 
 // the recursive structure of this function needs to exactly match
 // compute_container_sizes
-void compute_container_address_offsets(const type_tree* type) {
+void compute_container_address_offsets(const type_tree* type, const string& location_for_error_messages) {
   if (!type) return;
   if (!type->atom) {
     assert(type->left->atom);
     if (type->left->name == "address") {
-      compute_container_address_offsets(type->right);
+      compute_container_address_offsets(type->right, location_for_error_messages);
     }
     else if (type->left->name == "array") {
       const type_tree* element_type = type->right;
       // hack: support both array:num:3 and array:address:num
       if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
         element_type = element_type->left;
-      compute_container_address_offsets(element_type);
+      compute_container_address_offsets(element_type, location_for_error_messages);
     }
     // End compute_container_address_offsets Non-atom Cases
   }
   if (!contains_key(Type, root_type(type)->value)) return;  // error raised elsewhere
   type_info& info = get(Type, root_type(type)->value);
   if (info.kind == CONTAINER) {
-    compute_container_address_offsets(info, type);
+    compute_container_address_offsets(info, type, location_for_error_messages);
   }
   if (info.kind == EXCLUSIVE_CONTAINER) {
-    compute_exclusive_container_address_offsets(info, type);
+    compute_exclusive_container_address_offsets(info, type, location_for_error_messages);
   }
 }
 
-void compute_container_address_offsets(const type_info& container_info, const type_tree* full_type) {
+void compute_container_address_offsets(const type_info& container_info, const type_tree* full_type, const string& location_for_error_messages) {
   container_metadata& metadata = get(Container_metadata, full_type);
   if (!metadata.address.empty()) return;
   trace(9994, "transform") << "compute address offsets for container " << container_info.name << end();
-  append_addresses(0, full_type, metadata.address, set<tag_condition_info>());
+  append_addresses(0, full_type, metadata.address, set<tag_condition_info>(), location_for_error_messages);
 }
 
-void compute_exclusive_container_address_offsets(const type_info& exclusive_container_info, const type_tree* full_type) {
+void compute_exclusive_container_address_offsets(const type_info& exclusive_container_info, const type_tree* full_type, const string& location_for_error_messages) {
   container_metadata& metadata = get(Container_metadata, full_type);
   trace(9994, "transform") << "compute address offsets for exclusive container " << exclusive_container_info.name << end();
   for (int tag = 0;  tag < SIZE(exclusive_container_info.elements);  ++tag) {
     set<tag_condition_info> key;
     key.insert(tag_condition_info(/*tag is at offset*/0, tag));
-    append_addresses(/*skip tag offset*/1, variant_type(full_type, tag).type, metadata.address, key);
+    append_addresses(/*skip tag offset*/1, variant_type(full_type, tag).type, metadata.address, key, location_for_error_messages);
   }
 }
 
-void append_addresses(int base_offset, const type_tree* type, map<set<tag_condition_info>, set<address_element_info> >& out, const set<tag_condition_info>& key) {
+void append_addresses(int base_offset, const type_tree* type, map<set<tag_condition_info>, set<address_element_info> >& out, const set<tag_condition_info>& key, const string& location_for_error_messages) {
   if (is_mu_address(type)) {
     get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
     return;
@@ -366,7 +366,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
         ++curr_offset;
       }
       else if (is_mu_container(element)) {
-        append_addresses(curr_offset, element.type, out, key);
+        append_addresses(curr_offset, element.type, out, key, location_for_error_messages);
         curr_offset += size_of(element);
       }
       else if (is_mu_exclusive_container(element)) {
@@ -376,7 +376,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
           set<tag_condition_info> new_key = key;
           new_key.insert(tag_condition_info(curr_offset, tag));
           if (!contains_key(out, new_key))
-            append_addresses(curr_offset+/*skip tag*/1, variant_type(element.type, tag).type, out, new_key);
+            append_addresses(curr_offset+/*skip tag*/1, variant_type(element.type, tag).type, out, new_key, location_for_error_messages);
         }
         curr_offset += size_of(element);
       }
@@ -391,7 +391,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
       set<tag_condition_info> new_key = key;
       new_key.insert(tag_condition_info(base_offset, tag));
       if (!contains_key(out, new_key))
-        append_addresses(base_offset+/*skip tag*/1, variant_type(type, tag).type, out, new_key);
+        append_addresses(base_offset+/*skip tag*/1, variant_type(type, tag).type, out, new_key, location_for_error_messages);
     }
   }
 }
@@ -409,9 +409,9 @@ void test_container_address_offsets_empty() {
   int old_size = SIZE(Container_metadata);
   // define a container with no addresses
   reagent r("x:point");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // scan
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
@@ -431,9 +431,9 @@ void test_container_address_offsets() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:foo");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // scan
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
@@ -464,12 +464,12 @@ void test_container_address_offsets_2() {
       "  y:address:num\n"
       "]\n");
   reagent r("x:foo");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // the reagent we scanned knows it has an address at offset 1
@@ -501,12 +501,12 @@ void test_container_address_offsets_nested() {
       "  f:foo\n"  // nested container containing address
       "]\n");
   reagent r("x:bar");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains entries for bar and included types: point and foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 3);
   // scan
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // the reagent we scanned knows it has an address at offset 2
   CHECK_EQ(SIZE(r.metadata.address), 1);
   CHECK(contains_key(r.metadata.address, set<tag_condition_info>()));
@@ -533,12 +533,12 @@ void test_container_address_offsets_from_address() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:address:foo");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan an address to the container
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container
@@ -558,12 +558,12 @@ void test_container_address_offsets_from_array() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:array:foo");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan an array of the container
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container
@@ -583,12 +583,12 @@ void test_container_address_offsets_from_address_to_array() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:address:array:foo");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan an address to an array of the container
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container
@@ -608,12 +608,12 @@ void test_container_address_offsets_from_static_array() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:array:foo:10");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan a static array of the container
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container
@@ -633,12 +633,12 @@ void test_container_address_offsets_from_address_to_static_array() {
       "  x:address:num\n"
       "]\n");
   reagent r("x:address:array:foo:10");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scan an address to a static array of the container
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container
@@ -659,11 +659,11 @@ void test_container_address_offsets_from_repeated_address_and_array_types() {
       "]\n");
   // scan a deep nest of 'address' and 'array' types modifying a container
   reagent r("x:address:array:address:address:array:foo:10");
-  compute_container_sizes(r);  // need to first pre-populate the metadata
+  compute_container_sizes(r, "");  // need to first pre-populate the metadata
   // global metadata contains just the entry for foo
   // no entries for non-container types or other junk
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
-  compute_container_address_offsets(r);
+  compute_container_address_offsets(r, "");
   // compute_container_address_offsets creates no new entries
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
   // scanning precomputed metadata for the container

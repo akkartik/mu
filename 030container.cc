@@ -184,24 +184,24 @@ void compute_container_sizes(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute container sizes for " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
-      compute_container_sizes(inst.ingredients.at(i));
+      compute_container_sizes(inst.ingredients.at(i), " in '"+to_original_string(inst)+"'");
     for (int i = 0;  i < SIZE(inst.products);  ++i)
-      compute_container_sizes(inst.products.at(i));
+      compute_container_sizes(inst.products.at(i), " in '"+to_original_string(inst)+"'");
   }
 }
 
-void compute_container_sizes(reagent& r) {
+void compute_container_sizes(reagent& r, const string& location_for_error_messages) {
   expand_type_abbreviations(r.type);
   if (is_literal(r) || is_dummy(r)) return;
   reagent rcopy = r;
   // Compute Container Size(reagent rcopy)
   set<type_tree> pending_metadata;  // might actually be faster to just convert to string rather than compare type_tree directly; so far the difference is negligible
-  compute_container_sizes(rcopy.type, pending_metadata);
+  compute_container_sizes(rcopy.type, pending_metadata, location_for_error_messages);
   if (contains_key(Container_metadata, rcopy.type))
     r.metadata = get(Container_metadata, rcopy.type);
 }
 
-void compute_container_sizes(const type_tree* type, set<type_tree>& pending_metadata) {
+void compute_container_sizes(const type_tree* type, set<type_tree>& pending_metadata, const string& location_for_error_messages) {
   if (!type) return;
   trace(9993, "transform") << "compute container sizes for " << to_string(type) << end();
   if (contains_key(Container_metadata, type)) return;
@@ -210,14 +210,14 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
   if (!type->atom) {
     assert(type->left->atom);
     if (type->left->name == "address") {
-      compute_container_sizes(type->right, pending_metadata);
+      compute_container_sizes(type->right, pending_metadata, location_for_error_messages);
     }
     else if (type->left->name == "array") {
       const type_tree* element_type = type->right;
       // hack: support both array:num:3 and array:address:num
       if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
         element_type = element_type->left;
-      compute_container_sizes(element_type, pending_metadata);
+      compute_container_sizes(element_type, pending_metadata, location_for_error_messages);
     }
     // End compute_container_sizes Non-atom Cases
     return;
@@ -226,12 +226,12 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   if (info.kind == CONTAINER) {
-    compute_container_sizes(info, type, pending_metadata);
+    compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
   }
   // End compute_container_sizes Atom Cases
 }
 
-void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<type_tree>& pending_metadata) {
+void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<type_tree>& pending_metadata, const string& location_for_error_messages) {
   assert(container_info.kind == CONTAINER);
   // size of a container is the sum of the sizes of its element
   // (So it can only contain arrays if they're static and include their
@@ -240,7 +240,7 @@ void compute_container_sizes(const type_info& container_info, const type_tree* f
   for (int i = 0;  i < SIZE(container_info.elements);  ++i) {
     reagent/*copy*/ element = container_info.elements.at(i);
     // Compute Container Size(element, full_type)
-    compute_container_sizes(element.type, pending_metadata);
+    compute_container_sizes(element.type, pending_metadata, location_for_error_messages);
     metadata.offset.push_back(metadata.size);  // save previous size as offset
     metadata.size += size_of(element.type);
   }
@@ -290,7 +290,7 @@ void test_container_sizes() {
   reagent r("x:point");
   CHECK(!contains_key(Container_metadata, r.type));
   // scan
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   // the reagent we scanned knows its size
   CHECK_EQ(r.metadata.size, 2);
   // the global table also knows its size
@@ -303,7 +303,7 @@ void test_container_sizes_through_aliases() {
   put(Type_abbreviations, "pt", new_type_tree("point"));
   reagent r("x:pt");
   // scan
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   // the reagent we scanned knows its size
   CHECK_EQ(r.metadata.size, 2);
   // the global table also knows its size
@@ -316,7 +316,7 @@ void test_container_sizes_nested() {
   reagent r("x:point-number");
   CHECK(!contains_key(Container_metadata, r.type));
   // scan
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   // the reagent we scanned knows its size
   CHECK_EQ(r.metadata.size, 3);
   // the global table also knows its size
@@ -331,7 +331,7 @@ void test_container_sizes_recursive() {
       "  y:address:foo\n"
       "]\n");
   reagent r("x:foo");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK_EQ(r.metadata.size, 2);
 }
 
@@ -341,7 +341,7 @@ void test_container_sizes_from_address() {
   CHECK(!contains_key(Container_metadata, container.type));
   // scanning an address to the container precomputes the size of the container
   reagent r("x:address:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
 }
@@ -352,7 +352,7 @@ void test_container_sizes_from_array() {
   CHECK(!contains_key(Container_metadata, container.type));
   // scanning an array of the container precomputes the size of the container
   reagent r("x:array:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
 }
@@ -363,7 +363,7 @@ void test_container_sizes_from_address_to_array() {
   CHECK(!contains_key(Container_metadata, container.type));
   // scanning an address to an array of the container precomputes the size of the container
   reagent r("x:address:array:point");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
 }
@@ -374,7 +374,7 @@ void test_container_sizes_from_static_array() {
   int old_size = SIZE(Container_metadata);
   // scanning an address to an array of the container precomputes the size of the container
   reagent r("x:array:point:10");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
   // no non-container types precomputed
@@ -387,7 +387,7 @@ void test_container_sizes_from_address_to_static_array() {
   int old_size = SIZE(Container_metadata);
   // scanning an address to an array of the container precomputes the size of the container
   reagent r("x:address:array:point:10");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
   // no non-container types precomputed
@@ -400,7 +400,7 @@ void test_container_sizes_from_repeated_address_and_array_types() {
   int old_size = SIZE(Container_metadata);
   // scanning repeated address and array types modifying the container precomputes the size of the container
   reagent r("x:address:array:address:array:point:10");
-  compute_container_sizes(r);
+  compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
   // no non-container types precomputed
