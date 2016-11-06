@@ -200,6 +200,13 @@ void drop_from_type(reagent& r, string expected_type) {
   delete tmp;
 }
 
+:(scenario new_returns_incorrect_type)
+% Hide_errors = true;
+def main [
+  1:bool <- new num:type
+]
++error: main: product of 'new' has incorrect type: '1:bool <- new num:type'
+
 :(scenario new_with_type_abbreviation)
 def main [
   1:address:num/raw <- new num:type
