@@ -342,6 +342,17 @@ type_tree* copy_array_element<span class="Delimiter">(</span><span class="Normal
   CHECK_EQ<span class="Delimiter">(</span>array_length<span class="Delimiter">(</span>x<span class="Delimiter">),</span> <span class="Constant">3</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(scenario index_truncates)</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Special"> &lt;- </span>create-array
+  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">14</span>
+  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">15</span>
+  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">16</span>
+  <span class="Constant">5</span>:num<span class="Special"> &lt;- </span>index <span class="Constant">1</span>:array:num:<span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">1.5</span>  <span class="Comment"># non-whole number</span>
+]
+<span class="Comment"># fraction is truncated away</span>
+<span class="traceContains">+mem: storing 15 in location 5</span>
+
 <span class="Delimiter">:(scenario index_out_of_bounds)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="muRecipe">def</span> main [
