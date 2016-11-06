@@ -223,6 +223,13 @@ def main [
 # no other stores
 % CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
 
+:(before "End variant_type Special-cases")
+if (contains_type_ingredient(element)) {
+  if (!type->right)
+    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three while computing variant type of exclusive-container\n" << end();
+  replace_type_ingredients(element.type, type->right, info);
+}
+
 :(scenario get_on_shape_shifting_container)
 container foo:_t [
   x:_t
@@ -295,15 +302,6 @@ replace_type_ingredients(element, full_type, exclusive_container_info, location_
 replace_type_ingredients(element, type, info, location_for_error_messages);
 if (contains_type_ingredient(element)) return;  // error raised elsewhere
 
-:(code)
-void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info, const string& location_for_error_messages) {
-  if (contains_type_ingredient(element)) {
-    if (!caller_type->right)
-      raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
-    replace_type_ingredients(element.type, caller_type->right, info);
-  }
-}
-
 :(after "Compute size_of Container")
 assert(!contains_type_ingredient(type));
 :(after "Compute size_of Exclusive Container")
@@ -318,6 +316,14 @@ bool contains_type_ingredient(const type_tree* type) {
   if (!type) return false;
   if (type->atom) return type->value >= START_TYPE_INGREDIENTS;
   return contains_type_ingredient(type->left) || contains_type_ingredient(type->right);
+}
+
+void replace_type_ingredients(reagent& element, const type_tree* caller_type, const type_info& info, const string& location_for_error_messages) {
+  if (contains_type_ingredient(element)) {
+    if (!caller_type->right)
+      raise << "illegal type " << names_to_string(caller_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
+    replace_type_ingredients(element.type, caller_type->right, info);
+  }
 }
 
 // replace all type_ingredients in element_type with corresponding elements of callsite_type
@@ -681,10 +687,3 @@ def main [
   1:foo:bar <- merge 1/y, 23
 ]
 +error: main: too few ingredients in '1:foo:bar <- merge 1/y, 23'
-
-:(before "End variant_type Special-cases")
-if (contains_type_ingredient(element)) {
-  if (!type->right)
-    raise << "illegal type " << to_string(type) << " seems to be missing a type ingredient or three while computing variant type of exclusive-container\n" << end();
-  replace_type_ingredients(element.type, type->right, info);
-}
