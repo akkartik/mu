@@ -133,7 +133,7 @@ def main [
 def main [
   1:address:address:num <- new {(address number): type}
 ]
-+new: size of ("address" "number") is 1
++new: size of '(address number)' is 1
 
 //: 'new' takes a weird 'type' as its first ingredient; don't error on it
 :(before "End Mu Types Initialization")
@@ -213,6 +213,12 @@ def main [
 ]
 $error: 0
 
+:(scenario new_with_type_abbreviation_inside_compound)
+def main [
+  {1: (address address number), raw: ()} <- new {(& num): type}
+]
+$error: 0
+
 //: To implement 'new', a Mu transform turns all 'new' instructions into
 //: 'allocate' instructions that precompute the amount of memory they want to
 //: allocate.
@@ -241,13 +247,10 @@ void transform_new_to_allocate(const recipe_ordinal r) {
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
       inst.operation = ALLOCATE;
-      string_tree* type_name = new string_tree(inst.ingredients.at(0).name);
-      type_name = parse_string_tree(type_name);
-      type_tree* type = new_type_tree(type_name);
+      type_tree* type = new_type_tree(inst.ingredients.at(0).name);
       inst.ingredients.at(0).set_value(size_of(type));
-      trace(9992, "new") << "size of " << to_string(type_name) << " is " << inst.ingredients.at(0).value << end();
+      trace(9992, "new") << "size of '" << inst.ingredients.at(0).name << "' is " << inst.ingredients.at(0).value << end();
       delete type;
-      delete type_name;
     }
   }
 }
