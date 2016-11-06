@@ -27,7 +27,7 @@ if (argc <= 1 || is_equal(argv[1], "--help")) {
        << "  To run a single Mu scenario:\n"
        << "    mu test file1.mu file2.mu ... scenario\n"
        << "  To run a single Mu scenario and dump a trace at the end:\n"
-       << "    mu --trace test file1.mu file2.mu ... scenario1 scenario2 ... \n"
+       << "    mu --trace test file1.mu file2.mu ... scenario\n"
        << "  To load files and run only the tests in explicitly loaded files (for apps):\n"
        << "    mu --test-only-app test file1.mu file2.mu ...\n"
        << "  To load all files with a numeric prefix in a directory:\n"
