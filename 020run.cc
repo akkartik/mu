@@ -187,7 +187,7 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   // Running Main
   setup();
 //?   Save_trace = true;
-  if (Trace_main) Trace_stream = new trace_stream;
+  if (Start_tracing) Trace_stream = new trace_stream;
   trace(9990, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
@@ -202,10 +202,10 @@ void run_main(int argc, char* argv[]) {
 //: By default we don't maintain the trace while running main because its
 //: overheads can grow rapidly. However, it's useful when debugging.
 :(before "End Globals")
-bool Trace_main = false;
+bool Start_tracing = false;
 :(before "End Commandline Options(*arg)")
 else if (is_equal(*arg, "--trace")) {
-  Trace_main = true;
+  Start_tracing = true;
 }
 
 :(code)
