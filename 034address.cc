@@ -160,6 +160,10 @@ case NEW: {
     raise << maybe(caller.name) << "first ingredient of 'new' should be a type, but got '" << type.original_string << "'\n" << end();
     break;
   }
+  if (SIZE(inst.ingredients) > 1 && !is_mu_number(inst.ingredients.at(1))) {
+    raise << maybe(caller.name) << "second ingredient of 'new' should be a number (array length), but got '" << type.original_string << "'\n" << end();
+    break;
+  }
   if (inst.products.empty()) {
     raise << maybe(caller.name) << "result of 'new' should never be ignored\n" << end();
     break;
