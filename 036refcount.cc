@@ -158,6 +158,9 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 
 :(after "Write Memory in PUT_INDEX in Run")
+reagent/*local*/ element;
+element.set_value(address);
+element.type = copy_array_element(base.type);
 update_any_refcounts(element, value);
 
 :(scenario refcounts_maybe_convert)
@@ -309,16 +312,10 @@ void compute_container_address_offsets(const type_tree* type, const string& loca
   if (!type) return;
   if (!type->atom) {
     assert(type->left->atom);
-    if (type->left->name == "address") {
+    if (type->left->name == "address")
       compute_container_address_offsets(type->right, location_for_error_messages);
-    }
-    else if (type->left->name == "array") {
-      const type_tree* element_type = type->right;
-      // hack: support both array:num:3 and array:address:num
-      if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
-        element_type = element_type->left;
-      compute_container_address_offsets(element_type, location_for_error_messages);
-    }
+    else if (type->left->name == "array")
+      compute_container_address_offsets(array_element(type), location_for_error_messages);
     // End compute_container_address_offsets Non-atom Special-cases
   }
   if (!contains_key(Type, root_type(type)->value)) return;  // error raised elsewhere

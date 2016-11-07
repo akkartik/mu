@@ -32,7 +32,7 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
 //?   cerr << "abandon: " << size << '\n';
   // decrement any contained refcounts
   if (is_mu_array(payload_type)) {
-    reagent element;
+    reagent/*local*/ element;
     element.type = copy_array_element(payload_type);
     int array_length = get_or_insert(Memory, address+/*skip refcount*/1);
     assert(element.type->name != "array");

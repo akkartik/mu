@@ -104,10 +104,7 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
     return 1;
   }
-  type_tree* element_type = copy_array_element(r.type);
-  int result = 1 + array_length(r)*size_of(element_type);
-  delete element_type;
-  return result;
+  return /*space for length*/1 + array_length(r)*size_of(array_element(r.type));
 }
 
 //: disable the size mismatch check for arrays since the destination array
@@ -190,13 +187,8 @@ def foo [
 //: make sure we compute container sizes inside arrays
 
 :(before "End compute_container_sizes Non-atom Special-cases")
-else if (type->left->name == "array") {
-  const type_tree* element_type = type->right;
-  // hack: support both array:num:3 and array:address:num
-  if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
-    element_type = element_type->left;
-  compute_container_sizes(element_type, pending_metadata, location_for_error_messages);
-}
+else if (type->left->name == "array")
+  compute_container_sizes(array_element(type), pending_metadata, location_for_error_messages);
 
 :(before "End Unit Tests")
 void test_container_sizes_from_array() {
@@ -318,7 +310,7 @@ case INDEX: {
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update INDEX product in Check
-  reagent element;
+  reagent/*local*/ element;
   element.type = copy_array_element(base.type);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'index' on '" << base.original_string << "' can't be saved in '" << product.original_string << "'; type should be '" << names_to_string_without_quotes(element.type) << "'\n" << end();
@@ -343,13 +335,11 @@ case INDEX: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  type_tree* element_type = copy_array_element(base.type);
-  int src = base_address + 1 + index_val.at(0)*size_of(element_type);
-  trace(9998, "run") << "address to copy is " << src << end();
-  trace(9998, "run") << "its type is " << to_string(element_type) << end();
-  reagent element;
-  element.set_value(src);
-  element.type = element_type;
+  reagent/*local*/ element;
+  element.type = copy_array_element(base.type);
+  element.set_value(base_address + /*skip length*/1 + index_val.at(0)*size_of(element.type));
+  trace(9998, "run") << "address to copy is " << element.value << end();
+  trace(9998, "run") << "its type is " << to_string(element.type) << end();
   // Read element
   products.push_back(read_memory(element));
   break;
@@ -357,11 +347,15 @@ case INDEX: {
 
 :(code)
 type_tree* copy_array_element(const type_tree* type) {
+  return new type_tree(*array_element(type));
+}
+
+type_tree* array_element(const type_tree* type) {
   assert(type->right);
   // hack: don't require parens for either array:num:3 array:address:num
   if (!type->right->atom && type->right->right && type->right->right->atom && is_integer(type->right->right->name))
-    return new type_tree(*type->right->left);
-  return new type_tree(*type->right);
+    return type->right->left;
+  return type->right;
 }
 
 int array_length(const reagent& x) {
@@ -486,7 +480,7 @@ case PUT_INDEX: {
   }
   reagent/*copy*/ value = inst.ingredients.at(2);
   // Update PUT_INDEX value in Check
-  reagent element;
+  reagent/*local*/ element;
   element.type = copy_array_element(base.type);
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put-index " << base.original_string << ", " << inst.ingredients.at(1).original_string << "' should store " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
@@ -516,10 +510,7 @@ case PUT_INDEX: {
     raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
-  reagent element;
-  element.type = copy_array_element(base.type);
-  int address = base_address + 1 + index_val.at(0)*size_of(element.type);
-  element.set_value(address);
+  int address = base_address + /*skip length*/1 + index_val.at(0)*size_of(array_element(base.type));
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array

@@ -209,18 +209,16 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
   pending_metadata.insert(*type);
   if (!type->atom) {
     assert(type->left->atom);
-    if (type->left->name == "address") {
+    if (type->left->name == "address")
       compute_container_sizes(type->right, pending_metadata, location_for_error_messages);
-    }
     // End compute_container_sizes Non-atom Special-cases
     return;
   }
   assert(type->atom);
   if (!contains_key(Type, type->value)) return;  // error raised elsewhere
   type_info& info = get(Type, type->value);
-  if (info.kind == CONTAINER) {
+  if (info.kind == CONTAINER)
     compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
-  }
   // End compute_container_sizes Atom Special-cases
 }
 
