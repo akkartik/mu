@@ -165,11 +165,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 <span class="traceContains">+mem: storing 0 in location 3</span>
 
+<span class="Delimiter">:(scenario new_array)</span>
+<span class="Comment"># call 'new' with a second ingredient to allocate an array of some type rather than a single copy</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:address:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+  <span class="Constant">2</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+  <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:num/<span class="Special">raw</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {5: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: array length is 5</span>
+<span class="Comment"># don't forget the extra location for array length, and the second extra location for the refcount</span>
+<span class="traceContains">+mem: storing 7 in location 3</span>
+
 <span class="Delimiter">:(scenario dilated_reagent_with_new)</span>
 <span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:address:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>address number<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
 ]
-<span class="traceContains">+new: size of (&quot;address&quot; &quot;number&quot;) is 1</span>
+<span class="traceContains">+new: size of '(address number)' is 1</span>
 
 <span class="Comment">//: 'new' takes a weird 'type' as its first ingredient; don't error on it</span>
 <span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
@@ -194,6 +206,10 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">const</span> reagent&amp; type = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_type_literal<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'new' should be a type, but got '&quot;</span> &lt;&lt; type<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; !is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; maybe<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'new' should be a number (array length), but got '&quot;</span> &lt;&lt; type<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">break</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
@@ -236,9 +252,22 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(scenario new_returns_incorrect_type)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
+]
+<span class="traceContains">+error: main: product of 'new' has incorrect type: '1:bool &lt;- new num:type'</span>
+
 <span class="Delimiter">:(scenario new_with_type_abbreviation)</span>
 <span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
+]
+$error: <span class="Constant">0</span>
+
+<span class="Delimiter">:(scenario new_with_type_abbreviation_inside_compound)</span>
+<span class="muRecipe">def</span> main [
+  <span class="Delimiter">{</span><span class="Constant">1</span>: <span class="Delimiter">(</span>address address number<span class="Delimiter">),</span> <span class="Special">raw</span>: <span class="Delimiter">()}</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>&amp; num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
 ]
 $error: <span class="Constant">0</span>
 
@@ -270,13 +299,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Comment">// Convert 'new' To 'allocate'</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
       inst<span class="Delimiter">.</span>operation = ALLOCATE<span class="Delimiter">;</span>
-      string_tree* type_name = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-      type_name = parse_string_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
-      type_tree* type = new_type_tree<span class="Delimiter">(</span>type_name<span class="Delimiter">);</span>
+      type_tree* type = new_type_tree<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">);</span>
       inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>set_value<span class="Delimiter">(</span>size_of<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
-      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;size of &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type_name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; end<span class="Delimiter">();</span>
+      trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;new&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;size of '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' is &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>value &lt;&lt; end<span class="Delimiter">();</span>
       <span class="Normal">delete</span> type<span class="Delimiter">;</span>
-      <span class="Normal">delete</span> type_name<span class="Delimiter">;</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
@@ -382,15 +408,22 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
 ]
 <span class="traceContains">+mem: storing 0 in location 10</span>
 
-<span class="Delimiter">:(scenario new_array)</span>
+<span class="Delimiter">:(scenario new_size)</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">11</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+  <span class="Constant">12</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+  <span class="Constant">13</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">12</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">11</span>:address:num/<span class="Special">raw</span>
+]
+<span class="Comment"># size of number + refcount</span>
+<span class="traceContains">+mem: storing 2 in location 13</span>
+
+<span class="Delimiter">:(scenario new_array_size)</span>
 <span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:address:array:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">5</span>
   <span class="Constant">2</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
   <span class="Constant">3</span>:num/<span class="Special">raw &lt;- </span>subtract <span class="Constant">2</span>:address:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">1</span>:address:array:num/<span class="Special">raw</span>
 ]
-<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;), &quot;raw&quot;: ()} &lt;- new {number: &quot;type&quot;}, {5: &quot;literal&quot;}</span>
-<span class="traceContains">+mem: array length is 5</span>
-<span class="Comment"># don't forget the extra location for array length, and the second extra location for the refcount</span>
+<span class="Comment"># 5 locations for array contents + array length + refcount</span>
 <span class="traceContains">+mem: storing 7 in location 3</span>
 
 <span class="Delimiter">:(scenario new_empty_array)</span>

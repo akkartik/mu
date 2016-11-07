@@ -261,6 +261,10 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
 <span class="Comment"># no other stores</span>
 <span class="Special">% CHECK_EQ(trace_count_prefix(&quot;mem&quot;, &quot;storing&quot;), 7);</span>
 
+<span class="Delimiter">:(before &quot;End variant_type Special-cases&quot;)</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span>
+  replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">,</span> <span class="Constant">&quot; while computing variant type of exclusive-container&quot;</span><span class="Delimiter">);</span>
+
 <span class="Delimiter">:(scenario get_on_shape_shifting_container)</span>
 <span class="muData">container</span> foo:_t [
   <span class="Normal">x</span>:_t
@@ -324,23 +328,14 @@ map&lt;string<span class="Delimiter">,</span> type_ordinal&gt; type_ingredient_n
 <span class="traceContains">+mem: storing 1 in location 4</span>
 
 <span class="Delimiter">:(before &quot;End element_type Special-cases&quot;)</span>
-replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> type<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
+replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> type<span class="Delimiter">,</span> info<span class="Delimiter">,</span> <span class="Constant">&quot; while computing element type of container&quot;</span><span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;Compute Container Size(element, full_type)&quot;)</span>
-replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> full_type<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
+replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> full_type<span class="Delimiter">,</span> container_info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;Compute Exclusive Container Size(element, full_type)&quot;)</span>
-replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> full_type<span class="Delimiter">,</span> exclusive_container_info<span class="Delimiter">);</span>
+replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> full_type<span class="Delimiter">,</span> exclusive_container_info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
 <span class="Delimiter">:(before &quot;Compute Container Address Offset(element)&quot;)</span>
-replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> type<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
+replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">,</span> type<span class="Delimiter">,</span> info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> replace_type_ingredients<span class="Delimiter">(</span>reagent&amp; element<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* caller_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_info&amp; info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-      raise &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> caller_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
 
 <span class="Delimiter">:(after &quot;Compute size_of Container&quot;)</span>
 assert<span class="Delimiter">(</span>!contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">));</span>
@@ -358,19 +353,27 @@ assert<span class="Delimiter">(</span>!contains_type_ingredient<span class="Deli
   <span class="Identifier">return</span> contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> || contains_type_ingredient<span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Normal">void</span> replace_type_ingredients<span class="Delimiter">(</span>reagent&amp; element<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* caller_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_info&amp; info<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; location_for_error_messages<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
+      raise &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three&quot;</span> &lt;&lt; location_for_error_messages &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+    replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> caller_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
+<span class="Delimiter">}</span>
+
 <span class="Comment">// replace all type_ingredients in element_type with corresponding elements of callsite_type</span>
-<span class="Normal">void</span> replace_type_ingredients<span class="Delimiter">(</span>type_tree* element_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* callsite_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_info&amp; container_info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> replace_type_ingredients<span class="Delimiter">(</span>type_tree* element_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* callsite_type<span class="Delimiter">,</span> <span class="Normal">const</span> type_info&amp; container_info<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; location_for_error_messages<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!callsite_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error but it's already been raised above</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!element_type<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!element_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
-    replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
+    replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
+    replace_type_ingredients<span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> callsite_type<span class="Delimiter">,</span> container_info<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>element_type<span class="Delimiter">-&gt;</span>value &lt; START_TYPE_INGREDIENTS<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Normal">const</span> <span class="Normal">int</span> type_ingredient_index = element_type<span class="Delimiter">-&gt;</span>value-START_TYPE_INGREDIENTS<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!has_nth_type<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> type_ingredient_index<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>callsite_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    raise &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>callsite_type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three&quot;</span> &lt;&lt; location_for_error_messages &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   *element_type = *nth_type_ingredient<span class="Delimiter">(</span>callsite_type<span class="Delimiter">,</span> type_ingredient_index<span class="Delimiter">,</span> container_info<span class="Delimiter">);</span>
@@ -517,7 +520,7 @@ assert<span class="Delimiter">(</span>!contains_type_ingredient<span class="Deli
   <span class="Constant">10</span>:foo:point<span class="Special"> &lt;- </span>merge <span class="Constant">14</span><span class="Delimiter">,</span> <span class="Constant">15</span><span class="Delimiter">,</span> <span class="Constant">16</span>
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>get <span class="Constant">10</span>:foo<span class="Delimiter">,</span> <span class="Constant">1:offset</span>
 ]
-<span class="traceContains">+error: illegal type &quot;foo&quot; seems to be missing a type ingredient or three</span>
+<span class="traceContains">+error: illegal type &quot;foo&quot; seems to be missing a type ingredient or three in '1:num &lt;- get 10:foo, 1:offset'</span>
 
 <span class="SalientComment">//:: fix up previous layers</span>
 
@@ -529,11 +532,11 @@ assert<span class="Delimiter">(</span>!contains_type_ingredient<span class="Deli
 <span class="Normal">const</span> type_tree* root = root_type<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
 type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  compute_container_sizes<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  compute_exclusive_container_sizes<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">);</span>
+  compute_exclusive_container_sizes<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> pending_metadata<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -544,7 +547,7 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;  y:_t</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:point&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -554,10 +557,10 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;  y:_t</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:point&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">,</span> <span class="Constant">3</span><span class="Delimiter">);</span>
   reagent r2<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:num&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r2<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r2<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -567,7 +570,7 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;  y:_t</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:&amp;:point&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
   <span class="Comment">// scan also pre-computes metadata for type ingredient</span>
   reagent point<span class="Delimiter">(</span><span class="Constant">&quot;x:point&quot;</span><span class="Delimiter">);</span>
@@ -581,7 +584,7 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;  y:&amp;:foo:_t</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r2<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:num&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r2<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r2<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>r2<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>size<span class="Delimiter">,</span> <span class="Constant">2</span><span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
@@ -589,11 +592,11 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
 <span class="Normal">const</span> type_tree* root = root_type<span class="Delimiter">(</span>type<span class="Delimiter">);</span>
 type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> root<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  compute_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">.</span>kind == EXCLUSIVE_CONTAINER<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  compute_exclusive_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">);</span>
+  compute_exclusive_container_address_offsets<span class="Delimiter">(</span>info<span class="Delimiter">,</span> type<span class="Delimiter">,</span> location_for_error_messages<span class="Delimiter">);</span>
   <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -604,8 +607,8 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;  y:_t</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span>
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:foo:&amp;:num&quot;</span><span class="Delimiter">);</span>
-  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">()));</span>
   set&lt;address_element_info&gt;&amp; offset_info = get<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
@@ -626,8 +629,8 @@ type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimi
       <span class="Constant">&quot;]</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">);</span>
   reagent r<span class="Delimiter">(</span><span class="Constant">&quot;x:bar:&amp;:num&quot;</span><span class="Delimiter">);</span>
   CLEAR_TRACE<span class="Delimiter">;</span>
-  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+  compute_container_sizes<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+  compute_container_address_offsets<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
   CHECK_EQ<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">),</span> <span class="Constant">1</span><span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">()));</span>
   set&lt;address_element_info&gt;&amp; offset_info = get<span class="Delimiter">(</span>r<span class="Delimiter">.</span>metadata<span class="Delimiter">.</span>address<span class="Delimiter">,</span> set&lt;tag_condition_info&gt;<span class="Delimiter">());</span>
@@ -719,13 +722,6 @@ $error: <span class="Constant">0</span>
   <span class="Constant">1</span>:foo:bar<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/y<span class="Delimiter">,</span> <span class="Constant">23</span>
 ]
 <span class="traceContains">+error: main: too few ingredients in '1:foo:bar &lt;- merge 1/y, 23'</span>
-
-<span class="Delimiter">:(before &quot;End variant_type Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>contains_type_ingredient<span class="Delimiter">(</span>element<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span>
-    raise &lt;&lt; <span class="Constant">&quot;illegal type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; seems to be missing a type ingredient or three</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  replace_type_ingredients<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> info<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
