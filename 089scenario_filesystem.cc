@@ -76,7 +76,7 @@ extern const int RESOURCES = Next_predefined_global_for_scenarios++;
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["resources"] = RESOURCES;
 //: make 'resources' always a raw location in scenarios
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "resources") return true;
 :(before "End Initialize Type Of Special Name In Scenario(r)")
 if (r.name == "resources") r.type = new_type_tree("address:resources");

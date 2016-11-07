@@ -144,10 +144,10 @@ void clear_container_metadata() {
 
 //: do no work in size_of, simply lookup Container_metadata
 
-:(before "End size_of(reagent r) Cases")
+:(before "End size_of(reagent r) Special-cases")
 if (r.metadata.size) return r.metadata.size;
 
-:(before "End size_of(type) Cases")
+:(before "End size_of(type) Special-cases")
 if (type->atom) {
   if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
   if (type->value == 0) return 1;
@@ -219,7 +219,7 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
         element_type = element_type->left;
       compute_container_sizes(element_type, pending_metadata, location_for_error_messages);
     }
-    // End compute_container_sizes Non-atom Cases
+    // End compute_container_sizes Non-atom Special-cases
     return;
   }
   assert(type->atom);
@@ -228,7 +228,7 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
   if (info.kind == CONTAINER) {
     compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
   }
-  // End compute_container_sizes Atom Cases
+  // End compute_container_sizes Atom Special-cases
 }
 
 void compute_container_sizes(const type_info& container_info, const type_tree* full_type, set<type_tree>& pending_metadata, const string& location_for_error_messages) {

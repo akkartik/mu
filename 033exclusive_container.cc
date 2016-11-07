@@ -30,12 +30,12 @@ def main [
 +mem: storing 34 in location 5
 +mem: storing 35 in location 6
 
-:(before "End size_of(type) Cases")
+:(before "End size_of(type) Special-cases")
 if (t.kind == EXCLUSIVE_CONTAINER) {
   // Compute size_of Exclusive Container
   return get(Container_metadata, type).size;
 }
-:(before "End compute_container_sizes Atom Cases")
+:(before "End compute_container_sizes Atom Special-cases")
 if (info.kind == EXCLUSIVE_CONTAINER) {
   compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
 }
@@ -314,7 +314,7 @@ def main [
 +mem: storing 34 in location 6
 $error: 0
 
-:(before "End check_merge_call Cases")
+:(before "End check_merge_call Special-cases")
 case EXCLUSIVE_CONTAINER: {
   assert(state.data.top().container_element_index == 0);
   trace(9999, "transform") << "checking exclusive container " << to_string(container) << " vs ingredient " << ingredient_index << end();
@@ -435,7 +435,7 @@ $error: 0
 
 //: Since the different variants of an exclusive-container might have
 //: different sizes, relax the size mismatch check for 'merge' instructions.
-:(before "End size_mismatch(x) Cases")
+:(before "End size_mismatch(x) Special-cases")
 if (current_step_index() < SIZE(Current_routine->steps())
     && current_instruction().operation == MERGE
     && !current_instruction().products.empty()

@@ -98,7 +98,7 @@ def main [
 ]
 +app: foo: 3 14 15 16
 
-:(before "End size_of(reagent r) Cases")
+:(before "End size_of(reagent r) Special-cases")
 if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
     raise << maybe(current_recipe_name()) << "'" << r.original_string << "' is an array of what?\n" << end();
@@ -112,7 +112,7 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
 
 //: disable the size mismatch check for arrays since the destination array
 //: need not be initialized
-:(before "End size_mismatch(x) Cases")
+:(before "End size_mismatch(x) Special-cases")
 if (x.type && !x.type->atom && x.type->left->value == get(Type_ordinal, "array")) return false;
 
 //: arrays are disallowed inside containers unless their length is fixed in
@@ -133,7 +133,7 @@ container foo [
 
 //: disable the size mismatch check for 'merge' instructions since containers
 //: can contain arrays, and since we already do plenty of checking for them
-:(before "End size_mismatch(x) Cases")
+:(before "End size_mismatch(x) Special-cases")
 if (current_call().running_step_index < SIZE(get(Recipe, current_call().running_recipe).steps)
     && current_instruction().operation == MERGE) {
   return false;

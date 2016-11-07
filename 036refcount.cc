@@ -319,7 +319,7 @@ void compute_container_address_offsets(const type_tree* type, const string& loca
         element_type = element_type->left;
       compute_container_address_offsets(element_type, location_for_error_messages);
     }
-    // End compute_container_address_offsets Non-atom Cases
+    // End compute_container_address_offsets Non-atom Special-cases
   }
   if (!contains_key(Type, root_type(type)->value)) return;  // error raised elsewhere
   type_info& info = get(Type, root_type(type)->value);

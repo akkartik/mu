@@ -152,7 +152,7 @@ extern const int SCREEN = Next_predefined_global_for_scenarios++;
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["screen"] = SCREEN;
 //: make 'screen' always a raw location in scenarios
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "screen") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")

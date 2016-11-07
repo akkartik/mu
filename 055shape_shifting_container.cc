@@ -490,7 +490,7 @@ def main [
 //: offsets containing addresses for containers and exclusive containers --
 //: that we need to teach about type ingredients.
 
-:(before "End compute_container_sizes Non-atom Cases")
+:(before "End compute_container_sizes Non-atom Special-cases")
 const type_tree* root = root_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
@@ -550,7 +550,7 @@ void test_container_sizes_recursive_shape_shifting_container() {
   CHECK_EQ(r2.metadata.size, 2);
 }
 
-:(before "End compute_container_address_offsets Non-atom Cases")
+:(before "End compute_container_address_offsets Non-atom Special-cases")
 const type_tree* root = root_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {

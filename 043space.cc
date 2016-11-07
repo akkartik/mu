@@ -43,10 +43,10 @@ def main [
 +name: assign x 1
 -name: assign default-space 1
 
-:(before "End is_disqualified Cases")
+:(before "End is_disqualified Special-cases")
 if (x.name == "default-space")
   x.initialized = true;
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "default-space") return true;
 
 //:: now implement space support
@@ -166,10 +166,10 @@ def main [
 # allocate space for x and y, as well as the chaining slot at 0
 +mem: array length is 3
 
-:(before "End is_disqualified Cases")
+:(before "End is_disqualified Special-cases")
 if (x.name == "number-of-locals")
   x.initialized = true;
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")

@@ -225,7 +225,7 @@ void maybe_make_raw(reagent& r, const recipe& caller) {
 }
 
 //: Test.
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "__maybe_make_raw_test__") return true;
 :(before "End Special Scenario Variable Names(r)")
 //: ugly: we only need this for this one test, but need to define it for all time
@@ -416,7 +416,7 @@ void check_type(const string& lhs, istream& in) {
     check_string(address, literal);
     return;
   }
-  // End Scenario Type Cases
+  // End Scenario Type Special-cases
   raise << "don't know how to check memory for '" << lhs << "'\n" << end();
 }
 

@@ -29,10 +29,10 @@ def main [
 +mem: storing 24 in location 23
 
 //: to support it, create another special variable called global space
-:(before "End is_disqualified Cases")
+:(before "End is_disqualified Special-cases")
 if (x.name == "global-space")
   x.initialized = true;
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "global-space") return true;
 
 //: writes to this variable go to a field in the current routine

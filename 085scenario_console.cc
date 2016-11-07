@@ -39,7 +39,7 @@ extern const int CONSOLE = Next_predefined_global_for_scenarios++;
 :(before "End Special Scenario Variable Names(r)")
 Name[r]["console"] = CONSOLE;
 //: make 'console' always a raw location in scenarios
-:(before "End is_special_name Cases")
+:(before "End is_special_name Special-cases")
 if (s == "console") return true;
 
 :(before "End Primitive Recipe Declarations")

@@ -183,7 +183,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         }
         break;
       }
-      // End check_merge_call Cases
+      // End check_merge_call Special-cases
       default: {
         if (!types_coercible(container, ingredients.at(ingredient_index))) {
           raise << maybe(caller.name) << "incorrect type of ingredient " << ingredient_index << " in '" << inst.original_string << "'\n" << end();

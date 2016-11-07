@@ -104,7 +104,7 @@ bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const stri
   }
   if (is_raw(x)) return true;
   if (is_literal(x)) return true;
-  // End is_disqualified Cases
+  // End is_disqualified Special-cases
   if (x.initialized) return true;
   return false;
 }
@@ -150,7 +150,7 @@ bool is_named_location(const reagent& x) {
 bool is_special_name(const string& s) {
   if (s == "_") return true;
   if (s == "0") return true;
-  // End is_special_name Cases
+  // End is_special_name Special-cases
   return false;
 }
 
