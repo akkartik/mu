@@ -122,6 +122,11 @@ container foo [
 ]
 $error: 0
 
+:(before "End insert_container Special-cases")
+else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
+  type->value = 0;
+}
+
 :(scenario container_disallows_dynamic_array_element)
 % Hide_errors = true;
 container foo [
@@ -129,9 +134,23 @@ container foo [
 ]
 +error: container 'foo' cannot determine size of element 'x'
 
-:(before "End insert_container Special-cases")
-else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
-  type->value = 0;
+:(before "End Load Container Element Definition")
+{
+  const type_tree* type = info.elements.back().type;
+  if (type && type->atom && type->name == "array") {
+    raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
+    continue;
+  }
+  if (type && !type->atom && type->left->atom && type->left->name == "array") {
+    if (!type->right) {
+      raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
+      continue;
+    }
+    if (type->right->atom) {  // array has no length
+      raise << "container '" << name << "' cannot determine size of element '" << info.elements.back().name << "'\n" << end();
+      continue;
+    }
+  }
 }
 
 //: disable the size mismatch check for 'merge' instructions since containers
@@ -152,25 +171,6 @@ def main [
   10:foo <- merge 34, 1:array:num:3
 ]
 # no errors
-
-:(before "End Load Container Element Definition")
-{
-  const type_tree* type = info.elements.back().type;
-  if (type && type->atom && type->name == "array") {
-    raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
-    continue;
-  }
-  if (type && !type->atom && type->left->atom && type->left->name == "array") {
-    if (!type->right) {
-      raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
-      continue;
-    }
-    if (type->right->atom) {  // array has no length
-      raise << "container '" << name << "' cannot determine size of element '" << info.elements.back().name << "'\n" << end();
-      continue;
-    }
-  }
-}
 
 :(scenario code_inside_container)
 % Hide_errors = true;
