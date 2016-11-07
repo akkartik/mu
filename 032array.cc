@@ -359,16 +359,17 @@ type_tree* array_element(const type_tree* type) {
 }
 
 int array_length(const reagent& x) {
+  // x should already be canonized.
   if (!x.type->atom && !x.type->right->atom && x.type->right->right->atom  // exactly 3 types
       && is_integer(x.type->right->right->name)) {  // third 'type' is a number
     // get size from type
     return to_integer(x.type->right->right->name);
   }
-  // this should never happen at transform time
-  // x should already be canonized.
+  // we should never get here at transform time
   return get_or_insert(Memory, x.value);
 }
 
+:(before "End Unit Tests")
 void test_array_length_compound() {
   put(Memory, 1, 3);
   put(Memory, 2, 14);
