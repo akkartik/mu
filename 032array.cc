@@ -115,6 +115,7 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
 :(before "End size_mismatch(x) Special-cases")
 if (x.type && !x.type->atom && x.type->left->value == get(Type_ordinal, "array")) return false;
 
+//:: arrays inside containers
 //: arrays are disallowed inside containers unless their length is fixed in
 //: advance
 
@@ -130,6 +131,11 @@ container foo [
   x:array:num
 ]
 +error: container 'foo' cannot determine size of element 'x'
+
+:(before "End insert_container Special-cases")
+else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
+  type->value = 0;
+}
 
 //: disable the size mismatch check for 'merge' instructions since containers
 //: can contain arrays, and since we already do plenty of checking for them
@@ -179,6 +185,80 @@ def foo [
   2:num <- get 1:card rank:offset
 ]
 # shouldn't die
+
+//:: containers inside arrays
+//: make sure we compute container sizes inside arrays
+
+:(before "End compute_container_sizes Non-atom Special-cases")
+else if (type->left->name == "array") {
+  const type_tree* element_type = type->right;
+  // hack: support both array:num:3 and array:address:num
+  if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
+    element_type = element_type->left;
+  compute_container_sizes(element_type, pending_metadata, location_for_error_messages);
+}
+
+:(before "End Unit Tests")
+void test_container_sizes_from_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  CHECK(!contains_key(Container_metadata, container.type));
+  // scanning an array of the container precomputes the size of the container
+  reagent r("x:array:point");
+  compute_container_sizes(r, "");
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+}
+
+void test_container_sizes_from_address_to_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  CHECK(!contains_key(Container_metadata, container.type));
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:address:array:point");
+  compute_container_sizes(r, "");
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+}
+
+void test_container_sizes_from_static_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:array:point:10");
+  compute_container_sizes(r, "");
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
+
+void test_container_sizes_from_address_to_static_array() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning an address to an array of the container precomputes the size of the container
+  reagent r("x:address:array:point:10");
+  compute_container_sizes(r, "");
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
+
+void test_container_sizes_from_repeated_address_and_array_types() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning repeated address and array types modifying the container precomputes the size of the container
+  reagent r("x:address:array:address:array:point:10");
+  compute_container_sizes(r, "");
+  CHECK(contains_key(Container_metadata, container.type));
+  CHECK_EQ(get(Container_metadata, container.type).size, 2);
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
+}
 
 //:: To access elements of an array, use 'index'
 

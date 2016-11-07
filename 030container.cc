@@ -212,13 +212,6 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
     if (type->left->name == "address") {
       compute_container_sizes(type->right, pending_metadata, location_for_error_messages);
     }
-    else if (type->left->name == "array") {
-      const type_tree* element_type = type->right;
-      // hack: support both array:num:3 and array:address:num
-      if (!element_type->atom && element_type->right && element_type->right->atom && is_integer(element_type->right->name))
-        element_type = element_type->left;
-      compute_container_sizes(element_type, pending_metadata, location_for_error_messages);
-    }
     // End compute_container_sizes Non-atom Special-cases
     return;
   }
@@ -344,67 +337,6 @@ void test_container_sizes_from_address() {
   compute_container_sizes(r, "");
   CHECK(contains_key(Container_metadata, container.type));
   CHECK_EQ(get(Container_metadata, container.type).size, 2);
-}
-
-void test_container_sizes_from_array() {
-  // a container we don't have the size for
-  reagent container("x:point");
-  CHECK(!contains_key(Container_metadata, container.type));
-  // scanning an array of the container precomputes the size of the container
-  reagent r("x:array:point");
-  compute_container_sizes(r, "");
-  CHECK(contains_key(Container_metadata, container.type));
-  CHECK_EQ(get(Container_metadata, container.type).size, 2);
-}
-
-void test_container_sizes_from_address_to_array() {
-  // a container we don't have the size for
-  reagent container("x:point");
-  CHECK(!contains_key(Container_metadata, container.type));
-  // scanning an address to an array of the container precomputes the size of the container
-  reagent r("x:address:array:point");
-  compute_container_sizes(r, "");
-  CHECK(contains_key(Container_metadata, container.type));
-  CHECK_EQ(get(Container_metadata, container.type).size, 2);
-}
-
-void test_container_sizes_from_static_array() {
-  // a container we don't have the size for
-  reagent container("x:point");
-  int old_size = SIZE(Container_metadata);
-  // scanning an address to an array of the container precomputes the size of the container
-  reagent r("x:array:point:10");
-  compute_container_sizes(r, "");
-  CHECK(contains_key(Container_metadata, container.type));
-  CHECK_EQ(get(Container_metadata, container.type).size, 2);
-  // no non-container types precomputed
-  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
-}
-
-void test_container_sizes_from_address_to_static_array() {
-  // a container we don't have the size for
-  reagent container("x:point");
-  int old_size = SIZE(Container_metadata);
-  // scanning an address to an array of the container precomputes the size of the container
-  reagent r("x:address:array:point:10");
-  compute_container_sizes(r, "");
-  CHECK(contains_key(Container_metadata, container.type));
-  CHECK_EQ(get(Container_metadata, container.type).size, 2);
-  // no non-container types precomputed
-  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
-}
-
-void test_container_sizes_from_repeated_address_and_array_types() {
-  // a container we don't have the size for
-  reagent container("x:point");
-  int old_size = SIZE(Container_metadata);
-  // scanning repeated address and array types modifying the container precomputes the size of the container
-  reagent r("x:address:array:address:array:point:10");
-  compute_container_sizes(r, "");
-  CHECK(contains_key(Container_metadata, container.type));
-  CHECK_EQ(get(Container_metadata, container.type).size, 2);
-  // no non-container types precomputed
-  CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
 }
 
 //:: To access elements of a container, use 'get'
@@ -782,9 +714,6 @@ void replace_unknown_types_with_unique_ordinals(type_tree* type, const type_info
   assert(!type->name.empty());
   if (contains_key(Type_ordinal, type->name)) {
     type->value = get(Type_ordinal, type->name);
-  }
-  else if (is_integer(type->name)) {  // sometimes types will contain non-type tags, like numbers for the size of an array
-    type->value = 0;
   }
   // End insert_container Special-cases
   else if (type->name != "->") {  // used in recipe types
