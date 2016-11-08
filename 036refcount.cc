@@ -362,6 +362,15 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
         get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*element.type->right)));
         ++curr_offset;
       }
+      else if (is_mu_array(element)) {
+        curr_offset += /*array length*/1;
+        const type_tree* array_element_type = array_element(element.type);
+        int array_element_size = size_of(array_element_type);
+        for (int i = 0; i < static_array_length(element.type); ++i) {
+          append_addresses(curr_offset, array_element_type, out, key, location_for_error_messages);
+          curr_offset += array_element_size;
+        }
+      }
       else if (is_mu_container(element)) {
         append_addresses(curr_offset, element.type, out, key, location_for_error_messages);
         curr_offset += size_of(element);
@@ -391,6 +400,16 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
         append_addresses(base_offset+/*skip tag*/1, variant_type(type, tag).type, out, new_key, location_for_error_messages);
     }
   }
+}
+
+int static_array_length(const type_tree* type) {
+  if (!type->atom && !type->right->atom && type->right->right->atom  // exactly 3 types
+      && is_integer(type->right->right->name)) {  // third 'type' is a number
+    // get size from type
+    return to_integer(type->right->right->name);
+  }
+  cerr << to_string(type) << '\n';
+  assert(false);
 }
 
 //: for the following unit tests we'll do the work of the transform by hand
@@ -900,6 +919,45 @@ def main [
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {2: "foo"} <- merge {3: ("address" "array" "number")}
 +mem: decrementing refcount of 1000: 2 -> 1
+
+:(scenario refcounts_copy_address_within_static_array_within_container)
+container foo [
+  a:array:bar:3
+  b:address:num
+]
+container bar [
+  y:num
+  z:address:num
+]
+def main [
+  1:address:num <- new number:type
+  2:bar <- merge 34, 1:address:num
+  10:array:bar:3 <- create-array
+  put-index 10:array:bar:3, 1, 2:bar
+  20:foo <- merge 10:array:bar:3, 1:address:num
+  1:address:num <- copy 0
+  2:bar <- merge 34, 1:address:num
+  put-index 10:array:bar:3, 1, 2:bar
+  20:foo <- merge 10:array:bar:3, 1:address:num
+]
++run: {1: ("address" "number")} <- new {number: "type"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "bar"} <- merge {34: "literal"}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: put-index {10: ("array" "bar" "3")}, {1: "literal"}, {2: "bar"}
++mem: incrementing refcount of 1000: 2 -> 3
++run: {20: "foo"} <- merge {10: ("array" "bar" "3")}, {1: ("address" "number")}
++mem: incrementing refcount of 1000: 3 -> 4
++mem: incrementing refcount of 1000: 4 -> 5
++run: {1: ("address" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 5 -> 4
++run: {2: "bar"} <- merge {34: "literal"}, {1: ("address" "number")}
++mem: decrementing refcount of 1000: 4 -> 3
++run: put-index {10: ("array" "bar" "3")}, {1: "literal"}, {2: "bar"}
++mem: decrementing refcount of 1000: 3 -> 2
++run: {20: "foo"} <- merge {10: ("array" "bar" "3")}, {1: ("address" "number")}
++mem: decrementing refcount of 1000: 2 -> 1
++mem: decrementing refcount of 1000: 1 -> 0
 
 :(scenario refcounts_handle_exclusive_containers_with_different_tags)
 container foo1 [
