@@ -221,7 +221,7 @@ case GET_LOCATION: {
 bool is_mu_location(reagent/*copy*/ x) {
   if (!canonize_type(x)) return false;
   if (!x.type) return false;
-  if (x.type->right) return false;
+  if (!x.type->atom) return false;
   return x.type->value == get(Type_ordinal, "location");
 }
 
