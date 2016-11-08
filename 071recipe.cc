@@ -205,7 +205,9 @@ recipe from_reagent(const reagent& r) {
     assert(r.type->name == "recipe");
     return result_header;
   }
-  assert(root_type(r.type)->name == "recipe");
+  const type_tree* root_type = r.type->atom ? r.type : r.type->left;
+  assert(root_type->atom);
+  assert(root_type->name == "recipe");
   const type_tree* curr = r.type->right;
   for (/*nada*/;  curr && !curr->atom;  curr = curr->right) {
     if (curr->left->atom && curr->left->name == "->") {

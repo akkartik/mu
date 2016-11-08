@@ -321,8 +321,10 @@ void compute_container_address_offsets(const type_tree* type, const string& loca
       compute_container_address_offsets(array_element(type), location_for_error_messages);
     // End compute_container_address_offsets Non-atom Special-cases
   }
-  if (!contains_key(Type, root_type(type)->value)) return;  // error raised elsewhere
-  type_info& info = get(Type, root_type(type)->value);
+  const type_tree* base_type = type;
+  // Update base_type in compute_container_address_offsets
+  if (!contains_key(Type, base_type->value)) return;  // error raised elsewhere
+  type_info& info = get(Type, base_type->value);
   if (info.kind == CONTAINER) {
     compute_container_address_offsets(info, type, location_for_error_messages);
   }
@@ -353,12 +355,13 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
     get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
     return;
   }
-  const type_tree* root = root_type(type);
-  const type_info& info = get(Type, root->value);
+  const type_tree* base_type = type;
+  // Update base_type in append_container_address_offsets
+  const type_info& info = get(Type, base_type->value);
   if (info.kind == CONTAINER) {
     for (int curr_index = 0, curr_offset = base_offset;  curr_index < SIZE(info.elements);  ++curr_index) {
-      trace(9993, "transform") << "checking container " << root->name << ", element " << curr_index << end();
-      reagent/*copy*/ element = element_type(type, curr_index);  // not root
+      trace(9993, "transform") << "checking container " << base_type->name << ", element " << curr_index << end();
+      reagent/*copy*/ element = element_type(type, curr_index);  // not base_type
       // Compute Container Address Offset(element)
       if (is_mu_address(element)) {
         trace(9993, "transform") << "address at offset " << curr_offset << end();
@@ -379,8 +382,9 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
         curr_offset += size_of(element);
       }
       else if (is_mu_exclusive_container(element)) {
-        const type_tree* element_root_type = root_type(element.type);
-        const type_info& element_info = get(Type, element_root_type->value);
+        const type_tree* element_base_type = element.type;
+        // Update element_base_type For Exclusive Container in append_addresses
+        const type_info& element_info = get(Type, element_base_type->value);
         for (int tag = 0;  tag < SIZE(element_info.elements);  ++tag) {
           set<tag_condition_info> new_key = key;
           new_key.insert(tag_condition_info(curr_offset, tag));

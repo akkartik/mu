@@ -4,21 +4,39 @@
 //: atomic types
 :(before "End is_mu_container(type) Special-cases")
 if (!type->atom)
-  return is_mu_container(root_type(type));
+  return is_mu_container(get_base_type(type));
 :(before "End is_mu_exclusive_container(type) Special-cases")
 if (!type->atom)
-  return is_mu_exclusive_container(root_type(type));
-// a few calls to root_type() without the assertion (for better error handling)
+  return is_mu_exclusive_container(get_base_type(type));
 :(after "Update GET base_type in Check")
-if (!base_type->atom) base_type = base_type->left;
+base_type = get_base_type(base_type);
 :(after "Update GET base_type in Run")
-if (!base_type->atom) base_type = base_type->left;
+base_type = get_base_type(base_type);
 :(after "Update PUT base_type in Check")
-if (!base_type->atom) base_type = base_type->left;
+base_type = get_base_type(base_type);
 :(after "Update PUT base_type in Run")
-if (!base_type->atom) base_type = base_type->left;
+base_type = get_base_type(base_type);
 :(after "Update MAYBE_CONVERT base_type in Check")
-if (!base_type->atom) base_type = base_type->left;
+base_type = get_base_type(base_type);
+:(after "Update base_type in size_of(type)")
+base_type = get_base_type(base_type);
+:(after "Update base_type in element_type")
+base_type = get_base_type(base_type);
+:(after "Update base_type in compute_container_address_offsets")
+base_type = get_base_type(base_type);
+:(after "Update base_type in append_container_address_offsets")
+base_type = get_base_type(base_type);
+:(after "Update element_base_type For Exclusive Container in append_addresses")
+element_base_type = get_base_type(element_base_type);
+:(after "Update base_type in skip_addresses")
+base_type = get_base_type(base_type);
+:(replace{} "const type_tree* get_base_type(const type_tree* t)")
+const type_tree* get_base_type(const type_tree* t) {
+  const type_tree* result = t->atom ? t : t->left;
+  if (!result->atom)
+    raise << "invalid type " << to_string(t) << '\n' << end();
+  return result;
+}
 
 :(scenario ill_formed_container)
 % Hide_errors = true;
@@ -498,7 +516,7 @@ def main [
 //: that we need to teach about type ingredients.
 
 :(before "End compute_container_sizes Non-atom Special-cases")
-const type_tree* root = root_type(type);
+const type_tree* root = get_base_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
   compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
@@ -558,7 +576,7 @@ void test_container_sizes_recursive_shape_shifting_container() {
 }
 
 :(before "End compute_container_address_offsets Non-atom Special-cases")
-const type_tree* root = root_type(type);
+const type_tree* root = get_base_type(type);
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
   compute_container_address_offsets(info, type, location_for_error_messages);

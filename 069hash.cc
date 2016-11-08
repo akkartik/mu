@@ -89,7 +89,7 @@ size_t hash_mu_array(size_t h, const reagent& r) {
 }
 
 size_t hash_mu_container(size_t h, const reagent& r) {
-  type_info& info = get(Type, root_type(r.type)->value);
+  type_info& info = get(Type, get_base_type(r.type)->value);
   int address = r.value;
   int offset = 0;
   for (int i = 0;  i < SIZE(info.elements);  ++i) {
@@ -104,7 +104,7 @@ size_t hash_mu_container(size_t h, const reagent& r) {
 }
 
 size_t hash_mu_exclusive_container(size_t h, const reagent& r) {
-  const type_tree* type = root_type(r.type);
+  const type_tree* type = get_base_type(r.type);
   assert(type->value);
   int tag = get(Memory, r.value);
   reagent/*copy*/ variant = variant_type(r, tag);

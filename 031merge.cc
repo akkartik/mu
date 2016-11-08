@@ -166,7 +166,7 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
         if (types_coercible(expected_ingredient, ingredients.at(ingredient_index))) {
           ++ingredient_index;
           ++state.data.top().container_element_index;
-          while (state.data.top().container_element_index >= SIZE(get(Type, root_type(state.data.top().container.type)->value).elements)) {
+          while (state.data.top().container_element_index >= SIZE(get(Type, get_base_type(state.data.top().container.type)->value).elements)) {
             state.data.pop();
             if (state.data.empty()) {
               if (ingredient_index < SIZE(ingredients))
@@ -201,12 +201,18 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
             return;
           }
           ++state.data.top().container_element_index;
-        } while (state.data.top().container_element_index >= SIZE(get(Type, root_type(state.data.top().container.type)->value).elements));
+        } while (state.data.top().container_element_index >= SIZE(get(Type, get_base_type(state.data.top().container.type)->value).elements));
       }
     }
   }
   // never gets here
   assert(false);
+}
+
+// replaced in a later layer
+// todo: find some clean way to take this call completely out of this layer
+const type_tree* get_base_type(const type_tree* t) {
+  return t;
 }
 
 :(scenario merge_check_product)

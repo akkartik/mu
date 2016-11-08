@@ -148,23 +148,17 @@ void clear_container_metadata() {
 if (r.metadata.size) return r.metadata.size;
 
 :(before "End size_of(type) Special-cases")
-const type_tree* root = root_type(type);
-if (!contains_key(Type, root->value)) {
-  raise << "no such type " << root->value << '\n' << end();
+const type_tree* base_type = type;
+// Update base_type in size_of(type)
+if (!contains_key(Type, base_type->value)) {
+  raise << "no such type " << base_type->value << '\n' << end();
   return 0;
 }
-type_info t = get(Type, root->value);
+type_info t = get(Type, base_type->value);
 if (t.kind == CONTAINER) {
   // Compute size_of Container
   if (!contains_key(Container_metadata, type)) return 1;  // error raised elsewhere
   return get(Container_metadata, type).size;
-}
-
-:(code)
-const type_tree* root_type(const type_tree* t) {
-  const type_tree* result = t->atom ? t : t->left;
-  assert(result->atom);
-  return result;
 }
 
 //: precompute Container_metadata before we need size_of
@@ -421,10 +415,11 @@ case GET: {
 :(code)
 const reagent element_type(const type_tree* type, int offset_value) {
   assert(offset_value >= 0);
-  const type_tree* root = root_type(type);
-  assert(contains_key(Type, root->value));
-  assert(!get(Type, root->value).name.empty());
-  const type_info& info = get(Type, root->value);
+  const type_tree* base_type = type;
+  // Update base_type in element_type
+  assert(contains_key(Type, base_type->value));
+  assert(!get(Type, base_type->value).name.empty());
+  const type_info& info = get(Type, base_type->value);
   assert(info.kind == CONTAINER);
   if (offset_value >= SIZE(info.elements)) return reagent();  // error handled elsewhere
   reagent/*copy*/ element = info.elements.at(offset_value);
