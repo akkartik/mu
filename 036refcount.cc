@@ -393,12 +393,6 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
   }
 }
 
-int payload_size(const type_tree* type) {
-  assert(type->name == "address");
-  assert(type->right->name != "array");
-  return size_of(type->right) + /*refcount*/1;
-}
-
 //: for the following unit tests we'll do the work of the transform by hand
 
 :(before "End Unit Tests")
