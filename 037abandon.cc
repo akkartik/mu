@@ -223,3 +223,25 @@ def main [
 # nested abandon
 +mem: decrementing refcount of 1000: 1 -> 0
 +abandon: saving 1000 in free-list of size 2
+
+:(scenario refcounts_abandon_array_within_container)
+container foo [
+  x:address:array:num
+]
+def main [
+  1:address:array:num <- new number:type, 3
+  2:foo <- merge 1:address:array:num
+  1:address:array:num <- copy 0
+  2:foo <- copy 0
+]
++run: {1: ("address" "array" "number")} <- new {number: "type"}, {3: "literal"}
++mem: incrementing refcount of 1000: 0 -> 1
++run: {2: "foo"} <- merge {1: ("address" "array" "number")}
++mem: incrementing refcount of 1000: 1 -> 2
++run: {1: ("address" "array" "number")} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 2 -> 1
++run: {2: "foo"} <- copy {0: "literal"}
++mem: decrementing refcount of 1000: 1 -> 0
++mem: automatically abandoning 1000
+# make sure we save it in a free-list of the appropriate size
++abandon: saving 1000 in free-list of size 5

@@ -711,8 +711,13 @@ if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;
-    for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info)
-      decrement_refcount(get_or_insert(Memory, canonized_x.value + info->offset), info->payload_type, size_of(info->payload_type)+/*refcount*/1);
+    for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info) {
+      int element_address = get_or_insert(Memory, canonized_x.value + info->offset);
+      reagent/*local*/ element;
+      element.set_value(element_address+/*skip refcount*/1);
+      element.type = new type_tree(*info->payload_type);
+      decrement_refcount(element_address, info->payload_type, size_of(element)+/*refcount*/1);
+    }
   }
 }
 
