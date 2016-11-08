@@ -329,6 +329,16 @@ int size_of(const reagent& r) {
 }
 int size_of(const type_tree* type) {
   if (!type) return 0;
+  if (type->atom) {
+    if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
+    if (type->value == 0) return 1;
+    // End size_of(type) Atom Special-cases
+  }
+  else {
+    assert(type->left->atom);
+    if (type->left->name == "address") return 1;
+    // End size_of(type) Non-atom Special-cases
+  }
   // End size_of(type) Special-cases
   return 1;
 }

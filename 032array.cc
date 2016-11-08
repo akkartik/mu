@@ -107,6 +107,19 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
   return /*space for length*/1 + array_length(r)*size_of(array_element(r.type));
 }
 
+:(before "End size_of(type) Non-atom Special-cases")
+if (type->left->value == get(Type_ordinal, "array")) return static_array_length(type);
+:(code)
+int static_array_length(const type_tree* type) {
+  if (!type->atom && !type->right->atom && type->right->right->atom  // exactly 3 types
+      && is_integer(type->right->right->name)) {  // third 'type' is a number
+    // get size from type
+    return to_integer(type->right->right->name);
+  }
+  cerr << to_string(type) << '\n';
+  assert(false);
+}
+
 //: disable the size mismatch check for arrays since the destination array
 //: need not be initialized
 :(before "End size_mismatch(x) Special-cases")

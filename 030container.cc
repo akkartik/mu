@@ -148,10 +148,6 @@ void clear_container_metadata() {
 if (r.metadata.size) return r.metadata.size;
 
 :(before "End size_of(type) Special-cases")
-if (type->atom) {
-  if (type->value == -1) return 1;  // error value, but we'll raise it elsewhere
-  if (type->value == 0) return 1;
-}
 const type_tree* root = root_type(type);
 if (!contains_key(Type, root->value)) {
   raise << "no such type " << root->value << '\n' << end();

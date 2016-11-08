@@ -402,16 +402,6 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
   }
 }
 
-int static_array_length(const type_tree* type) {
-  if (!type->atom && !type->right->atom && type->right->right->atom  // exactly 3 types
-      && is_integer(type->right->right->name)) {  // third 'type' is a number
-    // get size from type
-    return to_integer(type->right->right->name);
-  }
-  cerr << to_string(type) << '\n';
-  assert(false);
-}
-
 //: for the following unit tests we'll do the work of the transform by hand
 
 :(before "End Unit Tests")
