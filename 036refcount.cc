@@ -311,7 +311,10 @@ void compute_container_address_offsets(reagent& r, const string& location_for_er
 void compute_container_address_offsets(const type_tree* type, const string& location_for_error_messages) {
   if (!type) return;
   if (!type->atom) {
-    assert(type->left->atom);
+    if (!type->left->atom) {
+      raise << "invalid type " << to_string(type) << location_for_error_messages << '\n' << end();
+      return;
+    }
     if (type->left->name == "address")
       compute_container_address_offsets(type->right, location_for_error_messages);
     else if (type->left->name == "array")

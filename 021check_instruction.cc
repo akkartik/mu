@@ -176,7 +176,10 @@ bool is_mu_array(const type_tree* type) {
   if (!type) return false;
   if (is_literal(type)) return false;
   if (type->atom) return false;
-  assert(type->left->atom);
+  if (!type->left->atom) {
+    raise << "invalid type " << to_string(type) << '\n' << end();
+    return false;
+  }
   return type->left->value == get(Type_ordinal, "array");
 }
 
@@ -188,7 +191,10 @@ bool is_mu_address(const type_tree* type) {
   if (!type) return false;
   if (is_literal(type)) return false;
   if (type->atom) return false;
-  assert(type->left->atom);
+  if (!type->left->atom) {
+    raise << "invalid type " << to_string(type) << '\n' << end();
+    return false;
+  }
   return type->left->value == get(Type_ordinal, "address");
 }
 

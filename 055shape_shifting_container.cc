@@ -20,6 +20,13 @@ if (!base_type->atom) base_type = base_type->left;
 :(after "Update MAYBE_CONVERT base_type in Check")
 if (!base_type->atom) base_type = base_type->left;
 
+:(scenario ill_formed_container)
+% Hide_errors = true;
+def main [
+  {1: ((foo) num)} <- copy 0
+]
+# no crash
+
 :(scenario size_of_shape_shifting_container)
 container foo:_t [
   x:_t

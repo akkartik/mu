@@ -204,7 +204,10 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
   if (contains_key(pending_metadata, *type)) return;
   pending_metadata.insert(*type);
   if (!type->atom) {
-    assert(type->left->atom);
+    if (!type->left->atom) {
+      raise << "invalid type " << to_string(type) << location_for_error_messages << '\n' << end();
+      return;
+    }
     if (type->left->name == "address")
       compute_container_sizes(type->right, pending_metadata, location_for_error_messages);
     // End compute_container_sizes Non-atom Special-cases

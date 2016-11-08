@@ -335,7 +335,10 @@ int size_of(const type_tree* type) {
     // End size_of(type) Atom Special-cases
   }
   else {
-    assert(type->left->atom);
+    if (!type->left->atom) {
+      raise << "invalid type " << to_string(type) << '\n' << end();
+      return 0;
+    }
     if (type->left->name == "address") return 1;
     // End size_of(type) Non-atom Special-cases
   }
