@@ -222,7 +222,7 @@ if (curr.name == "local-scope") {
   rewrite_default_space_instruction(curr);
 }
 
-//: todo: do this in a transform, rather than magically in the return instruction
+//: todo: do this in a transform, rather than magically in the 'return' instruction
 :(after "Falling Through End Of Recipe")
 try_reclaim_locals();
 :(after "Starting Reply")
