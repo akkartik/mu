@@ -118,7 +118,7 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
   for (int i = 0;  i < min(SIZE(inst.products), SIZE(variant.ingredients));  ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!concrete_type_names_strictly_match(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "strict match failed: product " << i << end();
+      trace(9993, "transform") << "concrete-type match failed: product " << i << end();
       return false;
     }
   }
@@ -173,28 +173,6 @@ bool concrete_type_names_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from
   return concrete_type_names_strictly_match(to.type, from.type, from);
 }
 
-int number_of_concrete_type_names(recipe_ordinal r) {
-  const recipe& caller = get(Recipe, r);
-  int result = 0;
-  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
-    result += number_of_concrete_type_names(caller.ingredients.at(i));
-  for (int i = 0;  i < SIZE(caller.products);  ++i)
-    result += number_of_concrete_type_names(caller.products.at(i));
-  return result;
-}
-
-int number_of_concrete_type_names(const reagent& r) {
-  return number_of_concrete_type_names(r.type);
-}
-
-int number_of_concrete_type_names(const type_tree* type) {
-  if (!type) return 0;
-  if (type->atom)
-    return is_type_ingredient_name(type->name) ? 0 : 1;
-  return number_of_concrete_type_names(type->left)
-       + number_of_concrete_type_names(type->right);
-}
-
 bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* from, const reagent& rhs_reagent) {
   if (!to) return !from;
   if (!from) return !to;
@@ -221,6 +199,28 @@ bool contains_type_ingredient_name(const type_tree* type) {
   if (!type) return false;
   if (is_type_ingredient_name(type->name)) return true;
   return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
+}
+
+int number_of_concrete_type_names(recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  int result = 0;
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
+    result += number_of_concrete_type_names(caller.ingredients.at(i));
+  for (int i = 0;  i < SIZE(caller.products);  ++i)
+    result += number_of_concrete_type_names(caller.products.at(i));
+  return result;
+}
+
+int number_of_concrete_type_names(const reagent& r) {
+  return number_of_concrete_type_names(r.type);
+}
+
+int number_of_concrete_type_names(const type_tree* type) {
+  if (!type) return 0;
+  if (type->atom)
+    return is_type_ingredient_name(type->name) ? 0 : 1;
+  return number_of_concrete_type_names(type->left)
+       + number_of_concrete_type_names(type->right);
 }
 
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
