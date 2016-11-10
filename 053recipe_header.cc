@@ -353,6 +353,16 @@ def add2 x:num, y:num [
 ]
 +error: add2: replied with the wrong number of products at 'return z'
 
+:(scenario recipe_headers_are_checked_against_transformed_instructions)
+% Hide_errors = true;
+def foo -> x:num [
+  local-scope
+  x:num <- copy 0
+  z:bool <- copy 0/false
+  return-if z, z
+]
++error: foo: replied with the wrong type at 'return-if z, z'
+
 :(scenario recipe_headers_check_for_duplicate_names)
 % Hide_errors = true;
 def add2 x:num, x:num -> z:num [

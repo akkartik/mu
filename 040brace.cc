@@ -392,7 +392,7 @@ def test1 [
 //   ```
 if (curr.name == "return-if" || curr.name == "reply-if") {
   if (curr.products.empty()) {
-    emit_return_block(result, "break-unless", curr.ingredients);
+    emit_return_block(result, "break-unless", curr);
     curr.clear();
   }
   else {
@@ -408,7 +408,7 @@ if (curr.name == "return-if" || curr.name == "reply-if") {
 //   ```
 if (curr.name == "return-unless" || curr.name == "reply-unless") {
   if (curr.products.empty()) {
-    emit_return_block(result, "break-if", curr.ingredients);
+    emit_return_block(result, "break-if", curr);
     curr.clear();
   }
   else {
@@ -417,7 +417,8 @@ if (curr.name == "return-unless" || curr.name == "reply-unless") {
 }
 
 :(code)
-void emit_return_block(recipe& out, const string& break_command, const vector<reagent>& ingredients) {
+void emit_return_block(recipe& out, const string& break_command, const instruction& inst) {
+  const vector<reagent>& ingredients = inst.ingredients;
   reagent/*copy*/ condition = ingredients.at(0);
   vector<reagent> return_ingredients;
   copy(++ingredients.begin(), ingredients.end(), inserter(return_ingredients, return_ingredients.end()));
@@ -438,6 +439,7 @@ void emit_return_block(recipe& out, const string& break_command, const vector<re
   return_inst.operation = get(Recipe_ordinal, "return");
   return_inst.name = "return";
   return_inst.ingredients.swap(return_ingredients);
+  return_inst.original_string = inst.original_string;
   out.steps.push_back(return_inst);
 
   // }
