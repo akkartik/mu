@@ -244,7 +244,7 @@ def main [
 +run: {6: ("foo" "point")} <- merge {1: "literal", "y": ()}, {23: "literal"}
 +mem: storing 1 in location 6
 +mem: storing 23 in location 7
-+run: reply
++run: return
 # no other stores
 % CHECK_EQ(trace_count_prefix("mem", "storing"), 7);
 

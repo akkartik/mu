@@ -322,13 +322,13 @@ def add2 x:num, y:num -> z:num [
 +error: add2: replied with the wrong type at 'return z'
 
 :(before "End Checks")
-Transform.push_back(check_reply_instructions_against_header);  // idempotent
+Transform.push_back(check_return_instructions_against_header);  // idempotent
 
 :(code)
-void check_reply_instructions_against_header(const recipe_ordinal r) {
+void check_return_instructions_against_header(const recipe_ordinal r) {
   const recipe& caller_recipe = get(Recipe, r);
   if (!caller_recipe.has_header) return;
-  trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
+  trace(9991, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply" && inst.name != "return") continue;
@@ -373,7 +373,7 @@ void check_header_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (caller_recipe.products.empty()) return;
   caller_recipe.ingredient_index.clear();
-  trace(9991, "transform") << "--- checking reply instructions against header for " << caller_recipe.name << end();
+  trace(9991, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.ingredients);  ++i) {
     if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
       raise << maybe(caller_recipe.name) << "'" << caller_recipe.ingredients.at(i).name << "' can't repeat in the ingredients\n" << end();
@@ -454,24 +454,24 @@ def add2 x:num, y:num -> z:num [
 +mem: storing 8 in location 1
 
 :(after "Transform.push_back(check_header_ingredients)")
-Transform.push_back(fill_in_reply_ingredients);  // idempotent
+Transform.push_back(fill_in_return_ingredients);  // idempotent
 
 :(code)
-void fill_in_reply_ingredients(const recipe_ordinal r) {
+void fill_in_return_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
   if (!caller_recipe.has_header) return;
-  trace(9991, "transform") << "--- fill in reply ingredients from header for recipe " << caller_recipe.name << end();
+  trace(9991, "transform") << "--- fill in return ingredients from header for recipe " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     instruction& inst = caller_recipe.steps.at(i);
     if (inst.name == "reply" || inst.name == "return")
       add_header_products(inst, caller_recipe);
   }
-  // fall through reply
+  // fall through return
   if (caller_recipe.steps.empty()) return;  // error will be raised elsewhere if there's a product in the header; just give up
   const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
   if (final_instruction.name != "reply" && final_instruction.name != "return") {
     instruction inst;
-    inst.name = "reply";
+    inst.name = "return";
     add_header_products(inst, caller_recipe);
     caller_recipe.steps.push_back(inst);
   }
@@ -493,7 +493,7 @@ void add_header_products(instruction& inst, const recipe& caller_recipe) {
   }
 }
 
-:(scenario explicit_reply_ignores_header)
+:(scenario explicit_return_ignores_header)
 def main [
   1:num/raw, 2:num/raw <- add2 3, 5
 ]
@@ -516,7 +516,7 @@ def add2 x:num, y:num -> z:num [
   load-ingredients
   z <- add x, y
 ]
-+transform: instruction: reply {z: "number"}
++transform: instruction: return {z: "number"}
 +mem: storing 8 in location 1
 
 :(scenario return_on_fallthrough_already_exists)
@@ -530,10 +530,10 @@ def add2 x:num, y:num -> z:num [
   return z
 ]
 +transform: instruction: return {z: ()}
--transform: instruction: reply z:num
+-transform: instruction: return z:num
 +mem: storing 8 in location 1
 
-:(scenario return_after_conditional_reply_based_on_header)
+:(scenario return_after_conditional_return_based_on_header)
 def main [
   1:num/raw <- add2 3, 5
 ]

@@ -86,7 +86,7 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
     break-unless resources
     # fake file system
     routine-id <- start-running transmit-to-fake-file resources, filename, source
-    reply
+    return
   }
   # real file system
   file:num <- $open-file-for-writing filename
@@ -136,7 +136,7 @@ def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:
     loop-unless found?
     put-index *data, i, new-resource
     reset lock
-    reply
+    return
   }
   # if file didn't already exist, make room for it
   new-len:num <- add len, 1

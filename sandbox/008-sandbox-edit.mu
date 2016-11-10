@@ -70,7 +70,7 @@ def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> r
   load-ingredients
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, env
-  reply-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'edit' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -78,7 +78,7 @@ def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> r
   sandbox-right-margin:num <- get *first-sandbox, right:offset
   edit-button-left:num, edit-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   edit-button-vertical-area?:bool <- within-range? click-column, edit-button-left, edit-button-right
-  reply-unless edit-button-vertical-area?, 0/false
+  return-unless edit-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox

@@ -56,7 +56,7 @@ def foo p:&:d1 -> q:num [
   load-ingredients
   x:&:d1 <- new d1:type
   *x <- put *x, p:offset, 34  # ignore this 'p'
-  reply 36
+  return 36
 ]
 container d1 [
   p:num

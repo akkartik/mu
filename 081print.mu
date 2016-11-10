@@ -607,7 +607,7 @@ def screen-height screen:&:screen -> height:num [
 def hide-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  reply-if screen  # fake screen; do nothing
+  return-if screen  # fake screen; do nothing
   # real screen
   hide-cursor-on-display
 ]
@@ -615,7 +615,7 @@ def hide-cursor screen:&:screen -> screen:&:screen [
 def show-cursor screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  reply-if screen  # fake screen; do nothing
+  return-if screen  # fake screen; do nothing
   # real screen
   show-cursor-on-display
 ]
@@ -623,7 +623,7 @@ def show-cursor screen:&:screen -> screen:&:screen [
 def hide-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  reply-if screen  # fake screen; do nothing
+  return-if screen  # fake screen; do nothing
   # real screen
   hide-display
 ]
@@ -631,7 +631,7 @@ def hide-screen screen:&:screen -> screen:&:screen [
 def show-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
-  reply-if screen  # fake screen; do nothing
+  return-if screen  # fake screen; do nothing
   # real screen
   show-display
 ]

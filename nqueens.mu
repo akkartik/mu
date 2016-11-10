@@ -49,9 +49,9 @@ def conflict? curr:square, queens:&:list:square -> result:bool [
   local-scope
   load-ingredients
   result1:bool <- conflicting-file? curr, queens
-  reply-if result1, result1
+  return-if result1, result1
   result2:bool <- conflicting-diagonal? curr, queens
-  reply result2
+  return result2
 ]
 
 def conflicting-file? curr:square, queens:&:list:square -> result:bool [
@@ -63,11 +63,11 @@ def conflicting-file? curr:square, queens:&:list:square -> result:bool [
     q:square <- first queens
     qfile:num <- get q, file:offset
     file-match?:bool <- equal curr-file, qfile
-    reply-if file-match?, 1/conflict-found
+    return-if file-match?, 1/conflict-found
     queens <- rest queens
     loop
   }
-  reply 0/no-conflict-found
+  return 0/no-conflict-found
 ]
 
 def conflicting-diagonal? curr:square, queens:&:list:square -> result:bool [
@@ -85,11 +85,11 @@ def conflicting-diagonal? curr:square, queens:&:list:square -> result:bool [
     rank-delta <- abs rank-delta
     file-delta <- abs file-delta
     diagonal-match?:bool <- equal rank-delta, file-delta
-    reply-if diagonal-match?, 1/conflict-found
+    return-if diagonal-match?, 1/conflict-found
     queens <- rest queens
     loop
   }
-  reply 0/no-conflict-found
+  return 0/no-conflict-found
 ]
 
 def main [

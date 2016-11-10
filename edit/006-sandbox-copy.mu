@@ -146,7 +146,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
   load-ingredients
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
-  reply-unless click-sandbox-area?, 0/false
+  return-unless click-sandbox-area?, 0/false
   # narrower, is the click in the columns spanning the 'copy' button?
   first-sandbox:&:editor <- get *env, current-sandbox:offset
   assert first-sandbox, [!!]
@@ -154,7 +154,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
   sandbox-right-margin:num <- get *first-sandbox, right:offset
   _, _, copy-button-left:num, copy-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   copy-button-vertical-area?:bool <- within-range? click-column, copy-button-left, copy-button-right
-  reply-unless copy-button-vertical-area?, 0/false
+  return-unless copy-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   result <- empty-editor? current-sandbox

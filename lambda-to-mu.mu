@@ -50,14 +50,14 @@ def new-pair a:&:cell, b:&:cell -> result:&:cell [
 def is-atom? x:&:cell -> result:bool [
   local-scope
   load-ingredients
-  reply-unless x, 0/false
+  return-unless x, 0/false
   _, result <- maybe-convert *x, atom:variant
 ]
 
 def is-pair? x:&:cell -> result:bool [
   local-scope
   load-ingredients
-  reply-unless x, 0/false
+  return-unless x, 0/false
   _, result <- maybe-convert *x, pair:variant
 ]
 
@@ -91,7 +91,7 @@ def atom-match? x:&:cell, pat:text -> result:bool [
   local-scope
   load-ingredients
   s:text, is-atom?:bool <- maybe-convert *x, atom:variant
-  reply-unless is-atom?, 0/false
+  return-unless is-atom?, 0/false
   result <- equal pat, s
 ]
 
@@ -108,7 +108,7 @@ def first x:&:cell -> result:&:cell [
   local-scope
   load-ingredients
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
-  reply-unless pair?, 0/nil
+  return-unless pair?, 0/nil
   result <- get pair, first:offset
 ]
 
@@ -116,7 +116,7 @@ def rest x:&:cell -> result:&:cell [
   local-scope
   load-ingredients
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
-  reply-unless pair?, 0/nil
+  return-unless pair?, 0/nil
   result <- get pair, rest:offset
 ]
 
@@ -124,7 +124,7 @@ def set-first base:&:cell, new-first:&:cell -> base:&:cell [
   local-scope
   load-ingredients
   pair:pair, is-pair?:bool <- maybe-convert *base, pair:variant
-  reply-unless is-pair?
+  return-unless is-pair?
   pair <- put pair, first:offset, new-first
   *base <- merge 1/pair, pair
 ]
@@ -133,7 +133,7 @@ def set-rest base:&:cell, new-rest:&:cell -> base:&:cell [
   local-scope
   load-ingredients
   pair:pair, is-pair?:bool <- maybe-convert *base, pair:variant
-  reply-unless is-pair?
+  return-unless is-pair?
   pair <- put pair, rest:offset, new-rest
   *base <- merge 1/pair, pair
 ]
@@ -181,7 +181,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
   # skip whitespace
   in <- skip-whitespace in
   c:char, eof?:bool <- peek in
-  reply-if eof?, 0/nil
+  return-if eof?, 0/nil
   pair?:bool <- equal c, 40/open-paren
   {
     break-if pair?
@@ -270,7 +270,7 @@ def skip-whitespace in:&:stream:char -> in:&:stream:char [
   load-ingredients
   {
     done?:bool <- end-of-stream? in
-    reply-if done?, 0/null
+    return-if done?, 0/null
     c:char <- peek in
     space?:bool <- space? c
     break-unless space?
@@ -294,14 +294,14 @@ def to-buffer x:&:cell, buf:&:buffer -> buf:&:buffer [
   {
     break-if x
     buf <- append buf, [<>]
-    reply
+    return
   }
   # base case: atom
   {
     s:text, atom?:bool <- maybe-convert *x, atom:variant
     break-unless atom?
     buf <- append buf, s
-    reply
+    return
   }
   # recursive case: pair
   buf <- append buf, [< ]

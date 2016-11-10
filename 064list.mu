@@ -13,7 +13,7 @@ def push x:_elem, l:&:list:_elem -> l:&:list:_elem [
   load-ingredients
   result:&:list:_elem <- new {(list _elem): type}
   *result <- merge x, l
-  reply result
+  return result
 ]
 
 def first in:&:list:_elem -> result:_elem [
@@ -264,7 +264,7 @@ scenario removing-from-singleton-list [
 def reverse list:&:list:_elem temp:&:list:_elem/contained-in:result -> result:&:list:_elem [
   local-scope
   load-ingredients
-  reply-unless list, temp
+  return-unless list, temp
   object:_elem <- first, list
   list <- rest list
   temp <- push object, temp

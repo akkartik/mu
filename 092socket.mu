@@ -26,7 +26,7 @@ F - example-server-test: $open-server-socket failed]
 def example-handler query:text -> response:text [
   local-scope
   load-ingredients
-  reply [abc]
+  return [abc]
 ]
 
 # To test client operations, use `assume-resources` with a filename that

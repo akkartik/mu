@@ -222,7 +222,7 @@ if (curr.name == "local-scope") {
   rewrite_default_space_instruction(curr);
 }
 
-//: todo: do this in a transform, rather than magically in the reply instruction
+//: todo: do this in a transform, rather than magically in the return instruction
 :(after "Falling Through End Of Recipe")
 try_reclaim_locals();
 :(after "Starting Reply")
@@ -259,7 +259,7 @@ void try_reclaim_locals() {
 }
 
 :(code)
-// is this reagent one of the values returned by the current (reply) instruction?
+// is this reagent one of the values returned by the current (return) instruction?
 // is the corresponding ingredient saved in the caller?
 bool escaping(const reagent& r) {
   assert(Current_routine);  // run-time only
@@ -370,7 +370,7 @@ def main [
 def f [
   local-scope
   x:&:num <- new number:type
-  reply x:&:num
+  return x:&:num
 ]
 def main [
   f  # doesn't save result

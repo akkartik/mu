@@ -5,7 +5,7 @@ def random generator:&:stream:num -> result:num, fail?:bool, generator:&:stream:
     break-if generator
     # generator is 0? use real random-number generator
     result <- real-random
-    reply result, 0/false
+    return result, 0/false
   }
   result, fail?, generator <- read generator
 ]

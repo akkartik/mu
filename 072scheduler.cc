@@ -324,7 +324,7 @@ def use-space [
   n:&:num/space:1 <- next-ingredient  # should decrement refcount
   *n/space:1 <- copy 34
   n2:num <- add *n/space:1, 1
-  reply n2
+  return n2
 ]
 def main [
   local-scope
@@ -665,7 +665,7 @@ def f2 [
   20:num <- copy 1
 ]
 # f2 runs an extra instruction for the implicit return added by the
-# fill_in_reply_ingredients transform
+# fill_in_return_ingredients transform
 +mem: storing 3 in location 11
 
 :(scenario number_of_instructions_across_multiple_scheduling_intervals)
@@ -685,7 +685,7 @@ def f2 [
   20:num <- copy 1
 ]
 # f2 runs an extra instruction for the implicit return added by the
-# fill_in_reply_ingredients transform
+# fill_in_return_ingredients transform
 +mem: storing 5 in location 11
 
 //:: make sure that each routine gets a different alloc to start

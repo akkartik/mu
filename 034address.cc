@@ -5,7 +5,7 @@
 //: units (containers or arrays) that may contain many different primitives at
 //: once. Containers and arrays can grow quite large in complex programs, and
 //: we'd like some way to efficiently share them between recipes without
-//: constantly having to make copies. Right now 'next-ingredient' and 'reply'
+//: constantly having to make copies. Right now 'next-ingredient' and 'return'
 //: copy data across recipe boundaries. To avoid copying large quantities of
 //: data around, we'll use *addresses*. An address is a bookmark to some
 //: arbitrary quantity of data (the *payload*). It's a primitive, so it's as
