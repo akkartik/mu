@@ -375,7 +375,9 @@ type_tree& type_tree::operator=(const type_tree& original) {
   atom = original.atom;
   name = original.name;
   value = original.value;
+  if (left) delete left;
   left = original.left ? new type_tree(*original.left) : NULL;
+  if (right) delete right;
   right = original.right ? new type_tree(*original.right) : NULL;
   return *this;
 }
