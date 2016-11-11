@@ -94,14 +94,17 @@ bool deeply_equal_type_names(const reagent& a, const reagent& b) {
 bool deeply_equal_type_names(const type_tree* a, const type_tree* b) {
   if (!a) return !b;
   if (!b) return !a;
-  if (a->name == "literal" && b->name == "literal")
-    return true;
-  if (a->name == "literal")
-    return Literal_type_names.find(b->name) != Literal_type_names.end();
-  if (b->name == "literal")
-    return Literal_type_names.find(a->name) != Literal_type_names.end();
-  return a->name == b->name
-      && deeply_equal_type_names(a->left, b->left)
+  if (a->atom != b->atom) return false;
+  if (a->atom) {
+    if (a->name == "literal" && b->name == "literal")
+      return true;
+    if (a->name == "literal")
+      return Literal_type_names.find(b->name) != Literal_type_names.end();
+    if (b->name == "literal")
+      return Literal_type_names.find(a->name) != Literal_type_names.end();
+    return a->name == b->name;
+  }
+  return deeply_equal_type_names(a->left, b->left)
       && deeply_equal_type_names(a->right, b->right);
 }
 
