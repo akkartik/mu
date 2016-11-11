@@ -328,36 +328,38 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     raise << "  (called from '" << to_original_string(call_instruction) << "')\n" << end();
     return;
   }
-  if (is_type_ingredient_name(exemplar_type->name)) {
-    const type_tree* curr_refinement_type = NULL;  // temporary heap allocation; must always be deleted before it goes out of scope
-    if (exemplar_type->atom)
-      curr_refinement_type = new type_tree(*refinement_type);
-    else {
-      assert(!refinement_type->atom);
-      curr_refinement_type = new type_tree(*refinement_type->left);
-    }
-    if (!contains_key(mappings, exemplar_type->name)) {
-      trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(curr_refinement_type) << end();
-      put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
-    }
-    else {
-      if (!deeply_equal_type_names(get(mappings, exemplar_type->name), curr_refinement_type)) {
-        raise << maybe(caller_recipe.name) << "no call found for '" << to_original_string(call_instruction) << "'\n" << end();
-        *error = true;
-        delete curr_refinement_type;
-        return;
+  if (exemplar_type->atom) {
+    if (is_type_ingredient_name(exemplar_type->name)) {
+      const type_tree* curr_refinement_type = NULL;  // temporary heap allocation; must always be deleted before it goes out of scope
+      if (exemplar_type->atom)
+        curr_refinement_type = new type_tree(*refinement_type);
+      else {
+        assert(!refinement_type->atom);
+        curr_refinement_type = new type_tree(*refinement_type->left);
       }
-      if (get(mappings, exemplar_type->name)->name == "literal") {
-        delete get(mappings, exemplar_type->name);
+      if (!contains_key(mappings, exemplar_type->name)) {
+        trace(9993, "transform") << "adding mapping from " << exemplar_type->name << " to " << to_string(curr_refinement_type) << end();
         put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
       }
+      else {
+        if (!deeply_equal_type_names(get(mappings, exemplar_type->name), curr_refinement_type)) {
+          raise << maybe(caller_recipe.name) << "no call found for '" << to_original_string(call_instruction) << "'\n" << end();
+          *error = true;
+          delete curr_refinement_type;
+          return;
+        }
+        if (get(mappings, exemplar_type->name)->name == "literal") {
+          delete get(mappings, exemplar_type->name);
+          put(mappings, exemplar_type->name, new type_tree(*curr_refinement_type));
+        }
+      }
+      delete curr_refinement_type;
     }
-    delete curr_refinement_type;
   }
   else {
     accumulate_type_ingredients(exemplar_type->left, refinement_type->left, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
+    accumulate_type_ingredients(exemplar_type->right, refinement_type->right, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
   }
-  accumulate_type_ingredients(exemplar_type->right, refinement_type->right, mappings, exemplar, exemplar_reagent, call_instruction, caller_recipe, error);
 }
 
 void replace_type_ingredients(recipe& new_recipe, const map<string, const type_tree*>& mappings) {
