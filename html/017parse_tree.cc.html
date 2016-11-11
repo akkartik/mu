@@ -40,9 +40,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">// (address to array of charaters) to (list of numbers)&quot;.</span>
 <span class="Comment">//</span>
 <span class="Comment">// Type trees aren't as general as s-expressions even if they look like them:</span>
-<span class="Comment">// the first element of a type tree is always an atom, and left and right</span>
-<span class="Comment">// pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp</span>
-<span class="Comment">// parlance.</span>
+<span class="Comment">// the first element of a type tree is always an atom, and it can never be</span>
+<span class="Comment">// dotted (right-&gt;right-&gt;right-&gt;...-&gt;right is always NULL).</span>
 <span class="Comment">//</span>
 <span class="Comment">// For now you can't use the simpler 'colon-based' representation inside type</span>
 <span class="Comment">// trees. Once you start typing parens, keep on typing parens.</span>
@@ -115,19 +114,6 @@ string_tree* parse_string_tree<span class="Delimiter">(</span>istream&amp; in<sp
   <span class="Delimiter">}</span>
   in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>  <span class="Comment">// skip ')'</span>
   assert<span class="Delimiter">(</span>*curr == <span class="Constant">NULL</span><span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>result == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  <span class="Comment">// standardize the final element to always be on the right if it's an atom</span>
-  <span class="Comment">// (a b c) =&gt; (a b . c) in s-expression parlance</span>
-  string_tree* tmp = result<span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> tmp = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-  string_tree* tmp2 = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
-  tmp<span class="Delimiter">-&gt;</span>right = tmp2<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
-  tmp2<span class="Delimiter">-&gt;</span>left = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  assert<span class="Delimiter">(</span>tmp2<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">);</span>
-  <span class="Normal">delete</span> tmp2<span class="Delimiter">;</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

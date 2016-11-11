@@ -86,14 +86,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> is-atom? x:&amp;:cell<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> x, <span class="Constant">0/false</span>
+  <span class="muControl">return-unless</span> x, <span class="Constant">0/false</span>
   _, result <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">atom:variant</span>
 ]
 
 <span class="muRecipe">def</span> is-pair? x:&amp;:cell<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">reply-unless</span> x, <span class="Constant">0/false</span>
+  <span class="muControl">return-unless</span> x, <span class="Constant">0/false</span>
   _, result <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">pair:variant</span>
 ]
 
@@ -127,7 +127,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   s:text, is-atom?:bool <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">atom:variant</span>
-  <span class="muControl">reply-unless</span> is-atom?, <span class="Constant">0/false</span>
+  <span class="muControl">return-unless</span> is-atom?, <span class="Constant">0/false</span>
   result <span class="Special">&lt;-</span> equal pat, s
 ]
 
@@ -144,7 +144,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pair:pair, pair?:bool <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">pair:variant</span>
-  <span class="muControl">reply-unless</span> pair?, <span class="Constant">0/nil</span>
+  <span class="muControl">return-unless</span> pair?, <span class="Constant">0/nil</span>
   result <span class="Special">&lt;-</span> get pair, <span class="Constant">first:offset</span>
 ]
 
@@ -152,7 +152,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pair:pair, pair?:bool <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">pair:variant</span>
-  <span class="muControl">reply-unless</span> pair?, <span class="Constant">0/nil</span>
+  <span class="muControl">return-unless</span> pair?, <span class="Constant">0/nil</span>
   result <span class="Special">&lt;-</span> get pair, <span class="Constant">rest:offset</span>
 ]
 
@@ -160,7 +160,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pair:pair, is-pair?:bool <span class="Special">&lt;-</span> maybe-convert *base, <span class="Constant">pair:variant</span>
-  <span class="muControl">reply-unless</span> is-pair?
+  <span class="muControl">return-unless</span> is-pair?
   pair <span class="Special">&lt;-</span> put pair, <span class="Constant">first:offset</span>, new-first
   *base <span class="Special">&lt;-</span> merge <span class="Constant">1/pair</span>, pair
 ]
@@ -169,7 +169,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   pair:pair, is-pair?:bool <span class="Special">&lt;-</span> maybe-convert *base, <span class="Constant">pair:variant</span>
-  <span class="muControl">reply-unless</span> is-pair?
+  <span class="muControl">return-unless</span> is-pair?
   pair <span class="Special">&lt;-</span> put pair, <span class="Constant">rest:offset</span>, new-rest
   *base <span class="Special">&lt;-</span> merge <span class="Constant">1/pair</span>, pair
 ]
@@ -217,7 +217,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Comment"># skip whitespace</span>
   in <span class="Special">&lt;-</span> skip-whitespace in
   c:char, eof?:bool <span class="Special">&lt;-</span> peek in
-  <span class="muControl">reply-if</span> eof?, <span class="Constant">0/nil</span>
+  <span class="muControl">return-if</span> eof?, <span class="Constant">0/nil</span>
   pair?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">40/open-paren</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> pair?
@@ -306,7 +306,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   <span class="Delimiter">{</span>
     done?:bool <span class="Special">&lt;-</span> end-of-stream? in
-    <span class="muControl">reply-if</span> done?, <span class="Constant">0/null</span>
+    <span class="muControl">return-if</span> done?, <span class="Constant">0/null</span>
     c:char <span class="Special">&lt;-</span> peek in
     space?:bool <span class="Special">&lt;-</span> space? c
     <span class="muControl">break-unless</span> space?
@@ -330,14 +330,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> x
     buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[&lt;&gt;]</span>
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># base case: atom</span>
   <span class="Delimiter">{</span>
     s:text, atom?:bool <span class="Special">&lt;-</span> maybe-convert *x, <span class="Constant">atom:variant</span>
     <span class="muControl">break-unless</span> atom?
     buf <span class="Special">&lt;-</span> append buf, s
-    <span class="muControl">reply</span>
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># recursive case: pair</span>
   buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[&lt; ]</span>

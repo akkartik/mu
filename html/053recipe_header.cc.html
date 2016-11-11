@@ -360,13 +360,13 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="traceContains">+error: add2: replied with the wrong type at 'return z'</span>
 
 <span class="Delimiter">:(before &quot;End Checks&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_reply_instructions_against_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_return_instructions_against_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> check_reply_instructions_against_header<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> check_return_instructions_against_header<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">const</span> recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking reply instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking return instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name != <span class="Constant">&quot;reply&quot;</span> &amp;&amp; inst<span class="Delimiter">.</span>name != <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -391,6 +391,16 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 ]
 <span class="traceContains">+error: add2: replied with the wrong number of products at 'return z'</span>
 
+<span class="Delimiter">:(scenario recipe_headers_are_checked_against_transformed_instructions)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> foo<span class="muRecipe"> -&gt; </span>x:num [
+  local-scope
+  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Normal">z</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">0</span>/<span class="Constant">false</span>
+  <span class="Identifier">return</span>-<span class="Normal">if</span> z<span class="Delimiter">,</span> z
+]
+<span class="traceContains">+error: foo: replied with the wrong type at 'return-if z, z'</span>
+
 <span class="Delimiter">:(scenario recipe_headers_check_for_duplicate_names)</span>
 <span class="Special">% Hide_errors = true;</span>
 <span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> x:num<span class="muRecipe"> -&gt; </span>z:num [
@@ -411,7 +421,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking reply instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking return instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span>
       raise &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' can't repeat in the ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -492,24 +502,24 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(after &quot;Transform.push_back(check_header_ingredients)&quot;)</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_reply_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_return_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> fill_in_reply_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> fill_in_return_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- fill in reply ingredients from header for recipe &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- fill in return ingredients from header for recipe &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span>
       add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// fall through reply</span>
+  <span class="Comment">// fall through return</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error will be raised elsewhere if there's a product in the header; just give up</span>
   <span class="Normal">const</span> instruction&amp; final_instruction = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;reply&quot;</span> &amp;&amp; final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
     instruction inst<span class="Delimiter">;</span>
-    inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;reply&quot;</span><span class="Delimiter">;</span>
+    inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;return&quot;</span><span class="Delimiter">;</span>
     add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
     caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
   <span class="Delimiter">}</span>
@@ -531,7 +541,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
-<span class="Delimiter">:(scenario explicit_reply_ignores_header)</span>
+<span class="Delimiter">:(scenario explicit_return_ignores_header)</span>
 <span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]
@@ -554,7 +564,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   load-ingredients
   z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
 ]
-<span class="traceContains">+transform: instruction: reply {z: &quot;number&quot;}</span>
+<span class="traceContains">+transform: instruction: return {z: &quot;number&quot;}</span>
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
 <span class="Delimiter">:(scenario return_on_fallthrough_already_exists)</span>
@@ -568,10 +578,10 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   <span class="Identifier">return</span> z
 ]
 <span class="traceContains">+transform: instruction: return {z: ()}</span>
-<span class="traceAbsent">-transform: instruction: reply z:num</span>
+<span class="traceAbsent">-transform: instruction: return z:num</span>
 <span class="traceContains">+mem: storing 8 in location 1</span>
 
-<span class="Delimiter">:(scenario return_after_conditional_reply_based_on_header)</span>
+<span class="Delimiter">:(scenario return_after_conditional_return_based_on_header)</span>
 <span class="muRecipe">def</span> main [
   <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 ]

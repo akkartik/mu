@@ -241,7 +241,9 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     assert<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">);</span>
     <span class="Identifier">return</span> result_header<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  assert<span class="Delimiter">(</span>root_type<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">)-&gt;</span>name == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">);</span>
+  <span class="Normal">const</span> type_tree* root_type = r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom ? r<span class="Delimiter">.</span>type : r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>root_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  assert<span class="Delimiter">(</span>root_type<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">);</span>
   <span class="Normal">const</span> type_tree* curr = r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Comment">/*</span><span class="Comment">nada</span><span class="Comment">*/</span><span class="Delimiter">;</span>  curr &amp;&amp; !curr<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">;</span>  curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -296,7 +298,7 @@ reagent next_recipe_reagent<span class="Delimiter">(</span><span class="Normal">
   <span class="Normal">if</span> <span class="Delimiter">(</span>!curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> <span class="Identifier">return</span> reagent<span class="Delimiter">(</span><span class="Constant">&quot;recipe:&quot;</span>+curr<span class="Delimiter">-&gt;</span>name<span class="Delimiter">);</span>
   reagent result<span class="Delimiter">;</span>
   result<span class="Delimiter">.</span>name = <span class="Constant">&quot;recipe&quot;</span><span class="Delimiter">;</span>
-  result<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*curr<span class="Delimiter">-&gt;</span>left<span class="Delimiter">);</span>
+  result<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*curr<span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

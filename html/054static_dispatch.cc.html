@@ -131,14 +131,17 @@ Literal_type_names<span class="Delimiter">.</span>insert<span class="Delimiter">
 <span class="Normal">bool</span> deeply_equal_type_names<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* a<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree* b<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!a<span class="Delimiter">)</span> <span class="Identifier">return</span> !b<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!b<span class="Delimiter">)</span> <span class="Identifier">return</span> !a<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; b<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>b<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>b<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
-    <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
-  <span class="Identifier">return</span> a<span class="Delimiter">-&gt;</span>name == b<span class="Delimiter">-&gt;</span>name
-      &amp;&amp; deeply_equal_type_names<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>atom != b<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span> &amp;&amp; b<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+      <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>b<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>b<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;literal&quot;</span><span class="Delimiter">)</span>
+      <span class="Identifier">return</span> Literal_type_names<span class="Delimiter">.</span>find<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>name<span class="Delimiter">)</span> != Literal_type_names<span class="Delimiter">.</span>end<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> a<span class="Delimiter">-&gt;</span>name == b<span class="Delimiter">-&gt;</span>name<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
+  <span class="Identifier">return</span> deeply_equal_type_names<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span>
       &amp;&amp; deeply_equal_type_names<span class="Delimiter">(</span>a<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> b<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 

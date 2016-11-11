@@ -141,7 +141,7 @@ Name = Name_snapshot<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Comment">// End is_disqualified Cases</span>
+  <span class="Comment">// End is_disqualified Special-cases</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>initialized<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -158,7 +158,13 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
   <span class="Normal">while</span> <span class="Delimiter">(</span>type &amp;&amp; is_compound_type_starting_with<span class="Delimiter">(</span>type<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span>
     type = type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-  <span class="Identifier">return</span> root_type<span class="Delimiter">(</span>type<span class="Delimiter">)-&gt;</span>value<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+  <span class="Normal">const</span> type_tree* base_type = type<span class="Delimiter">;</span>
+  <span class="Comment">// Update base_type in skip_addresses</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>base_type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    <span class="Identifier">return</span> base_type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
+  assert<span class="Delimiter">(</span>base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Identifier">return</span> base_type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">int</span> find_element_name<span class="Delimiter">(</span><span class="Normal">const</span> type_ordinal t<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; name<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; recipe_name<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -187,7 +193,7 @@ type_ordinal skip_addresses<span class="Delimiter">(</span>type_tree* type<span 
 <span class="Normal">bool</span> is_special_name<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;_&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;0&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Comment">// End is_special_name Cases</span>
+  <span class="Comment">// End is_special_name Special-cases</span>
   <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

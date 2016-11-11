@@ -81,10 +81,10 @@ put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</
 <span class="traceContains">+name: assign x 1</span>
 <span class="traceAbsent">-name: assign default-space 1</span>
 
-<span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_disqualified Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_special_name Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;default-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="SalientComment">//:: now implement space support</span>
@@ -204,10 +204,10 @@ element<span class="Delimiter">.</span>properties<span class="Delimiter">.</span
 <span class="Comment"># allocate space for x and y, as well as the chaining slot at 0</span>
 <span class="traceContains">+mem: array length is 3</span>
 
-<span class="Delimiter">:(before &quot;End is_disqualified Cases&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_disqualified Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;number-of-locals&quot;</span><span class="Delimiter">)</span>
   x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End is_special_name Cases&quot;)</span>
+<span class="Delimiter">:(before &quot;End is_special_name Special-cases&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;number-of-locals&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Rewrite Instruction(curr, recipe result)&quot;)</span>
@@ -236,8 +236,8 @@ element<span class="Delimiter">.</span>properties<span class="Delimiter">.</span
 
 <span class="Delimiter">:(scenario local_scope)</span>
 <span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:&amp;<span class="Special"> &lt;- </span>foo
-  <span class="Constant">2</span>:&amp;<span class="Special"> &lt;- </span>foo
+  <span class="Constant">1</span>:&amp;:@:location<span class="Special"> &lt;- </span>foo
+  <span class="Constant">2</span>:&amp;:@:location<span class="Special"> &lt;- </span>foo
   <span class="Constant">3</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>equal <span class="Constant">1</span>:&amp;<span class="Delimiter">,</span> <span class="Constant">2</span>:&amp;
 ]
 <span class="muRecipe">def</span> foo [
@@ -260,7 +260,7 @@ element<span class="Delimiter">.</span>properties<span class="Delimiter">.</span
   rewrite_default_space_instruction<span class="Delimiter">(</span>curr<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
-<span class="Comment">//: todo: do this in a transform, rather than magically in the reply instruction</span>
+<span class="Comment">//: todo: do this in a transform, rather than magically in the 'return' instruction</span>
 <span class="Delimiter">:(after &quot;Falling Through End Of Recipe&quot;)</span>
 try_reclaim_locals<span class="Delimiter">();</span>
 <span class="Delimiter">:(after &quot;Starting Reply&quot;)</span>
@@ -297,7 +297,7 @@ try_reclaim_locals<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Comment">// is this reagent one of the values returned by the current (reply) instruction?</span>
+<span class="Comment">// is this reagent one of the values returned by the current (return) instruction?</span>
 <span class="Comment">// is the corresponding ingredient saved in the caller?</span>
 <span class="Normal">bool</span> escaping<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>  <span class="Comment">// run-time only</span>
@@ -408,7 +408,7 @@ Update_refcounts_in_write_memory = <span class="Constant">true</span><span class
 <span class="muRecipe">def</span> f [
   local-scope
   <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  reply x:&amp;:num
+  <span class="Identifier">return</span> x:&amp;:num
 ]
 <span class="muRecipe">def</span> main [
   f  <span class="Comment"># doesn't save result</span>

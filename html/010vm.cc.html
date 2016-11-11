@@ -97,8 +97,8 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   reagent<span class="Delimiter">()</span> :type<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> initialized<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   ~reagent<span class="Delimiter">();</span>
   <span class="Normal">void</span> clear<span class="Delimiter">();</span>
-  reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">);</span>
-  reagent&amp; <span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; old<span class="Delimiter">);</span>
+  reagent<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; original<span class="Delimiter">);</span>
+  reagent&amp; <span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; original<span class="Delimiter">);</span>
   <span class="Normal">void</span> set_value<span class="Delimiter">(</span><span class="Normal">double</span> v<span class="Delimiter">)</span> <span class="Delimiter">{</span> value = v<span class="Delimiter">;</span>  initialized = <span class="Constant">true</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 
@@ -112,13 +112,13 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   type_tree* left<span class="Delimiter">;</span>  <span class="Comment">// only if !atom</span>
   type_tree* right<span class="Delimiter">;</span>  <span class="Comment">// only if !atom</span>
   ~type_tree<span class="Delimiter">();</span>
-  type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">);</span>
+  type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; original<span class="Delimiter">);</span>
   <span class="Comment">// atomic type ordinal</span>
   <span class="Normal">explicit</span> type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">);</span>
   type_tree<span class="Delimiter">(</span>string name<span class="Delimiter">,</span> type_ordinal v<span class="Delimiter">)</span> :atom<span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">),</span> name<span class="Delimiter">(</span>name<span class="Delimiter">),</span> value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   <span class="Comment">// tree of type ordinals</span>
   type_tree<span class="Delimiter">(</span>type_tree* l<span class="Delimiter">,</span> type_tree* r<span class="Delimiter">)</span> :atom<span class="Delimiter">(</span><span class="Constant">false</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> left<span class="Delimiter">(</span>l<span class="Delimiter">),</span> right<span class="Delimiter">(</span>r<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
-  type_tree&amp; <span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">);</span>
+  type_tree&amp; <span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; original<span class="Delimiter">);</span>
   <span class="Normal">bool</span> <span class="Normal">operator</span>==<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; other<span class="Delimiter">)</span> <span class="Normal">const</span><span class="Delimiter">;</span>
   <span class="Normal">bool</span> <span class="Normal">operator</span>!=<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; other<span class="Delimiter">)</span> <span class="Normal">const</span> <span class="Delimiter">{</span> <span class="Identifier">return</span> !<span class="Normal">operator</span>==<span class="Delimiter">(</span>other<span class="Delimiter">);</span> <span class="Delimiter">}</span>
   <span class="Normal">bool</span> <span class="Normal">operator</span>&lt;<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; other<span class="Delimiter">)</span> <span class="Normal">const</span><span class="Delimiter">;</span>
@@ -131,7 +131,7 @@ recipe_ordinal Next_recipe_ordinal = <span class="Constant">1</span><span class=
   string_tree* left<span class="Delimiter">;</span>  <span class="Comment">// only if !atom</span>
   string_tree* right<span class="Delimiter">;</span>  <span class="Comment">// only if !atom</span>
   ~string_tree<span class="Delimiter">();</span>
-  string_tree<span class="Delimiter">(</span><span class="Normal">const</span> string_tree&amp; old<span class="Delimiter">);</span>
+  string_tree<span class="Delimiter">(</span><span class="Normal">const</span> string_tree&amp; original<span class="Delimiter">);</span>
   <span class="Comment">// atomic string</span>
   <span class="Normal">explicit</span> string_tree<span class="Delimiter">(</span>string v<span class="Delimiter">)</span> :atom<span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">),</span> value<span class="Delimiter">(</span>v<span class="Delimiter">),</span> left<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">),</span> right<span class="Delimiter">(</span><span class="Constant">NULL</span><span class="Delimiter">)</span> <span class="Delimiter">{}</span>
   <span class="Comment">// tree of strings</span>
@@ -337,12 +337,34 @@ reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span
 string_tree* parse_property_list<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   skip_whitespace_but_not_newline<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  string_tree* left = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">return</span> left<span class="Delimiter">;</span>
-  string_tree* right = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-  <span class="Identifier">return</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>left<span class="Delimiter">,</span> right<span class="Delimiter">);</span>
+  string_tree* first = <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>slurp_until<span class="Delimiter">(</span>in<span class="Delimiter">,</span> <span class="Constant">':'</span><span class="Delimiter">));</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">return</span> first<span class="Delimiter">;</span>
+  string_tree* rest = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">)</span> &amp;&amp; rest<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+    <span class="Identifier">return</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>first<span class="Delimiter">,</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>rest<span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+  <span class="Identifier">return</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>first<span class="Delimiter">,</span> rest<span class="Delimiter">);</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Unit Tests&quot;)</span>
+<span class="Normal">void</span> test_parse_property_list_atom<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  istringstream in<span class="Delimiter">(</span><span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  string_tree* x = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Normal">delete</span> x<span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Normal">void</span> test_parse_property_list_list<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+  istringstream in<span class="Delimiter">(</span><span class="Constant">&quot;a:b&quot;</span><span class="Delimiter">);</span>
+  string_tree* x = parse_property_list<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!x<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> <span class="Constant">&quot;a&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>!x<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  CHECK_EQ<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value<span class="Delimiter">,</span> <span class="Constant">&quot;b&quot;</span><span class="Delimiter">);</span>
+  CHECK<span class="Delimiter">(</span>x<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>right == <span class="Constant">NULL</span><span class="Delimiter">);</span>
+  <span class="Normal">delete</span> x<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Delimiter">:(code)</span>
 type_tree* new_type_tree<span class="Delimiter">(</span><span class="Normal">const</span> string_tree* properties<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!properties<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -377,20 +399,22 @@ reagent::reagent<span class="Delimiter">(</span><span class="Normal">const</span
   <span class="Comment">// End reagent Copy Constructor</span>
 <span class="Delimiter">}</span>
 
-type_tree::type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  atom = old<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
-  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  left = old<span class="Delimiter">.</span>left ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  right = old<span class="Delimiter">.</span>right ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+type_tree::type_tree<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; original<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  atom = original<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
+  name = original<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = original<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  left = original<span class="Delimiter">.</span>left ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  right = original<span class="Delimiter">.</span>right ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
-type_tree&amp; type_tree::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  atom = old<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
-  name = old<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
-  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  left = old<span class="Delimiter">.</span>left ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  right = old<span class="Delimiter">.</span>right ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+type_tree&amp; type_tree::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> type_tree&amp; original<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  atom = original<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
+  name = original<span class="Delimiter">.</span>name<span class="Delimiter">;</span>
+  value = original<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>left<span class="Delimiter">)</span> <span class="Normal">delete</span> left<span class="Delimiter">;</span>
+  left = original<span class="Delimiter">.</span>left ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>right<span class="Delimiter">)</span> <span class="Normal">delete</span> right<span class="Delimiter">;</span>
+  right = original<span class="Delimiter">.</span>right ? <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Identifier">return</span> *<span class="Normal">this</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -411,9 +435,10 @@ type_tree&amp; type_tree::<span class="Normal">operator</span>=<span class="Deli
   <span class="Normal">if</span> <span class="Delimiter">(</span>!left &amp;&amp; other<span class="Delimiter">.</span>left<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>right &amp;&amp; !other<span class="Delimiter">.</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!right &amp;&amp; other<span class="Delimiter">.</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+  <span class="Comment">// now if either pointer is unequal neither side can be null</span>
   <span class="Comment">// if one side is equal that's easy</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>left == other<span class="Delimiter">.</span>left || *left == *other<span class="Delimiter">.</span>left<span class="Delimiter">)</span> <span class="Identifier">return</span> *right &lt; *other<span class="Delimiter">.</span>right<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>right == other<span class="Delimiter">.</span>right || *right == *other<span class="Delimiter">.</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span> *left &lt; *other<span class="Delimiter">.</span>left<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>left == other<span class="Delimiter">.</span>left || *left == *other<span class="Delimiter">.</span>left<span class="Delimiter">)</span> <span class="Identifier">return</span> right &amp;&amp; *right &lt; *other<span class="Delimiter">.</span>right<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>right == other<span class="Delimiter">.</span>right || *right == *other<span class="Delimiter">.</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span> left &amp;&amp; *left &lt; *other<span class="Delimiter">.</span>left<span class="Delimiter">;</span>
   <span class="Comment">// if the two sides criss-cross, pick the side with the smaller lhs</span>
   <span class="Normal">if</span> <span class="Delimiter">((</span>left == other<span class="Delimiter">.</span>right || *left == *other<span class="Delimiter">.</span>right<span class="Delimiter">)</span>
       &amp;&amp; <span class="Delimiter">(</span>right == other<span class="Delimiter">.</span>left || *right == *other<span class="Delimiter">.</span>left<span class="Delimiter">))</span>
@@ -459,25 +484,21 @@ type_tree&amp; type_tree::<span class="Normal">operator</span>=<span class="Deli
 <span class="Delimiter">}</span>
 <span class="Normal">void</span> test_compare_list_with_smaller_left_but_larger_right<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:address:number&quot;</span><span class="Delimiter">),</span> b<span class="Delimiter">(</span><span class="Constant">&quot;b:character:array&quot;</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>a<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; a<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>b<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; b<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>*a<span class="Delimiter">.</span>type &lt; *b<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>!<span class="Delimiter">(</span>*b<span class="Delimiter">.</span>type &lt; *a<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 <span class="Normal">void</span> test_compare_list_with_smaller_left_but_larger_right_identical_types<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:address:boolean&quot;</span><span class="Delimiter">),</span> b<span class="Delimiter">(</span><span class="Constant">&quot;b:boolean:address&quot;</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>a<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; a<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>b<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom &amp;&amp; b<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>*a<span class="Delimiter">.</span>type &lt; *b<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
   CHECK<span class="Delimiter">(</span>!<span class="Delimiter">(</span>*b<span class="Delimiter">.</span>type &lt; *a<span class="Delimiter">.</span>type<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-string_tree::string_tree<span class="Delimiter">(</span><span class="Normal">const</span> string_tree&amp; old<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  atom = old<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
-  value = old<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-  left = old<span class="Delimiter">.</span>left ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
-  right = old<span class="Delimiter">.</span>right ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*old<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+string_tree::string_tree<span class="Delimiter">(</span><span class="Normal">const</span> string_tree&amp; original<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  atom = original<span class="Delimiter">.</span>atom<span class="Delimiter">;</span>
+  value = original<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+  left = original<span class="Delimiter">.</span>left ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>left<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  right = original<span class="Delimiter">.</span>right ? <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>*original<span class="Delimiter">.</span>right<span class="Delimiter">)</span> : <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 reagent&amp; reagent::<span class="Normal">operator</span>=<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; other<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -694,8 +715,11 @@ string to_string<span class="Delimiter">(</span><span class="Normal">const</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// final right</span>
-  dump<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Comment">// check for dotted list; should never happen</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; <span class="Constant">&quot;. &quot;</span><span class="Delimiter">;</span>
+    dump<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -720,8 +744,11 @@ string to_string<span class="Delimiter">(</span><span class="Normal">const</span
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// final right</span>
-  dump<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Comment">// check for dotted list; should never happen</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; <span class="Constant">&quot;. &quot;</span><span class="Delimiter">;</span>
+    dump<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -753,8 +780,11 @@ string names_to_string<span class="Delimiter">(</span><span class="Normal">const
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// final right</span>
-  dump_names<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Comment">// check for dotted list; should never happen</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; <span class="Constant">&quot;. &quot;</span><span class="Delimiter">;</span>
+    dump_names<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -779,8 +809,11 @@ string names_to_string_without_quotes<span class="Delimiter">(</span><span class
     <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> out &lt;&lt; <span class="Constant">' '</span><span class="Delimiter">;</span>
     curr = curr<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
-  <span class="Comment">// final right</span>
-  dump_names_without_quotes<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Comment">// check for dotted list; should never happen</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    out &lt;&lt; <span class="Constant">&quot;. &quot;</span><span class="Delimiter">;</span>
+    dump_names_without_quotes<span class="Delimiter">(</span>curr<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+  <span class="Delimiter">}</span>
   out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 

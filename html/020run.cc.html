@@ -363,18 +363,31 @@ vector&lt;<span class="Normal">double</span>&gt; read_memory<span class="Delimit
 <span class="Delimiter">:(code)</span>
 <span class="Normal">int</span> size_of<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Comment">// End size_of(reagent r) Cases</span>
+  <span class="Comment">// End size_of(reagent r) Special-cases</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 <span class="Normal">int</span> size_of<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Comment">// End size_of(type) Cases</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == -<span class="Constant">1</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">// error value, but we'll raise it elsewhere</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
+    <span class="Comment">// End size_of(type) Atom Special-cases</span>
+  <span class="Delimiter">}</span>
+  <span class="Normal">else</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+      raise &lt;&lt; <span class="Constant">&quot;invalid type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+      <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+    <span class="Delimiter">}</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
+    <span class="Comment">// End size_of(type) Non-atom Special-cases</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment">// End size_of(type) Special-cases</span>
   <span class="Identifier">return</span> <span class="Constant">1</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
 <span class="Normal">bool</span> size_mismatch<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;<span class="Normal">double</span>&gt;&amp; data<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Comment">// End size_mismatch(x) Cases</span>
+  <span class="Comment">// End size_mismatch(x) Special-cases</span>
 <span class="CommentedCode">//?   if (size_of(x) != SIZE(data)) cerr &lt;&lt; size_of(x) &lt;&lt; &quot; vs &quot; &lt;&lt; SIZE(data) &lt;&lt; '\n';</span>
   <span class="Identifier">return</span> size_of<span class="Delimiter">(</span>x<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>data<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>

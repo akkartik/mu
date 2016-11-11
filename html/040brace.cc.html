@@ -427,7 +427,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//   ```</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;return-if&quot;</span> || curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-if&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-unless&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>
+    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-unless&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">);</span>
     curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -443,7 +443,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//   ```</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;return-unless&quot;</span> || curr<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply-unless&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>curr<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-if&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>
+    emit_return_block<span class="Delimiter">(</span>result<span class="Delimiter">,</span> <span class="Constant">&quot;break-if&quot;</span><span class="Delimiter">,</span> curr<span class="Delimiter">);</span>
     curr<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
   <span class="Normal">else</span> <span class="Delimiter">{</span>
@@ -452,7 +452,8 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> emit_return_block<span class="Delimiter">(</span>recipe&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; break_command<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span class="Normal">void</span> emit_return_block<span class="Delimiter">(</span>recipe&amp; out<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; break_command<span class="Delimiter">,</span> <span class="Normal">const</span> instruction&amp; inst<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">const</span> vector&lt;reagent&gt;&amp; ingredients = inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">;</span>
   reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> condition = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
   vector&lt;reagent&gt; return_ingredients<span class="Delimiter">;</span>
   copy<span class="Delimiter">(</span>++ingredients<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> ingredients<span class="Delimiter">.</span>end<span class="Delimiter">(),</span> inserter<span class="Delimiter">(</span>return_ingredients<span class="Delimiter">,</span> return_ingredients<span class="Delimiter">.</span>end<span class="Delimiter">()));</span>
@@ -473,6 +474,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
   return_inst<span class="Delimiter">.</span>operation = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;return&quot;</span><span class="Delimiter">);</span>
   return_inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;return&quot;</span><span class="Delimiter">;</span>
   return_inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>return_ingredients<span class="Delimiter">);</span>
+  return_inst<span class="Delimiter">.</span>original_string = inst<span class="Delimiter">.</span>original_string<span class="Delimiter">;</span>
   out<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>return_inst<span class="Delimiter">);</span>
 
   <span class="Comment">// }</span>

@@ -41,7 +41,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment">//: units (containers or arrays) that may contain many different primitives at</span>
 <span class="Comment">//: once. Containers and arrays can grow quite large in complex programs, and</span>
 <span class="Comment">//: we'd like some way to efficiently share them between recipes without</span>
-<span class="Comment">//: constantly having to make copies. Right now 'next-ingredient' and 'reply'</span>
+<span class="Comment">//: constantly having to make copies. Right now 'next-ingredient' and 'return'</span>
 <span class="Comment">//: copy data across recipe boundaries. To avoid copying large quantities of</span>
 <span class="Comment">//: data around, we'll use *addresses*. An address is a bookmark to some</span>
 <span class="Comment">//: arbitrary quantity of data (the *payload*). It's a primitive, so it's as</span>
@@ -246,9 +246,17 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
     raise &lt;&lt; <span class="Constant">&quot;can't drop2 &quot;</span> &lt;&lt; expected_type &lt;&lt; <span class="Constant">&quot; from '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>r<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
     <span class="Identifier">return</span><span class="Delimiter">;</span>
   <span class="Delimiter">}</span>
+  <span class="Comment">// r.type = r.type-&gt;right</span>
   type_tree* tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
   r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>right<span class="Delimiter">;</span>
   tmp<span class="Delimiter">-&gt;</span>right = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+  <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
+  <span class="Comment">// if (!r.type-&gt;right) r.type = r.type-&gt;left</span>
+  assert<span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>right<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+  tmp = r<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
+  r<span class="Delimiter">.</span>type = tmp<span class="Delimiter">-&gt;</span>left<span class="Delimiter">;</span>
+  tmp<span class="Delimiter">-&gt;</span>left = <span class="Constant">NULL</span><span class="Delimiter">;</span>
   <span class="Normal">delete</span> tmp<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -258,6 +266,13 @@ put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span
   <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">num:type</span>
 ]
 <span class="traceContains">+error: main: product of 'new' has incorrect type: '1:bool &lt;- new num:type'</span>
+
+<span class="Delimiter">:(scenario new_discerns_singleton_list_from_atom_container)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>  <span class="Comment"># should be '{num: type}'</span>
+]
+<span class="traceContains">+error: main: product of 'new' has incorrect type: '1:address:num/raw &lt;- new {(num): type}'</span>
 
 <span class="Delimiter">:(scenario new_with_type_abbreviation)</span>
 <span class="muRecipe">def</span> main [

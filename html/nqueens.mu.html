@@ -82,9 +82,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   result1:bool <span class="Special">&lt;-</span> conflicting-file? curr, queens
-  <span class="muControl">reply-if</span> result1, result1
+  <span class="muControl">return-if</span> result1, result1
   result2:bool <span class="Special">&lt;-</span> conflicting-diagonal? curr, queens
-  <span class="muControl">reply</span> result2
+  <span class="muControl">return</span> result2
 ]
 
 <span class="muRecipe">def</span> conflicting-file? curr:square, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:bool [
@@ -96,11 +96,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     q:square <span class="Special">&lt;-</span> first queens
     qfile:num <span class="Special">&lt;-</span> get q, <span class="Constant">file:offset</span>
     file-match?:bool <span class="Special">&lt;-</span> equal curr-file, qfile
-    <span class="muControl">reply-if</span> file-match?, <span class="Constant">1/conflict-found</span>
+    <span class="muControl">return-if</span> file-match?, <span class="Constant">1/conflict-found</span>
     queens <span class="Special">&lt;-</span> rest queens
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
+  <span class="muControl">return</span> <span class="Constant">0/no-conflict-found</span>
 ]
 
 <span class="muRecipe">def</span> conflicting-diagonal? curr:square, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:bool [
@@ -118,11 +118,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     rank-delta <span class="Special">&lt;-</span> abs rank-delta
     file-delta <span class="Special">&lt;-</span> abs file-delta
     diagonal-match?:bool <span class="Special">&lt;-</span> equal rank-delta, file-delta
-    <span class="muControl">reply-if</span> diagonal-match?, <span class="Constant">1/conflict-found</span>
+    <span class="muControl">return-if</span> diagonal-match?, <span class="Constant">1/conflict-found</span>
     queens <span class="Special">&lt;-</span> rest queens
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">reply</span> <span class="Constant">0/no-conflict-found</span>
+  <span class="muControl">return</span> <span class="Constant">0/no-conflict-found</span>
 ]
 
 <span class="muRecipe">def</span> main [

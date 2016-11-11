@@ -69,7 +69,7 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 <span class="CommentedCode">//?   cerr &lt;&lt; &quot;abandon: &quot; &lt;&lt; size &lt;&lt; '\n';</span>
   <span class="Comment">// decrement any contained refcounts</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_array<span class="Delimiter">(</span>payload_type<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    reagent element<span class="Delimiter">;</span>
+    reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> element<span class="Delimiter">;</span>
     element<span class="Delimiter">.</span>type = copy_array_element<span class="Delimiter">(</span>payload_type<span class="Delimiter">);</span>
     <span class="Normal">int</span> array_length = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
     assert<span class="Delimiter">(</span>element<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>name != <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
@@ -260,6 +260,28 @@ map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span cla
 <span class="Comment"># nested abandon</span>
 <span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
 <span class="traceContains">+abandon: saving 1000 in free-list of size 2</span>
+
+<span class="Delimiter">:(scenario refcounts_abandon_array_within_container)</span>
+<span class="muData">container</span> foo [
+  <span class="Normal">x</span>:address:array:num
+]
+<span class="muRecipe">def</span> main [
+  <span class="Constant">1</span>:address:array:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span><span class="Delimiter">,</span> <span class="Constant">3</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>:address:array:num
+  <span class="Constant">1</span>:address:array:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+  <span class="Constant">2</span>:foo<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+]
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)} &lt;- new {number: &quot;type&quot;}, {3: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 0 -&gt; 1</span>
+<span class="traceContains">+run: {2: &quot;foo&quot;} &lt;- merge {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)}</span>
+<span class="traceContains">+mem: incrementing refcount of 1000: 1 -&gt; 2</span>
+<span class="traceContains">+run: {1: (&quot;address&quot; &quot;array&quot; &quot;number&quot;)} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 2 -&gt; 1</span>
+<span class="traceContains">+run: {2: &quot;foo&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<span class="traceContains">+mem: decrementing refcount of 1000: 1 -&gt; 0</span>
+<span class="traceContains">+mem: automatically abandoning 1000</span>
+<span class="Comment"># make sure we save it in a free-list of the appropriate size</span>
+<span class="traceContains">+abandon: saving 1000 in free-list of size 5</span>
 </pre>
 </body>
 </html>
