@@ -20,7 +20,6 @@ def f [
   12:num <- next-ingredient
   13:num <- add 1, 12:num
   reply 12:num, 13:num
-  $dump-trace
 ]
 +mem: storing 34 in location 1
 +mem: storing 35 in location 2
