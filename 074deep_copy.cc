@@ -218,7 +218,7 @@ case DEEP_COPY: {
   products.push_back(deep_copy(input, tmp));
   // reclaim Mu memory allocated for tmp
   trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
-  abandon(tmp.value, tmp.type->right, payload_size(tmp));
+  abandon(tmp.value, payload_type(tmp.type), payload_size(tmp));
   // reclaim host memory allocated for tmp.type when tmp goes out of scope
   break;
 }
@@ -283,7 +283,10 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
       // construct a fake reagent that reads directly from the appropriate
       // field of the container
       reagent curr;
-      curr.type = new type_tree(new type_tree("address"), new type_tree(*info->payload_type));
+      if (info->payload_type->atom)
+        curr.type = new type_tree(new type_tree("address"), new type_tree(new type_tree(info->payload_type->name), NULL));
+      else
+        curr.type = new type_tree(new type_tree("address"), new type_tree(*info->payload_type));
       curr.set_value(canonized_in.value + info->offset);
       curr.properties.push_back(pair<string, string_tree*>("raw", NULL));
       trace(9991, "run") << "deep-copy: copying address " << curr.value << end();

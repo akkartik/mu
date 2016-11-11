@@ -262,7 +262,7 @@ reagent next_recipe_reagent(const type_tree* curr) {
   if (!curr->left) return reagent("recipe:"+curr->name);
   reagent result;
   result.name = "recipe";
-  result.type = new type_tree(*curr->left);
+  result.type = new type_tree(*curr);
   return result;
 }
 

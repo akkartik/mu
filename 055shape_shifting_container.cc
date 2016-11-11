@@ -353,12 +353,41 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
   if (!callsite_type) return;  // error but it's already been raised above
   if (!element_type) return;
   if (!element_type->atom) {
+    if (element_type->right == NULL && is_type_ingredient(element_type->left)) {
+      int type_ingredient_index = to_type_ingredient_index(element_type->left);
+      if (corresponding(callsite_type, type_ingredient_index, is_final_type_ingredient(type_ingredient_index, container_info))->right) {
+        // replacing type ingredient at end of list, and replacement is a non-degenerate compound type -- (a b) but not (a)
+        replace_type_ingredient_at(type_ingredient_index, element_type, callsite_type, container_info, location_for_error_messages);
+        return;
+      }
+    }
     replace_type_ingredients(element_type->left, callsite_type, container_info, location_for_error_messages);
     replace_type_ingredients(element_type->right, callsite_type, container_info, location_for_error_messages);
     return;
   }
-  if (element_type->value < START_TYPE_INGREDIENTS) return;
-  const int type_ingredient_index = element_type->value-START_TYPE_INGREDIENTS;
+  if (is_type_ingredient(element_type))
+    replace_type_ingredient_at(to_type_ingredient_index(element_type), element_type, callsite_type, container_info, location_for_error_messages);
+}
+
+const type_tree* corresponding(const type_tree* type, int index, bool final) {
+  for (const type_tree* curr = type;  curr;  curr = curr->right, --index) {
+    assert_for_now(!curr->atom);
+    if (index == 0)
+      return final ? curr : curr->left;
+  }
+  assert_for_now(false);
+}
+
+bool is_type_ingredient(const type_tree* type) {
+  return type->atom && type->value >= START_TYPE_INGREDIENTS;
+}
+
+int to_type_ingredient_index(const type_tree* type) {
+  assert(type->atom);
+  return type->value-START_TYPE_INGREDIENTS;
+}
+
+void replace_type_ingredient_at(const int type_ingredient_index, type_tree* element_type, const type_tree* callsite_type, const type_info& container_info, const string& location_for_error_messages) {
   if (!has_nth_type(callsite_type, type_ingredient_index)) {
     raise << "illegal type " << names_to_string(callsite_type) << " seems to be missing a type ingredient or three" << location_for_error_messages << '\n' << end();
     return;
@@ -448,6 +477,15 @@ void test_replace_last_type_ingredient_with_multiple() {
   CHECK_EQ(to_string(element1), "{x: \"number\"}");
   reagent element2 = element_type(callsite.type, 1);
   CHECK_EQ(to_string(element2), "{y: (\"address\" \"array\" \"character\")}");
+}
+
+void test_replace_last_type_ingredient_inside_compound() {
+  run("container foo:_a:_b [\n"
+      "  {x: (bar _a (address _b))}\n"
+      "]\n");
+  reagent callsite("f:foo:number:array:character");
+  reagent element = element_type(callsite.type, 0);
+  CHECK_EQ(names_to_string_without_quotes(element.type), "(bar number (address array character))");
 }
 
 void test_replace_middle_type_ingredient_with_multiple() {

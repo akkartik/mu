@@ -177,6 +177,7 @@ bool concrete_type_names_strictly_match(const type_tree* to, const type_tree* fr
   if (!to) return !from;
   if (!from) return !to;
   if (to->atom && is_type_ingredient_name(to->name)) return true;  // type ingredient matches anything
+  if (!to->atom && to->right == NULL && to->left != NULL && to->left->atom && is_type_ingredient_name(to->left->name)) return true;
   if (from->atom && is_mu_address(to))
     return from->name == "literal" && rhs_reagent.name == "0";
   if (!from->atom && !to->atom)
@@ -328,6 +329,10 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     raise << "  (called from '" << to_original_string(call_instruction) << "')\n" << end();
     return;
   }
+  if (!exemplar_type->atom && exemplar_type->right == NULL && !refinement_type->atom && refinement_type->right != NULL) {
+    exemplar_type = exemplar_type->left;
+    assert_for_now(exemplar_type->atom);
+  }
   if (exemplar_type->atom) {
     if (is_type_ingredient_name(exemplar_type->name)) {
       const type_tree* curr_refinement_type = NULL;  // temporary heap allocation; must always be deleted before it goes out of scope
@@ -402,6 +407,10 @@ void replace_type_ingredients(reagent& x, const map<string, const type_tree*>& m
 void replace_type_ingredients(type_tree* type, const map<string, const type_tree*>& mappings) {
   if (!type) return;
   if (!type->atom) {
+    if (type->right == NULL && type->left != NULL && type->left->atom && contains_key(mappings, type->left->name) && !get(mappings, type->left->name)->atom && get(mappings, type->left->name)->right != NULL) {
+      *type = *get(mappings, type->left->name);
+      return;
+    }
     replace_type_ingredients(type->left, mappings);
     replace_type_ingredients(type->right, mappings);
     return;
@@ -656,6 +665,7 @@ void test_shape_shifting_new_ingredient_does_not_pollute_global_namespace() {
   CHECK(!element.type->right);
 }
 
+//: specializing a type ingredient with a compound type
 :(scenario shape_shifting_recipe_supports_compound_types)
 def main [
   1:&:point <- new point:type
@@ -669,6 +679,22 @@ def bar a:_t -> result:_t [
   result <- copy a
 ]
 +mem: storing 34 in location 5
+
+//: specializing a type ingredient with a compound type -- while *inside* another compound type
+:(scenario shape_shifting_recipe_supports_compound_types_2)
+container foo:_t [
+  value:_t
+]
+def bar x:&:foo:_t -> result:_t [
+  local-scope
+  load-ingredients
+  result <- get *x, value:offset
+]
+def main [
+  1:&:foo:&:point <- new {(foo address point): type}
+  2:&:point <- bar 1:&:foo:&:point
+]
+# no errors; call to 'bar' successfully specialized
 
 :(scenario shape_shifting_recipe_error)
 % Hide_errors = true;

@@ -121,9 +121,13 @@ type_ordinal skip_addresses(type_tree* type) {
   while (type && is_compound_type_starting_with(type, "address"))
     type = type->right;
   if (!type) return -1;  // error handled elsewhere
+  if (type->atom) return type->value;
   const type_tree* base_type = type;
   // Update base_type in skip_addresses
-  return base_type->value;
+  if (base_type->atom)
+    return base_type->value;
+  assert(base_type->left->atom);
+  return base_type->left->value;
 }
 
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {

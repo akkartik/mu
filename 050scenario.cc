@@ -392,7 +392,7 @@ void check_memory(const string& s) {
 
 void check_type(const string& lhs, istream& in) {
   reagent x(lhs);
-  if (is_mu_array(x.type) && is_mu_character(x.type->right)) {
+  if (is_mu_array(x.type) && is_mu_character(array_element(x.type))) {
     x.set_value(to_integer(x.name));
     skip_whitespace_and_comments(in);
     string _assign = next_word(in);

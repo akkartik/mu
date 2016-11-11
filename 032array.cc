@@ -98,6 +98,10 @@ def main [
 ]
 +app: foo: 3 14 15 16
 
+:(before "End types_coercible Special-cases")
+if (is_mu_array(from) && is_mu_array(to))
+  return types_strictly_match(array_element(from.type), array_element(to.type));
+
 :(before "End size_of(reagent r) Special-cases")
 if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordinal, "array")) {
   if (!r.type->right) {
@@ -111,10 +115,10 @@ if (!r.type->atom && r.type->left->atom && r.type->left->value == get(Type_ordin
 if (type->left->value == get(Type_ordinal, "array")) return static_array_length(type);
 :(code)
 int static_array_length(const type_tree* type) {
-  if (!type->atom && !type->right->atom && type->right->right->atom  // exactly 3 types
-      && is_integer(type->right->right->name)) {  // third 'type' is a number
+  if (!type->atom && type->right && !type->right->atom && type->right->right && !type->right->right->atom && !type->right->right->right  // exactly 3 types
+      && type->right->right->left && type->right->right->left->atom && is_integer(type->right->right->left->name)) {  // third 'type' is a number
     // get size from type
-    return to_integer(type->right->right->name);
+    return to_integer(type->right->right->left->name);
   }
   cerr << to_string(type) << '\n';
   assert(false);
@@ -159,7 +163,7 @@ container foo [
       raise << "container '" << name << "' doesn't specify type of array elements for '" << info.elements.back().name << "'\n" << end();
       continue;
     }
-    if (type->right->atom) {  // array has no length
+    if (!type->right->right || !is_integer(type->right->right->left->name)) {  // array has no length
       raise << "container '" << name << "' cannot determine size of element '" << info.elements.back().name << "'\n" << end();
       continue;
     }
@@ -365,20 +369,29 @@ type_tree* copy_array_element(const type_tree* type) {
 
 type_tree* array_element(const type_tree* type) {
   assert(type->right);
-  // hack: don't require parens for either array:num:3 array:address:num
-  if (!type->right->atom && type->right->right && type->right->right->atom && is_integer(type->right->right->name))
+  if (type->right->atom) {
+    return type->right;
+  }
+  else if (!type->right->right) {
     return type->right->left;
+  }
+  // hack: support array:num:3 without requiring extra parens
+  else if (type->right->right->left && type->right->right->left->atom && is_integer(type->right->right->left->name)) {
+    assert(!type->right->right->right);
+    return type->right->left;
+  }
   return type->right;
 }
 
 int array_length(const reagent& x) {
   // x should already be canonized.
-  if (!x.type->atom && !x.type->right->atom && x.type->right->right->atom  // exactly 3 types
-      && is_integer(x.type->right->right->name)) {  // third 'type' is a number
+  // hack: look for length in type
+  if (!x.type->atom && x.type->right && !x.type->right->atom && x.type->right->right && !x.type->right->right->atom && !x.type->right->right->right  // exactly 3 types
+      && x.type->right->right->left && x.type->right->right->left->atom && is_integer(x.type->right->right->left->name)) {  // third 'type' is a number
     // get size from type
-    return to_integer(x.type->right->right->name);
+    return to_integer(x.type->right->right->left->name);
   }
-  // we should never get here at transform time
+  // this should never happen at transform time
   return get_or_insert(Memory, x.value);
 }
 
@@ -390,6 +403,11 @@ void test_array_length_compound() {
   put(Memory, 4, 16);
   reagent x("1:array:address:num");  // 3 types, but not a static array
   populate_value(x);
+  CHECK_EQ(array_length(x), 3);
+}
+
+void test_array_length_static() {
+  reagent x("1:array:num:3");
   CHECK_EQ(array_length(x), 3);
 }
 

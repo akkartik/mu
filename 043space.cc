@@ -198,8 +198,8 @@ if (x.name == "number-of-locals") {
 
 :(scenario local_scope)
 def main [
-  1:& <- foo
-  2:& <- foo
+  1:&:@:location <- foo
+  2:&:@:location <- foo
   3:bool <- equal 1:&, 2:&
 ]
 def foo [

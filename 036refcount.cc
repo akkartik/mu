@@ -52,7 +52,7 @@ void decrement_any_refcounts(const reagent& canonized_x) {
   if (is_mu_address(canonized_x)) {
     assert(canonized_x.value);
     assert(!canonized_x.metadata.size);
-    decrement_refcount(get_or_insert(Memory, canonized_x.value), canonized_x.type->right, payload_size(canonized_x));
+    decrement_refcount(get_or_insert(Memory, canonized_x.value), payload_type(canonized_x.type), payload_size(canonized_x));
   }
   // End Decrement Refcounts(canonized_x)
 }
@@ -316,7 +316,7 @@ void compute_container_address_offsets(const type_tree* type, const string& loca
       return;
     }
     if (type->left->name == "address")
-      compute_container_address_offsets(type->right, location_for_error_messages);
+      compute_container_address_offsets(payload_type(type), location_for_error_messages);
     else if (type->left->name == "array")
       compute_container_address_offsets(array_element(type), location_for_error_messages);
     // End compute_container_address_offsets Non-atom Special-cases
@@ -352,7 +352,7 @@ void compute_exclusive_container_address_offsets(const type_info& exclusive_cont
 
 void append_addresses(int base_offset, const type_tree* type, map<set<tag_condition_info>, set<address_element_info> >& out, const set<tag_condition_info>& key, const string& location_for_error_messages) {
   if (is_mu_address(type)) {
-    get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*type->right)));
+    get_or_insert(out, key).insert(address_element_info(base_offset, new type_tree(*payload_type(type))));
     return;
   }
   const type_tree* base_type = type;
@@ -365,7 +365,7 @@ void append_addresses(int base_offset, const type_tree* type, map<set<tag_condit
       // Compute Container Address Offset(element)
       if (is_mu_address(element)) {
         trace(9993, "transform") << "address at offset " << curr_offset << end();
-        get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*element.type->right)));
+        get_or_insert(out, key).insert(address_element_info(curr_offset, new type_tree(*payload_type(element.type))));
         ++curr_offset;
       }
       else if (is_mu_array(element)) {

@@ -157,7 +157,11 @@ if (!contains_key(Type, base_type->value)) {
 type_info t = get(Type, base_type->value);
 if (t.kind == CONTAINER) {
   // Compute size_of Container
-  if (!contains_key(Container_metadata, type)) return 1;  // error raised elsewhere
+  if (!contains_key(Container_metadata, type)) {
+    raise << "unknown size for container type '" << to_string(type) << "'\n" << end();
+//?     DUMP("");
+    return 0;
+  }
   return get(Container_metadata, type).size;
 }
 
@@ -203,7 +207,7 @@ void compute_container_sizes(const type_tree* type, set<type_tree>& pending_meta
       return;
     }
     if (type->left->name == "address")
-      compute_container_sizes(type->right, pending_metadata, location_for_error_messages);
+      compute_container_sizes(payload_type(type), pending_metadata, location_for_error_messages);
     // End compute_container_sizes Non-atom Special-cases
     return;
   }
@@ -229,6 +233,14 @@ void compute_container_sizes(const type_info& container_info, const type_tree* f
     metadata.size += size_of(element.type);
   }
   Container_metadata.push_back(pair<type_tree*, container_metadata>(new type_tree(*full_type), metadata));
+}
+
+const type_tree* payload_type(const type_tree* type) {
+  assert(!type->atom);
+  const type_tree* result = type->right;
+  assert(!result->atom);
+  if (!result->right) return result->left;
+  return result;
 }
 
 container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {

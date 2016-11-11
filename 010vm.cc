@@ -301,12 +301,34 @@ void slurp_properties(istream& in, vector<pair<string, string_tree*> >& out) {
 string_tree* parse_property_list(istream& in) {
   skip_whitespace_but_not_newline(in);
   if (!has_data(in)) return NULL;
-  string_tree* left = new string_tree(slurp_until(in, ':'));
-  if (!has_data(in)) return left;
-  string_tree* right = parse_property_list(in);
-  return new string_tree(left, right);
+  string_tree* first = new string_tree(slurp_until(in, ':'));
+  if (!has_data(in)) return first;
+  string_tree* rest = parse_property_list(in);
+  if (!has_data(in) && rest->atom)
+    return new string_tree(first, new string_tree(rest, NULL));
+  return new string_tree(first, rest);
+}
+:(before "End Unit Tests")
+void test_parse_property_list_atom() {
+  istringstream in("a");
+  string_tree* x = parse_property_list(in);
+  CHECK(x->atom);
+  delete x;
+}
+void test_parse_property_list_list() {
+  istringstream in("a:b");
+  string_tree* x = parse_property_list(in);
+  CHECK(!x->atom);
+  CHECK(x->left->atom);
+  CHECK_EQ(x->left->value, "a");
+  CHECK(!x->right->atom);
+  CHECK(x->right->left->atom);
+  CHECK_EQ(x->right->left->value, "b");
+  CHECK(x->right->right == NULL);
+  delete x;
 }
 
+:(code)
 type_tree* new_type_tree(const string_tree* properties) {
   if (!properties) return NULL;
   if (properties->atom) {
@@ -375,9 +397,10 @@ bool type_tree::operator<(const type_tree& other) const {
   if (!left && other.left) return true;
   if (right && !other.right) return false;
   if (!right && other.right) return true;
+  // now if either pointer is unequal neither side can be null
   // if one side is equal that's easy
-  if (left == other.left || *left == *other.left) return *right < *other.right;
-  if (right == other.right || *right == *other.right) return *left < *other.left;
+  if (left == other.left || *left == *other.left) return right && *right < *other.right;
+  if (right == other.right || *right == *other.right) return left && *left < *other.left;
   // if the two sides criss-cross, pick the side with the smaller lhs
   if ((left == other.right || *left == *other.right)
       && (right == other.left || *right == *other.left))
@@ -423,15 +446,11 @@ void test_compare_list_with_extra_element() {
 }
 void test_compare_list_with_smaller_left_but_larger_right() {
   reagent a("a:address:number"), b("b:character:array");
-  assert(a.type->left->atom && a.type->right->atom);
-  assert(b.type->left->atom && b.type->right->atom);
   CHECK(*a.type < *b.type);
   CHECK(!(*b.type < *a.type));
 }
 void test_compare_list_with_smaller_left_but_larger_right_identical_types() {
   reagent a("a:address:boolean"), b("b:boolean:address");
-  assert(a.type->left->atom && a.type->right->atom);
-  assert(b.type->left->atom && b.type->right->atom);
   CHECK(*a.type < *b.type);
   CHECK(!(*b.type < *a.type));
 }
@@ -658,8 +677,11 @@ void dump(const string_tree* x, ostream& out) {
     if (curr->right) out << ' ';
     curr = curr->right;
   }
-  // final right
-  dump(curr, out);
+  // check for dotted list; should never happen
+  if (curr) {
+    out << ". ";
+    dump(curr, out);
+  }
   out << ')';
 }
 
@@ -684,8 +706,11 @@ void dump(const type_tree* x, ostream& out) {
     if (curr->right) out << ' ';
     curr = curr->right;
   }
-  // final right
-  dump(curr, out);
+  // check for dotted list; should never happen
+  if (curr) {
+    out << ". ";
+    dump(curr, out);
+  }
   out << ')';
 }
 
@@ -717,8 +742,11 @@ void dump_names(const type_tree* x, ostream& out) {
     if (curr->right) out << ' ';
     curr = curr->right;
   }
-  // final right
-  dump_names(curr, out);
+  // check for dotted list; should never happen
+  if (curr) {
+    out << ". ";
+    dump_names(curr, out);
+  }
   out << ')';
 }
 
@@ -743,8 +771,11 @@ void dump_names_without_quotes(const type_tree* x, ostream& out) {
     if (curr->right) out << ' ';
     curr = curr->right;
   }
-  // final right
-  dump_names_without_quotes(curr, out);
+  // check for dotted list; should never happen
+  if (curr) {
+    out << ". ";
+    dump_names_without_quotes(curr, out);
+  }
   out << ')';
 }
 

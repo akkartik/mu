@@ -176,6 +176,9 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 
 // Errors are a special layer.
 #define raise  (!Trace_stream ? (tb_shutdown(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+// If we aren't yet sure how to deal with some corner case, use assert_for_now
+// to indicate that it isn't an inviolable invariant.
+#define assert_for_now assert
 
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.

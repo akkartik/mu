@@ -102,6 +102,7 @@ bool types_coercible(const reagent& to, const reagent& from) {
   if (is_mu_address(from) && is_mu_number(to)) return true;
   if (is_mu_boolean(from) && is_mu_number(to)) return true;
   if (is_mu_number(from) && is_mu_boolean(to)) return true;
+  // End types_coercible Special-cases
   return false;
 }
 
@@ -136,14 +137,12 @@ bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   return types_strictly_match(to.type, from.type);
 }
 
-// two types match if the second begins like the first
-// (trees perform the same check recursively on each subtree)
 bool types_strictly_match(const type_tree* to, const type_tree* from) {
   if (from == to) return true;
+  if (!to) return false;
   if (!from) return to->atom && to->value == 0;
-  if (to->atom && !from->atom) return from->left->atom && from->left->name == to->name;
+  if (from->atom != to->atom) return false;
   if (from->atom) {
-    if (!to->atom) return false;
     if (from->value == -1) return from->name == to->name;
     return from->value == to->value;
   }

@@ -210,9 +210,17 @@ void drop_from_type(reagent& r, string expected_type) {
     raise << "can't drop2 " << expected_type << " from '" << to_string(r) << "'\n" << end();
     return;
   }
+  // r.type = r.type->right
   type_tree* tmp = r.type;
   r.type = tmp->right;
   tmp->right = NULL;
+  delete tmp;
+  // if (!r.type->right) r.type = r.type->left
+  assert(!r.type->atom);
+  if (r.type->right) return;
+  tmp = r.type;
+  r.type = tmp->left;
+  tmp->left = NULL;
   delete tmp;
 }
 
@@ -222,6 +230,13 @@ def main [
   1:bool <- new num:type
 ]
 +error: main: product of 'new' has incorrect type: '1:bool <- new num:type'
+
+:(scenario new_discerns_singleton_list_from_atom_container)
+% Hide_errors = true;
+def main [
+  1:address:num/raw <- new {(num): type}  # should be '{num: type}'
+]
++error: main: product of 'new' has incorrect type: '1:address:num/raw <- new {(num): type}'
 
 :(scenario new_with_type_abbreviation)
 def main [

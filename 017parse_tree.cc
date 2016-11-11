@@ -4,9 +4,8 @@
 // (address to array of charaters) to (list of numbers)".
 //
 // Type trees aren't as general as s-expressions even if they look like them:
-// the first element of a type tree is always an atom, and left and right
-// pointers of non-atoms are never NULL. All type trees are 'dotted' in lisp
-// parlance.
+// the first element of a type tree is always an atom, and it can never be
+// dotted (right->right->right->...->right is always NULL).
 //
 // For now you can't use the simpler 'colon-based' representation inside type
 // trees. Once you start typing parens, keep on typing parens.
@@ -79,19 +78,6 @@ string_tree* parse_string_tree(istream& in) {
   }
   in.get();  // skip ')'
   assert(*curr == NULL);
-  if (result == NULL) return result;
-  if (result->right == NULL) return result;
-  // standardize the final element to always be on the right if it's an atom
-  // (a b c) => (a b . c) in s-expression parlance
-  string_tree* tmp = result;
-  while (tmp->right->right) tmp = tmp->right;
-  assert(!tmp->right->atom);
-  if (!tmp->right->left->atom) return result;
-  string_tree* tmp2 = tmp->right;
-  tmp->right = tmp2->left;
-  tmp2->left = NULL;
-  assert(tmp2->right == NULL);
-  delete tmp2;
   return result;
 }
 
