@@ -367,7 +367,7 @@ void replace_type_ingredients(type_tree* element_type, const type_tree* callsite
 }
 
 const type_tree* nth_type_ingredient(const type_tree* callsite_type, int type_ingredient_index, const type_info& container_info) {
-  bool final = final_type_ingredient(type_ingredient_index, container_info);
+  bool final = is_final_type_ingredient(type_ingredient_index, container_info);
   const type_tree* curr = callsite_type;
   for (int i = 0;  i < type_ingredient_index;  ++i) {
     assert(curr);
@@ -382,7 +382,7 @@ const type_tree* nth_type_ingredient(const type_tree* callsite_type, int type_in
   return curr;
 }
 
-bool final_type_ingredient(int type_ingredient_index, const type_info& container_info) {
+bool is_final_type_ingredient(int type_ingredient_index, const type_info& container_info) {
   for (map<string, type_ordinal>::const_iterator p = container_info.type_ingredient_names.begin();
        p != container_info.type_ingredient_names.end();
        ++p) {
