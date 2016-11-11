@@ -61,8 +61,8 @@ struct reagent {
   reagent() :type(NULL), value(0), initialized(false) {}
   ~reagent();
   void clear();
-  reagent(const reagent& old);
-  reagent& operator=(const reagent& old);
+  reagent(const reagent& original);
+  reagent& operator=(const reagent& original);
   void set_value(double v) { value = v;  initialized = true; }
 };
 
@@ -76,13 +76,13 @@ struct type_tree {
   type_tree* left;  // only if !atom
   type_tree* right;  // only if !atom
   ~type_tree();
-  type_tree(const type_tree& old);
+  type_tree(const type_tree& original);
   // atomic type ordinal
   explicit type_tree(string name);
   type_tree(string name, type_ordinal v) :atom(true), name(name), value(v), left(NULL), right(NULL) {}
   // tree of type ordinals
   type_tree(type_tree* l, type_tree* r) :atom(false), value(0), left(l), right(r) {}
-  type_tree& operator=(const type_tree& old);
+  type_tree& operator=(const type_tree& original);
   bool operator==(const type_tree& other) const;
   bool operator!=(const type_tree& other) const { return !operator==(other); }
   bool operator<(const type_tree& other) const;
@@ -95,7 +95,7 @@ struct string_tree {
   string_tree* left;  // only if !atom
   string_tree* right;  // only if !atom
   ~string_tree();
-  string_tree(const string_tree& old);
+  string_tree(const string_tree& original);
   // atomic string
   explicit string_tree(string v) :atom(true), value(v), left(NULL), right(NULL) {}
   // tree of strings
@@ -363,20 +363,20 @@ reagent::reagent(const reagent& other) {
   // End reagent Copy Constructor
 }
 
-type_tree::type_tree(const type_tree& old) {
-  atom = old.atom;
-  name = old.name;
-  value = old.value;
-  left = old.left ? new type_tree(*old.left) : NULL;
-  right = old.right ? new type_tree(*old.right) : NULL;
+type_tree::type_tree(const type_tree& original) {
+  atom = original.atom;
+  name = original.name;
+  value = original.value;
+  left = original.left ? new type_tree(*original.left) : NULL;
+  right = original.right ? new type_tree(*original.right) : NULL;
 }
 
-type_tree& type_tree::operator=(const type_tree& old) {
-  atom = old.atom;
-  name = old.name;
-  value = old.value;
-  left = old.left ? new type_tree(*old.left) : NULL;
-  right = old.right ? new type_tree(*old.right) : NULL;
+type_tree& type_tree::operator=(const type_tree& original) {
+  atom = original.atom;
+  name = original.name;
+  value = original.value;
+  left = original.left ? new type_tree(*original.left) : NULL;
+  right = original.right ? new type_tree(*original.right) : NULL;
   return *this;
 }
 
@@ -456,11 +456,11 @@ void test_compare_list_with_smaller_left_but_larger_right_identical_types() {
 }
 
 :(code)
-string_tree::string_tree(const string_tree& old) {
-  atom = old.atom;
-  value = old.value;
-  left = old.left ? new string_tree(*old.left) : NULL;
-  right = old.right ? new string_tree(*old.right) : NULL;
+string_tree::string_tree(const string_tree& original) {
+  atom = original.atom;
+  value = original.value;
+  left = original.left ? new string_tree(*original.left) : NULL;
+  right = original.right ? new string_tree(*original.right) : NULL;
 }
 
 reagent& reagent::operator=(const reagent& other) {
