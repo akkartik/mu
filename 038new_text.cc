@@ -77,6 +77,11 @@ if (is_mu_text(r)) {
   return read_mu_text(data.at(0));
 }
 
+:(before "End $print Special-cases")
+else if (is_mu_text(current_instruction().ingredients.at(i))) {
+  cout << read_mu_text(ingredients.at(i).at(0));
+}
+
 :(scenario unicode_string)
 def main [
   1:text <- new [♠]
