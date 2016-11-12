@@ -71,7 +71,7 @@ def main [
 ]
 +app: foo: abc
 
-:(before "End print Special-cases(r, data)")
+:(before "End inspect Special-cases(r, data)")
 if (is_mu_text(r)) {
   assert(scalar(data));
   return read_mu_text(data.at(0));

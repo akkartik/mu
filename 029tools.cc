@@ -33,7 +33,7 @@ case TRACE: {
   ostringstream out;
   for (int i = 2;  i < SIZE(current_instruction().ingredients);  ++i) {
     if (i > 2) out << ' ';
-    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+    out << inspect(current_instruction().ingredients.at(i), ingredients.at(i));
   }
   trace(depth, label) << out.str() << end();
   break;
@@ -54,7 +54,7 @@ case STASH: {
   ostringstream out;
   for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
     if (i) out << ' ';
-    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+    out << inspect(current_instruction().ingredients.at(i), ingredients.at(i));
   }
   trace(2, "app") << out.str() << end();
   break;
@@ -80,10 +80,10 @@ def main [
 +app: foo: 34
 
 :(code)
-string print_mu(const reagent& r, const vector<double>& data) {
+string inspect(const reagent& r, const vector<double>& data) {
   if (is_literal(r))
     return r.name;
-  // End print Special-cases(r, data)
+  // End inspect Special-cases(r, data)
   ostringstream out;
   for (long long i = 0;  i < SIZE(data);  ++i) {
     if (i) out << ' ';
@@ -331,7 +331,7 @@ case _LOG: {
 case _LOG: {
   ostringstream out;
   for (int i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
-    out << print_mu(current_instruction().ingredients.at(i), ingredients.at(i));
+    out << inspect(current_instruction().ingredients.at(i), ingredients.at(i));
   }
   LOG << out.str() << '\n';
   break;
