@@ -1307,3 +1307,86 @@ scenario copy-range-out-of-bounds-2 [
     1:array:character <- []
   ]
 ]
+
+def parse-whole-number in:text -> out:num, error?:bool [
+  local-scope
+  load-ingredients
+  out:num <- copy 0
+  result:num <- copy 0  # temporary location
+  i:num <- copy 0
+  len:num <- length *in
+  {
+    done?:bool <- greater-or-equal i, len
+    break-if done?
+    c:char <- index *in, i
+    x:num <- character-to-code c
+    digit:num, error?:bool <- character-code-to-digit x
+    reply-if error?
+    result <- multiply result, 10
+    result <- add result, digit
+    i <- add i, 1
+    loop
+  }
+  # no error; all digits were valid
+  out <- copy result
+]
+
+# (contributed by Ella Couch)
+recipe character-code-to-digit character-code:number -> result:number error?:boolean [
+  local-scope
+  load-ingredients
+  result <- copy 0
+  error? <- lesser-than character-code 48  # '0'
+  reply-if error?
+  error? <- greater-than character-code 57  # '9'
+  reply-if error?
+  result <- subtract character-code, 48
+]
+
+scenario character-code-to-digit-contain-only-digit [
+  local-scope
+  a:number <- copy 48  # character code for '0'
+  run [
+    10:number/raw, 11:boolean/raw <- character-code-to-digit a
+  ]
+  memory-should-contain [
+    10 <- 0
+    11 <- 0  # no error
+  ]
+]
+
+scenario character-code-to-digit-contain-only-digit-2 [
+  local-scope
+  a:number <- copy 57  # character code for '9'
+  run [
+    1:number/raw, 2:boolean/raw <- character-code-to-digit a
+  ]
+  memory-should-contain [
+    1 <- 9
+    2 <- 0  # no error
+  ]
+]
+
+scenario character-code-to-digit-handles-codes-lower-than-zero [
+  local-scope
+  a:number <- copy 47
+  run [
+    10:number/raw, 11:boolean/raw <- character-code-to-digit a
+  ]
+  memory-should-contain [
+    10 <- 0
+    11 <- 1  # error
+  ]
+]
+
+scenario character-code-to-digit-handles-codes-larger-than-nine [
+  local-scope
+  a:number <- copy 58
+  run [
+    10:number/raw, 11:boolean/raw <- character-code-to-digit a
+  ]
+  memory-should-contain [
+    10 <- 0
+    11 <- 1  # error
+  ]
+]
