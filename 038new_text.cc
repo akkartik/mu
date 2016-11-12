@@ -137,3 +137,33 @@ string read_mu_text(int address) {
   }
   return tmp.str();
 }
+
+//:: 'cheating' by using the host system
+
+:(before "End Primitive Recipe Declarations")
+_READ,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "$read", _READ);
+:(before "End Primitive Recipe Checks")
+case _READ: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _READ: {
+  skip_whitespace(cin);
+  string result;
+  if (has_data(cin))
+    cin >> result;
+  products.resize(1);
+  products.at(0).push_back(new_mu_text(result));
+  break;
+}
+
+:(code)
+void skip_whitespace(istream& in) {
+  while (true) {
+    if (!has_data(in)) break;
+    if (isspace(in.peek())) in.get();
+    else break;
+  }
+}

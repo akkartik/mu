@@ -244,11 +244,3 @@ int size_of_resources() {
   delete type;
   return result;
 }
-
-void skip_whitespace(istream& in) {
-  while (true) {
-    if (!has_data(in)) break;
-    if (isspace(in.peek())) in.get();
-    else break;
-  }
-}
