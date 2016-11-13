@@ -1332,13 +1332,13 @@ def parse-whole-number in:text -> out:num, error?:bool [
 ]
 
 # (contributed by Ella Couch)
-recipe character-code-to-digit character-code:number -> result:number error?:boolean [
+recipe character-code-to-digit character-code:number -> result:number, error?:boolean [
   local-scope
   load-ingredients
   result <- copy 0
-  error? <- lesser-than character-code 48  # '0'
+  error? <- lesser-than character-code, 48  # '0'
   reply-if error?
-  error? <- greater-than character-code 57  # '9'
+  error? <- greater-than character-code, 57  # '9'
   reply-if error?
   result <- subtract character-code, 48
 ]
