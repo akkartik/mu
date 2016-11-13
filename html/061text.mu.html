@@ -1341,6 +1341,89 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     1:array:character <span class="Special">&lt;-</span> <span class="Constant">[]</span>
   ]
 ]
+
+<span class="muRecipe">def</span> parse-whole-number in:text<span class="muRecipe"> -&gt; </span>out:num, error?:bool [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  out:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  result:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>  <span class="Comment"># temporary location</span>
+  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  len:num <span class="Special">&lt;-</span> length *in
+  <span class="Delimiter">{</span>
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    c:char <span class="Special">&lt;-</span> index *in, i
+    x:num <span class="Special">&lt;-</span> character-to-code c
+    digit:num, error?:bool <span class="Special">&lt;-</span> character-code-to-digit x
+    <span class="muControl">reply-if</span> error?
+    result <span class="Special">&lt;-</span> multiply result,<span class="Constant"> 10</span>
+    result <span class="Special">&lt;-</span> add result, digit
+    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  <span class="Comment"># no error; all digits were valid</span>
+  out <span class="Special">&lt;-</span> copy result
+]
+
+<span class="Comment"># (contributed by Ella Couch)</span>
+<span class="muRecipe">recipe</span> character-code-to-digit character-code:number<span class="muRecipe"> -&gt; </span>result:number, error?:boolean [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  result <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  error? <span class="Special">&lt;-</span> lesser-than character-code,<span class="Constant"> 48</span>  <span class="Comment"># '0'</span>
+  <span class="muControl">reply-if</span> error?
+  error? <span class="Special">&lt;-</span> greater-than character-code,<span class="Constant"> 57</span>  <span class="Comment"># '9'</span>
+  <span class="muControl">reply-if</span> error?
+  result <span class="Special">&lt;-</span> subtract character-code,<span class="Constant"> 48</span>
+]
+
+<span class="muScenario">scenario</span> character-code-to-digit-contain-only-digit [
+  <span class="Constant">local-scope</span>
+  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 48</span>  <span class="Comment"># character code for '0'</span>
+  run [
+    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+  ]
+  memory-should-contain [
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no error</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> character-code-to-digit-contain-only-digit-2 [
+  <span class="Constant">local-scope</span>
+  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 57</span>  <span class="Comment"># character code for '9'</span>
+  run [
+    1:number/<span class="Special">raw</span>, 2:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+  ]
+  memory-should-contain [
+   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 9</span>
+   <span class="Constant"> 2</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no error</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> character-code-to-digit-handles-codes-lower-than-zero [
+  <span class="Constant">local-scope</span>
+  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 47</span>
+  run [
+    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+  ]
+  memory-should-contain [
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># error</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> character-code-to-digit-handles-codes-larger-than-nine [
+  <span class="Constant">local-scope</span>
+  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 58</span>
+  run [
+    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+  ]
+  memory-should-contain [
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># error</span>
+  ]
+]
 </pre>
 </body>
 </html>

@@ -16,6 +16,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .CommentedCode { color: #6c6c6c; }
 .muRecipe { color: #ff8700; }
+.SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
@@ -106,10 +107,15 @@ put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</
 ]
 <span class="traceContains">+app: foo: abc</span>
 
-<span class="Delimiter">:(before &quot;End print Special-cases(r, data)&quot;)</span>
+<span class="Delimiter">:(before &quot;End inspect Special-cases(r, data)&quot;)</span>
 <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
   <span class="Identifier">return</span> read_mu_text<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(before &quot;End $print Special-cases&quot;)</span>
+<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+  cout &lt;&lt; read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
 <span class="Delimiter">:(scenario unicode_string)</span>
@@ -171,6 +177,36 @@ string read_mu_text<span class="Delimiter">(</span><span class="Normal">int</spa
     tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
   <span class="Delimiter">}</span>
   <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<span class="Delimiter">}</span>
+
+<span class="SalientComment">//:: 'cheating' by using the host system</span>
+
+<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+_READ<span class="Delimiter">,</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$read&quot;</span><span class="Delimiter">,</span> _READ<span class="Delimiter">);</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
+  skip_whitespace<span class="Delimiter">(</span>cin<span class="Delimiter">);</span>
+  string result<span class="Delimiter">;</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>cin<span class="Delimiter">))</span>
+    cin &gt;&gt; result<span class="Delimiter">;</span>
+  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
+  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span class="Delimiter">}</span>
+
+<span class="Delimiter">:(code)</span>
+<span class="Normal">void</span> skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 </pre>
 </body>
