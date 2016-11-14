@@ -1311,7 +1311,7 @@ scenario copy-range-out-of-bounds-2 [
 def parse-whole-number in:text -> out:num, error?:bool [
   local-scope
   load-ingredients
-  out:num <- copy 0
+  out <- copy 0
   result:num <- copy 0  # temporary location
   i:num <- copy 0
   len:num <- length *in
