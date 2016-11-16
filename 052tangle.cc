@@ -452,13 +452,13 @@ void test_new_fragment_after_tangle() {
        "  1:num/raw <- copy 34\n"
        "]\n");
   transform_all();
-  CHECK_TRACE_DOESNT_CONTAIN_ERROR();
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS();
   Hide_errors = true;
   // try to tangle into recipe foo after transform
   load("before <label> [\n"
        "  2:num/raw <- copy 35\n"
        "]\n");
-  CHECK_TRACE_CONTAINS_ERROR();
+  CHECK_TRACE_CONTAINS_ERRORS();
 }
 
 :(before "End before Command Handler")

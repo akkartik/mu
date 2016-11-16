@@ -177,7 +177,7 @@ if (argc > 1) {
 transform_all();
 //? DUMP("");
 //? exit(0);
-if (Trace_errors) return 1;
+if (trace_contains_errors()) return 1;
 save_snapshots();
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
@@ -374,7 +374,7 @@ void run(const string& form) {
   vector<recipe_ordinal> tmp = load(form);
   transform_all();
   if (tmp.empty()) return;
-  if (trace_count("error") > 0) return;
+  if (trace_contains_errors()) return;
   // if a test defines main, it probably wants to start there regardless of
   // definition order
   if (contains_key(Recipe, get(Recipe_ordinal, "main")))

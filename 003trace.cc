@@ -183,8 +183,12 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.
 :(before "End Test Teardown")
-if (Passed && !Hide_errors && trace_count("error") > 0) {
+if (Passed && !Hide_errors && trace_contains_errors()) {
   Passed = false;
+}
+:(code)
+bool trace_contains_errors() {
+  return Trace_errors > 0 || trace_count("error") > 0;
 }
 
 :(before "End Types")
@@ -223,9 +227,9 @@ START_TRACING_UNTIL_END_OF_SCOPE
 :(before "End Includes")
 #define CHECK_TRACE_CONTENTS(...)  check_trace_contents(__FUNCTION__, __FILE__, __LINE__, __VA_ARGS__)
 
-#define CHECK_TRACE_CONTAINS_ERROR()  CHECK(trace_count("error") > 0)
-#define CHECK_TRACE_DOESNT_CONTAIN_ERROR() \
-  if (Passed && trace_count("error") > 0) { \
+#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())
+#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \
+  if (Passed && trace_contains_errors()) { \
     cerr << "\nF - " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ << "): unexpected errors\n"; \
     DUMP("error"); \
     Passed = false; \

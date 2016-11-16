@@ -779,12 +779,12 @@ void test_error_on_transform_all_between_container_definition_and_extension() {
       "]\n");
   // try to extend the container after transform
   transform_all();
-  CHECK_TRACE_DOESNT_CONTAIN_ERROR();
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS();
   Hide_errors = true;
   run("container foo [\n"
       "  b:num\n"
       "]\n");
-  CHECK_TRACE_CONTAINS_ERROR();
+  CHECK_TRACE_CONTAINS_ERRORS();
 }
 
 //:: Allow container definitions anywhere in the codebase, but complain if you

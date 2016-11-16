@@ -190,7 +190,7 @@ void run_mu_scenario(const scenario& s) {
   transform_all();
   run(tmp.front());
   // End Mu Test Teardown
-  if (!Hide_errors && trace_count("error") > 0 && !Scenario_testing_scenario)
+  if (!Hide_errors && trace_contains_errors() && !Scenario_testing_scenario)
     Passed = false;
   if (not_already_inside_test && Trace_stream) {
     teardown();
@@ -242,7 +242,7 @@ void test_maybe_make_raw() {
   bind_special_scenario_names(tmp.at(0));
   transform_all();
   run(tmp.at(0));
-  CHECK_EQ(trace_count("error"), 0);
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS();
 }
 
 //: Watch out for redefinitions of scenario routines. We should never ever be
