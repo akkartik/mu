@@ -57,6 +57,10 @@ scenario foo [
 struct scenario {
   string name;
   string to_run;
+  void clear() {
+    name.clear();
+    to_run.clear();
+  }
 };
 
 :(before "End Globals")
@@ -67,7 +71,9 @@ vector<scenario> Scenarios;
 
 :(before "End Command Handlers")
 else if (command == "scenario") {
-  Scenarios.push_back(parse_scenario(in));
+  scenario result = parse_scenario(in);
+  if (!result.name.empty())
+    Scenarios.push_back(result);
 }
 else if (command == "pending-scenario") {
   // for temporary use only
@@ -92,9 +98,17 @@ scenario parse_scenario(istream& in) {
   // inside comments
   result.to_run = slurp_quoted(in);
   // delete [] delimiters
-  assert(starts_with(result.to_run, "["));
+  if (!starts_with(result.to_run, "[")) {
+    raise << "scenario " << result.name << " should start with '['\n" << end();
+    result.clear();
+    return result;
+  }
   result.to_run.erase(0, 1);
-  assert(result.to_run.at(SIZE(result.to_run)-1) == ']');
+  if (result.to_run.at(SIZE(result.to_run)-1) != ']') {
+    raise << "scenario " << result.name << " has an unbalanced '['\n" << end();
+    result.clear();
+    return result;
+  }
   result.to_run.erase(SIZE(result.to_run)-1);
   return result;
 }
@@ -259,6 +273,15 @@ def scenario-foo [
   1:num <- copy 35
 ]
 +error: redefining recipe scenario-foo
+
+:(scenario scenario_containing_parse_error)
+% Hide_errors = true;
+scenario foo [
+  memory-should-contain [
+    1 <- 0
+  # missing ']'
+]
+# no crash
 
 :(scenario scenario_containing_transform_error)
 % Hide_errors = true;
