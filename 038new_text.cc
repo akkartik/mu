@@ -62,6 +62,15 @@ int new_mu_text(const string& contents) {
   return result;
 }
 
+//: a new kind of typo
+
+:(scenario string_literal_without_instruction)
+% Hide_errors = true;
+def main [
+  [abc]
+]
++error: main: instruction '[abc]' has no recipe
+
 //: stash recognizes strings
 
 :(scenario stash_string)
