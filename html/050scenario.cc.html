@@ -96,6 +96,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Normal">struct</span> scenario <span class="Delimiter">{</span>
   string name<span class="Delimiter">;</span>
   string to_run<span class="Delimiter">;</span>
+  <span class="Normal">void</span> clear<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+    name<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+    to_run<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+  <span class="Delimiter">}</span>
 <span class="Delimiter">};</span>
 
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
@@ -106,7 +110,9 @@ vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(before &quot;End Command Handlers&quot;)</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  Scenarios<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">));</span>
+  scenario result = parse_scenario<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!result<span class="Delimiter">.</span>name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
+    Scenarios<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>command == <span class="Constant">&quot;pending-scenario&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Comment">// for temporary use only</span>
@@ -131,9 +137,17 @@ vector&lt;scenario&gt; Scenarios<span class="Delimiter">;</span>
   <span class="Comment">// inside comments</span>
   result<span class="Delimiter">.</span>to_run = slurp_quoted<span class="Delimiter">(</span>in<span class="Delimiter">);</span>
   <span class="Comment">// delete [] delimiters</span>
-  assert<span class="Delimiter">(</span>starts_with<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">,</span> <span class="Constant">&quot;[&quot;</span><span class="Delimiter">));</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!starts_with<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">,</span> <span class="Constant">&quot;[&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;scenario &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; should start with '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    result<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>erase<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>at<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">)</span> == <span class="Constant">']'</span><span class="Delimiter">);</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>at<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">']'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    raise &lt;&lt; <span class="Constant">&quot;scenario &quot;</span> &lt;&lt; result<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; has an unbalanced '['</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+    result<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+    <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+  <span class="Delimiter">}</span>
   result<span class="Delimiter">.</span>to_run<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>result<span class="Delimiter">.</span>to_run<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
   <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
@@ -227,9 +241,10 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
   mark_autogenerated<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
-  run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!trace_contains_errors<span class="Delimiter">())</span>
+    run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>front<span class="Delimiter">());</span>
   <span class="Comment">// End Mu Test Teardown</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors &amp;&amp; trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">)</span> &gt; <span class="Constant">0</span> &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
+  <span class="Normal">if</span> <span class="Delimiter">(</span>!Hide_errors &amp;&amp; trace_contains_errors<span class="Delimiter">()</span> &amp;&amp; !Scenario_testing_scenario<span class="Delimiter">)</span>
     Passed = <span class="Constant">false</span><span class="Delimiter">;</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>not_already_inside_test &amp;&amp; Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     teardown<span class="Delimiter">();</span>
@@ -281,7 +296,7 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
   bind_special_scenario_names<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
   transform_all<span class="Delimiter">();</span>
   run<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  CHECK_EQ<span class="Delimiter">(</span>trace_count<span class="Delimiter">(</span><span class="Constant">&quot;error&quot;</span><span class="Delimiter">),</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+  CHECK_TRACE_DOESNT_CONTAIN_ERRORS<span class="Delimiter">();</span>
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Watch out for redefinitions of scenario routines. We should never ever be</span>
@@ -297,6 +312,23 @@ Name[r][<span class="Constant">&quot;__maybe_make_raw_test__&quot;</span>] = Res
   <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">35</span>
 ]
 <span class="traceContains">+error: redefining recipe scenario-foo</span>
+
+<span class="Delimiter">:(scenario scenario_containing_parse_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muScenario">scenario</span> foo [
+  memory-should-contain [
+    <span class="Constant">1</span><span class="Special"> &lt;- </span><span class="Constant">0</span>
+  <span class="Comment"># missing ']'</span>
+]
+<span class="Comment"># no crash</span>
+
+<span class="Delimiter">:(scenario scenario_containing_transform_error)</span>
+<span class="Special">% Hide_errors = true;</span>
+<span class="muRecipe">def</span> main [
+  local-scope
+  add x<span class="Delimiter">,</span> <span class="Constant">1</span>
+]
+<span class="Comment"># no crash</span>
 
 <span class="Delimiter">:(after &quot;bool should_check_for_redefine(const string&amp; recipe_name)&quot;)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>recipe_name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario-&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
