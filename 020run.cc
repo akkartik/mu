@@ -186,9 +186,11 @@ save_snapshots();
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   // Running Main
   setup();
-//?   Save_trace = true;
-  if (Start_tracing) Trace_stream = new trace_stream;
-  trace(9990, "run") << "=== Starting to run" << end();
+  if (Start_tracing) {
+    Trace_stream = new trace_stream;
+    Save_trace = true;
+  }
+  trace(2, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
   teardown();

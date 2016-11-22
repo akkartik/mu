@@ -180,9 +180,9 @@ void render() {
     if (screen_row < tb_height()-1) {
       int delta = lines_hidden(screen_row);
       // home-brew escape sequence for red
-      if (delta > 999) out << "{";
+      if (delta > 999) out << static_cast<char>(1);
       out << " (" << delta << ")";
-      if (delta > 999) out << "}";
+      if (delta > 999) out << static_cast<char>(2);
     }
     render_line(screen_row, out.str());
   }
@@ -211,8 +211,8 @@ void render_line(int screen_row, const string& s) {
     char c = s.at(col);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
-    if (c == '{') { color = /*red*/1; c = ' '; }
-    if (c == '}') { color = TB_WHITE; c = ' '; }
+    if (c == '\1') { color = /*red*/1; c = ' '; }
+    if (c == '\2') { color = TB_WHITE; c = ' '; }
     tb_change_cell(col, screen_row, c, color, TB_BLACK);
   }
   for (; col < tb_width(); ++col) {
