@@ -41,7 +41,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file:num
 ]
 
-<span class="muRecipe">def</span> nqueens n:num, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:num [
+<span class="muRecipe">def</span> nqueens n:num, queens:&amp;:list:square<span class="muRecipe"> -&gt; </span>result:num, queens:&amp;:list:square [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># if 'queens' is already long enough, print it and return</span>
@@ -69,9 +69,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Delimiter">{</span>
       curr-conflicts?:bool <span class="Special">&lt;-</span> conflict? curr, queens
       <span class="muControl">break-if</span> curr-conflicts?
-      new-queens:&amp;:list:square <span class="Special">&lt;-</span> push curr, queens
-      sub-result:num <span class="Special">&lt;-</span> nqueens n, new-queens
+      queens:&amp;:list:square <span class="Special">&lt;-</span> push curr, queens
+      sub-result:num <span class="Special">&lt;-</span> nqueens n, queens
       result <span class="Special">&lt;-</span> add result, sub-result
+      queens <span class="Special">&lt;-</span> rest queens
     <span class="Delimiter">}</span>
     next-file <span class="Special">&lt;-</span> add next-file,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>

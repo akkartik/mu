@@ -8,7 +8,7 @@ scenario convert-lambda [
     2:@:char/raw <- copy *1:text/raw
   ]
   memory-should-contain [
-    2:@:char <- [t1 <- multiply b c
+    2:array:character <- [t1 <- multiply b c
 result <- add a t1]
   ]
 ]
@@ -321,7 +321,7 @@ scenario parse-single-letter-atom [
   11:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
-    11:@:char <- [a]
+    11:array:character <- [a]
   ]
 ]
 
@@ -333,7 +333,7 @@ scenario parse-atom [
   11:@:char/raw <- copy *s2
   memory-should-contain [
     10 <- 1  # parse result is an atom
-    11:@:char <- [abc]
+    11:array:character <- [abc]
   ]
 ]
 
@@ -360,8 +360,8 @@ scenario parse-list-of-two-atoms [
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 0  # result.rest.rest is nil
-    20:@:char <- [abc]  # result.first
-    30:@:char <- [def]  # result.rest.first
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
   ]
 ]
 
@@ -388,8 +388,8 @@ scenario parse-list-with-extra-spaces [
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 0  # result.rest.rest is nil
-    20:@:char <- [abc]  # result.first
-    30:@:char <- [def]  # result.rest.first
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
   ]
 ]
 
@@ -423,9 +423,9 @@ scenario parse-list-of-more-than-two-atoms [
     14 <- 1  # result.rest.rest is a pair
     15 <- 1  # result.rest.rest.first is an atom
     16 <- 0  # result.rest.rest.rest is nil
-    20:@:char <- [abc]  # result.first
-    30:@:char <- [def]  # result.rest.first
-    40:@:char <- [ghi]  # result.rest.rest
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
+    40:array:character <- [ghi]  # result.rest.rest
   ]
 ]
 
@@ -450,7 +450,7 @@ scenario parse-nested-list [
     12 <- 1  # result.first.first is an atom
     13 <- 0  # result.first.rest is nil
     14 <- 0  # result.rest is nil
-    20:@:char <- [abc]  # result.first.first
+    20:array:character <- [abc]  # result.first.first
   ]
 ]
 
@@ -480,8 +480,8 @@ scenario parse-nested-list-2 [
     13 <- 0  # result.first.rest is nil
     14 <- 1  # result.rest.first is an atom
     15 <- 0  # result.rest.rest is nil
-    20:@:char <- [abc]  # result.first.first
-    30:@:char <- [def]  # result.rest.first
+    20:array:character <- [abc]  # result.first.first
+    30:array:character <- [def]  # result.rest.first
   ]
 ]
 
@@ -528,8 +528,8 @@ scenario parse-dotted-list-of-two-atoms [
     10 <- 1  # parse result is a pair
     11 <- 1  # result.first is an atom
     12 <- 1  # result.rest is an atom
-    20:@:char <- [abc]  # result.first
-    30:@:char <- [def]  # result.rest
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest
   ]
 ]
 
@@ -558,9 +558,9 @@ scenario parse-dotted-list-of-more-than-two-atoms [
     12 <- 1  # result.rest is a pair
     13 <- 1  # result.rest.first is an atom
     14 <- 1  # result.rest.rest is an atom
-    20:@:char <- [abc]  # result.first
-    30:@:char <- [def]  # result.rest.first
-    40:@:char <- [ghi]  # result.rest.rest
+    20:array:character <- [abc]  # result.first
+    30:array:character <- [def]  # result.rest.first
+    40:array:character <- [ghi]  # result.rest.rest
   ]
 ]
 

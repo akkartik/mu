@@ -8,7 +8,7 @@ container square [
   file:num
 ]
 
-def nqueens n:num, queens:&:list:square -> result:num [
+def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
   local-scope
   load-ingredients
   # if 'queens' is already long enough, print it and return
@@ -36,9 +36,10 @@ def nqueens n:num, queens:&:list:square -> result:num [
     {
       curr-conflicts?:bool <- conflict? curr, queens
       break-if curr-conflicts?
-      new-queens:&:list:square <- push curr, queens
-      sub-result:num <- nqueens n, new-queens
+      queens:&:list:square <- push curr, queens
+      sub-result:num <- nqueens n, queens
       result <- add result, sub-result
+      queens <- rest queens
     }
     next-file <- add next-file, 1
     loop
