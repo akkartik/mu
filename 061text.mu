@@ -3,6 +3,11 @@
 def equal a:text, b:text -> result:bool [
   local-scope
   load-ingredients
+  an:num, bn:num <- copy a, b
+  address-equal?:boolean <- equal an, bn
+  reply-if address-equal?, 1/true
+  reply-unless a, 0/false
+  reply-unless b, 0/false
   a-len:num <- length *a
   b-len:num <- length *b
   # compare lengths
@@ -82,6 +87,27 @@ scenario text-equal-with-empty [
   memory-should-contain [
     10 <- 0  # "" != abcd
   ]
+]
+
+scenario text-equal-with-null [
+  local-scope
+  x:text <- new [abcd]
+  y:text <- copy 0
+  run [
+    10:bool/raw <- equal x, 0
+    11:bool/raw <- equal 0, x
+    12:bool/raw <- equal x, y
+    13:bool/raw <- equal y, x
+    14:bool/raw <- equal y, y
+  ]
+  memory-should-contain [
+    10 <- 0
+    11 <- 0
+    12 <- 0
+    13 <- 0
+    14 <- 1
+  ]
+  check-trace-count-for-label 0, [error]
 ]
 
 scenario text-equal-common-lengths-but-distinct [

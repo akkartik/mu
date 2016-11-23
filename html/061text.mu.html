@@ -37,6 +37,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> equal a:text, b:text<span class="muRecipe"> -&gt; </span>result:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  an:num, bn:num <span class="Special">&lt;-</span> copy a, b
+  address-equal?:boolean <span class="Special">&lt;-</span> equal an, bn
+  <span class="muControl">reply-if</span> address-equal?, <span class="Constant">1/true</span>
+  <span class="muControl">reply-unless</span> a, <span class="Constant">0/false</span>
+  <span class="muControl">reply-unless</span> b, <span class="Constant">0/false</span>
   a-len:num <span class="Special">&lt;-</span> length *a
   b-len:num <span class="Special">&lt;-</span> length *b
   <span class="Comment"># compare lengths</span>
@@ -116,6 +121,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   memory-should-contain [
    <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># &quot;&quot; != abcd</span>
   ]
+]
+
+<span class="muScenario">scenario</span> text-equal-with-null [
+  <span class="Constant">local-scope</span>
+  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abcd]</span>
+  y:text <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  run [
+    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal x,<span class="Constant"> 0</span>
+    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal<span class="Constant"> 0</span>, x
+    12:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal x, y
+    13:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal y, x
+    14:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal y, y
+  ]
+  memory-should-contain [
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 12</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 13</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+   <span class="Constant"> 14</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+  ]
+  check-trace-count-for-label<span class="Constant"> 0</span>, <span class="Constant">[error]</span>
 ]
 
 <span class="muScenario">scenario</span> text-equal-common-lengths-but-distinct [
