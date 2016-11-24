@@ -161,7 +161,6 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
     if (inst.is_label) continue;
     if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) continue;
     trace(9992, "transform") << "instruction " << inst.original_string << end();
-    assert(Resolve_stack.empty());
     Resolve_stack.push_front(call(r));
     Resolve_stack.front().running_step_index = index;
     string new_name = best_variant(inst, caller_recipe);
