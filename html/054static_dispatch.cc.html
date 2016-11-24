@@ -187,7 +187,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Comment">//: We're punning the 'call' data structure just because it has slots for</span>
 <span class="Comment">//: calling recipe and calling instruction.</span>
 <span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-list&lt;call&gt; resolve_stack<span class="Delimiter">;</span>
+list&lt;call&gt; Resolve_stack<span class="Delimiter">;</span>
 
 <span class="Delimiter">:(code)</span>
 <span class="Normal">void</span> resolve_ambiguous_calls<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -198,14 +198,15 @@ list&lt;call&gt; resolve_stack<span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>non_ghost_size<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Recipe_variants<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>name<span class="Delimiter">))</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
     trace<span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; end<span class="Delimiter">();</span>
-    resolve_stack<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
-    resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index = index<span class="Delimiter">;</span>
+    assert<span class="Delimiter">(</span>Resolve_stack<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+    Resolve_stack<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+    Resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index = index<span class="Delimiter">;</span>
     string new_name = best_variant<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>!new_name<span class="Delimiter">.</span>empty<span class="Delimiter">())</span>
       inst<span class="Delimiter">.</span>name = new_name<span class="Delimiter">;</span>
-    assert<span class="Delimiter">(</span>resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe == r<span class="Delimiter">);</span>
-    assert<span class="Delimiter">(</span>resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index == index<span class="Delimiter">);</span>
-    resolve_stack<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
+    assert<span class="Delimiter">(</span>Resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe == r<span class="Delimiter">);</span>
+    assert<span class="Delimiter">(</span>Resolve_stack<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_step_index == index<span class="Delimiter">);</span>
+    Resolve_stack<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
   <span class="Delimiter">}</span>
 <span class="Delimiter">}</span>
 
@@ -236,7 +237,7 @@ string best_variant<span class="Delimiter">(</span>instruction&amp; inst<span cl
   <span class="Comment">// error messages</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &gt;= MAX_PRIMITIVE_RECIPES<span class="Delimiter">)</span> <span class="Delimiter">{</span>  <span class="Comment">// we currently don't check types for primitive variants</span>
     raise &lt;&lt; maybe<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;failed to find a matching call for '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span>list&lt;call&gt;::iterator p = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span>++resolve_stack<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != resolve_stack<span class="Delimiter">.</span>end<span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+    <span class="Normal">for</span> <span class="Delimiter">(</span>list&lt;call&gt;::iterator p = <span class="Comment">/*</span><span class="Comment">skip</span><span class="Comment">*/</span>++Resolve_stack<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Resolve_stack<span class="Delimiter">.</span>end<span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">const</span> recipe&amp; specializer_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">);</span>
       <span class="Normal">const</span> instruction&amp; specializer_inst = specializer_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">);</span>
       <span class="Normal">if</span> <span class="Delimiter">(</span>specializer_recipe<span class="Delimiter">.</span>name != <span class="Constant">&quot;interactive&quot;</span><span class="Delimiter">)</span>

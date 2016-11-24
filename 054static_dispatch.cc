@@ -150,7 +150,7 @@ Transform.push_back(resolve_ambiguous_calls);  // idempotent
 //: We're punning the 'call' data structure just because it has slots for
 //: calling recipe and calling instruction.
 :(before "End Globals")
-list<call> resolve_stack;
+list<call> Resolve_stack;
 
 :(code)
 void resolve_ambiguous_calls(const recipe_ordinal r) {
@@ -161,14 +161,15 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
     if (inst.is_label) continue;
     if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) continue;
     trace(9992, "transform") << "instruction " << inst.original_string << end();
-    resolve_stack.push_front(call(r));
-    resolve_stack.front().running_step_index = index;
+    assert(Resolve_stack.empty());
+    Resolve_stack.push_front(call(r));
+    Resolve_stack.front().running_step_index = index;
     string new_name = best_variant(inst, caller_recipe);
     if (!new_name.empty())
       inst.name = new_name;
-    assert(resolve_stack.front().running_recipe == r);
-    assert(resolve_stack.front().running_step_index == index);
-    resolve_stack.pop_front();
+    assert(Resolve_stack.front().running_recipe == r);
+    assert(Resolve_stack.front().running_step_index == index);
+    Resolve_stack.pop_front();
   }
 }
 
@@ -199,7 +200,7 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   // error messages
   if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
     raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.original_string << "'\n" << end();
-    for (list<call>::iterator p = /*skip*/++resolve_stack.begin();  p != resolve_stack.end();  ++p) {
+    for (list<call>::iterator p = /*skip*/++Resolve_stack.begin();  p != Resolve_stack.end();  ++p) {
       const recipe& specializer_recipe = get(Recipe, p->running_recipe);
       const instruction& specializer_inst = specializer_recipe.steps.at(p->running_step_index);
       if (specializer_recipe.name != "interactive")
