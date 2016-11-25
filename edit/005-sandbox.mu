@@ -21,7 +21,7 @@ def! main [
 ]
 
 container environment [
-  sandbox:&:sandbox  # list of sandboxes, from top to bottom
+  sandbox:&:sandbox  # list of sandboxes, from top to bottom. TODO: switch to &:list:sandbox
   render-from:num
   number-of-sandboxes:num
 ]

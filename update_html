@@ -17,6 +17,12 @@ process() {
   sed -i 's/^\.Identifier .*/.Identifier { color: #c0a020; }/' $1.html  # same as muControl
   sed -i 's/^\.Special .*/.Special { color: #c00000; }/' $1.html  # same as traceAbsent..
 
+  # switch unicode characters around in the rendered html
+  #   the ones we have in the source files render double-wide in html
+  #   the ones we want in the html cause iTerm2 to slow down in alt-tabbing for some reason
+  # the following commands give us the best of both worlds
+  sed -i -e 's/┈/╌/g' -e 's/┊/╎/g' $1.html
+
   mv -i $1.html html/`dirname $1`
 }
 
@@ -35,10 +41,3 @@ for f in *.cc *.mu edit/*.mu
 do
   process $f
 done
-
-# switch the unicode characters around in the rendered html
-#   the ones we have in the source files render double-wide in html
-#   the ones we want in the html cause iTerm2 to slow down in alt-tabbing for some reason
-# the following commands give us the best of both worlds
-sed -i 's/┈/╌/g' html/edit/*.mu.html
-sed -i 's/┊/╎/g' html/edit/*.mu.html
