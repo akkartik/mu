@@ -1,11 +1,11 @@
 ## running code from the editor and creating sandboxes
 #
 # Running code in the sandbox editor prepends its contents to a list of
-# (non-editable) sandboxes below the editor, showing the result and a maybe
-# few other things.
+# (non-editable) sandboxes below the editor, showing the result and maybe a
+# few other things (later layers).
 #
-# This layer draws the menubar buttons non-editable sandboxes but they don't
-# do anything yet. Later layers implement each button.
+# This layer draws the menubar buttons in non-editable sandboxes but they
+# don't do anything yet. Later layers implement each button.
 
 def! main [
   local-scope
