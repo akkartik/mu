@@ -1,6 +1,12 @@
 ## experimental compiler to translate programs written in a generic
 ## expression-oriented language called 'lambda' into Mu
 
+# incomplete; code generator not done
+# potential enhancements:
+#   symbol table
+#   poor man's macros
+#     substitute one instruction with multiple, parameterized by ingredients and products
+
 scenario convert-lambda [
   run [
     local-scope

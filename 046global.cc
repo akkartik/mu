@@ -4,10 +4,10 @@
 //: have access to each other's globals.
 //:
 //: This feature is still experimental and half-baked. You can't name global
-//: variables, and so like in most tests they don't get checked for types (the
-//: only known hole in the type system, can cause memory corruption). We might
-//: fix these issues if we ever use globals. Or we might just drop the feature
-//: entirely.
+//: variables, and they don't get checked for types (the only known hole in
+//: the type system, can cause memory corruption). We might fix these issues
+//: if we ever use globals. Or we might just drop the feature entirely.
+//: [tag: todo]
 
 :(scenario global_space)
 def main [

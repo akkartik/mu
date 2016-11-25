@@ -35,6 +35,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># A table is like an array, except that you can index it with arbitrary types</span>
 <span class="Comment"># and not just non-negative whole numbers.</span>
 
+<span class="Comment"># incomplete; doesn't handle hash conflicts</span>
+
 <span class="muScenario">scenario</span> table-read-write [
   <span class="Constant">local-scope</span>
   tab:&amp;:table:num:num <span class="Special">&lt;-</span> new-table<span class="Constant"> 30</span>
@@ -93,6 +95,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result <span class="Special">&lt;-</span> merge <span class="Constant">0/length</span>, capacity, data
 ]
 
+<span class="Comment"># todo: tag results as /required so that call-sites are forbidden from ignoring them</span>
+<span class="Comment"># then we could handle conflicts simply by resizing the table</span>
 <span class="muRecipe">def</span> put-index table:&amp;:table:_key:_value, key:_key, value:_value<span class="muRecipe"> -&gt; </span>table:&amp;:table:_key:_value [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>

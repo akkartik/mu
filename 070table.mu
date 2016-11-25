@@ -1,6 +1,8 @@
 # A table is like an array, except that you can index it with arbitrary types
 # and not just non-negative whole numbers.
 
+# incomplete; doesn't handle hash conflicts
+
 scenario table-read-write [
   local-scope
   tab:&:table:num:num <- new-table 30
@@ -59,6 +61,8 @@ def new-table capacity:num -> result:&:table:_key:_value [
   *result <- merge 0/length, capacity, data
 ]
 
+# todo: tag results as /required so that call-sites are forbidden from ignoring them
+# then we could handle conflicts simply by resizing the table
 def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table:_key:_value [
   local-scope
   load-ingredients

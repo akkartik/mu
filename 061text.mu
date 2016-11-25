@@ -123,6 +123,7 @@ scenario text-equal-common-lengths-but-distinct [
 ]
 
 # A new type to help incrementally construct texts.
+# todo: make this shape-shifting.
 container buffer [
   length:num
   data:text

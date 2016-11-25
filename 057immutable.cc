@@ -2,6 +2,7 @@
 //: products. This layer will start enforcing this check.
 //:
 //: One hole for now: variables in surrounding spaces are implicitly mutable.
+//: [tag: todo]
 
 :(scenario can_modify_ingredients_that_are_also_products)
 # mutable container

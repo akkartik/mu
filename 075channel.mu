@@ -155,6 +155,9 @@ def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   reset lock
 ]
 
+# todo: create a notion of iterator and iterable so we can read/write whole
+# aggregates (arrays, lists, ..) of _elems at once.
+
 def clear in:&:source:_elem -> in:&:source:_elem [
   local-scope
   load-ingredients
