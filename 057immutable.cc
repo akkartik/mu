@@ -355,7 +355,7 @@ void check_immutable_ingredients(const recipe_ordinal r) {
     for (int i = 0;  i < SIZE(caller.steps);  ++i) {
       const instruction& inst = caller.steps.at(i);
       check_immutable_ingredient_in_instruction(inst, immutable_vars, current_ingredient.name, caller);
-      if (inst.operation == INDEX && inst.ingredients.at(1).name == current_ingredient.name) continue;
+      if (inst.operation == INDEX && SIZE(inst.ingredients) > 1 && inst.ingredients.at(1).name == current_ingredient.name) continue;
       update_aliases(inst, immutable_vars);
     }
   }
@@ -374,7 +374,7 @@ void update_aliases(const instruction& inst, set<reagent>& current_ingredient_an
       case INDEX:
       case MAYBE_CONVERT:
         // current_ingredient_indices can only have 0 or one value
-        if (!current_ingredient_indices.empty()) {
+        if (!current_ingredient_indices.empty() && !inst.products.empty()) {
           if (is_mu_address(inst.products.at(0)) || is_mu_container(inst.products.at(0)) || is_mu_exclusive_container(inst.products.at(0)))
             current_ingredient_and_aliases.insert(inst.products.at(0));
         }
@@ -402,7 +402,6 @@ set<int> scan_contained_in_product_indices(const instruction& inst, set<int>& in
   set<int> result;
   for (int i = 0;  i < SIZE(callee.products);  ++i) {
     const reagent& current_product = callee.products.at(i);
-    // TODO
     const string_tree* contained_in_name = property(current_product, "contained-in");
     if (contained_in_name && selected_ingredients.find(contained_in_name->value) != selected_ingredients.end())
       result.insert(i);

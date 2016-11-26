@@ -16,14 +16,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Constant { color: #00a0a0; }
 .traceContains { color: #008000; }
 .muRecipe { color: #ff8700; }
-.Todo { color: #000000; background-color: #ffff00; padding-bottom: 1px; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
 .Special { color: #c00000; }
 .Identifier { color: #c0a020; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .muData { color: #ffff00; }
-.cSpecial { color: #008000; }
 -->
 </style>
 
@@ -392,7 +391,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
     <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
       <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
       check_immutable_ingredient_in_instruction<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">,</span> current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">,</span> caller<span class="Delimiter">);</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == INDEX &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name == current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == INDEX &amp;&amp; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> &gt; <span class="Constant">1</span> &amp;&amp; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name == current_ingredient<span class="Delimiter">.</span>name<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
       update_aliases<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> immutable_vars<span class="Delimiter">);</span>
     <span class="Delimiter">}</span>
   <span class="Delimiter">}</span>
@@ -411,7 +410,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
       <span class="Normal">case</span> INDEX:
       <span class="Normal">case</span> MAYBE_CONVERT:
         <span class="Comment">// current_ingredient_indices can only have 0 or one value</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!current_ingredient_indices<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+        <span class="Normal">if</span> <span class="Delimiter">(</span>!current_ingredient_indices<span class="Delimiter">.</span>empty<span class="Delimiter">()</span> &amp;&amp; !inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
           <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_container<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> || is_mu_exclusive_container<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span>
             current_ingredient_and_aliases<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
         <span class="Delimiter">}</span>
@@ -439,7 +438,6 @@ set&lt;<span class="Normal">int</span>&gt; scan_contained_in_product_indices<spa
   set&lt;<span class="Normal">int</span>&gt; result<span class="Delimiter">;</span>
   <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>callee<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
     <span class="Normal">const</span> reagent&amp; current_product = callee<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Comment">// </span><span class="Todo">TODO</span>
     <span class="Normal">const</span> string_tree* contained_in_name = property<span class="Delimiter">(</span>current_product<span class="Delimiter">,</span> <span class="Constant">&quot;contained-in&quot;</span><span class="Delimiter">);</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>contained_in_name &amp;&amp; selected_ingredients<span class="Delimiter">.</span>find<span class="Delimiter">(</span>contained_in_name<span class="Delimiter">-&gt;</span>value<span class="Delimiter">)</span> != selected_ingredients<span class="Delimiter">.</span>end<span class="Delimiter">())</span>
       result<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>i<span class="Delimiter">);</span>

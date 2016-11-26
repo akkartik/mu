@@ -183,7 +183,7 @@ def main [
 +mem: incrementing refcount of 1000: 2 -> 3
 
 :(after "Write Memory in Successful MAYBE_CONVERT")
-// TODO: double-check data here as well
+// todo: double-check data here as well
 vector<double> data;
 for (int i = 0;  i < size_of(product);  ++i)
   data.push_back(get_or_insert(Memory, base_address+/*skip tag*/1+i));
