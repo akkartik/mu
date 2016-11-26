@@ -24,7 +24,6 @@ void initialize_transform_rewrite_literal_string_to_text() {
   recipes_taking_literal_strings.insert("$system");
   recipes_taking_literal_strings.insert("trace");
   recipes_taking_literal_strings.insert("stash");
-  recipes_taking_literal_strings.insert("assert");
   recipes_taking_literal_strings.insert("new");
   recipes_taking_literal_strings.insert("run");
   recipes_taking_literal_strings.insert("memory-should-contain");

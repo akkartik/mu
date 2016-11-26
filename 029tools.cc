@@ -210,8 +210,8 @@ case ASSERT: {
     raise << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
     break;
   }
-  if (!is_literal_text(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "'assert' requires a literal string for its second ingredient, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
+  if (!is_mu_text(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "'assert' requires a text as its second ingredient, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
     break;
   }
   break;
@@ -219,7 +219,7 @@ case ASSERT: {
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   if (!ingredients.at(0).at(0)) {
-    raise << current_instruction().ingredients.at(1).name << '\n' << end();
+    raise << read_mu_text(ingredients.at(1).at(0)) << '\n' << end();
   }
   break;
 }
