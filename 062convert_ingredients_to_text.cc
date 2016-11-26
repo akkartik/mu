@@ -93,7 +93,7 @@ void convert_ingredients_to_text(recipe& caller) {
       //   append _:text, ___
       // will never ever get used.
       if (is_literal_text(inst.ingredients.at(0)) || is_mu_text(inst.ingredients.at(0))) {
-        for (int j = 0;  j < SIZE(inst.ingredients);  ++j) {
+        for (int j = /*skip base*/1;  j < SIZE(inst.ingredients);  ++j) {
           ostringstream ingredient_name;
           ingredient_name << "append_" << i << '_' << j << ":address:array:character";
           convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
