@@ -98,6 +98,7 @@ case SAVE: {
     filename = read_mu_text(ingredients.at(0).at(0));
   }
   ofstream fout(("lesson/"+filename).c_str());
+  if (!fout) break;
   string contents = read_mu_text(ingredients.at(1).at(0));
   fout << contents;
   fout.close();
