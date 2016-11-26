@@ -90,7 +90,11 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
   }
   # real file system
   file:num <- $open-file-for-writing filename
-  assert file, [no such file]
+  {
+    break-if file
+    msg:text <- append [no such file: ] filename
+    assert file, msg
+  }
   routine-id <- start-running transmit-to-file file, source
 ]
 

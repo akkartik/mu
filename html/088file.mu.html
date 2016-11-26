@@ -123,7 +123,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># real file system</span>
   file:num <span class="Special">&lt;-</span> $open-file-for-writing filename
-  assert file, <span class="Constant">[no such file]</span>
+  <span class="Delimiter">{</span>
+    <span class="muControl">break-if</span> file
+    msg:text <span class="Special">&lt;-</span> append <span class="Constant">[no such file: ]</span> filename
+    assert file, msg
+  <span class="Delimiter">}</span>
   routine-id <span class="Special">&lt;-</span> start-running transmit-to-file file, source
 ]
 
