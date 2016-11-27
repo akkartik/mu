@@ -42,17 +42,18 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">load-ingredients</span>
   open-console
   hide-screen <span class="Constant">0/screen</span>
-  new-editor text, <span class="Constant">0/screen</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  new-editor text, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   show-screen <span class="Constant">0/screen</span>
   wait-for-event <span class="Constant">0/console</span>
   close-console
 ]
 
-<span class="muScenario">scenario</span> editor-initially-prints-text-to-screen [
+<span class="muScenario">scenario</span> editor-renders-text-to-screen [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[abc]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
   run [
-    new-editor <span class="Constant">[abc]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+    render screen, e
   ]
   screen-should-contain [
     <span class="Comment"># top line of screen reserved for menu</span>
@@ -80,10 +81,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   cursor-column:num
 ]
 
-<span class="Comment"># creates a new editor widget and renders its initial appearance to screen</span>
-<span class="Comment">#   top/left/right constrain the screen area available to the new editor</span>
+<span class="Comment"># creates a new editor widget</span>
 <span class="Comment">#   right is exclusive</span>
-<span class="muRecipe">def</span> new-editor s:text, screen:&amp;:screen, left:num, right:num<span class="muRecipe"> -&gt; </span>result:&amp;:editor, screen:&amp;:screen [
+<span class="muRecipe">def</span> new-editor s:text, left:num, right:num<span class="muRecipe"> -&gt; </span>result:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># no clipping of bounds</span>
@@ -101,8 +101,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *result <span class="Special">&lt;-</span> put *result, <span class="Constant">top-of-screen:offset</span>, init
   *result <span class="Special">&lt;-</span> put *result, <span class="Constant">before-cursor:offset</span>, init
   result <span class="Special">&lt;-</span> insert-text result, s
-  <span class="Comment"># initial render to screen, just for some old tests</span>
-  _, _, screen, result <span class="Special">&lt;-</span> render screen, result
 <span class="Constant">  &lt;editor-initialization&gt;</span>
 ]
 
@@ -133,7 +131,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">3/height</span>
   run [
-    e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">0/data</span>, screen, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
+    e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">0/data</span>, <span class="Constant">2/left</span>, <span class="Constant">5/right</span>
     2:editor/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *e
   ]
   memory-should-contain [
@@ -143,7 +141,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># 5 (before cursor) &lt;- the § sentinel</span>
    <span class="Constant"> 6</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># left</span>
    <span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 4</span>  <span class="Comment"># right  (inclusive)</span>
-   <span class="Constant"> 8</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># bottom</span>
+   <span class="Constant"> 8</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># bottom (not set until render)</span>
    <span class="Constant"> 9</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># cursor row</span>
    <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor column</span>
   ]
@@ -290,13 +288,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muScenario">scenario</span> editor-initially-prints-multiple-lines [
+<span class="muScenario">scenario</span> editor-prints-multiple-lines [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
-  run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor s, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  run [
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -306,12 +305,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> editor-initially-handles-offsets [
+<span class="muScenario">scenario</span> editor-handles-offsets [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[abc]</span>, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
   run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
-    new-editor s, screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -320,13 +319,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> editor-initially-prints-multiple-lines-at-offset [
+<span class="muScenario">scenario</span> editor-prints-multiple-lines-at-offset [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
-  run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-    new-editor s, screen, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor s, <span class="Constant">1/left</span>, <span class="Constant">5/right</span>
+  run [
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -336,12 +336,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> editor-initially-wraps-long-lines [
+<span class="muScenario">scenario</span> editor-wraps-long-lines [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[abc def]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc def]</span>
-    new-editor s, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -357,12 +357,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> editor-initially-wraps-barely-long-lines [
+<span class="muScenario">scenario</span> editor-wraps-barely-long-lines [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[abcde]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abcde]</span>
-    new-editor s, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    render screen, e
   ]
   <span class="Comment"># still wrap, even though the line would fit. We need room to click on the</span>
   <span class="Comment"># end of the line</span>
@@ -380,11 +380,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> editor-initializes-empty-text [
+<span class="muScenario">scenario</span> editor-with-empty-text [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
   run [
-    e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+    render screen, e
     3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
     4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
   ]
@@ -404,11 +405,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> render-colors-comments [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">5/width</span>, <span class="Constant">5/height</span>
-  run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span class="Constant"># de</span>
 <span class="Constant">f]</span>
-    new-editor s, screen, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor s, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+  run [
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .     .</span>
@@ -486,11 +488,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> render-colors-assignment [
   <span class="Constant">local-scope</span>
   assume-screen <span class="Constant">8/width</span>, <span class="Constant">5/height</span>
-  run [
-    s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span class="Constant">d &lt;- e</span>
 <span class="Constant">f]</span>
-    new-editor s, screen, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+  e:&amp;:editor <span class="Special">&lt;-</span> new-editor s, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+  run [
+    render screen, e
   ]
   screen-should-contain [
    <span class="Constant"> .        .</span>

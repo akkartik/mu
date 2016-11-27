@@ -621,7 +621,7 @@ def editor-contents editor:&:editor -> result:text [
 scenario editor-provides-edited-contents [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]

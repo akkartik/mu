@@ -38,10 +38,10 @@ def new-programming-environment screen:&:screen, initial-recipe-contents:text, i
   divider:num, _ <- divide-with-remainder width, 2
   draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
-  recipes:&:editor <- new-editor initial-recipe-contents, screen, 0/left, divider/right
+  recipes:&:editor <- new-editor initial-recipe-contents, 0/left, divider/right
   # sandbox editor on the right
   sandbox-left:num <- add divider, 1
-  current-sandbox:&:editor <- new-editor initial-sandbox-contents, screen, sandbox-left, width/right
+  current-sandbox:&:editor <- new-editor initial-sandbox-contents, sandbox-left, width/right
   *result <- put *result, recipes:offset, recipes
   *result <- put *result, current-sandbox:offset, current-sandbox
   *result <- put *result, sandbox-in-focus?:offset, 0/false
