@@ -21,23 +21,13 @@ container environment [
   sandbox-in-focus?:bool  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-def new-programming-environment screen:&:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:&:environment, screen:&:screen [
+def new-programming-environment screen:&:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:&:environment [
   local-scope
   load-ingredients
   width:num <- screen-width screen
-  height:num <- screen-height screen
-  # top menu
   result <- new environment:type
-  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
-  button-start:num <- subtract width, 20
-  button-on-screen?:bool <- greater-or-equal button-start, 0
-  assert button-on-screen?, [screen too narrow for menu]
-  screen <- move-cursor screen, 0/row, button-start
-  print screen, [ run (F4) ], 255/white, 161/reddish
-  # dotted line down the middle
-  divider:num, _ <- divide-with-remainder width, 2
-  draw-vertical screen, divider, 1/top, height, 9482/vertical-dotted
   # recipe editor on the left
+  divider:num, _ <- divide-with-remainder width, 2
   recipes:&:editor <- new-editor initial-recipe-contents, 0/left, divider/right
   # sandbox editor on the right
   sandbox-left:num <- add divider, 1
@@ -290,7 +280,6 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
   *editor <- put *editor, bottom:offset, row
   return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
-
 
 scenario point-at-multiple-editors [
   local-scope

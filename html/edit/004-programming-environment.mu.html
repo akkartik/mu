@@ -56,23 +56,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sandbox-in-focus?:bool  <span class="Comment"># false =&gt; cursor in recipes; true =&gt; cursor in current-sandbox</span>
 ]
 
-<span class="muRecipe">def</span> new-programming-environment screen:&amp;:screen, initial-recipe-contents:text, initial-sandbox-contents:text<span class="muRecipe"> -&gt; </span>result:&amp;:environment, screen:&amp;:screen [
+<span class="muRecipe">def</span> new-programming-environment screen:&amp;:screen, initial-recipe-contents:text, initial-sandbox-contents:text<span class="muRecipe"> -&gt; </span>result:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   width:num <span class="Special">&lt;-</span> screen-width screen
-  height:num <span class="Special">&lt;-</span> screen-height screen
-  <span class="Comment"># top menu</span>
   result <span class="Special">&lt;-</span> new <span class="Constant">environment:type</span>
-  draw-horizontal screen,<span class="Constant"> 0</span>, <span class="Constant">0/left</span>, width, <span class="Constant">32/space</span>, <span class="Constant">0/black</span>, <span class="Constant">238/grey</span>
-  button-start:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 20</span>
-  button-on-screen?:bool <span class="Special">&lt;-</span> greater-or-equal button-start,<span class="Constant"> 0</span>
-  assert button-on-screen?, <span class="Constant">[screen too narrow for menu]</span>
-  screen <span class="Special">&lt;-</span> move-cursor screen, <span class="Constant">0/row</span>, button-start
-  print screen, <span class="Constant">[ run (F4) ]</span>, <span class="Constant">255/white</span>, <span class="Constant">161/reddish</span>
-  <span class="Comment"># dotted line down the middle</span>
-  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
-  draw-vertical screen, divider, <span class="Constant">1/top</span>, height, <span class="Constant">9482/vertical-dotted</span>
   <span class="Comment"># recipe editor on the left</span>
+  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
   recipes:&amp;:editor <span class="Special">&lt;-</span> new-editor initial-recipe-contents, <span class="Constant">0/left</span>, divider/right
   <span class="Comment"># sandbox editor on the right</span>
   sandbox-left:num <span class="Special">&lt;-</span> add divider,<span class="Constant"> 1</span>
@@ -325,7 +315,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">bottom:offset</span>, row
   <span class="muControl">return</span> row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
 ]
-
 
 <span class="muScenario">scenario</span> point-at-multiple-editors [
   <span class="Constant">local-scope</span>
