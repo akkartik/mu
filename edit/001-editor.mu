@@ -17,7 +17,7 @@ scenario editor-initially-prints-text-to-screen [
   local-scope
   assume-screen 10/width, 5/height
   run [
-    new-editor [abc], screen:&:screen, 0/left, 10/right
+    new-editor [abc], screen, 0/left, 10/right
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -98,7 +98,7 @@ scenario editor-initializes-without-data [
   local-scope
   assume-screen 5/width, 3/height
   run [
-    e:&:editor <- new-editor 0/data, screen:&:screen, 2/left, 5/right
+    e:&:editor <- new-editor 0/data, screen, 2/left, 5/right
     2:editor/raw <- copy *e
   ]
   memory-should-contain [
@@ -261,7 +261,7 @@ scenario editor-initially-prints-multiple-lines [
   run [
     s:text <- new [abc
 def]
-    new-editor s, screen:&:screen, 0/left, 5/right
+    new-editor s, screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -276,7 +276,7 @@ scenario editor-initially-handles-offsets [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc]
-    new-editor s, screen:&:screen, 1/left, 5/right
+    new-editor s, screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -291,7 +291,7 @@ scenario editor-initially-prints-multiple-lines-at-offset [
   run [
     s:text <- new [abc
 def]
-    new-editor s, screen:&:screen, 1/left, 5/right
+    new-editor s, screen, 1/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -306,7 +306,7 @@ scenario editor-initially-wraps-long-lines [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abc def]
-    new-editor s, screen:&:screen, 0/left, 5/right
+    new-editor s, screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -327,7 +327,7 @@ scenario editor-initially-wraps-barely-long-lines [
   assume-screen 5/width, 5/height
   run [
     s:text <- new [abcde]
-    new-editor s, screen:&:screen, 0/left, 5/right
+    new-editor s, screen, 0/left, 5/right
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -349,7 +349,7 @@ scenario editor-initializes-empty-text [
   local-scope
   assume-screen 5/width, 5/height
   run [
-    e:&:editor <- new-editor [], screen:&:screen, 0/left, 5/right
+    e:&:editor <- new-editor [], screen, 0/left, 5/right
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -373,7 +373,7 @@ scenario render-colors-comments [
     s:text <- new [abc
 # de
 f]
-    new-editor s, screen:&:screen, 0/left, 5/right
+    new-editor s, screen, 0/left, 5/right
   ]
   screen-should-contain [
     .     .
@@ -455,7 +455,7 @@ scenario render-colors-assignment [
     s:text <- new [abc
 d <- e
 f]
-    new-editor s, screen:&:screen, 0/left, 8/right
+    new-editor s, screen, 0/left, 8/right
   ]
   screen-should-contain [
     .        .
