@@ -187,43 +187,6 @@ case _SAVE_TRACE: {
   break;
 }
 
-//: assert: perform sanity checks at runtime
-
-:(scenario assert)
-% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.
-def main [
-  assert 0, [this is an assert in Mu]
-]
-+error: this is an assert in Mu
-
-:(before "End Primitive Recipe Declarations")
-ASSERT,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "assert", ASSERT);
-:(before "End Primitive Recipe Checks")
-case ASSERT: {
-  if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << inst.original_string << "'\n" << end();
-    break;
-  }
-  if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'assert' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
-    break;
-  }
-  if (!is_mu_text(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "'assert' requires a text as its second ingredient, but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
-    break;
-  }
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case ASSERT: {
-  if (!ingredients.at(0).at(0)) {
-    raise << read_mu_text(ingredients.at(1).at(0)) << '\n' << end();
-  }
-  break;
-}
-
 //:: 'cheating' by using the host system
 
 :(before "End Primitive Recipe Declarations")
