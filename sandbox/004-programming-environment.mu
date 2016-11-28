@@ -33,7 +33,7 @@ def new-programming-environment screen:&:screen, initial-sandbox-contents:text -
   screen <- move-cursor screen, 0/row, button-start
   print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
-  current-sandbox:&:editor <- new-editor initial-sandbox-contents, screen, 0, width/right
+  current-sandbox:&:editor <- new-editor initial-sandbox-contents, 0, width/right
   *result <- put *result, current-sandbox:offset, current-sandbox
   <programming-environment-initialization>
 ]

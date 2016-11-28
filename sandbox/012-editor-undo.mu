@@ -102,7 +102,7 @@ scenario editor-can-undo-typing [
   local-scope
   # create an editor and type a character
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [0]
@@ -232,7 +232,7 @@ scenario editor-can-undo-typing-multiple [
   local-scope
   # create an editor and type multiple characters
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [012]
@@ -258,7 +258,7 @@ scenario editor-can-undo-typing-multiple-2 [
   local-scope
   # create an editor with some text
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [a], screen, 0/left, 10/right
+  e:&:editor <- new-editor [a], 0/left, 10/right
   editor-render screen, e
   # type some characters
   assume-console [
@@ -304,7 +304,7 @@ scenario editor-can-undo-typing-enter [
   local-scope
   # create an editor with some text
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [  abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [  abc], 0/left, 10/right
   editor-render screen, e
   # new line
   assume-console [
@@ -367,7 +367,7 @@ scenario editor-redo-typing [
   local-scope
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [a], screen, 0/left, 10/right
+  e:&:editor <- new-editor [a], 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [012]
@@ -431,7 +431,7 @@ scenario editor-redo-typing-empty [
   local-scope
   # create an editor, type something, undo
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [012]
@@ -480,7 +480,7 @@ scenario editor-work-clears-redo-stack [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [1]
@@ -520,7 +520,7 @@ scenario editor-can-redo-typing-and-enter-and-tab [
   local-scope
   # create an editor
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   # insert some text and tabs, hit enter, some more text and tabs
   assume-console [
@@ -680,7 +680,7 @@ scenario editor-can-undo-touch [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor
   assume-console [
@@ -771,7 +771,7 @@ scenario editor-can-undo-left-arrow [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor
   assume-console [
@@ -816,7 +816,7 @@ scenario editor-can-undo-up-arrow [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor
   assume-console [
@@ -867,7 +867,7 @@ scenario editor-can-undo-down-arrow [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor
   assume-console [
@@ -912,7 +912,7 @@ scenario editor-can-undo-ctrl-a [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor, then to start of line
   assume-console [
@@ -957,7 +957,7 @@ scenario editor-can-undo-home [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor, then to start of line
   assume-console [
@@ -1002,7 +1002,7 @@ scenario editor-can-undo-ctrl-e [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor, then to start of line
   assume-console [
@@ -1047,7 +1047,7 @@ scenario editor-can-undo-end [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor, then to start of line
   assume-console [
@@ -1092,7 +1092,7 @@ scenario editor-can-undo-multiple-arrows-in-the-same-direction [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # move the cursor
   assume-console [
@@ -1147,7 +1147,7 @@ scenario editor-redo-touch [
   contents:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   assume-console [
     left-click 3, 1
@@ -1202,7 +1202,7 @@ scenario editor-separates-undo-insert-from-undo-cursor-move [
   local-scope
   # create an editor, type some text, move the cursor, type some more text
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   assume-console [
     type [abc]
@@ -1351,7 +1351,7 @@ scenario editor-can-undo-and-redo-backspace [
   local-scope
   # create an editor
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   # insert some text and hit backspace
   assume-console [
@@ -1496,7 +1496,7 @@ scenario editor-can-undo-and-redo-delete [
   local-scope
   # create an editor
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1687,7 +1687,7 @@ scenario editor-can-undo-and-redo-ctrl-k [
   assume-screen 10/width, 5/height
   contents:text <- new [abc
 def]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1790,7 +1790,7 @@ scenario editor-can-undo-and-redo-ctrl-u [
   assume-screen 10/width, 5/height
   contents:text <- new [abc
 def]
-  e:&:editor <- new-editor contents, screen, 0/left, 10/right
+  e:&:editor <- new-editor contents, 0/left, 10/right
   editor-render screen, e
   # insert some text and hit delete and backspace a few times
   assume-console [
@@ -1890,7 +1890,7 @@ scenario editor-can-undo-and-redo-ctrl-u-2 [
   local-scope
   # create an editor
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [], screen, 0/left, 10/right
+  e:&:editor <- new-editor [], 0/left, 10/right
   editor-render screen, e
   # insert some text and hit delete and backspace a few times
   assume-console [

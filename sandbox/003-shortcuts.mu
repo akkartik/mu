@@ -10,7 +10,7 @@ scenario editor-inserts-two-spaces-on-tab [
   # just one character in final line
   s:text <- new [ab
 cd]
-  e:&:editor <- new-editor s, screen, 0/left, 5/right
+  e:&:editor <- new-editor s, 0/left, 5/right
   assume-console [
     press tab
   ]
@@ -42,7 +42,7 @@ after <handle-special-character> [
 scenario editor-handles-backspace-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -216,7 +216,7 @@ scenario editor-clears-last-line-on-backspace [
   # just one character in final line
   s:text <- new [ab
 cd]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   assume-console [
     left-click 2, 0  # cursor at only character in final line
     press backspace
@@ -244,7 +244,7 @@ scenario editor-joins-and-wraps-lines-on-backspace [
   # initialize editor with two long-ish but non-wrapping lines
   s:text <- new [abc def
 ghi jkl]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position the cursor at the start of the second and hit backspace
@@ -269,7 +269,7 @@ scenario editor-wraps-long-lines-on-backspace [
   local-scope
   assume-screen 10/width, 5/height
   # initialize editor in part of the screen with a long line
-  e:&:editor <- new-editor [abc def ghij], screen, 0/left, 8/right
+  e:&:editor <- new-editor [abc def ghij], 0/left, 8/right
   editor-render screen, e
   # confirm that it wraps
   screen-should-contain [
@@ -302,7 +302,7 @@ scenario editor-wraps-long-lines-on-backspace [
 scenario editor-handles-delete-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -391,7 +391,7 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> editor:&:editor, screen
 scenario editor-moves-cursor-right-with-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -488,7 +488,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # type right-arrow a few times to get to start of second line
@@ -524,7 +524,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow-2 [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen, 1/left, 10/right
+  e:&:editor <- new-editor s, 1/left, 10/right
   editor-render screen, e
   assume-console [
     press right-arrow
@@ -548,7 +548,7 @@ d]
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcdef], screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcdef], 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -578,7 +578,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
   local-scope
   assume-screen 10/width, 5/height
   # line just barely wrapping
-  e:&:editor <- new-editor [abcde], screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcde], 0/left, 5/right
   editor-render screen, e
   $clear-trace
   # position cursor at last character before wrap and hit right-arrow
@@ -614,7 +614,7 @@ scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-2 [
 scenario editor-moves-cursor-to-next-wrapped-line-with-right-arrow-3 [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abcdef], screen, 1/left, 6/right
+  e:&:editor <- new-editor [abcdef], 1/left, 6/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -645,7 +645,7 @@ scenario editor-moves-cursor-to-next-line-with-right-arrow-at-end-of-line [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # move to end of line, press right-arrow, type a character
@@ -675,7 +675,7 @@ d]
 scenario editor-moves-cursor-left-with-key [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -720,7 +720,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line [
   # initialize editor with two lines
   s:text <- new [abc
 d]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor at start of second line (so there's no previous newline)
@@ -747,7 +747,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-2
   s:text <- new [abc
 def
 g]
-  e:&:editor <- new-editor s:text, screen, 0/left, 10/right
+  e:&:editor <- new-editor s:text, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor further down (so there's a newline before the character at
@@ -776,7 +776,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-3
   s:text <- new [abc
 def
 g]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # position cursor at start of text, press left-arrow, then type a character
@@ -806,7 +806,7 @@ scenario editor-moves-cursor-to-previous-line-with-left-arrow-at-start-of-line-4
   s:text <- new [abc
 
 d]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e:&:editor
   $clear-trace
   # position cursor right after empty line
@@ -832,7 +832,7 @@ scenario editor-moves-across-screen-lines-across-wrap-with-left-arrow [
   local-scope
   assume-screen 10/width, 5/height
   # initialize editor with a wrapping line
-  e:&:editor <- new-editor [abcdef], screen, 0/left, 5/right
+  e:&:editor <- new-editor [abcdef], 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -865,7 +865,7 @@ scenario editor-moves-across-screen-lines-to-wrapping-line-with-left-arrow [
   # initialize editor with a wrapping line followed by a second line
   s:text <- new [abcdef
 g]
-  e:&:editor <- new-editor s, screen, 0/left, 5/right
+  e:&:editor <- new-editor s, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -898,7 +898,7 @@ scenario editor-moves-across-screen-lines-to-non-wrapping-line-with-left-arrow [
   # initialize editor with a line on the verge of wrapping, followed by a second line
   s:text <- new [abcd
 e]
-  e:&:editor <- new-editor s, screen, 0/left, 5/right
+  e:&:editor <- new-editor s, 0/left, 5/right
   editor-render screen, e
   $clear-trace
   screen-should-contain [
@@ -934,7 +934,7 @@ scenario editor-moves-to-previous-line-with-up-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1050,7 +1050,7 @@ scenario editor-adjusts-column-at-previous-line [
   assume-screen 10/width, 5/height
   s:text <- new [ab
 def]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1087,7 +1087,7 @@ scenario editor-adjusts-column-at-empty-line [
   assume-screen 10/width, 5/height
   s:text <- new [
 def]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1126,7 +1126,7 @@ scenario editor-moves-to-previous-line-from-left-margin [
   s:text <- new [abc
 def
 ghi]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # click on the third line and hit up-arrow, so you end up just after a newline
@@ -1166,7 +1166,7 @@ scenario editor-moves-to-next-line-with-down-arrow [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 def]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # cursor starts out at (1, 0)
@@ -1258,7 +1258,7 @@ scenario editor-adjusts-column-at-next-line [
   assume-screen 10/width, 5/height
   s:text <- new [abc
 de]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1297,7 +1297,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line, press ctrl-a
@@ -1373,7 +1373,7 @@ scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line (no newline before), press ctrl-a
@@ -1399,7 +1399,7 @@ scenario editor-moves-to-start-of-line-with-home [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   $clear-trace
   # start on second line, press 'home'
   assume-console [
@@ -1424,7 +1424,7 @@ scenario editor-moves-to-start-of-line-with-home-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line (no newline before), press 'home'
@@ -1452,7 +1452,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line, press ctrl-e
@@ -1545,7 +1545,7 @@ scenario editor-moves-to-end-of-line-with-ctrl-e-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line (no newline after), press ctrl-e
@@ -1571,7 +1571,7 @@ scenario editor-moves-to-end-of-line-with-end [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on first line, press 'end'
@@ -1597,7 +1597,7 @@ scenario editor-moves-to-end-of-line-with-end-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
   # start on second line (no newline after), press 'end'
@@ -1625,7 +1625,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
@@ -1689,7 +1689,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
@@ -1713,7 +1713,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
@@ -1737,7 +1737,7 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start past end of final line, press ctrl-u
   assume-console [
     left-click 2, 3
@@ -1763,7 +1763,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
@@ -1819,7 +1819,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
@@ -1843,7 +1843,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start at end of line
   assume-console [
     left-click 1, 2
@@ -1867,7 +1867,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start past end of line
   assume-console [
     left-click 1, 3
@@ -1891,7 +1891,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start at end of text
   assume-console [
     left-click 2, 2
@@ -1915,7 +1915,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
-  e:&:editor <- new-editor s, screen, 0/left, 10/right
+  e:&:editor <- new-editor s, 0/left, 10/right
   # start past end of text
   assume-console [
     left-click 2, 3

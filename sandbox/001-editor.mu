@@ -7,17 +7,18 @@ def! main text:text [
   load-ingredients
   open-console
   hide-screen 0/screen
-  new-editor text, 0/screen, 0/left, 5/right
+  new-editor text, 0/left, 5/right
   show-screen 0/screen
   wait-for-event 0/console
   close-console
 ]
 
-scenario editor-initially-prints-text-to-screen [
+scenario editor-renders-text-to-screen [
   local-scope
   assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   run [
-    new-editor [abc], screen, 0/left, 10/right
+    render screen, e
   ]
   screen-should-contain [
     # top line of screen reserved for menu
@@ -45,10 +46,9 @@ container editor [
   cursor-column:num
 ]
 
-# creates a new editor widget and renders its initial appearance to screen
-#   top/left/right constrain the screen area available to the new editor
+# creates a new editor widget
 #   right is exclusive
-def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor, screen:&:screen [
+def new-editor s:text, left:num, right:num -> result:&:editor [
   local-scope
   load-ingredients
   # no clipping of bounds
@@ -66,8 +66,6 @@ def new-editor s:text, screen:&:screen, left:num, right:num -> result:&:editor, 
   *result <- put *result, top-of-screen:offset, init
   *result <- put *result, before-cursor:offset, init
   result <- insert-text result, s
-  # initial render to screen, just for some old tests
-  _, _, screen, result <- render screen, result
   <editor-initialization>
 ]
 
@@ -98,7 +96,7 @@ scenario editor-initializes-without-data [
   local-scope
   assume-screen 5/width, 3/height
   run [
-    e:&:editor <- new-editor 0/data, screen, 2/left, 5/right
+    e:&:editor <- new-editor 0/data, 2/left, 5/right
     2:editor/raw <- copy *e
   ]
   memory-should-contain [
@@ -108,7 +106,7 @@ scenario editor-initializes-without-data [
     # 5 (before cursor) <- the § sentinel
     6 <- 2  # left
     7 <- 4  # right  (inclusive)
-    8 <- 1  # bottom
+    8 <- 0  # bottom (not set until render)
     9 <- 1  # cursor row
     10 <- 2  # cursor column
   ]
@@ -255,13 +253,14 @@ def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen
   }
 ]
 
-scenario editor-initially-prints-multiple-lines [
+scenario editor-prints-multiple-lines [
   local-scope
   assume-screen 5/width, 5/height
-  run [
-    s:text <- new [abc
+  s:text <- new [abc
 def]
-    new-editor s, screen, 0/left, 5/right
+  e:&:editor <- new-editor s, 0/left, 5/right
+  run [
+    render screen, e
   ]
   screen-should-contain [
     .     .
@@ -271,12 +270,12 @@ def]
   ]
 ]
 
-scenario editor-initially-handles-offsets [
+scenario editor-handles-offsets [
   local-scope
   assume-screen 5/width, 5/height
+  e:&:editor <- new-editor [abc], 1/left, 5/right
   run [
-    s:text <- new [abc]
-    new-editor s, screen, 1/left, 5/right
+    render screen, e
   ]
   screen-should-contain [
     .     .
@@ -285,13 +284,14 @@ scenario editor-initially-handles-offsets [
   ]
 ]
 
-scenario editor-initially-prints-multiple-lines-at-offset [
+scenario editor-prints-multiple-lines-at-offset [
   local-scope
   assume-screen 5/width, 5/height
-  run [
-    s:text <- new [abc
+  s:text <- new [abc
 def]
-    new-editor s, screen, 1/left, 5/right
+  e:&:editor <- new-editor s, 1/left, 5/right
+  run [
+    render screen, e
   ]
   screen-should-contain [
     .     .
@@ -301,12 +301,12 @@ def]
   ]
 ]
 
-scenario editor-initially-wraps-long-lines [
+scenario editor-wraps-long-lines [
   local-scope
   assume-screen 5/width, 5/height
+  e:&:editor <- new-editor [abc def], 0/left, 5/right
   run [
-    s:text <- new [abc def]
-    new-editor s, screen, 0/left, 5/right
+    render screen, e
   ]
   screen-should-contain [
     .     .
@@ -322,12 +322,12 @@ scenario editor-initially-wraps-long-lines [
   ]
 ]
 
-scenario editor-initially-wraps-barely-long-lines [
+scenario editor-wraps-barely-long-lines [
   local-scope
   assume-screen 5/width, 5/height
+  e:&:editor <- new-editor [abcde], 0/left, 5/right
   run [
-    s:text <- new [abcde]
-    new-editor s, screen, 0/left, 5/right
+    render screen, e
   ]
   # still wrap, even though the line would fit. We need room to click on the
   # end of the line
@@ -345,11 +345,12 @@ scenario editor-initially-wraps-barely-long-lines [
   ]
 ]
 
-scenario editor-initializes-empty-text [
+scenario editor-with-empty-text [
   local-scope
   assume-screen 5/width, 5/height
+  e:&:editor <- new-editor [], 0/left, 5/right
   run [
-    e:&:editor <- new-editor [], screen, 0/left, 5/right
+    render screen, e
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
@@ -369,11 +370,12 @@ scenario editor-initializes-empty-text [
 scenario render-colors-comments [
   local-scope
   assume-screen 5/width, 5/height
-  run [
-    s:text <- new [abc
+  s:text <- new [abc
 # de
 f]
-    new-editor s, screen, 0/left, 5/right
+  e:&:editor <- new-editor s, 0/left, 5/right
+  run [
+    render screen, e
   ]
   screen-should-contain [
     .     .
@@ -451,11 +453,12 @@ def get-color color:num, c:char -> color:num [
 scenario render-colors-assignment [
   local-scope
   assume-screen 8/width, 5/height
-  run [
-    s:text <- new [abc
+  s:text <- new [abc
 d <- e
 f]
-    new-editor s, screen, 0/left, 8/right
+  e:&:editor <- new-editor s, 0/left, 8/right
+  run [
+    render screen, e
   ]
   screen-should-contain [
     .        .

@@ -1,14 +1,14 @@
 ## running code from the editor and creating sandboxes
 #
 # Running code in the sandbox editor prepends its contents to a list of
-# (non-editable) sandboxes below the editor, showing the result and a maybe
-# few other things.
+# (non-editable) sandboxes below the editor, showing the result and maybe a
+# few other things (later layers).
 #
-# This layer draws the menubar buttons non-editable sandboxes but they don't
-# do anything yet. Later layers implement each button.
+# This layer draws the menubar buttons in non-editable sandboxes but they
+# don't do anything yet. Later layers implement each button.
 
 container environment [
-  sandbox:&:sandbox  # list of sandboxes, from top to bottom
+  sandbox:&:sandbox  # list of sandboxes, from top to bottom. TODO: switch to &:list:sandbox
   render-from:num
   number-of-sandboxes:num
 ]
@@ -110,7 +110,7 @@ after <global-keypress> [
     screen <- update-status screen, [running...       ], 245/grey
     test-recipes:text, _/optional <- next-ingredient
     error?:bool, env, screen <- run-sandboxes env, screen, test-recipes
-#?     test-recipes <- copy 0  # abandon
+    test-recipes <- copy 0  # abandon
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env, render
     {
@@ -607,7 +607,7 @@ def editor-contents editor:&:editor -> result:text [
 scenario editor-provides-edited-contents [
   local-scope
   assume-screen 10/width, 5/height
-  e:&:editor <- new-editor [abc], screen, 0/left, 10/right
+  e:&:editor <- new-editor [abc], 0/left, 10/right
   assume-console [
     left-click 1, 2
     type [def]
