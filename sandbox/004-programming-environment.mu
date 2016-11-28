@@ -157,7 +157,7 @@ def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:scr
 def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
-  return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return-unless editor, 1/top, 0/left
   left:num <- get *editor, left:offset
   screen-height:num <- screen-height screen
   right:num <- get *editor, right:offset
@@ -231,7 +231,7 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
   # save first character off-screen
   *editor <- put *editor, bottom-of-screen:offset, curr
   *editor <- put *editor, bottom:offset, row
-  return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return row, column
 ]
 
 def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [

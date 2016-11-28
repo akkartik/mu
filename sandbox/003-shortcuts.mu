@@ -471,7 +471,7 @@ def move-cursor-coordinates-right editor:&:editor, screen-height:num -> editor:&
     cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal
-    return-unless below-screen?, editor/same-as-ingredient:0, 0/no-more-render
+    return-unless below-screen?, editor, 0/no-more-render
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
     go-render? <- copy 1/true

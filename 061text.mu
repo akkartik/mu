@@ -448,7 +448,7 @@ def replace s:text, oldc:char, newc:char, from:num/optional -> s:text [
   len:num <- length *s
   i:num <- find-next s, oldc, from
   done?:bool <- greater-or-equal i, len
-  return-if done?, s/same-as-ingredient:0
+  return-if done?
   *s <- put-index *s, i, newc
   i <- add i, 1
   s <- replace s, oldc, newc, i

@@ -108,9 +108,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   <span class="Comment"># early exit if text is empty</span>
-  <span class="muControl">return-unless</span> text, editor/same-as-ingredient:0
+  <span class="muControl">return-unless</span> text
   len:num <span class="Special">&lt;-</span> length *text
-  <span class="muControl">return-unless</span> len, editor/same-as-ingredient:0
+  <span class="muControl">return-unless</span> len
   idx:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   <span class="Comment"># now we can start appending the rest, character by character</span>
   curr:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
@@ -124,7 +124,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">return</span> editor/same-as-ingredient:0
 ]
 
 <span class="muScenario">scenario</span> editor-initializes-without-data [
@@ -158,7 +157,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def</span> render screen:&amp;:screen, editor:&amp;:editor<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, screen:&amp;:screen, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>
   left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
   screen-height:num <span class="Special">&lt;-</span> screen-height screen
   right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
@@ -253,7 +252,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
-  <span class="muControl">return</span> row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  <span class="muControl">return</span> row, column
 ]
 
 <span class="muRecipe">def</span> clear-screen-from screen:&amp;:screen, row:num, column:num, left:num, right:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
@@ -263,13 +262,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> screen
     clear-display-from row, column, left, right
-    <span class="muControl">return</span> screen/same-as-ingredient:0
+    <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if not, go the slower route</span>
   screen <span class="Special">&lt;-</span> move-cursor screen, row, column
   clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
-  <span class="muControl">return</span> screen/same-as-ingredient:0
 ]
 
 <span class="muRecipe">def</span> clear-rest-of-screen screen:&amp;:screen, row:num, left:num, right:num<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [

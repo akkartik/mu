@@ -74,7 +74,7 @@ after <handle-special-character> [
     redo <- push op, redo
     *editor <- put *editor, redo:offset, redo
     <handle-undo>
-    return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    return screen, editor, 1/go-render
   }
 ]
 
@@ -92,7 +92,7 @@ after <handle-special-character> [
     undo <- push op, undo
     *editor <- put *editor, undo:offset, undo
     <handle-redo>
-    return screen/same-as-ingredient:0, editor/same-as-ingredient:1, 1/go-render
+    return screen, editor, 1/go-render
   }
 ]
 
@@ -206,7 +206,6 @@ def add-operation editor:&:editor, op:&:operation -> editor:&:editor [
   redo:&:list:&:operation <- get *editor, redo:offset
   redo <- copy 0
   *editor <- put *editor, redo:offset, redo
-  return editor/same-as-ingredient:0
 ]
 
 after <handle-undo> [

@@ -73,9 +73,9 @@ def insert-text editor:&:editor, text:text -> editor:&:editor [
   local-scope
   load-ingredients
   # early exit if text is empty
-  return-unless text, editor/same-as-ingredient:0
+  return-unless text
   len:num <- length *text
-  return-unless len, editor/same-as-ingredient:0
+  return-unless len
   idx:num <- copy 0
   # now we can start appending the rest, character by character
   curr:&:duplex-list:char <- get *editor, data:offset
@@ -89,7 +89,6 @@ def insert-text editor:&:editor, text:text -> editor:&:editor [
     idx <- add idx, 1
     loop
   }
-  return editor/same-as-ingredient:0
 ]
 
 scenario editor-initializes-without-data [
@@ -123,7 +122,7 @@ scenario editor-initializes-without-data [
 def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
-  return-unless editor, 1/top, 0/left, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return-unless editor, 1/top, 0/left
   left:num <- get *editor, left:offset
   screen-height:num <- screen-height screen
   right:num <- get *editor, right:offset
@@ -218,7 +217,7 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
   *editor <- put *editor, cursor-row:offset, cursor-row
   *editor <- put *editor, cursor-column:offset, cursor-column
   *editor <- put *editor, before-cursor:offset, before-cursor
-  return row, column, screen/same-as-ingredient:0, editor/same-as-ingredient:1
+  return row, column
 ]
 
 def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
@@ -228,13 +227,12 @@ def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num 
   {
     break-if screen
     clear-display-from row, column, left, right
-    return screen/same-as-ingredient:0
+    return
   }
   # if not, go the slower route
   screen <- move-cursor screen, row, column
   clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
-  return screen/same-as-ingredient:0
 ]
 
 def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen:&:screen [
