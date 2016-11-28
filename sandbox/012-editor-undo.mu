@@ -74,7 +74,7 @@ after <handle-special-character> [
     redo <- push op, redo
     *editor <- put *editor, redo:offset, redo
     <handle-undo>
-    return screen, editor, 1/go-render
+    return 1/go-render
   }
 ]
 
@@ -92,7 +92,7 @@ after <handle-special-character> [
     undo <- push op, undo
     *editor <- put *editor, undo:offset, undo
     <handle-redo>
-    return screen, editor, 1/go-render
+    return 1/go-render
   }
 ]
 

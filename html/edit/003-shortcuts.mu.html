@@ -63,11 +63,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     tab?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">9/tab</span>
     <span class="muControl">break-unless</span> tab?
 <span class="Constant">    &lt;insert-character-begin&gt;</span>
-    editor, screen, go-render?:bool <span class="Special">&lt;-</span> insert-at-cursor editor, <span class="Constant">32/space</span>, screen
-    editor, screen, go-render?:bool <span class="Special">&lt;-</span> insert-at-cursor editor, <span class="Constant">32/space</span>, screen
+    insert-at-cursor editor, <span class="Constant">32/space</span>, screen
+    insert-at-cursor editor, <span class="Constant">32/space</span>, screen
 <span class="Constant">    &lt;insert-character-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -106,7 +105,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     delete-previous-character?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">8/backspace</span>
     <span class="muControl">break-unless</span> delete-previous-character?
 <span class="Constant">    &lt;backspace-character-begin&gt;</span>
-    editor, screen, go-render?:bool, backspaced-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-before-cursor editor, screen
+    go-render?:bool, backspaced-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-before-cursor editor, screen
 <span class="Constant">    &lt;backspace-character-end&gt;</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
@@ -115,31 +114,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Comment"># return values:</span>
 <span class="Comment">#   go-render? - whether caller needs to update the screen</span>
 <span class="Comment">#   backspaced-cell - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.</span>
-<span class="muRecipe">def</span> delete-before-cursor editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, screen:&amp;:screen, go-render?:bool, backspaced-cell:&amp;:duplex-list:char [
+<span class="muRecipe">def</span> delete-before-cursor editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>go-render?:bool, backspaced-cell:&amp;:duplex-list:char, editor:&amp;:editor, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
   data:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
   <span class="Comment"># if at start of text (before-cursor at § sentinel), return</span>
   prev:&amp;:duplex-list:char <span class="Special">&lt;-</span> prev before-cursor
-  go-render?, backspaced-cell <span class="Special">&lt;-</span> copy <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
-  <span class="muControl">return-unless</span> prev
+  <span class="muControl">return-unless</span> prev, <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
   trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[delete-before-cursor]</span>
   original-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
-  editor, scroll?:bool <span class="Special">&lt;-</span> move-cursor-coordinates-left editor
+  scroll?:bool <span class="Special">&lt;-</span> move-cursor-coordinates-left editor
   backspaced-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> copy before-cursor
   data <span class="Special">&lt;-</span> remove before-cursor, data  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/before-cursor</span>
   before-cursor <span class="Special">&lt;-</span> copy prev
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  <span class="muControl">return-if</span> scroll?
+  <span class="muControl">return-if</span> scroll?, <span class="Constant">1/go-render</span>
   screen-width:num <span class="Special">&lt;-</span> screen-width screen
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
   <span class="Comment"># did we just backspace over a newline?</span>
   same-row?:bool <span class="Special">&lt;-</span> equal cursor-row, original-row
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  <span class="muControl">return-unless</span> same-row?
+  <span class="muControl">return-unless</span> same-row?, <span class="Constant">1/go-render</span>
   left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
   right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
   curr:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
@@ -148,8 +144,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="Comment"># hit right margin? give up and let caller render</span>
     at-right?:bool <span class="Special">&lt;-</span> greater-or-equal curr-column, right
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return-if</span> at-right?
+    <span class="muControl">return-if</span> at-right?, <span class="Constant">1/go-render</span>
     <span class="muControl">break-unless</span> curr
     <span class="Comment"># newline? done.</span>
     currc:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
@@ -166,9 +161,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
 ]
 
-<span class="muRecipe">def</span> move-cursor-coordinates-left editor:&amp;:editor<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, go-render?:bool [
+<span class="muRecipe">def</span> move-cursor-coordinates-left editor:&amp;:editor<span class="muRecipe"> -&gt; </span>go-render?:bool, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  go-render?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
@@ -180,12 +176,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[decrementing cursor column]</span>
     cursor-column <span class="Special">&lt;-</span> subtract cursor-column,<span class="Constant"> 1</span>
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if at left margin, we must move to previous row:</span>
   top-of-screen?:bool <span class="Special">&lt;-</span> equal cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># exclude menu bar</span>
-  go-render?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> top-of-screen?
     cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>
@@ -379,25 +373,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     delete-next-character?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65522/delete</span>
     <span class="muControl">break-unless</span> delete-next-character?
 <span class="Constant">    &lt;delete-character-begin&gt;</span>
-    editor, screen, go-render?:bool, deleted-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-at-cursor editor, screen
+    go-render?:bool, deleted-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-at-cursor editor, screen
 <span class="Constant">    &lt;delete-character-end&gt;</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> delete-at-cursor editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, screen:&amp;:screen, go-render?:bool, deleted-cell:&amp;:duplex-list:char [
+<span class="muRecipe">def</span> delete-at-cursor editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>go-render?:bool, deleted-cell:&amp;:duplex-list:char, editor:&amp;:editor, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
   data:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
   deleted-cell:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-  <span class="muControl">return-unless</span> deleted-cell
+  <span class="muControl">return-unless</span> deleted-cell, <span class="Constant">0/don't-render</span>
   currc:char <span class="Special">&lt;-</span> get *deleted-cell, <span class="Constant">value:offset</span>
   data <span class="Special">&lt;-</span> remove deleted-cell, data
   deleted-newline?:bool <span class="Special">&lt;-</span> equal currc, <span class="Constant">10/newline</span>
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  <span class="muControl">return-if</span> deleted-newline?
+  <span class="muControl">return-if</span> deleted-newline?, <span class="Constant">1/go-render</span>
   <span class="Comment"># wasn't a newline? render rest of line</span>
   curr:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor  <span class="Comment"># refresh after remove above</span>
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
@@ -408,8 +400,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     <span class="Comment"># hit right margin? give up and let caller render</span>
     at-right?:bool <span class="Special">&lt;-</span> greater-or-equal curr-column, screen-width
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return-if</span> at-right?
+    <span class="muControl">return-if</span> at-right?, <span class="Constant">1/go-render</span>
     <span class="muControl">break-unless</span> curr
     <span class="Comment"># newline? done.</span>
     currc:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
@@ -461,7 +452,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
     before-cursor <span class="Special">&lt;-</span> copy next-cursor
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
-    editor, go-render?:bool <span class="Special">&lt;-</span> move-cursor-coordinates-right editor, screen-height
+    go-render?:bool <span class="Special">&lt;-</span> move-cursor-coordinates-right editor, screen-height
     screen <span class="Special">&lt;-</span> move-cursor screen, cursor-row, cursor-column
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">2/right-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
@@ -469,7 +460,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> move-cursor-coordinates-right editor:&amp;:editor, screen-height:num<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, go-render?:bool [
+<span class="muRecipe">def</span> move-cursor-coordinates-right editor:&amp;:editor, screen-height:num<span class="muRecipe"> -&gt; </span>go-render?:bool, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor <span class="Constant">before-cursor:offset</span>
@@ -487,13 +478,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     cursor-column <span class="Special">&lt;-</span> copy left
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
     below-screen?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-row, screen-height  <span class="Comment"># must be equal</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return-unless</span> below-screen?
+    <span class="muControl">return-unless</span> below-screen?, <span class="Constant">0/don't-render</span>
 <span class="Constant">    &lt;scroll-down&gt;</span>
     cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># bring back into screen range</span>
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if the line wraps, move cursor to start of next row</span>
   <span class="Delimiter">{</span>
@@ -512,12 +501,11 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     cursor-column <span class="Special">&lt;-</span> copy left
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
     below-screen?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-row, screen-height  <span class="Comment"># must be equal</span>
-    <span class="muControl">return-unless</span> below-screen?, editor, <span class="Constant">0/no-more-render</span>
+    <span class="muControl">return-unless</span> below-screen?, <span class="Constant">0/no-more-render</span>
 <span class="Constant">    &lt;scroll-down&gt;</span>
     cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># bring back into screen range</span>
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># otherwise move cursor one character right</span>
   cursor-column <span class="Special">&lt;-</span> add cursor-column,<span class="Constant"> 1</span>
@@ -744,10 +732,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[left arrow]</span>
     <span class="Comment"># if not at start of text (before-cursor at § sentinel)</span>
     prev:&amp;:duplex-list:char <span class="Special">&lt;-</span> prev before-cursor
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return-unless</span> prev
+    <span class="muControl">return-unless</span> prev, <span class="Constant">0/don't-render</span>
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
-    editor, go-render? <span class="Special">&lt;-</span> move-cursor-coordinates-left editor
+    go-render? <span class="Special">&lt;-</span> move-cursor-coordinates-left editor
     before-cursor <span class="Special">&lt;-</span> copy prev
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">1/left-arrow</span>
@@ -1013,16 +1000,17 @@ d]
     move-to-previous-line?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65517/up-arrow</span>
     <span class="muControl">break-unless</span> move-to-previous-line?
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
-    editor, go-render? <span class="Special">&lt;-</span> move-to-previous-line editor
+    go-render? <span class="Special">&lt;-</span> move-to-previous-line editor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">3/up-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> move-to-previous-line editor:&amp;:editor<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, go-render?:bool [
+<span class="muRecipe">def</span> move-to-previous-line editor:&amp;:editor<span class="muRecipe"> -&gt; </span>go-render?:bool, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  go-render?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
   cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
@@ -1043,14 +1031,12 @@ d]
       <span class="muControl">break-if</span> at-newline?
       curr:&amp;:duplex-list:char <span class="Special">&lt;-</span> before-previous-line curr, editor
       no-motion?:bool <span class="Special">&lt;-</span> equal curr, old
-      go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
       <span class="muControl">return-if</span> no-motion?
     <span class="Delimiter">}</span>
     <span class="Delimiter">{</span>
       old <span class="Special">&lt;-</span> copy curr
       curr <span class="Special">&lt;-</span> before-previous-line curr, editor
       no-motion?:bool <span class="Special">&lt;-</span> equal curr, old
-      go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
       <span class="muControl">return-if</span> no-motion?
     <span class="Delimiter">}</span>
     before-cursor <span class="Special">&lt;-</span> copy curr
@@ -1076,15 +1062,13 @@ d]
       *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># if cursor already at top, scroll up</span>
     <span class="muControl">break-unless</span> already-at-top?
 <span class="Constant">    &lt;scroll-up&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1247,14 +1231,14 @@ d]
     move-to-next-line?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65516/down-arrow</span>
     <span class="muControl">break-unless</span> move-to-next-line?
 <span class="Constant">    &lt;move-cursor-begin&gt;</span>
-    editor, go-render? <span class="Special">&lt;-</span> move-to-next-line editor, screen-height
+    go-render? <span class="Special">&lt;-</span> move-to-next-line editor, screen-height
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">4/down-arrow</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> move-to-next-line editor:&amp;:editor, screen-height:num<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, go-render?:bool [
+<span class="muRecipe">def</span> move-to-next-line editor:&amp;:editor, screen-height:num<span class="muRecipe"> -&gt; </span>go-render?:bool, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
@@ -1277,8 +1261,7 @@ d]
       <span class="muControl">break-unless</span> no-motion?
       scroll?:bool <span class="Special">&lt;-</span> greater-than cursor-row,<span class="Constant"> 1</span>
       <span class="muControl">break-if</span> scroll?, <span class="Constant">+try-to-scroll</span>
-      go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-      <span class="muControl">return</span>
+      <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
     <span class="Delimiter">}</span>
     cursor-row <span class="Special">&lt;-</span> add cursor-row,<span class="Constant"> 1</span>
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
@@ -1302,8 +1285,7 @@ d]
       *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
 <span class="Constant">  +try-to-scroll</span>
 <span class="Constant">  &lt;scroll-down&gt;</span>
@@ -1383,8 +1365,7 @@ d]
     move-to-start-of-line editor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1396,8 +1377,7 @@ d]
     move-to-start-of-line editor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1559,8 +1539,7 @@ d]
     move-to-end-of-line editor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1572,8 +1551,7 @@ d]
     move-to-end-of-line editor
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1708,8 +1686,7 @@ d]
 <span class="Constant">    &lt;delete-to-start-of-line-begin&gt;</span>
     deleted-cells:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-to-start-of-line editor
 <span class="Constant">    &lt;delete-to-start-of-line-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1846,8 +1823,7 @@ d]
 <span class="Constant">    &lt;delete-to-end-of-line-begin&gt;</span>
     deleted-cells:&amp;:duplex-list:char <span class="Special">&lt;-</span> delete-to-end-of-line editor
 <span class="Constant">    &lt;delete-to-end-of-line-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -2037,8 +2013,7 @@ d]
   top-of-screen <span class="Special">&lt;-</span> before-start-of-next-line top-of-screen, max
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">top-of-screen:offset</span>, top-of-screen
   no-movement?:bool <span class="Special">&lt;-</span> equal old-top, top-of-screen
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-  <span class="muControl">return-if</span> no-movement?
+  <span class="muControl">return-if</span> no-movement?, <span class="Constant">0/don't-render</span>
 ]
 
 <span class="Comment"># takes a pointer into the doubly-linked list, scans ahead at most 'max'</span>
@@ -2417,8 +2392,7 @@ d]
   top-of-screen <span class="Special">&lt;-</span> before-previous-line top-of-screen, editor
   *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">top-of-screen:offset</span>, top-of-screen
   no-movement?:bool <span class="Special">&lt;-</span> equal old-top, top-of-screen
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-  <span class="muControl">return-if</span> no-movement?
+  <span class="muControl">return-if</span> no-movement?, <span class="Constant">0/don't-render</span>
 ]
 
 <span class="Comment"># takes a pointer into the doubly-linked list, scans back to before start of</span>
@@ -2824,9 +2798,8 @@ e]
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     top-of-screen:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-    no-movement?:bool <span class="Special">&lt;-</span> equal top-of-screen, old-top
-    go-render? <span class="Special">&lt;-</span> not no-movement?
-    <span class="muControl">return</span>
+    movement?:bool <span class="Special">&lt;-</span> not-equal top-of-screen, old-top
+    <span class="muControl">return</span> movement?/go-render
   <span class="Delimiter">}</span>
 ]
 
@@ -2840,9 +2813,8 @@ e]
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     top-of-screen:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-    no-movement?:bool <span class="Special">&lt;-</span> equal top-of-screen, old-top
-    go-render? <span class="Special">&lt;-</span> not no-movement?
-    <span class="muControl">return</span>
+    movement?:bool <span class="Special">&lt;-</span> not-equal top-of-screen, old-top
+    <span class="muControl">return</span> movement?/go-render
   <span class="Delimiter">}</span>
 ]
 
@@ -3025,9 +2997,8 @@ e]
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     top-of-screen:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-    no-movement?:bool <span class="Special">&lt;-</span> equal top-of-screen, old-top
-    go-render? <span class="Special">&lt;-</span> not no-movement?
-    <span class="muControl">return</span>
+    movement?:bool <span class="Special">&lt;-</span> not-equal top-of-screen, old-top
+    <span class="muControl">return</span> movement?/go-render
   <span class="Delimiter">}</span>
 ]
 
@@ -3041,10 +3012,9 @@ e]
     undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">0/never</span>
 <span class="Constant">    &lt;move-cursor-end&gt;</span>
     top-of-screen:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-    no-movement?:bool <span class="Special">&lt;-</span> equal top-of-screen, old-top
+    movement?:bool <span class="Special">&lt;-</span> not-equal top-of-screen, old-top
     <span class="Comment"># don't bother re-rendering if nothing changed. todo: test this</span>
-    go-render? <span class="Special">&lt;-</span> not no-movement?
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> movement?/go-render
   <span class="Delimiter">}</span>
 ]
 

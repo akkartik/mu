@@ -29,11 +29,10 @@ after <handle-special-character> [
     tab?:bool <- equal c, 9/tab
     break-unless tab?
     <insert-character-begin>
-    editor, screen, go-render?:bool <- insert-at-cursor editor, 32/space, screen
-    editor, screen, go-render?:bool <- insert-at-cursor editor, 32/space, screen
+    insert-at-cursor editor, 32/space, screen
+    insert-at-cursor editor, 32/space, screen
     <insert-character-end>
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -72,7 +71,7 @@ after <handle-special-character> [
     delete-previous-character?:bool <- equal c, 8/backspace
     break-unless delete-previous-character?
     <backspace-character-begin>
-    editor, screen, go-render?:bool, backspaced-cell:&:duplex-list:char <- delete-before-cursor editor, screen
+    go-render?:bool, backspaced-cell:&:duplex-list:char <- delete-before-cursor editor, screen
     <backspace-character-end>
     return
   }
@@ -81,31 +80,28 @@ after <handle-special-character> [
 # return values:
 #   go-render? - whether caller needs to update the screen
 #   backspaced-cell - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.
-def delete-before-cursor editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool, backspaced-cell:&:duplex-list:char [
+def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, backspaced-cell:&:duplex-list:char, editor:&:editor, screen:&:screen [
   local-scope
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   data:&:duplex-list:char <- get *editor, data:offset
   # if at start of text (before-cursor at § sentinel), return
   prev:&:duplex-list:char <- prev before-cursor
-  go-render?, backspaced-cell <- copy 0/no-more-render, 0/nothing-deleted
-  return-unless prev
+  return-unless prev, 0/no-more-render, 0/nothing-deleted
   trace 10, [app], [delete-before-cursor]
   original-row:num <- get *editor, cursor-row:offset
-  editor, scroll?:bool <- move-cursor-coordinates-left editor
+  scroll?:bool <- move-cursor-coordinates-left editor
   backspaced-cell:&:duplex-list:char <- copy before-cursor
   data <- remove before-cursor, data  # will also neatly trim next/prev pointers in backspaced-cell/before-cursor
   before-cursor <- copy prev
   *editor <- put *editor, before-cursor:offset, before-cursor
-  go-render? <- copy 1/true
-  return-if scroll?
+  return-if scroll?, 1/go-render
   screen-width:num <- screen-width screen
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
   # did we just backspace over a newline?
   same-row?:bool <- equal cursor-row, original-row
-  go-render? <- copy 1/true
-  return-unless same-row?
+  return-unless same-row?, 1/go-render
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   curr:&:duplex-list:char <- next before-cursor
@@ -114,8 +110,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> editor:&:editor, sc
   {
     # hit right margin? give up and let caller render
     at-right?:bool <- greater-or-equal curr-column, right
-    go-render? <- copy 1/true
-    return-if at-right?
+    return-if at-right?, 1/go-render
     break-unless curr
     # newline? done.
     currc:char <- get *curr, value:offset
@@ -132,9 +127,10 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> editor:&:editor, sc
   go-render? <- copy 0/false
 ]
 
-def move-cursor-coordinates-left editor:&:editor -> editor:&:editor, go-render?:bool [
+def move-cursor-coordinates-left editor:&:editor -> go-render?:bool, editor:&:editor [
   local-scope
   load-ingredients
+  go-render?:bool <- copy 0/false
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
@@ -146,12 +142,10 @@ def move-cursor-coordinates-left editor:&:editor -> editor:&:editor, go-render?:
     trace 10, [app], [decrementing cursor column]
     cursor-column <- subtract cursor-column, 1
     *editor <- put *editor, cursor-column:offset, cursor-column
-    go-render? <- copy 0/false
     return
   }
   # if at left margin, we must move to previous row:
   top-of-screen?:bool <- equal cursor-row, 1  # exclude menu bar
-  go-render?:bool <- copy 0/false
   {
     break-if top-of-screen?
     cursor-row <- subtract cursor-row, 1
@@ -345,25 +339,23 @@ after <handle-special-key> [
     delete-next-character?:bool <- equal k, 65522/delete
     break-unless delete-next-character?
     <delete-character-begin>
-    editor, screen, go-render?:bool, deleted-cell:&:duplex-list:char <- delete-at-cursor editor, screen
+    go-render?:bool, deleted-cell:&:duplex-list:char <- delete-at-cursor editor, screen
     <delete-character-end>
     return
   }
 ]
 
-def delete-at-cursor editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool, deleted-cell:&:duplex-list:char [
+def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, deleted-cell:&:duplex-list:char, editor:&:editor, screen:&:screen [
   local-scope
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   data:&:duplex-list:char <- get *editor, data:offset
   deleted-cell:&:duplex-list:char <- next before-cursor
-  go-render? <- copy 0/false
-  return-unless deleted-cell
+  return-unless deleted-cell, 0/don't-render
   currc:char <- get *deleted-cell, value:offset
   data <- remove deleted-cell, data
   deleted-newline?:bool <- equal currc, 10/newline
-  go-render? <- copy 1/true
-  return-if deleted-newline?
+  return-if deleted-newline?, 1/go-render
   # wasn't a newline? render rest of line
   curr:&:duplex-list:char <- next before-cursor  # refresh after remove above
   cursor-row:num <- get *editor, cursor-row:offset
@@ -374,8 +366,7 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> editor:&:editor, screen
   {
     # hit right margin? give up and let caller render
     at-right?:bool <- greater-or-equal curr-column, screen-width
-    go-render? <- copy 1/true
-    return-if at-right?
+    return-if at-right?, 1/go-render
     break-unless curr
     # newline? done.
     currc:char <- get *curr, value:offset
@@ -427,7 +418,7 @@ after <handle-special-key> [
     <move-cursor-begin>
     before-cursor <- copy next-cursor
     *editor <- put *editor, before-cursor:offset, before-cursor
-    editor, go-render?:bool <- move-cursor-coordinates-right editor, screen-height
+    go-render?:bool <- move-cursor-coordinates-right editor, screen-height
     screen <- move-cursor screen, cursor-row, cursor-column
     undo-coalesce-tag:num <- copy 2/right-arrow
     <move-cursor-end>
@@ -435,7 +426,7 @@ after <handle-special-key> [
   }
 ]
 
-def move-cursor-coordinates-right editor:&:editor, screen-height:num -> editor:&:editor, go-render?:bool [
+def move-cursor-coordinates-right editor:&:editor, screen-height:num -> go-render?:bool, editor:&:editor [
   local-scope
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor before-cursor:offset
@@ -453,13 +444,11 @@ def move-cursor-coordinates-right editor:&:editor, screen-height:num -> editor:&
     cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal
-    go-render? <- copy 0/false
-    return-unless below-screen?
+    return-unless below-screen?, 0/don't-render
     <scroll-down>
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
   # if the line wraps, move cursor to start of next row
   {
@@ -478,12 +467,11 @@ def move-cursor-coordinates-right editor:&:editor, screen-height:num -> editor:&
     cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal
-    return-unless below-screen?, editor, 0/no-more-render
+    return-unless below-screen?, 0/no-more-render
     <scroll-down>
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
   # otherwise move cursor one character right
   cursor-column <- add cursor-column, 1
@@ -710,10 +698,9 @@ after <handle-special-key> [
     trace 10, [app], [left arrow]
     # if not at start of text (before-cursor at § sentinel)
     prev:&:duplex-list:char <- prev before-cursor
-    go-render? <- copy 0/false
-    return-unless prev
+    return-unless prev, 0/don't-render
     <move-cursor-begin>
-    editor, go-render? <- move-cursor-coordinates-left editor
+    go-render? <- move-cursor-coordinates-left editor
     before-cursor <- copy prev
     *editor <- put *editor, before-cursor:offset, before-cursor
     undo-coalesce-tag:num <- copy 1/left-arrow
@@ -979,16 +966,17 @@ after <handle-special-key> [
     move-to-previous-line?:bool <- equal k, 65517/up-arrow
     break-unless move-to-previous-line?
     <move-cursor-begin>
-    editor, go-render? <- move-to-previous-line editor
+    go-render? <- move-to-previous-line editor
     undo-coalesce-tag:num <- copy 3/up-arrow
     <move-cursor-end>
     return
   }
 ]
 
-def move-to-previous-line editor:&:editor -> editor:&:editor, go-render?:bool [
+def move-to-previous-line editor:&:editor -> go-render?:bool, editor:&:editor [
   local-scope
   load-ingredients
+  go-render?:bool <- copy 0/false
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -1009,14 +997,12 @@ def move-to-previous-line editor:&:editor -> editor:&:editor, go-render?:bool [
       break-if at-newline?
       curr:&:duplex-list:char <- before-previous-line curr, editor
       no-motion?:bool <- equal curr, old
-      go-render? <- copy 0/false
       return-if no-motion?
     }
     {
       old <- copy curr
       curr <- before-previous-line curr, editor
       no-motion?:bool <- equal curr, old
-      go-render? <- copy 0/false
       return-if no-motion?
     }
     before-cursor <- copy curr
@@ -1042,15 +1028,13 @@ def move-to-previous-line editor:&:editor -> editor:&:editor, go-render?:bool [
       *editor <- put *editor, cursor-column:offset, cursor-column
       loop
     }
-    go-render? <- copy 0/false
     return
   }
   {
     # if cursor already at top, scroll up
     break-unless already-at-top?
     <scroll-up>
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -1213,14 +1197,14 @@ after <handle-special-key> [
     move-to-next-line?:bool <- equal k, 65516/down-arrow
     break-unless move-to-next-line?
     <move-cursor-begin>
-    editor, go-render? <- move-to-next-line editor, screen-height
+    go-render? <- move-to-next-line editor, screen-height
     undo-coalesce-tag:num <- copy 4/down-arrow
     <move-cursor-end>
     return
   }
 ]
 
-def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor, go-render?:bool [
+def move-to-next-line editor:&:editor, screen-height:num -> go-render?:bool, editor:&:editor [
   local-scope
   load-ingredients
   cursor-row:num <- get *editor, cursor-row:offset
@@ -1243,8 +1227,7 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor, go-
       break-unless no-motion?
       scroll?:bool <- greater-than cursor-row, 1
       break-if scroll?, +try-to-scroll
-      go-render? <- copy 0/false
-      return
+      return 0/don't-render
     }
     cursor-row <- add cursor-row, 1
     *editor <- put *editor, cursor-row:offset, cursor-row
@@ -1268,8 +1251,7 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor, go-
       *editor <- put *editor, cursor-column:offset, cursor-column
       loop
     }
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
   +try-to-scroll
   <scroll-down>
@@ -1349,8 +1331,7 @@ after <handle-special-character> [
     move-to-start-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
 ]
 
@@ -1362,8 +1343,7 @@ after <handle-special-key> [
     move-to-start-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
 ]
 
@@ -1525,8 +1505,7 @@ after <handle-special-character> [
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
 ]
 
@@ -1538,8 +1517,7 @@ after <handle-special-key> [
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
 ]
 
@@ -1674,8 +1652,7 @@ after <handle-special-character> [
     <delete-to-start-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
     <delete-to-start-of-line-end>
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -1812,8 +1789,7 @@ after <handle-special-character> [
     <delete-to-end-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-end-of-line editor
     <delete-to-end-of-line-end>
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -2003,8 +1979,7 @@ after <scroll-down> [
   top-of-screen <- before-start-of-next-line top-of-screen, max
   *editor <- put *editor, top-of-screen:offset, top-of-screen
   no-movement?:bool <- equal old-top, top-of-screen
-  go-render? <- copy 0/false
-  return-if no-movement?
+  return-if no-movement?, 0/don't-render
 ]
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
@@ -2383,8 +2358,7 @@ after <scroll-up> [
   top-of-screen <- before-previous-line top-of-screen, editor
   *editor <- put *editor, top-of-screen:offset, top-of-screen
   no-movement?:bool <- equal old-top, top-of-screen
-  go-render? <- copy 0/false
-  return-if no-movement?
+  return-if no-movement?, 0/don't-render
 ]
 
 # takes a pointer into the doubly-linked list, scans back to before start of
@@ -2790,9 +2764,8 @@ after <handle-special-character> [
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
-    no-movement?:bool <- equal top-of-screen, old-top
-    go-render? <- not no-movement?
-    return
+    movement?:bool <- not-equal top-of-screen, old-top
+    return movement?/go-render
   }
 ]
 
@@ -2806,9 +2779,8 @@ after <handle-special-key> [
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
-    no-movement?:bool <- equal top-of-screen, old-top
-    go-render? <- not no-movement?
-    return
+    movement?:bool <- not-equal top-of-screen, old-top
+    return movement?/go-render
   }
 ]
 
@@ -2991,9 +2963,8 @@ after <handle-special-character> [
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
-    no-movement?:bool <- equal top-of-screen, old-top
-    go-render? <- not no-movement?
-    return
+    movement?:bool <- not-equal top-of-screen, old-top
+    return movement?/go-render
   }
 ]
 
@@ -3007,10 +2978,9 @@ after <handle-special-key> [
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
-    no-movement?:bool <- equal top-of-screen, old-top
+    movement?:bool <- not-equal top-of-screen, old-top
     # don't bother re-rendering if nothing changed. todo: test this
-    go-render? <- not no-movement?
-    return
+    return movement?/go-render
   }
 ]
 

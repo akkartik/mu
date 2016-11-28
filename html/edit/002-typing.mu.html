@@ -69,7 +69,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="Comment"># keyboard events</span>
     <span class="Delimiter">{</span>
       <span class="muControl">break-if</span> is-touch?
-      screen, editor, go-render?:bool <span class="Special">&lt;-</span> handle-keyboard-event screen, editor, e
+      go-render?:bool <span class="Special">&lt;-</span> handle-keyboard-event screen, editor, e
       <span class="Delimiter">{</span>
         <span class="muControl">break-unless</span> go-render?
         screen <span class="Special">&lt;-</span> editor-render screen, editor
@@ -196,11 +196,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 
 <span class="Comment"># Process an event 'e' and try to minimally update the screen.</span>
 <span class="Comment"># Set 'go-render?' to true to indicate the caller must perform a non-minimal update.</span>
-<span class="muRecipe">def</span> handle-keyboard-event screen:&amp;:screen, editor:&amp;:editor, e:event<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, editor:&amp;:editor, go-render?:bool [
+<span class="muRecipe">def</span> handle-keyboard-event screen:&amp;:screen, editor:&amp;:editor, e:event<span class="muRecipe"> -&gt; </span>go-render?:bool, screen:&amp;:screen, editor:&amp;:editor [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-  <span class="muControl">return-unless</span> editor
+  <span class="muControl">return-unless</span> editor, <span class="Constant">0/don't-render</span>
   screen-width:num <span class="Special">&lt;-</span> screen-width screen
   screen-height:num <span class="Special">&lt;-</span> screen-height screen
   left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
@@ -219,11 +218,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="Constant">    &lt;handle-special-character&gt;</span>
     <span class="Comment"># ignore any other special characters</span>
     regular-character?:bool <span class="Special">&lt;-</span> greater-or-equal c, <span class="Constant">32/space</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return-unless</span> regular-character?
+    <span class="muControl">return-unless</span> regular-character?, <span class="Constant">0/don't-render</span>
     <span class="Comment"># otherwise type it in</span>
 <span class="Constant">    &lt;insert-character-begin&gt;</span>
-    editor, screen, go-render?:bool <span class="Special">&lt;-</span> insert-at-cursor editor, c, screen
+    go-render? <span class="Special">&lt;-</span> insert-at-cursor editor, c, screen
 <span class="Constant">    &lt;insert-character-end&gt;</span>
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
@@ -232,11 +230,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   assert is-keycode?, <span class="Constant">[event was of unknown type; neither keyboard nor mouse]</span>
   <span class="Comment"># handlers for each special key will go here</span>
 <span class="Constant">  &lt;handle-special-key&gt;</span>
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  <span class="muControl">return</span>
+  <span class="muControl">return</span> <span class="Constant">1/go-render</span>
 ]
 
-<span class="muRecipe">def</span> insert-at-cursor editor:&amp;:editor, c:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, screen:&amp;:screen, go-render?:bool [
+<span class="muRecipe">def</span> insert-at-cursor editor:&amp;:editor, c:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>go-render?:bool, editor:&amp;:editor, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
@@ -268,8 +265,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-if</span> overflow?
     move-cursor screen, save-row, save-column
     print screen, c
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
   <span class="Delimiter">{</span>
     <span class="Comment"># not at right margin? print the character and rest of line</span>
@@ -281,9 +277,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     curr-column:num <span class="Special">&lt;-</span> copy save-column
     <span class="Delimiter">{</span>
       <span class="Comment"># hit right margin? give up and let caller render</span>
-      go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
       at-right?:bool <span class="Special">&lt;-</span> greater-than curr-column, right
-      <span class="muControl">return-if</span> at-right?
+      <span class="muControl">return-if</span> at-right?, <span class="Constant">1/go-render</span>
       <span class="muControl">break-unless</span> curr
       <span class="Comment"># newline? done.</span>
       currc:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
@@ -294,11 +289,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       curr <span class="Special">&lt;-</span> next curr
       <span class="muControl">loop</span>
     <span class="Delimiter">}</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
   <span class="Delimiter">}</span>
-  go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  <span class="muControl">return</span>
+  <span class="muControl">return</span> <span class="Constant">1/go-render</span>
 ]
 
 <span class="Comment"># helper for tests</span>
@@ -775,8 +768,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
       <span class="muControl">break-unless</span> below-screen?
 <span class="Constant">      &lt;scroll-down&gt;</span>
     <span class="Delimiter">}</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -898,14 +890,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
     <span class="muControl">break-unless</span> newline?
 <span class="Constant">    &lt;insert-enter-begin&gt;</span>
-    editor <span class="Special">&lt;-</span> insert-new-line-and-indent editor, screen
+    insert-new-line-and-indent editor, screen
 <span class="Constant">    &lt;insert-enter-end&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
-<span class="muRecipe">def</span> insert-new-line-and-indent editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, screen:&amp;:screen, go-render?:bool [
+<span class="muRecipe">def</span> insert-new-line-and-indent editor:&amp;:editor, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>editor:&amp;:editor, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
@@ -927,7 +918,6 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     below-screen?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-row, screen-height  <span class="Comment"># must be equal, never greater</span>
     <span class="muControl">break-unless</span> below-screen?
 <span class="Constant">    &lt;scroll-down&gt;</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
     cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># bring back into screen range</span>
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
   <span class="Delimiter">}</span>
@@ -941,7 +931,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">{</span>
     indent-done?:bool <span class="Special">&lt;-</span> greater-or-equal i, indent
     <span class="muControl">break-if</span> indent-done?
-    editor, screen, go-render?:bool <span class="Special">&lt;-</span> insert-at-cursor editor, <span class="Constant">32/space</span>, screen
+    insert-at-cursor editor, <span class="Constant">32/space</span>, screen
     i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
     <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
@@ -1083,8 +1073,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     paste-start?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65507/paste-start</span>
     <span class="muControl">break-unless</span> paste-start?
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">0/false</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 
@@ -1093,8 +1082,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     paste-end?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65506/paste-end</span>
     <span class="muControl">break-unless</span> paste-end?
     *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">1/true</span>
-    go-render? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-    <span class="muControl">return</span>
+    <span class="muControl">return</span> <span class="Constant">1/go-render</span>
   <span class="Delimiter">}</span>
 ]
 

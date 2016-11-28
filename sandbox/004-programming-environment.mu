@@ -104,7 +104,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
     # if it's not global and not a touch event, send to appropriate editor
     {
       hide-screen screen
-      screen, current-sandbox, render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
+      render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
       # refresh screen only if no more events
       # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
       more-events?:bool <- has-more-events? console

@@ -34,7 +34,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
     # keyboard events
     {
       break-if is-touch?
-      screen, editor, go-render?:bool <- handle-keyboard-event screen, editor, e
+      go-render?:bool <- handle-keyboard-event screen, editor, e
       {
         break-unless go-render?
         screen <- editor-render screen, editor
@@ -161,11 +161,10 @@ def snap-cursor screen:&:screen, editor:&:editor, target-row:num, target-column:
 
 # Process an event 'e' and try to minimally update the screen.
 # Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
-def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> screen:&:screen, editor:&:editor, go-render?:bool [
+def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render?:bool, screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
-  go-render? <- copy 0/false
-  return-unless editor
+  return-unless editor, 0/don't-render
   screen-width:num <- screen-width screen
   screen-height:num <- screen-height screen
   left:num <- get *editor, left:offset
@@ -184,11 +183,10 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> screen:&:
     <handle-special-character>
     # ignore any other special characters
     regular-character?:bool <- greater-or-equal c, 32/space
-    go-render? <- copy 0/false
-    return-unless regular-character?
+    return-unless regular-character?, 0/don't-render
     # otherwise type it in
     <insert-character-begin>
-    editor, screen, go-render?:bool <- insert-at-cursor editor, c, screen
+    go-render? <- insert-at-cursor editor, c, screen
     <insert-character-end>
     return
   }
@@ -197,11 +195,10 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> screen:&:
   assert is-keycode?, [event was of unknown type; neither keyboard nor mouse]
   # handlers for each special key will go here
   <handle-special-key>
-  go-render? <- copy 1/true
-  return
+  return 1/go-render
 ]
 
-def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool [
+def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool, editor:&:editor, screen:&:screen [
   local-scope
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -233,8 +230,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> editor:&:editor
     break-if overflow?
     move-cursor screen, save-row, save-column
     print screen, c
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
   {
     # not at right margin? print the character and rest of line
@@ -246,9 +242,8 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> editor:&:editor
     curr-column:num <- copy save-column
     {
       # hit right margin? give up and let caller render
-      go-render? <- copy 1/true
       at-right?:bool <- greater-than curr-column, right
-      return-if at-right?
+      return-if at-right?, 1/go-render
       break-unless curr
       # newline? done.
       currc:char <- get *curr, value:offset
@@ -259,11 +254,9 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> editor:&:editor
       curr <- next curr
       loop
     }
-    go-render? <- copy 0/false
-    return
+    return 0/don't-render
   }
-  go-render? <- copy 1/true
-  return
+  return 1/go-render
 ]
 
 # helper for tests
@@ -740,8 +733,7 @@ after <insert-character-special-case> [
       break-unless below-screen?
       <scroll-down>
     }
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -863,14 +855,13 @@ after <handle-special-character> [
     newline?:bool <- equal c, 10/newline
     break-unless newline?
     <insert-enter-begin>
-    editor <- insert-new-line-and-indent editor, screen
+    insert-new-line-and-indent editor, screen
     <insert-enter-end>
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
-def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen, go-render?:bool [
+def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen [
   local-scope
   load-ingredients
   cursor-row:num <- get *editor, cursor-row:offset
@@ -892,7 +883,6 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
     below-screen?:bool <- greater-or-equal cursor-row, screen-height  # must be equal, never greater
     break-unless below-screen?
     <scroll-down>
-    go-render? <- copy 1/true
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
   }
@@ -906,7 +896,7 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
   {
     indent-done?:bool <- greater-or-equal i, indent
     break-if indent-done?
-    editor, screen, go-render?:bool <- insert-at-cursor editor, 32/space, screen
+    insert-at-cursor editor, 32/space, screen
     i <- add i, 1
     loop
   }
@@ -1048,8 +1038,7 @@ after <handle-special-key> [
     paste-start?:bool <- equal k, 65507/paste-start
     break-unless paste-start?
     *editor <- put *editor, indent?:offset, 0/false
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 
@@ -1058,8 +1047,7 @@ after <handle-special-key> [
     paste-end?:bool <- equal k, 65506/paste-end
     break-unless paste-end?
     *editor <- put *editor, indent?:offset, 1/true
-    go-render? <- copy 1/true
-    return
+    return 1/go-render
   }
 ]
 

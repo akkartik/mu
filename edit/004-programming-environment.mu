@@ -112,7 +112,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
       sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
       {
         break-if sandbox-in-focus?
-        screen, recipes, render?:bool <- handle-keyboard-event screen, recipes, e:event
+        render?:bool <- handle-keyboard-event screen, recipes, e:event
         # refresh screen only if no more events
         # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
         more-events?:bool <- has-more-events? console
@@ -140,7 +140,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&
       }
       {
         break-unless sandbox-in-focus?
-        screen, current-sandbox, render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
+        render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
         # refresh screen only if no more events
         # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
         more-events?:bool <- has-more-events? console
