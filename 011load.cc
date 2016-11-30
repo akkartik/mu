@@ -177,7 +177,7 @@ string next_word(istream& in) {
 }
 
 bool is_label_word(const string& word) {
-  assert(!word.empty());
+  if (word.empty()) return false;  // error raised elsewhere
   return !isalnum(word.at(0)) && string("$_*@&,=-[]()").find(word.at(0)) == string::npos;
 }
 

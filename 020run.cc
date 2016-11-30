@@ -159,6 +159,7 @@ load_file_or_directory("core.mu");
 :(before "End Commandline Parsing")
 // Check For .mu Files
 //? START_TRACING_UNTIL_END_OF_SCOPE
+//? Dump_trace = true;
 if (argc > 1) {
   // skip argv[0]
   ++argv;

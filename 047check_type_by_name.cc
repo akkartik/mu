@@ -149,3 +149,11 @@ def main [
   x/space:1 <- copy 35
 ]
 $error: 0
+
+:(scenario transform_handles_empty_reagents)
+% Hide_errors = true;
+def main [
+  add *
+]
++error: illegal name '*'
+# no crash
