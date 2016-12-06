@@ -45,7 +45,7 @@ highlight link muScreen muString
 syntax match muLiteral %[^ ]\+:literal/[^ ,]*\|[^ ]\+:literal\>%
 syntax match muLiteral %\<[0-9-]\?[0-9]\+/[^ ,]*%
 syntax match muLiteral % [0-9-]\?[0-9]\+[, ]\@=\| [0-9-]\?[0-9]\+$%
-syntax match muLiteral "^\s\+[^ 0-9a-zA-Z{}#\[\]][^ ]*\s*$"
+syntax match muLiteral "^\s\+[^ 0-9a-zA-Z{}$#\[\]][^ ]*\s*$"
 " labels
 syntax match muLiteral %[^ ]\+:label/[^ ,]*\|[^ ]\+:label\>%
 " other literal types
