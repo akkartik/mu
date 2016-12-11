@@ -137,10 +137,13 @@ def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:
     tmp:resource <- index *data, i
     curr-filename <- get tmp, name:offset
     found?:bool <- equal filename, curr-filename
-    loop-unless found?
-    put-index *data, i, new-resource
-    reset lock
-    return
+    {
+      break-unless found?
+      put-index *data, i, new-resource
+      jump +unlock-and-exit
+    }
+    i <- add i, 1
+    loop
   }
   # if file didn't already exist, make room for it
   new-len:num <- add len, 1
@@ -156,5 +159,6 @@ def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:
   }
   # write new file
   put-index *new-data, len, new-resource
+  +unlock-and-exit
   reset lock
 ]

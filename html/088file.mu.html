@@ -170,10 +170,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     tmp:resource <span class="Special">&lt;-</span> index *data, i
     curr-filename <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
     found?:bool <span class="Special">&lt;-</span> equal filename, curr-filename
-    <span class="muControl">loop-unless</span> found?
-    put-index *data, i, new-resource
-    reset lock
-    <span class="muControl">return</span>
+    <span class="Delimiter">{</span>
+      <span class="muControl">break-unless</span> found?
+      put-index *data, i, new-resource
+      <span class="muControl">jump</span> <span class="Constant">+unlock-and-exit</span>
+    <span class="Delimiter">}</span>
+    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+    <span class="muControl">loop</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># if file didn't already exist, make room for it</span>
   new-len:num <span class="Special">&lt;-</span> add len,<span class="Constant"> 1</span>
@@ -189,6 +192,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Delimiter">}</span>
   <span class="Comment"># write new file</span>
   put-index *new-data, len, new-resource
+<span class="Constant">  +unlock-and-exit</span>
   reset lock
 ]
 </pre>

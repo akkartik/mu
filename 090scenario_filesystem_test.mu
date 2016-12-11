@@ -22,7 +22,7 @@ scenario read-from-fake-file [
   ]
 ]
 
-scenario write-to-fake-file [
+scenario write-to-new-fake-file [
   local-scope
   assume-resources [
   ]
@@ -32,6 +32,25 @@ scenario write-to-fake-file [
   close sink
   wait-for-routine writer
   contents-read-back:text <- slurp resources, [a]
+  10:bool/raw <- equal contents-read-back, [xy]
+  memory-should-contain [
+    10 <- 1  # file contents read back exactly match what was written
+  ]
+]
+
+scenario write-to-new-fake-file-2 [
+  local-scope
+  assume-resources [
+    [a] <- [
+      |abc|
+    ]
+  ]
+  sink:&:sink:char, writer:num/routine <- start-writing resources, [b]
+  sink <- write sink, 120/x
+  sink <- write sink, 121/y
+  close sink
+  wait-for-routine writer
+  contents-read-back:text <- slurp resources, [b]
   10:bool/raw <- equal contents-read-back, [xy]
   memory-should-contain [
     10 <- 1  # file contents read back exactly match what was written

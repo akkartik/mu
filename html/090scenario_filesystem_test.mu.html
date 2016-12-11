@@ -55,7 +55,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
 ]
 
-<span class="muScenario">scenario</span> write-to-fake-file [
+<span class="muScenario">scenario</span> write-to-new-fake-file [
   <span class="Constant">local-scope</span>
   assume-resources [
   ]
@@ -65,6 +65,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   close sink
   wait-for-routine writer
   contents-read-back:text <span class="Special">&lt;-</span> slurp resources, <span class="Constant">[a]</span>
+  10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal contents-read-back, <span class="Constant">[xy]</span>
+  memory-should-contain [
+   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># file contents read back exactly match what was written</span>
+  ]
+]
+
+<span class="muScenario">scenario</span> write-to-new-fake-file-2 [
+  <span class="Constant">local-scope</span>
+  assume-resources [
+    <span class="Constant">[a]</span> <span class="Special">&lt;-</span> [
+<span class="Constant">      |abc|</span>
+    ]
+  ]
+  sink:&amp;:sink:char, writer:num/routine <span class="Special">&lt;-</span> start-writing resources, <span class="Constant">[b]</span>
+  sink <span class="Special">&lt;-</span> write sink, <span class="Constant">120/x</span>
+  sink <span class="Special">&lt;-</span> write sink, <span class="Constant">121/y</span>
+  close sink
+  wait-for-routine writer
+  contents-read-back:text <span class="Special">&lt;-</span> slurp resources, <span class="Constant">[b]</span>
   10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> equal contents-read-back, <span class="Constant">[xy]</span>
   memory-should-contain [
    <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># file contents read back exactly match what was written</span>
