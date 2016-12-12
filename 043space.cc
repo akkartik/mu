@@ -68,8 +68,8 @@ void absolutize(reagent& x) {
   assert(is_raw(x));
 }
 
+//: hook replaced in a later layer
 int space_base(const reagent& x) {
-  // temporary stub; will be replaced in a later layer
   return current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
 }
 
@@ -390,10 +390,7 @@ Transform.push_back(check_default_space);  // idempotent
 void check_default_space(const recipe_ordinal r) {
   if (Hide_missing_default_space_errors) return;  // skip previous core tests; this is only for Mu code
   const recipe& caller = get(Recipe, r);
-  // skip scenarios (later layer)
-  // user code should never create recipes with underscores in their names
-  if (caller.name.find("scenario_") == 0) return;  // skip Mu scenarios which will use raw memory locations
-  if (caller.name.find("run_") == 0) return;  // skip calls to 'run', which should be in scenarios and will also use raw memory locations
+  // End check_default_space Special-cases
   // assume recipes with only numeric addresses know what they're doing (usually tests)
   if (!contains_non_special_name(r)) return;
   trace(9991, "transform") << "--- check that recipe " << caller.name << " sets default-space" << end();

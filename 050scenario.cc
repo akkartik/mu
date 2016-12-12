@@ -220,6 +220,12 @@ void run_mu_scenario(const scenario& s) {
   Current_scenario = NULL;
 }
 
+//: Permit numeric locations to be accessed in scenarios.
+:(before "End check_default_space Special-cases")
+// user code should never create recipes with underscores in their names
+if (caller.name.find("scenario_") == 0) return;  // skip Mu scenarios which will use raw memory locations
+if (caller.name.find("run_") == 0) return;  // skip calls to 'run', which should be in scenarios and will also use raw memory locations
+
 //: Some variables for fake resources always get special /raw addresses in scenarios.
 
 // Should contain everything passed by is_special_name but failed by is_disqualified.

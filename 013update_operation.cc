@@ -21,7 +21,7 @@ void update_instruction_operations(const recipe_ordinal r) {
   }
 }
 
-// hook to suppress inserting recipe name into errors (for later layers)
+// hook to suppress inserting recipe name into errors
 string maybe(string s) {
   return s + ": ";
 }

@@ -382,7 +382,8 @@ case GET: {
     break;
   }
   int offset_value = 0;
-  if (is_integer(offset.name))  // later layers permit non-integer offsets
+  //: later layers will permit non-integer offsets
+  if (is_integer(offset.name))
     offset_value = to_integer(offset.name);
   else
     offset_value = offset.value;
@@ -393,7 +394,8 @@ case GET: {
   if (inst.products.empty()) break;
   reagent/*copy*/ product = inst.products.at(0);
   // Update GET product in Check
-  const reagent/*copy*/ element = element_type(base.type, offset_value);  // not just base_type because later layers will introduce compound types
+  //: use base.type rather than base_type because later layers will introduce compound types
+  const reagent/*copy*/ element = element_type(base.type, offset_value);
   if (!types_coercible(product, element)) {
     raise << maybe(get(Recipe, r).name) << "'get " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << product.name << "' has type " << names_to_string_without_quotes(product.type) << '\n' << end();
     break;
@@ -416,7 +418,8 @@ case GET: {
   assert(base.metadata.size);
   int src = base_address + base.metadata.offset.at(offset);
   trace(9998, "run") << "address to copy is " << src << end();
-  reagent/*copy*/ element = element_type(base.type, offset);  // not just base_type because later layers will introduce compound types
+  //: use base.type rather than base_type because later layers will introduce compound types
+  reagent/*copy*/ element = element_type(base.type, offset);
   element.set_value(src);
   trace(9998, "run") << "its type is " << names_to_string(element.type) << end();
   // Read element
@@ -529,7 +532,8 @@ case PUT: {
     break;
   }
   int offset_value = 0;
-  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+  //: later layers will permit non-integer offsets
+  if (is_integer(offset.name)) {
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type->value).elements)) {
       raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type->value).name << "'\n" << end();
@@ -540,7 +544,8 @@ case PUT: {
     offset_value = offset.value;
   }
   const reagent& value = inst.ingredients.at(2);
-  const reagent& element = element_type(base.type, offset_value);  // not just base_type because later layers will introduce compound types
+  //: use base.type rather than base_type because later layers will introduce compound types
+  const reagent& element = element_type(base.type, offset_value);
   if (!types_coercible(element, value)) {
     raise << maybe(get(Recipe, r).name) << "'put " << base.original_string << ", " << offset.original_string << "' should write to " << names_to_string_without_quotes(element.type) << " but '" << value.name << "' has type " << names_to_string_without_quotes(value.type) << '\n' << end();
     break;

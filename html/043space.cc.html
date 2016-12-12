@@ -106,8 +106,8 @@ absolutize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
   assert<span class="Delimiter">(</span>is_raw<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">int</span> space_base<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// temporary stub; will be replaced in a later layer</span>
   <span class="Identifier">return</span> current_call<span class="Delimiter">().</span>default_space ? <span class="Delimiter">(</span>current_call<span class="Delimiter">().</span>default_space+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">)</span> : <span class="Constant">0</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
@@ -428,10 +428,7 @@ Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</spa
 <span class="Normal">void</span> check_default_space<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>Hide_missing_default_space_errors<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip previous core tests; this is only for Mu code</span>
   <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  <span class="Comment">// skip scenarios (later layer)</span>
-  <span class="Comment">// user code should never create recipes with underscores in their names</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip Mu scenarios which will use raw memory locations</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;run_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip calls to 'run', which should be in scenarios and will also use raw memory locations</span>
+  <span class="Comment">// End check_default_space Special-cases</span>
   <span class="Comment">// assume recipes with only numeric addresses know what they're doing (usually tests)</span>
   <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_non_special_name<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
   trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- check that recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; sets default-space&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>

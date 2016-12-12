@@ -63,7 +63,7 @@ void run(const recipe_ordinal r) {
 }
 
 void run_current_routine() {
-  while (should_continue_running(Current_routine)) {  // beware: later layers modify Current_routine here
+  while (should_continue_running(Current_routine)) {  // beware: may modify Current_routine
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index();  continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
@@ -106,6 +106,7 @@ void run_current_routine() {
   stop_running_current_routine:;
 }
 
+//: hook replaced in a later layer
 bool should_continue_running(const routine* current_routine) {
   assert(current_routine == Current_routine);  // argument passed in just to make caller readable above
   return !Current_routine->completed();
@@ -117,29 +118,34 @@ bool should_copy_ingredients() {
 }
 
 //: Some helpers.
-//: We'll need to override these later as we change the definition of routine.
-//: Important that they return referrences into the routine.
+//: Important that they return references into the current routine.
 
+//: hook replaced in a later layer
 int& current_step_index() {
   return Current_routine->running_step_index;
 }
 
+//: hook replaced in a later layer
 const string& current_recipe_name() {
   return get(Recipe, Current_routine->running_recipe).name;
 }
 
+//: hook replaced in a later layer
 const recipe& current_recipe() {
   return get(Recipe, Current_routine->running_recipe);
 }
 
+//: hook replaced in a later layer
 const instruction& current_instruction() {
   return get(Recipe, Current_routine->running_recipe).steps.at(Current_routine->running_step_index);
 }
 
+//: hook replaced in a later layer
 bool routine::completed() const {
   return running_step_index >= SIZE(get(Recipe, running_recipe).steps);
 }
 
+//: hook replaced in a later layer
 const vector<instruction>& routine::steps() const {
   return get(Recipe, running_recipe).steps;
 }

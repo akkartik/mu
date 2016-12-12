@@ -209,8 +209,8 @@ void check_merge_call(const vector<reagent>& ingredients, const reagent& product
   assert(false);
 }
 
-// replaced in a later layer
-// todo: find some clean way to take this call completely out of this layer
+//: replaced in a later layer
+//: todo: find some clean way to take this call completely out of this layer
 const type_tree* get_base_type(const type_tree* t) {
   return t;
 }

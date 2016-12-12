@@ -111,8 +111,7 @@ def foo [
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: incrementing refcount of 1000: 0 -> 1
 +run: foo {1: ("address" "number")}
-# leave ambiguous precisely when the next increment happens; a later layer
-# will mess with that
+# leave ambiguous precisely when the next increment happens
 +mem: incrementing refcount of 1000: 1 -> 2
 +run: {1: ("address" "number")} <- new {number: "type"}
 +mem: decrementing refcount of 1000: 2 -> 1

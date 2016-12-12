@@ -3,7 +3,7 @@
 
 :(before "End Commandline Parsing")
 if (argc <= 1 || is_equal(argv[1], "--help")) {
-  // this is the functionality later layers will provide
+  //: this is the functionality later layers will provide
   // currently no automated tests for commandline arg parsing
   if (argc <= 1) {
     cerr << "Please provide a Mu program to run.\n"

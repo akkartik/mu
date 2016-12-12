@@ -123,8 +123,7 @@ bool types_match(const reagent& to, const reagent& from) {
   return types_strictly_match(to, from);
 }
 
-// copy arguments because later layers will want to make changes to them
-// without perturbing the caller
+//: copy arguments for later layers
 bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   // End Preprocess types_strictly_match(reagent to, reagent from)
   if (is_literal(from) && to.type->value == get(Type_ordinal, "number")) return true;

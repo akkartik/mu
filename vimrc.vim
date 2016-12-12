@@ -19,7 +19,9 @@ function! HighlightTangledFile()
 
   " Our C++ files can have Mu code in scenarios, so highlight Mu comments like
   " regular comments.
-  syntax match muComment /# .*$/ | highlight link muComment Comment
+  syntax match muComment /# .*$/
+  syntax match muComment /#: .*$/
+  highlight link muComment Comment
   syntax match muSalientComment /##.*$/ | highlight link muSalientComment SalientComment
   syntax match muCommentedCode /#? .*$/ | highlight link muCommentedCode CommentedCode
   set comments+=n:#

@@ -50,7 +50,6 @@ vector<recipe_ordinal> load(istream& in) {
 }
 
 // return the recipe ordinal slurped, or -1 if it failed
-// (later layers will cause failures)
 int slurp_recipe(istream& in) {
   recipe result;
   result.name = next_word(in);
@@ -145,7 +144,7 @@ bool next_instruction(istream& in, instruction* curr) {
     return false;
   }
   curr->old_name = curr->name = *p;  ++p;
-  // curr->operation will be set in a later layer
+  // curr->operation will be set at transform time
 
   for (;  p != words.end();  ++p)
     curr->ingredients.push_back(reagent(*p));

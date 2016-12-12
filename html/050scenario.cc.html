@@ -259,6 +259,12 @@ Hide_missing_default_space_errors = <span class="Constant">false</span><span cla
   Current_scenario = <span class="Constant">NULL</span><span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: Permit numeric locations to be accessed in scenarios.</span>
+<span class="Delimiter">:(before &quot;End check_default_space Special-cases&quot;)</span>
+<span class="Comment">// user code should never create recipes with underscores in their names</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;scenario_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip Mu scenarios which will use raw memory locations</span>
+<span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">&quot;run_&quot;</span><span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// skip calls to 'run', which should be in scenarios and will also use raw memory locations</span>
+
 <span class="Comment">//: Some variables for fake resources always get special /raw addresses in scenarios.</span>
 
 <span class="Comment">// Should contain everything passed by is_special_name but failed by is_disqualified.</span>

@@ -179,7 +179,8 @@ case GET_LOCATION: {
     break;
   }
   int offset_value = 0;
-  if (is_integer(offset.name)) {  // later layers permit non-integer offsets
+  //: later layers will permit non-integer offsets
+  if (is_integer(offset.name)) {
     offset_value = to_integer(offset.name);
     if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type).elements)) {
       raise << maybe(get(Recipe, r).name) << "invalid offset " << offset_value << " for '" << get(Type, base_type).name << "'\n" << end();

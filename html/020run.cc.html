@@ -102,7 +102,7 @@ Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</s
 <span class="Delimiter">}</span>
 
 <span class="Normal">void</span> run_current_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>should_continue_running<span class="Delimiter">(</span>Current_routine<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// beware: later layers modify Current_routine here</span>
+  <span class="Normal">while</span> <span class="Delimiter">(</span>should_continue_running<span class="Delimiter">(</span>Current_routine<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// beware: may modify Current_routine</span>
     <span class="Comment">// Running One Instruction</span>
     <span class="Normal">if</span> <span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>is_label<span class="Delimiter">)</span> <span class="Delimiter">{</span> ++current_step_index<span class="Delimiter">();</span>  <span class="Identifier">continue</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
     trace<span class="Delimiter">(</span>Initial_callstack_depth + Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; to_string<span class="Delimiter">(</span>current_instruction<span class="Delimiter">())</span> &lt;&lt; end<span class="Delimiter">();</span>
@@ -145,6 +145,7 @@ Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</s
   <span class="Normal">stop_running_current_routine</span>:<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">bool</span> should_continue_running<span class="Delimiter">(</span><span class="Normal">const</span> routine* current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
   assert<span class="Delimiter">(</span>current_routine == Current_routine<span class="Delimiter">);</span>  <span class="Comment">// argument passed in just to make caller readable above</span>
   <span class="Identifier">return</span> !Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">();</span>
@@ -156,29 +157,34 @@ Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</s
 <span class="Delimiter">}</span>
 
 <span class="Comment">//: Some helpers.</span>
-<span class="Comment">//: We'll need to override these later as we change the definition of routine.</span>
-<span class="Comment">//: Important that they return referrences into the routine.</span>
+<span class="Comment">//: Important that they return references into the current routine.</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">int</span>&amp; current_step_index<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">const</span> string&amp; current_recipe_name<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">const</span> recipe&amp; current_recipe<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">const</span> instruction&amp; current_instruction<span class="Delimiter">()</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> Current_routine<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>running_step_index<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> running_step_index &gt;= SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>
 <span class="Delimiter">}</span>
 
+<span class="Comment">//: hook replaced in a later layer</span>
 <span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
   <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
 <span class="Delimiter">}</span>
