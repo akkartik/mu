@@ -5,16 +5,19 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  reply 4|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env, recipes
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -30,7 +33,7 @@ recipe foo [
     left-click 5, 21
   ]
   run [
-    event-loop screen, console, env, recipes
+    event-loop screen, console, env, resources
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -58,16 +61,19 @@ recipe foo [
     .                                                  .
   ]
   # now change the result
-  new-recipes:text <- new [ 
-recipe foo [
-  reply 3
-]]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  reply 3|
+      |]|
+    ]
+  ]
   # then rerun
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env, new-recipes
+    event-loop screen, console, env, resources
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
@@ -93,14 +99,14 @@ before <end-save-sandbox> [
     expected-response:text <- get *curr, expected-response:offset
     break-unless expected-response
     filename <- append filename, [.out]
-    save filename, expected-response
+    resources <- dump resources, filename, expected-response
   }
 ]
 
 before <end-restore-sandbox> [
   {
     filename <- append filename, [.out]
-    contents <- restore filename
+    contents <- slurp resources, filename
     break-unless contents
     *curr <- put *curr, expected-response:offset, contents
   }
@@ -125,7 +131,7 @@ after <global-touch> [
     break-unless sandbox
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
-    save-sandboxes env
+    save-sandboxes env, resources
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env

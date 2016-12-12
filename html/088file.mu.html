@@ -33,6 +33,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <pre id='vimCodeElement'>
 <span class="Comment"># Wrappers around file system primitives that take a 'resources' object and</span>
 <span class="Comment"># are thus easier to test.</span>
+<span class="Comment">#</span>
+<span class="Comment"># - start-reading - asynchronously open a file, returning a channel source for</span>
+<span class="Comment">#   receiving the results</span>
+<span class="Comment"># - start-writing - asynchronously open a file, returning a channel sink for</span>
+<span class="Comment">#   the data to write</span>
+<span class="Comment"># - slurp - synchronously read from a file</span>
+<span class="Comment"># - dump - synchronously write to a file</span>
 
 <span class="muData">container</span> resources [
   lock:bool
@@ -44,25 +51,42 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   contents:text
 ]
 
-<span class="muRecipe">def</span> start-reading resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
+<span class="muRecipe">def</span> start-reading resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> resources
     <span class="Comment"># fake file system</span>
-    contents <span class="Special">&lt;-</span> start-reading-from-fake-resources resources, filename
+    contents, error? <span class="Special">&lt;-</span> start-reading-from-fake-resource resources, filename
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># real file system</span>
   file:num <span class="Special">&lt;-</span> $open-file-for-reading filename
-  assert file, <span class="Constant">[file not found]</span>
+  <span class="muControl">return-unless</span> file, <span class="Constant">0/contents</span>, <span class="Constant">1/error?</span>
   contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
   start-running receive-from-file file, sink
 ]
 
-<span class="muRecipe">def</span> start-reading-from-fake-resources resources:&amp;:resources, resource:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char [
+<span class="muRecipe">def</span> slurp resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:text, error?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  source:&amp;:source:char, error?:bool <span class="Special">&lt;-</span> start-reading resources, filename
+  <span class="muControl">return-if</span> error?, <span class="Constant">0/contents</span>
+  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer <span class="Constant">30/capacity</span>
+  <span class="Delimiter">{</span>
+    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+    <span class="muControl">break-if</span> done?
+    buf <span class="Special">&lt;-</span> append buf, c
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  contents <span class="Special">&lt;-</span> buffer-to-array buf
+]
+
+<span class="muRecipe">def</span> start-reading-from-fake-resource resources:&amp;:resources, resource:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/no-error</span>
   i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
   data:&amp;:@:resource <span class="Special">&lt;-</span> get *resources, <span class="Constant">data:offset</span>
   len:num <span class="Special">&lt;-</span> length *data
@@ -79,7 +103,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     start-running receive-from-text curr-contents, sink
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
-  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
+  <span class="muControl">return</span> <span class="Constant">0/not-found</span>, <span class="Constant">1/error</span>
 ]
 
 <span class="muRecipe">def</span> receive-from-file file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
@@ -111,24 +135,49 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sink <span class="Special">&lt;-</span> close sink
 ]
 
-<span class="muRecipe">def</span> start-writing resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num [
+<span class="muRecipe">def</span> start-writing resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num, error?:bool [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
+  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
   source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-unless</span> resources
     <span class="Comment"># fake file system</span>
-    routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-file resources, filename, source
+    routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-resource resources, filename, source
     <span class="muControl">return</span>
   <span class="Delimiter">}</span>
   <span class="Comment"># real file system</span>
   file:num <span class="Special">&lt;-</span> $open-file-for-writing filename
+  <span class="muControl">return-unless</span> file, <span class="Constant">0/sink</span>, <span class="Constant">0/routine-id</span>, <span class="Constant">1/error?</span>
   <span class="Delimiter">{</span>
     <span class="muControl">break-if</span> file
     msg:text <span class="Special">&lt;-</span> append <span class="Constant">[no such file: ]</span> filename
     assert file, msg
   <span class="Delimiter">}</span>
   routine-id <span class="Special">&lt;-</span> start-running transmit-to-file file, source
+]
+
+<span class="muRecipe">def</span> dump resources:&amp;:resources, filename:text, contents:text<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, error?:bool [
+  <span class="Constant">local-scope</span>
+  <span class="Constant">load-ingredients</span>
+  <span class="Comment"># todo: really create an empty file</span>
+  <span class="muControl">return-unless</span> contents, resources, <span class="Constant">0/no-error</span>
+  sink-file:&amp;:sink:char, write-routine:num, error?:bool <span class="Special">&lt;-</span> start-writing resources, filename
+  <span class="muControl">return-if</span> error?
+  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+  len:num <span class="Special">&lt;-</span> length *contents
+  <span class="Delimiter">{</span>
+    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+    <span class="muControl">break-if</span> done?
+    c:char <span class="Special">&lt;-</span> index *contents, i
+    sink-file <span class="Special">&lt;-</span> write sink-file, c
+    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+    <span class="muControl">loop</span>
+  <span class="Delimiter">}</span>
+  close sink-file
+  <span class="Comment"># make sure to wait for the file to be actually written to disk</span>
+  <span class="Comment"># (Mu practices structured concurrency: <a href="http://250bpm.com/blog:71)">http://250bpm.com/blog:71)</a></span>
+  wait-for-routine write-routine
 ]
 
 <span class="muRecipe">def</span> transmit-to-file file:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
@@ -143,7 +192,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   file <span class="Special">&lt;-</span> $close-file file
 ]
 
-<span class="muRecipe">def</span> transmit-to-fake-file resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
+<span class="muRecipe">def</span> transmit-to-fake-resource resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   lock:location <span class="Special">&lt;-</span> get-location *resources, <span class="Constant">lock:offset</span>

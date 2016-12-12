@@ -77,7 +77,7 @@ def start-reading-from-network resources:&:resources, uri:text -> contents:&:sou
   {
     break-unless resources
     # fake network
-    contents <- start-reading-from-fake-resources resources, uri
+    contents <- start-reading-from-fake-resource resources, uri
     return
   }
   # real network

@@ -4,7 +4,9 @@ scenario deleting-sandboxes [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   # run a few commands
   assume-console [
     type [divide-with-remainder 11, 3]
@@ -12,7 +14,7 @@ scenario deleting-sandboxes [
     type [add 2, 2]
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -33,7 +35,7 @@ scenario deleting-sandboxes [
     left-click 7, 34
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -50,7 +52,7 @@ scenario deleting-sandboxes [
     left-click 3, 49
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -148,7 +150,9 @@ scenario deleting-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -159,7 +163,7 @@ scenario deleting-sandbox-after-scroll [
     press F4
     press page-down
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .──────────────────────────────────────────────────.
@@ -177,7 +181,7 @@ scenario deleting-sandbox-after-scroll [
     left-click 6, 34
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -196,7 +200,9 @@ scenario deleting-top-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -207,7 +213,7 @@ scenario deleting-top-sandbox-after-scroll [
     press F4
     press page-down
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .──────────────────────────────────────────────────.
@@ -225,7 +231,7 @@ scenario deleting-top-sandbox-after-scroll [
     left-click 2, 34
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # second sandbox shows in editor; scroll resets to display first sandbox
   screen-should-contain [
@@ -244,7 +250,9 @@ scenario deleting-final-sandbox-after-scroll [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create 2 sandboxes and scroll to second
   assume-console [
@@ -256,7 +264,7 @@ scenario deleting-final-sandbox-after-scroll [
     press page-down
     press page-down
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .──────────────────────────────────────────────────.
@@ -271,7 +279,7 @@ scenario deleting-final-sandbox-after-scroll [
     left-click 2, 34
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # implicitly scroll up to first sandbox
   screen-should-contain [
@@ -291,7 +299,9 @@ scenario deleting-updates-sandbox-count [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create 2 sandboxes
   assume-console [
@@ -301,7 +311,7 @@ scenario deleting-updates-sandbox-count [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -321,7 +331,7 @@ scenario deleting-updates-sandbox-count [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # shouldn't go past last sandbox
   screen-should-contain [

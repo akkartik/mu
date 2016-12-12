@@ -427,8 +427,8 @@ int trace_error_contents() {
     if (*--p->contents.end() != '\n') out << '\n';
   }
   string result = out.str();
-  if (result.empty()) return 0;
   truncate(result);
+  if (result.empty()) return 0;
   return new_mu_text(result);
 }
 

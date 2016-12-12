@@ -1,5 +1,12 @@
 # Wrappers around file system primitives that take a 'resources' object and
 # are thus easier to test.
+#
+# - start-reading - asynchronously open a file, returning a channel source for
+#   receiving the results
+# - start-writing - asynchronously open a file, returning a channel sink for
+#   the data to write
+# - slurp - synchronously read from a file
+# - dump - synchronously write to a file
 
 container resources [
   lock:bool
@@ -11,25 +18,42 @@ container resource [
   contents:text
 ]
 
-def start-reading resources:&:resources, filename:text -> contents:&:source:char [
+def start-reading resources:&:resources, filename:text -> contents:&:source:char, error?:bool [
   local-scope
   load-ingredients
+  error? <- copy 0/false
   {
     break-unless resources
     # fake file system
-    contents <- start-reading-from-fake-resources resources, filename
+    contents, error? <- start-reading-from-fake-resource resources, filename
     return
   }
   # real file system
   file:num <- $open-file-for-reading filename
-  assert file, [file not found]
+  return-unless file, 0/contents, 1/error?
   contents:&:source:char, sink:&:sink:char <- new-channel 30
   start-running receive-from-file file, sink
 ]
 
-def start-reading-from-fake-resources resources:&:resources, resource:text -> contents:&:source:char [
+def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
   local-scope
   load-ingredients
+  source:&:source:char, error?:bool <- start-reading resources, filename
+  return-if error?, 0/contents
+  buf:&:buffer <- new-buffer 30/capacity
+  {
+    c:char, done?:bool, source <- read source
+    break-if done?
+    buf <- append buf, c
+    loop
+  }
+  contents <- buffer-to-array buf
+]
+
+def start-reading-from-fake-resource resources:&:resources, resource:text -> contents:&:source:char, error?:bool [
+  local-scope
+  load-ingredients
+  error? <- copy 0/no-error
   i:num <- copy 0
   data:&:@:resource <- get *resources, data:offset
   len:num <- length *data
@@ -46,7 +70,7 @@ def start-reading-from-fake-resources resources:&:resources, resource:text -> co
     start-running receive-from-text curr-contents, sink
     return
   }
-  return 0/not-found
+  return 0/not-found, 1/error
 ]
 
 def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
@@ -78,24 +102,49 @@ def receive-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
   sink <- close sink
 ]
 
-def start-writing resources:&:resources, filename:text -> sink:&:sink:char, routine-id:num [
+def start-writing resources:&:resources, filename:text -> sink:&:sink:char, routine-id:num, error?:bool [
   local-scope
   load-ingredients
+  error? <- copy 0/false
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
     break-unless resources
     # fake file system
-    routine-id <- start-running transmit-to-fake-file resources, filename, source
+    routine-id <- start-running transmit-to-fake-resource resources, filename, source
     return
   }
   # real file system
   file:num <- $open-file-for-writing filename
+  return-unless file, 0/sink, 0/routine-id, 1/error?
   {
     break-if file
     msg:text <- append [no such file: ] filename
     assert file, msg
   }
   routine-id <- start-running transmit-to-file file, source
+]
+
+def dump resources:&:resources, filename:text, contents:text -> resources:&:resources, error?:bool [
+  local-scope
+  load-ingredients
+  # todo: really create an empty file
+  return-unless contents, resources, 0/no-error
+  sink-file:&:sink:char, write-routine:num, error?:bool <- start-writing resources, filename
+  return-if error?
+  i:num <- copy 0
+  len:num <- length *contents
+  {
+    done?:bool <- greater-or-equal i, len
+    break-if done?
+    c:char <- index *contents, i
+    sink-file <- write sink-file, c
+    i <- add i, 1
+    loop
+  }
+  close sink-file
+  # make sure to wait for the file to be actually written to disk
+  # (Mu practices structured concurrency: http://250bpm.com/blog:71)
+  wait-for-routine write-routine
 ]
 
 def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
@@ -110,7 +159,7 @@ def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
   file <- $close-file file
 ]
 
-def transmit-to-fake-file resources:&:resources, filename:text, source:&:source:char -> resources:&:resources, source:&:source:char [
+def transmit-to-fake-resource resources:&:resources, filename:text, source:&:source:char -> resources:&:resources, source:&:source:char [
   local-scope
   load-ingredients
   lock:location <- get-location *resources, lock:offset

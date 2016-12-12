@@ -39,24 +39,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  reply 4</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  <span class="Comment"># empty recipes</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[add 1, 1]</span>  <span class="Comment"># contents of sandbox editor</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -65,16 +63,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 69</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># it copies into editor</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -83,15 +81,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[0]</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎0foo                                             .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+   <span class="Constant"> .                                                  ╎0add 1, 1                                        .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -101,24 +99,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  reply 4</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  <span class="Comment"># empty recipes</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[add 1, 1]</span>  <span class="Comment"># contents of sandbox editor</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -127,16 +123,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 84</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># it copies into editor</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -145,15 +141,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[0]</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎0foo                                             .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+   <span class="Constant"> .                                                  ╎0add 1, 1                                        .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -258,24 +254,22 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  reply 4</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  <span class="Comment"># empty recipes</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[add 1, 1]</span>  <span class="Comment"># contents of sandbox editor</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -286,16 +280,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 70</span>  <span class="Comment"># click 'copy' button</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># copy doesn't happen</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎0                                                .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -304,15 +298,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎01                                               .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
+<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+   <span class="Constant"> .                                                  ╎2                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]

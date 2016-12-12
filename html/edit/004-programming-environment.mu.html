@@ -41,12 +41,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muRecipe">def!</span> main [
   <span class="Constant">local-scope</span>
   open-console
-  initial-recipe:text <span class="Special">&lt;-</span> restore <span class="Constant">[recipes.mu]</span>
-  initial-sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
-  hide-screen <span class="Constant">0/screen</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment <span class="Constant">0/screen</span>, initial-recipe, initial-sandbox
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment <span class="Constant">0/filesystem</span>, <span class="Constant">0/screen</span>
   render-all <span class="Constant">0/screen</span>, env, render
-  event-loop <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env
+  event-loop <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env, <span class="Constant">0/filesystem</span>
   <span class="Comment"># never gets here</span>
 ]
 
@@ -56,24 +53,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   sandbox-in-focus?:bool  <span class="Comment"># false =&gt; cursor in recipes; true =&gt; cursor in current-sandbox</span>
 ]
 
-<span class="muRecipe">def</span> new-programming-environment screen:&amp;:screen, initial-recipe-contents:text, initial-sandbox-contents:text<span class="muRecipe"> -&gt; </span>result:&amp;:environment [
+<span class="muRecipe">def</span> new-programming-environment resources:&amp;:resources, screen:&amp;:screen, test-sandbox-editor-contents:text<span class="muRecipe"> -&gt; </span>result:&amp;:environment [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   width:num <span class="Special">&lt;-</span> screen-width screen
   result <span class="Special">&lt;-</span> new <span class="Constant">environment:type</span>
   <span class="Comment"># recipe editor on the left</span>
+  initial-recipe-contents:text <span class="Special">&lt;-</span> slurp resources, <span class="Constant">[lesson/recipes.mu]</span>  <span class="Comment"># ignore errors</span>
   divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
   recipes:&amp;:editor <span class="Special">&lt;-</span> new-editor initial-recipe-contents, <span class="Constant">0/left</span>, divider/right
   <span class="Comment"># sandbox editor on the right</span>
   sandbox-left:num <span class="Special">&lt;-</span> add divider,<span class="Constant"> 1</span>
-  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> new-editor initial-sandbox-contents, sandbox-left, width/right
+  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> new-editor test-sandbox-editor-contents, sandbox-left, width/right
   *result <span class="Special">&lt;-</span> put *result, <span class="Constant">recipes:offset</span>, recipes
   *result <span class="Special">&lt;-</span> put *result, <span class="Constant">current-sandbox:offset</span>, current-sandbox
   *result <span class="Special">&lt;-</span> put *result, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">0/false</span>
 <span class="Constant">  &lt;programming-environment-initialization&gt;</span>
 ]
 
-<span class="muRecipe">def</span> event-loop screen:&amp;:screen, console:&amp;:console, env:&amp;:environment<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console, env:&amp;:environment [
+<span class="muRecipe">def</span> event-loop screen:&amp;:screen, console:&amp;:console, env:&amp;:environment, resources:&amp;:resources<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console, env:&amp;:environment, resources:&amp;:resources [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
@@ -321,7 +319,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span class="Constant">      |abc|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox editor</span>
   <span class="Comment"># focus on both sides</span>
   assume-console [
     left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
@@ -329,7 +332,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   <span class="Comment"># check cursor column in each</span>
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
     5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
     sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
@@ -346,7 +349,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
   <span class="Comment"># initialize both halves of screen</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span class="Constant">      |abc|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox</span>
   render-all screen, env, render
   <span class="Comment"># type one letter in each of them</span>
   assume-console [
@@ -356,7 +364,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[1]</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
     5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
     sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
@@ -365,7 +373,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .  # this line has a different background, but we don't test that yet</span>
    <span class="Constant"> .a0bc           ╎d1ef          .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
+   <span class="Constant"> .               ╎──────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
    <span class="Constant"> .               ╎              .</span>
   ]
   memory-should-contain [
@@ -380,26 +389,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
    <span class="Constant"> .a0bc           ╎d1␣f          .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
+   <span class="Constant"> .               ╎──────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
    <span class="Constant"> .               ╎              .</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> multiple-editors-cover-only-their-own-areas [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">60/width</span>, <span class="Constant">10/height</span>
-  run [
-    env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
-    render-all screen, env, render
-  ]
-  <span class="Comment"># divider isn't messed up</span>
-  screen-should-contain [
-   <span class="Constant"> .                                         run (F4)           .</span>
-   <span class="Constant"> .abc                           ╎def                          .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────.</span>
-   <span class="Constant"> .                              ╎                             .</span>
-   <span class="Constant"> .                              ╎                             .</span>
   ]
 ]
 
@@ -407,12 +399,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[abc]</span>, <span class="Constant">[def]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span class="Constant">      |abc|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[def]</span>
   render-all screen, env, render
   <span class="Comment"># initialize programming environment and highlight cursor</span>
   assume-console <span class="Constant">[]</span>
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
     print screen, cursor
   ]
@@ -420,7 +417,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
    <span class="Constant"> .␣bc            ╎def           .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
+   <span class="Constant"> .               ╎──────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
    <span class="Constant"> .               ╎              .</span>
   ]
   <span class="Comment"># now try typing a letter</span>
@@ -428,7 +426,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     type <span class="Constant">[z]</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
     print screen, cursor
   ]
@@ -436,7 +434,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
    <span class="Constant"> .z␣bc           ╎def           .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
+   <span class="Constant"> .               ╎──────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
    <span class="Constant"> .               ╎              .</span>
   ]
 ]
@@ -445,10 +444,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
+  assume-resources [
+  ]
   <span class="Comment"># initialize sandbox side with two lines</span>
-  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+  test-sandbox-editor-contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span class="Constant">def]</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, s:text
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, test-sandbox-editor-contents
   render-all screen, env, render
   screen-should-contain [
    <span class="Constant"> .           run (F4)           .</span>
@@ -463,7 +464,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press backspace
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
     print screen, cursor
   ]

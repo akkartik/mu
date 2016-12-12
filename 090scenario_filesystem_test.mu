@@ -97,17 +97,3 @@ scenario write-to-existing-file-preserves-other-files [
     11 <- 1  # other files also continue to persist unchanged
   ]
 ]
-
-def slurp resources:&:resources, filename:text -> contents:text [
-  local-scope
-  load-ingredients
-  source:&:source:char <- start-reading resources, filename
-  buf:&:buffer <- new-buffer 30/capacity
-  {
-    c:char, done?:bool, source <- read source
-    break-if done?
-    buf <- append buf, c
-    loop
-  }
-  contents <- buffer-to-array buf
-]

@@ -4,12 +4,14 @@ scenario sandbox-click-on-code-toggles-app-trace [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
-  env:&:environment <- new-programming-environment screen, [stash [abc]]
   # run a stash instruction
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [stash [abc]]
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -24,7 +26,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     left-click 4, 21
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -50,7 +52,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     left-click 4, 25
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     print screen, cursor
   ]
   # trace hidden again
@@ -70,13 +72,15 @@ scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
   # run a stash instruction and some code
-  sandbox:text <- new [stash [abc]
+  assume-resources [
+  ]
+  test-sandbox:text <- new [stash [abc]
 add 2, 2]
+  env:&:environment <- new-programming-environment resources, screen, test-sandbox
   assume-console [
     press F4
   ]
-  env:&:environment <- new-programming-environment screen, sandbox
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -93,7 +97,7 @@ add 2, 2]
     left-click 4, 21
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # trace now printed above result
   screen-should-contain [
@@ -114,13 +118,15 @@ scenario clicking-on-app-trace-does-nothing [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 10/height
-  env:&:environment <- new-programming-environment screen, [stash 123456789]
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [stash 123456789]
   # create and expand the trace
   assume-console [
     press F4
     left-click 4, 1
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -134,7 +140,7 @@ scenario clicking-on-app-trace-does-nothing [
     left-click 5, 7
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # no change; doesn't die
   screen-should-contain [

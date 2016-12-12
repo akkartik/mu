@@ -7,6 +7,16 @@
 # This layer draws the menubar buttons in non-editable sandboxes but they
 # don't do anything yet. Later layers implement each button.
 
+def! main [
+  local-scope
+  open-console
+  env:&:environment <- new-programming-environment 0/filesystem, 0/screen
+  env <- restore-sandboxes env
+  render-all 0/screen, env, render
+  event-loop 0/screen, 0/console, env, 0/filesystem
+  # never gets here
+]
+
 container environment [
   sandbox:&:sandbox  # list of sandboxes, from top to bottom. TODO: switch to &:list:sandbox
   render-from:num
@@ -32,14 +42,17 @@ scenario run-and-show-results [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 15/height
+  # recipes.mu is empty
+  assume-resources [
+  ]
   # sandbox editor contains an instruction without storing outputs
-  env:&:environment <- new-programming-environment screen, [divide-with-remainder 11, 3]
+  env:&:environment <- new-programming-environment resources, screen, [divide-with-remainder 11, 3]
   # run the code in the editors
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # check that screen prints the results
   screen-should-contain [
@@ -82,7 +95,7 @@ scenario run-and-show-results [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # check that screen prints both sandboxes
   screen-should-contain [
@@ -108,9 +121,7 @@ after <global-keypress> [
     do-run?:bool <- equal k, 65532/F4
     break-unless do-run?
     screen <- update-status screen, [running...       ], 245/grey
-    test-recipes:text, _/optional <- next-ingredient
-    error?:bool, env, screen <- run-sandboxes env, screen, test-recipes
-    test-recipes <- copy 0  # abandon
+    error?:bool <- run-sandboxes env, resources, screen
     # F4 might update warnings and results on both sides
     screen <- render-all screen, env, render
     {
@@ -122,10 +133,10 @@ after <global-keypress> [
   }
 ]
 
-def run-sandboxes env:&:environment, screen:&:screen, test-recipes:text -> errors-found?:bool, env:&:environment, screen:&:screen [
+def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, resources:&:resources, screen:&:screen [
   local-scope
   load-ingredients
-  errors-found?:bool, env, screen <- update-recipes env, screen, test-recipes
+  errors-found?:bool <- update-recipes env, resources, screen
   # check contents of editor
   <run-sandboxes-begin>
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -150,7 +161,7 @@ def run-sandboxes env:&:environment, screen:&:screen, test-recipes:text -> error
     *current-sandbox <- put *current-sandbox, top-of-screen:offset, init
   }
   # save all sandboxes before running, just in case we die when running
-  save-sandboxes env
+  save-sandboxes env, resources
   # run all sandboxes
   curr:&:sandbox <- get *env, sandbox:offset
   idx:num <- copy 0
@@ -164,20 +175,13 @@ def run-sandboxes env:&:environment, screen:&:screen, test-recipes:text -> error
   <run-sandboxes-end>
 ]
 
-# load code from recipes.mu, or from test-recipes in tests
+# load code from disk
 # replaced in a later layer (whereupon errors-found? will actually be set)
-def update-recipes env:&:environment, screen:&:screen, test-recipes:text -> errors-found?:bool, env:&:environment, screen:&:screen [
+def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, screen:&:screen [
   local-scope
   load-ingredients
-  {
-    break-if test-recipes
-    in:text <- restore [recipes.mu]  # newlayer: persistence
-    reload in
-  }
-  {
-    break-unless test-recipes
-    reload test-recipes
-  }
+  in:text <- slurp resources, [lesson/recipes.mu]
+  reload in
   errors-found? <- copy 0/false
 ]
 
@@ -198,7 +202,7 @@ def update-status screen:&:screen, msg:text, color:num -> screen:&:screen [
   screen <- print screen, msg, color, 238/grey/background
 ]
 
-def save-sandboxes env:&:environment [
+def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resources [
   local-scope
   load-ingredients
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -209,8 +213,8 @@ def save-sandboxes env:&:environment [
   {
     break-unless curr
     data:text <- get *curr, data:offset
-    filename:text <- to-text idx
-    save filename, data
+    filename:text <- append [lesson/], idx
+    resources <- dump resources, filename, data
     <end-save-sandbox>
     idx <- add idx, 1
     curr <- get *curr, next-sandbox:offset
@@ -401,7 +405,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
 ]
 
 # assumes programming environment has no sandboxes; restores them from previous session
-def! restore-sandboxes env:&:environment -> env:&:environment [
+def restore-sandboxes env:&:environment, resources:&:resources -> env:&:environment [
   local-scope
   load-ingredients
   # read all scenarios, pushing them to end of a list of scenarios
@@ -409,8 +413,8 @@ def! restore-sandboxes env:&:environment -> env:&:environment [
   curr:&:sandbox <- copy 0
   prev:&:sandbox <- copy 0
   {
-    filename:text <- to-text idx
-    contents:text <- restore filename
+    filename:text <- append [lesson/], idx
+    contents:text <- slurp resources, filename
     break-unless contents  # stop at first error; assuming file didn't exist
                            # todo: handle empty sandbox
     # create new sandbox for file
@@ -505,19 +509,23 @@ scenario run-updates-results [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 12/height
   # define a recipe (no indent for the 'add' line below so column numbers are more obvious)
-  recipes:text <- new [ 
-recipe foo [
-local-scope
-z:num <- add 2, 2
-reply z
-]]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      ||
+      |recipe foo [|
+      |  local-scope|
+      |  z:num <- add 2, 2|
+      |  reply z|
+      |]|
+    ]
+  ]
   # sandbox editor contains an instruction without storing outputs
-  env:&:environment <- new-programming-environment screen, [foo]
+  env:&:environment <- new-programming-environment resources, screen, [foo]  # contents of sandbox editor
   # run the code in the editors
   assume-console [
     press F4
   ]
-  event-loop screen, console, env, recipes
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -529,17 +537,21 @@ reply z
     .                                                  .
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
-  recipes:text <- new [ 
-def foo [
-local-scope
-z:num <- add 2, 3
-return z
-]]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      ||
+      |recipe foo [|
+      |  local-scope|
+      |  z:num <- add 2, 3|
+      |  reply z|
+      |]|
+    ]
+  ]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env, recipes
+    event-loop screen, console, env, resources
   ]
   # check that screen updates the result on the right
   screen-should-contain [
@@ -558,14 +570,17 @@ scenario run-instruction-manages-screen-per-sandbox [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
-  # editor contains an instruction
-  env:&:environment <- new-programming-environment screen, [print-integer screen, 4]
+  # empty recipes
+  assume-resources [
+  ]
+  # sandbox editor contains an instruction
+  env:&:environment <- new-programming-environment resources, screen, [print-integer screen, 4]  # contents of sandbox editor
   # run the code in the editor
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # check that it prints a little toy screen
   screen-should-contain [
@@ -629,13 +644,15 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize
-  env:&:environment <- new-programming-environment screen, [add 2, 2]
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 2, 2]
   render-all screen, env, render
   assume-console [
     # create a sandbox
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -651,7 +668,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -671,7 +688,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     press page-up
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -765,7 +782,9 @@ scenario scrolling-through-multiple-sandboxes [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create 2 sandboxes
   assume-console [
@@ -775,7 +794,7 @@ scenario scrolling-through-multiple-sandboxes [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   cursor:char <- copy 9251/␣
   print screen, cursor
   screen-should-contain [
@@ -797,7 +816,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -821,7 +840,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # just second sandbox displayed
   screen-should-contain [
@@ -838,7 +857,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # no change
   screen-should-contain [
@@ -855,7 +874,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # back to displaying both sandboxes without editor
   screen-should-contain [
@@ -876,7 +895,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -900,7 +919,7 @@ scenario scrolling-through-multiple-sandboxes [
     press page-up
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -926,7 +945,9 @@ scenario scrolling-manages-sandbox-index-correctly [
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
   # initialize environment
-  env:&:environment <- new-programming-environment screen, []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   render-all screen, env, render
   # create a sandbox
   assume-console [
@@ -934,7 +955,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     type [add 1, 1]
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -950,7 +971,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox
@@ -968,7 +989,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-up
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # back to displaying both sandboxes as well as editor
   screen-should-contain [
@@ -986,7 +1007,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     press page-down
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # sandbox editor hidden; first sandbox displayed
   # cursor moves to first sandbox

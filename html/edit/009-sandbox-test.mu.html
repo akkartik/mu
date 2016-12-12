@@ -40,22 +40,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  reply 4</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes:text, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  reply 4|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  reply 4                                         ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎foo                                              .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
@@ -65,7 +68,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 5</span>,<span class="Constant"> 51</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># color toggles to green</span>
   screen-should-contain-in-color <span class="Constant">2/green</span>, [
@@ -85,26 +88,24 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   ]
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .␣                                                 ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .␣ecipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  reply 4                                         ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎foo                                              .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎4                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
   <span class="Comment"># now change the result</span>
   <span class="Comment"># then rerun</span>
   assume-console [
-    left-click<span class="Constant"> 3</span>,<span class="Constant"> 11</span>  <span class="Comment"># cursor to end of line</span>
+    left-click<span class="Constant"> 2</span>,<span class="Constant"> 11</span>  <span class="Comment"># cursor to end of line</span>
     press backspace
     type <span class="Constant">[3]</span>
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># result turns red</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -131,14 +132,14 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     expected-response:text <span class="Special">&lt;-</span> get *curr, <span class="Constant">expected-response:offset</span>
     <span class="muControl">break-unless</span> expected-response
     filename <span class="Special">&lt;-</span> append filename, <span class="Constant">[.out]</span>
-    save filename, expected-response
+    resources <span class="Special">&lt;-</span> dump resources, filename, expected-response
   <span class="Delimiter">}</span>
 ]
 
 <span class="muRecipe">before</span> <span class="Constant">&lt;end-restore-sandbox&gt;</span> [
   <span class="Delimiter">{</span>
     filename <span class="Special">&lt;-</span> append filename, <span class="Constant">[.out]</span>
-    contents <span class="Special">&lt;-</span> restore filename
+    contents <span class="Special">&lt;-</span> slurp resources, filename
     <span class="muControl">break-unless</span> contents
     *curr <span class="Special">&lt;-</span> put *curr, <span class="Constant">expected-response:offset</span>, contents
   <span class="Delimiter">}</span>
@@ -163,7 +164,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     <span class="muControl">break-unless</span> sandbox
     <span class="Comment"># toggle its expected-response, and save session</span>
     sandbox <span class="Special">&lt;-</span> toggle-expected-response sandbox
-    save-sandboxes env
+    save-sandboxes env, resources
     hide-screen screen
     screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
     screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env

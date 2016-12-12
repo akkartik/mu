@@ -5,22 +5,25 @@ scenario sandbox-click-on-result-toggles-color-to-green [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, recipes:text, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  reply 4|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
+    .recipe foo [                                      ┊                                                 .
+    .  reply 4                                         ┊─────────────────────────────────────────────────.
+    .]                                                 ┊0   edit          copy            delete         .
+    .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
@@ -30,7 +33,7 @@ recipe foo [
     left-click 5, 51
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # color toggles to green
   screen-should-contain-in-color 2/green, [
@@ -50,26 +53,24 @@ recipe foo [
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .␣                                                 ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
+    .␣ecipe foo [                                      ┊                                                 .
+    .  reply 4                                         ┊─────────────────────────────────────────────────.
+    .]                                                 ┊0   edit          copy            delete         .
+    .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊                                                 .
-    .                                                  ┊                                                 .
     .                                                  ┊                                                 .
   ]
   # now change the result
   # then rerun
   assume-console [
-    left-click 3, 11  # cursor to end of line
+    left-click 2, 11  # cursor to end of line
     press backspace
     type [3]
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # result turns red
   screen-should-contain-in-color 1/red, [
@@ -96,14 +97,14 @@ before <end-save-sandbox> [
     expected-response:text <- get *curr, expected-response:offset
     break-unless expected-response
     filename <- append filename, [.out]
-    save filename, expected-response
+    resources <- dump resources, filename, expected-response
   }
 ]
 
 before <end-restore-sandbox> [
   {
     filename <- append filename, [.out]
-    contents <- restore filename
+    contents <- slurp resources, filename
     break-unless contents
     *curr <- put *curr, expected-response:offset, contents
   }
@@ -128,7 +129,7 @@ after <global-touch> [
     break-unless sandbox
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
-    save-sandboxes env
+    save-sandboxes env, resources
     hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env

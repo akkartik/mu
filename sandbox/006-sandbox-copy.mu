@@ -5,11 +5,15 @@ scenario copy-a-sandbox-to-editor [
   local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  env:&:environment <- new-programming-environment screen, [add 1, 1]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -47,7 +51,7 @@ scenario copy-a-sandbox-to-editor [
     type [0]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -67,11 +71,15 @@ scenario copy-a-sandbox-to-editor-2 [
   local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  env:&:environment <- new-programming-environment screen, [add 1, 1]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -84,12 +92,12 @@ scenario copy-a-sandbox-to-editor-2 [
     .                                                  .
     .                                                  .
   ]
-  # click at right edge of 'copy' button
+  # click at right edge of 'copy' button (just before 'delete')
   assume-console [
     left-click 3, 33
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # it copies into editor
   screen-should-contain [
@@ -109,7 +117,7 @@ scenario copy-a-sandbox-to-editor-2 [
     type [0]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                               run (F4)           .
@@ -218,11 +226,15 @@ scenario copy-fails-if-sandbox-editor-not-empty [
   local-scope
   trace-until 50/app  # trace too long
   assume-screen 50/width, 10/height
-  env:&:environment <- new-programming-environment screen, [add 1, 1]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                               run (F4)           .
     .                                                  .
@@ -258,7 +270,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     type [1]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                               run (F4)           .

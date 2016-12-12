@@ -6,12 +6,9 @@
 def! main [
   local-scope
   open-console
-  initial-recipe:text <- restore [recipes.mu]
-  initial-sandbox:text <- new []
-  hide-screen 0/screen
-  env:&:environment <- new-programming-environment 0/screen, initial-recipe, initial-sandbox
+  env:&:environment <- new-programming-environment 0/filesystem, 0/screen
   render-all 0/screen, env, render
-  event-loop 0/screen, 0/console, env
+  event-loop 0/screen, 0/console, env, 0/filesystem
   # never gets here
 ]
 
@@ -21,24 +18,25 @@ container environment [
   sandbox-in-focus?:bool  # false => cursor in recipes; true => cursor in current-sandbox
 ]
 
-def new-programming-environment screen:&:screen, initial-recipe-contents:text, initial-sandbox-contents:text -> result:&:environment [
+def new-programming-environment resources:&:resources, screen:&:screen, test-sandbox-editor-contents:text -> result:&:environment [
   local-scope
   load-ingredients
   width:num <- screen-width screen
   result <- new environment:type
   # recipe editor on the left
+  initial-recipe-contents:text <- slurp resources, [lesson/recipes.mu]  # ignore errors
   divider:num, _ <- divide-with-remainder width, 2
   recipes:&:editor <- new-editor initial-recipe-contents, 0/left, divider/right
   # sandbox editor on the right
   sandbox-left:num <- add divider, 1
-  current-sandbox:&:editor <- new-editor initial-sandbox-contents, sandbox-left, width/right
+  current-sandbox:&:editor <- new-editor test-sandbox-editor-contents, sandbox-left, width/right
   *result <- put *result, recipes:offset, recipes
   *result <- put *result, current-sandbox:offset, current-sandbox
   *result <- put *result, sandbox-in-focus?:offset, 0/false
   <programming-environment-initialization>
 ]
 
-def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&:screen, console:&:console, env:&:environment [
+def event-loop screen:&:screen, console:&:console, env:&:environment, resources:&:resources -> screen:&:screen, console:&:console, env:&:environment, resources:&:resources [
   local-scope
   load-ingredients
   recipes:&:editor <- get *env, recipes:offset
@@ -286,7 +284,12 @@ scenario point-at-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  env:&:environment <- new-programming-environment screen, [abc], [def]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |abc|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [def]  # contents of sandbox editor
   # focus on both sides
   assume-console [
     left-click 1, 1
@@ -294,7 +297,7 @@ scenario point-at-multiple-editors [
   ]
   # check cursor column in each
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     recipes:&:editor <- get *env, recipes:offset
     5:num/raw <- get *recipes, cursor-column:offset
     sandbox:&:editor <- get *env, current-sandbox:offset
@@ -311,7 +314,12 @@ scenario edit-multiple-editors [
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
   # initialize both halves of screen
-  env:&:environment <- new-programming-environment screen, [abc], [def]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |abc|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [def]  # contents of sandbox
   render-all screen, env, render
   # type one letter in each of them
   assume-console [
@@ -321,7 +329,7 @@ scenario edit-multiple-editors [
     type [1]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     recipes:&:editor <- get *env, recipes:offset
     5:num/raw <- get *recipes, cursor-column:offset
     sandbox:&:editor <- get *env, current-sandbox:offset
@@ -330,7 +338,8 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F4)           .  # this line has a different background, but we don't test that yet
     .a0bc           ┊d1ef          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
+    .               ┊──────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊              .
     .               ┊              .
   ]
   memory-should-contain [
@@ -345,26 +354,9 @@ scenario edit-multiple-editors [
   screen-should-contain [
     .           run (F4)           .
     .a0bc           ┊d1␣f          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
+    .               ┊──────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊              .
     .               ┊              .
-  ]
-]
-
-scenario multiple-editors-cover-only-their-own-areas [
-  local-scope
-  trace-until 100/app  # trace too long
-  assume-screen 60/width, 10/height
-  run [
-    env:&:environment <- new-programming-environment screen, [abc], [def]
-    render-all screen, env, render
-  ]
-  # divider isn't messed up
-  screen-should-contain [
-    .                                         run (F4)           .
-    .abc                           ┊def                          .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────.
-    .                              ┊                             .
-    .                              ┊                             .
   ]
 ]
 
@@ -372,12 +364,17 @@ scenario editor-in-focus-keeps-cursor [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
-  env:&:environment <- new-programming-environment screen, [abc], [def]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |abc|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [def]
   render-all screen, env, render
   # initialize programming environment and highlight cursor
   assume-console []
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -385,7 +382,8 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F4)           .
     .␣bc            ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
+    .               ┊──────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊              .
     .               ┊              .
   ]
   # now try typing a letter
@@ -393,7 +391,7 @@ scenario editor-in-focus-keeps-cursor [
     type [z]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
@@ -401,7 +399,8 @@ scenario editor-in-focus-keeps-cursor [
   screen-should-contain [
     .           run (F4)           .
     .z␣bc           ┊def           .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊──────────────.
+    .               ┊──────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊              .
     .               ┊              .
   ]
 ]
@@ -410,10 +409,12 @@ scenario backspace-in-sandbox-editor-joins-lines [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 30/width, 5/height
+  assume-resources [
+  ]
   # initialize sandbox side with two lines
-  s:text <- new [abc
+  test-sandbox-editor-contents:text <- new [abc
 def]
-  env:&:environment <- new-programming-environment screen, [], s:text
+  env:&:environment <- new-programming-environment resources, screen, test-sandbox-editor-contents
   render-all screen, env, render
   screen-should-contain [
     .           run (F4)           .
@@ -428,7 +429,7 @@ def]
     press backspace
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]

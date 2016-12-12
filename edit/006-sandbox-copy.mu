@@ -5,24 +5,22 @@ scenario copy-a-sandbox-to-editor [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -31,16 +29,16 @@ recipe foo [
     left-click 3, 69
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # it copies into editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊add 1, 1                                         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -49,15 +47,15 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊0foo                                             .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊0add 1, 1                                        .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -67,24 +65,22 @@ scenario copy-a-sandbox-to-editor-2 [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -93,16 +89,16 @@ recipe foo [
     left-click 3, 84
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # it copies into editor
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊add 1, 1                                         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -111,15 +107,15 @@ recipe foo [
     type [0]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊0foo                                             .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .                                                  ┊0add 1, 1                                        .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -224,24 +220,22 @@ scenario copy-fails-if-sandbox-editor-not-empty [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -252,16 +246,16 @@ recipe foo [
     left-click 3, 70  # click 'copy' button
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # copy doesn't happen
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊0                                                .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -270,15 +264,15 @@ recipe foo [
     type [1]
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊01                                               .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]

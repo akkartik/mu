@@ -40,22 +40,25 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  stash [abc]</span>
-]]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  stash [abc]</span>|
+<span class="Constant">      |]|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  stash [abc]                                     ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  stash [abc]                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎foo                                              .</span>
 <span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -64,17 +67,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 4</span>,<span class="Constant"> 51</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
     print screen, cursor
   ]
   <span class="Comment"># trace now printed and cursor shouldn't have budged</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .␣                                                 ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  stash [abc]                                     ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .␣ecipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  stash [abc]                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎foo                                              .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎abc                                              .</span>
   ]
   screen-should-contain-in-color <span class="Constant">245/grey</span>, [
@@ -90,16 +93,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 4</span>,<span class="Constant"> 55</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     print screen, cursor
   ]
   <span class="Comment"># trace hidden again</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .␣                                                 ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  stash [abc]                                     ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .␣ecipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  stash [abc]                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .                                                  ╎foo                                              .</span>
 <span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -110,24 +113,27 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># basic recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  stash [abc]</span>
-  <span class="muControl">reply</span><span class="Constant"> 4</span>
-]]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  stash [abc]</span>|
+      <span class="Constant">|</span>  <span class="muControl">reply</span> 4|
+<span class="Constant">      |]|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   <span class="Comment"># run it</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  stash [abc]                                     ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .  reply 4                                         ╎foo                                              .</span>
-   <span class="Constant"> .]                                                 ╎4                                                .</span>
+   <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  stash [abc]                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .                                                  ╎4                                                .</span>
 <span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
@@ -136,16 +142,16 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 4</span>,<span class="Constant"> 51</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># trace now printed above result</span>
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  stash [abc]                                     ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .  reply 4                                         ╎foo                                              .</span>
-   <span class="Constant"> .]                                                 ╎abc                                              .</span>
+   <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
+   <span class="Constant"> .  stash [abc]                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  reply 4                                         ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .]                                                 ╎foo                                              .</span>
+   <span class="Constant"> .                                                  ╎abc                                              .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎8 instructions run                               .</span>
    <span class="Constant"> .                                                  ╎4                                                .</span>
    <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
@@ -157,13 +163,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[stash 123456789]</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[stash 123456789]</span>
   <span class="Comment"># create and expand the trace</span>
   assume-console [
     press F4
     left-click<span class="Constant"> 4</span>,<span class="Constant"> 51</span>
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .                                                                                 run (F4)           .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
@@ -177,7 +185,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     left-click<span class="Constant"> 5</span>,<span class="Constant"> 57</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># no change; doesn't die</span>
   screen-should-contain [

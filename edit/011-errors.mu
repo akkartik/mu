@@ -5,12 +5,12 @@ container environment [
 ]
 
 # copy code from recipe editor, persist to disk, load, save any errors
-def! update-recipes env:&:environment, screen:&:screen -> errors-found?:bool, env:&:environment, screen:&:screen [
+def! update-recipes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, resources:&:resources, screen:&:screen [
   local-scope
   load-ingredients
   recipes:&:editor <- get *env, recipes:offset
   in:text <- editor-contents recipes
-  save [recipes.mu], in
+  resources <- dump resources, [lesson/recipes.mu], in
   recipe-errors:text <- reload in
   *env <- put *env, recipe-errors:offset, recipe-errors
   # if recipe editor has errors, stop
@@ -118,23 +118,36 @@ scenario run-shows-errors-in-get [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  recipes:text <- new [ 
-recipe foo [
-  get 123:num, foo:offset
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  get 123:num, foo:offset|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo [                                      ┊foo                                              .
+    .  get 123:num, foo:offset                         ┊─────────────────────────────────────────────────.
+    .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  get 123:num, foo:offset                         ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  get 123:num, foo:offset                         ┊─────────────────────────────────────────────────.
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: unknown element 'foo' in container 'number'  ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
     .ner, but got '123:num'                            ┊                                                 .
@@ -158,7 +171,9 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen, [], []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   assume-console [
     left-click 3, 80
     # create invalid sandbox 1
@@ -169,7 +184,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # status line shows that error is in first sandbox
   screen-should-contain [
@@ -181,7 +196,9 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen, [], []
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, []
   assume-console [
     left-click 3, 80
     # create invalid sandbox 2
@@ -195,7 +212,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # status line shows that error is in second sandbox
   screen-should-contain [
@@ -207,13 +224,13 @@ scenario run-hides-errors-from-past-sandboxes [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  env:&:environment <- new-programming-environment screen, [], [get foo, x:offset]  # invalid
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [get foo, x:offset]  # invalid
   assume-console [
     press F4  # generate error
   ]
-  run [
-    event-loop screen, console, env
-  ]
+  event-loop screen, console, env, resources
   assume-console [
     left-click 3, 58
     press ctrl-k
@@ -221,7 +238,7 @@ scenario run-hides-errors-from-past-sandboxes [
     press F4  # update sandbox
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # error should disappear
   screen-should-contain [
@@ -241,26 +258,31 @@ scenario run-updates-errors-for-shape-shifting-recipes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # define a shape-shifting recipe with an error
-  recipes:text <- new [recipe foo x:_elem -> z:_elem [
-local-scope
-load-ingredients
-y:&:num <- copy 0
-z <- add x, y
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo 2]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo x:_elem -> z:_elem [|
+      |  local-scope|
+      |  load-ingredients|
+      |  y:&:num <- copy 0|
+      |  z <- add x, y|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo 2]
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
-    .local-scope                                       ┊─────────────────────────────────────────────────.
-    .load-ingredients                                  ┊0   edit          copy            delete         .
-    .y:&:num <- copy 0                                 ┊foo 2                                            .
-    .z <- add x, y                                     ┊foo_2: 'add' requires number ingredients, but go↩.
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  load-ingredients                                ┊0   edit          copy            delete         .
+    .  y:&:num <- copy 0                               ┊foo 2                                            .
+    .  z <- add x, y                                   ┊foo_2: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t 'y'                                            .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊─────────────────────────────────────────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
   # now rerun everything
@@ -268,18 +290,19 @@ z <- add x, y
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # error should remain unchanged
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
-    .local-scope                                       ┊─────────────────────────────────────────────────.
-    .load-ingredients                                  ┊0   edit          copy            delete         .
-    .y:&:num <- copy 0                                 ┊foo 2                                            .
-    .z <- add x, y                                     ┊foo_3: 'add' requires number ingredients, but go↩.
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  load-ingredients                                ┊0   edit          copy            delete         .
+    .  y:&:num <- copy 0                               ┊foo 2                                            .
+    .  z <- add x, y                                   ┊foo_3: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t 'y'                                            .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊─────────────────────────────────────────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]
@@ -289,17 +312,21 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # overload a well-known shape-shifting recipe
-  recipes:text <- new [recipe length l:&:list:_elem -> n:num [
-]]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe length l:&:list:_elem -> n:num [|
+      |]|
+    ]
+  ]
   # call code that uses other variants of it, but not it itself
-  sandbox:text <- new [x:&:list:num <- copy 0
+  test-sandbox:text <- new [x:&:list:num <- copy 0
 to-text x]
-  env:&:environment <- new-programming-environment screen, recipes, sandbox
+  env:&:environment <- new-programming-environment resources, screen, test-sandbox
   # run it once
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   # no errors anywhere on screen (can't check anything else, since to-text will return an address)
   screen-should-contain-in-color 1/red, [
     .                                                                                                    .
@@ -323,7 +350,7 @@ to-text x]
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # still no errors
   screen-should-contain-in-color 1/red, [
@@ -349,24 +376,30 @@ scenario run-shows-missing-type-errors [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  recipes:text <- new [ 
-recipe foo [
-  x <- copy 0
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  x <- copy 0|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  x <- copy 0                                     ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  x <- copy 0                                     ┊─────────────────────────────────────────────────.
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: missing type for 'x' in 'x <- copy 0'        ┊                                                 .
+    .foo: can't copy '0' to 'x'; types don't match     ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
   ]
 ]
 
@@ -375,22 +408,23 @@ scenario run-shows-unbalanced-bracket-errors [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
   # recipe is incomplete (unbalanced '[')
-  recipes:text <- new [ 
-recipe foo \\[
-  x <- copy 0
-]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo \\\[|
+      |  x <- copy 0|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo \\[                                      ┊─────────────────────────────────────────────────.
-    .  x <- copy 0                                     ┊                                                 .
+    .recipe foo \\[                                      ┊foo                                              .
+    .  x <- copy 0                                     ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
     .9: unbalanced '\\[' for recipe                      ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -402,27 +436,30 @@ scenario run-shows-get-on-non-container-errors [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  recipes:text <- new [ 
-recipe foo [
-  local-scope
-  x:&:point <- new point:type
-  get x:&:point, 1:offset
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  local-scope|
+      |  x:&:point <- new point:type|
+      |  get x:&:point, 1:offset|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:&:point <- new point:type                     ┊                                                 .
     .  get x:&:point, 1:offset                         ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: first ingredient of 'get' should be a contai↩┊                                                 .
     .ner, but got 'x:&:point'                          ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -434,29 +471,32 @@ scenario run-shows-non-literal-get-argument-errors [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 15/height
-  recipes:text <- new [ 
-recipe foo [
-  local-scope
-  x:num <- copy 0
-  y:&:point <- new point:type
-  get *y:&:point, x:num
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  local-scope|
+      |  x:num <- copy 0|
+      |  y:&:point <- new point:type|
+      |  get *y:&:point, x:num|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy 0                                 ┊                                                 .
     .  y:&:point <- new point:type                     ┊                                                 .
     .  get *y:&:point, x:num                           ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: second ingredient of 'get' should have type ↩┊                                                 .
     .'offset', but got 'x:num'                         ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -467,25 +507,28 @@ recipe foo [
 scenario run-shows-errors-everytime [
   local-scope
   trace-until 100/app  # trace too long
-  # try to run a file with an error
   assume-screen 100/width, 15/height
-  recipes:text <- new [ 
-recipe foo [
-  local-scope
-  x:num <- copy y:num
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  # try to run a file with an error
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  local-scope|
+      |  x:num <- copy y:num|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -496,15 +539,15 @@ recipe foo [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found                                                                   run (F4)           .
-    .                                                  ┊foo                                              .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊                                                 .
+    .recipe foo [                                      ┊foo                                              .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
     .  x:num <- copy y:num                             ┊                                                 .
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
@@ -516,15 +559,15 @@ scenario run-instruction-and-print-errors [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # right editor contains an illegal instruction
-  sandbox:text <- new [get 1234:num, foo:offset]
-  env:&:environment <- new-programming-environment screen, [], sandbox
-  # run the code in the editors
+  assume-resources [
+  ]
+  # sandbox editor contains an illegal instruction
+  env:&:environment <- new-programming-environment resources, screen, [get 1234:num, foo:offset]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # check that screen prints error message in red
   screen-should-contain [
@@ -578,16 +621,17 @@ scenario run-instruction-and-print-errors-only-once [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  # right editor contains an illegal instruction
-  sandbox:text <- new [get 1234:num, foo:offset]
-  env:&:environment <- new-programming-environment screen, [], sandbox
+  assume-resources [
+  ]
+  # sandbox editor contains an illegal instruction
+  env:&:environment <- new-programming-environment resources, screen, [get 1234:num, foo:offset]
   # run the code in the editors multiple times
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # check that screen prints error message just once
   screen-should-contain [
@@ -608,20 +652,23 @@ scenario sandbox-can-handle-infinite-loop [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 20/height
-  # left editor is empty
-  recipes:text <- new [recipe foo [
-  {
-    loop
-  }
-]]
-  # right editor contains an instruction
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  # sandbox editor will trigger an infinite loop
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  {|
+      |    loop|
+      |  }|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   # run the sandbox
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
@@ -630,7 +677,8 @@ scenario sandbox-can-handle-infinite-loop [
     .    loop                                          ┊0   edit          copy            delete         .
     .  }                                               ┊foo                                              .
     .]                                                 ┊took too long!                                   .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊─────────────────────────────────────────────────.
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
 ]
@@ -640,50 +688,55 @@ scenario sandbox-with-errors-shows-trace [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # generate a stash and a error
-  recipes:text <- new [recipe foo [
-local-scope
-a:num <- next-ingredient
-b:num <- next-ingredient
-stash [dividing by], b
-_, c:num <- divide-with-remainder a, b
-reply b
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo 4, 0]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  local-scope|
+      |  a:num <- next-ingredient|
+      |  b:num <- next-ingredient|
+      |  stash [dividing by], b|
+      |  _, c:num <- divide-with-remainder a, b|
+      |  reply b|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo 4, 0]
   # run
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   # screen prints error message
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
-    .local-scope                                       ┊─────────────────────────────────────────────────.
-    .a:num <- next-ingredient                          ┊0   edit          copy            delete         .
-    .b:num <- next-ingredient                          ┊foo 4, 0                                         .
-    .stash [dividing by], b                            ┊foo: divide by zero in '_, c:num <- divide-with-↩.
-    ._, c:num <- divide-with-remainder a, b            ┊remainder a, b'                                  .
-    .reply b                                           ┊─────────────────────────────────────────────────.
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  a:num <- next-ingredient                        ┊0   edit          copy            delete         .
+    .  b:num <- next-ingredient                        ┊foo 4, 0                                         .
+    .  stash [dividing by], b                          ┊foo: divide by zero in '_, c:num <- divide-with-↩.
+    .  _, c:num <- divide-with-remainder a, b          ┊remainder a, b'                                  .
+    .  reply b                                         ┊─────────────────────────────────────────────────.
     .]                                                 ┊                                                 .
+    .                                                  ┊                                                 .
   ]
   # click on the call in the sandbox
   assume-console [
     left-click 4, 55
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # screen should expand trace
   screen-should-contain [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
-    .local-scope                                       ┊─────────────────────────────────────────────────.
-    .a:num <- next-ingredient                          ┊0   edit          copy            delete         .
-    .b:num <- next-ingredient                          ┊foo 4, 0                                         .
-    .stash [dividing by], b                            ┊dividing by 0                                    .
-    ._, c:num <- divide-with-remainder a, b            ┊14 instructions run                              .
-    .reply b                                           ┊foo: divide by zero in '_, c:num <- divide-with-↩.
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  a:num <- next-ingredient                        ┊0   edit          copy            delete         .
+    .  b:num <- next-ingredient                        ┊foo 4, 0                                         .
+    .  stash [dividing by], b                          ┊dividing by 0                                    .
+    .  _, c:num <- divide-with-remainder a, b          ┊14 instructions run                              .
+    .  reply b                                         ┊foo: divide by zero in '_, c:num <- divide-with-↩.
     .]                                                 ┊remainder a, b'                                  .
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊─────────────────────────────────────────────────.
   ]
 ]

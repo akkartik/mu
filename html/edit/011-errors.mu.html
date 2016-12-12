@@ -40,12 +40,12 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 ]
 
 <span class="Comment"># copy code from recipe editor, persist to disk, load, save any errors</span>
-<span class="muRecipe">def!</span> update-recipes env:&amp;:environment, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, screen:&amp;:screen [
+<span class="muRecipe">def!</span> update-recipes env:&amp;:environment, resources:&amp;:resources, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>errors-found?:bool, env:&amp;:environment, resources:&amp;:resources, screen:&amp;:screen [
   <span class="Constant">local-scope</span>
   <span class="Constant">load-ingredients</span>
   recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
   in:text <span class="Special">&lt;-</span> editor-contents recipes
-  save <span class="Constant">[recipes.mu]</span>, in
+  resources <span class="Special">&lt;-</span> dump resources, <span class="Constant">[lesson/recipes.mu]</span>, in
   recipe-errors:text <span class="Special">&lt;-</span> reload in
   *env <span class="Special">&lt;-</span> put *env, <span class="Constant">recipe-errors:offset</span>, recipe-errors
   <span class="Comment"># if recipe editor has errors, stop</span>
@@ -153,23 +153,36 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  get 123:num, foo:offset</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  get 123:num, foo:offset|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
+  render-all screen, env, render
+  screen-should-contain [
+   <span class="Constant"> .                                                                                 run (F4)           .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  get 123:num, foo:offset                         ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
+  ]
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  get 123:num, foo:offset                         ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  get 123:num, foo:offset                         ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: unknown element 'foo' in container 'number'  ╎                                                 .</span>
    <span class="Constant"> .foo: first ingredient of 'get' should be a contai↩╎                                                 .</span>
    <span class="Constant"> .ner, but got '123:num'                            ╎                                                 .</span>
@@ -193,7 +206,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
   assume-console [
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 80</span>
     <span class="Comment"># create invalid sandbox 1</span>
@@ -204,7 +219,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># status line shows that error is in first sandbox</span>
   screen-should-contain [
@@ -216,7 +231,9 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[]</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
   assume-console [
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 80</span>
     <span class="Comment"># create invalid sandbox 2</span>
@@ -230,7 +247,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># status line shows that error is in second sandbox</span>
   screen-should-contain [
@@ -242,13 +259,13 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
+  assume-resources [
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[get foo, x:offset]</span>  <span class="Comment"># invalid</span>
   assume-console [
     press F4  <span class="Comment"># generate error</span>
   ]
-  run [
-    event-loop screen, console, env
-  ]
+  event-loop screen, console, env, resources
   assume-console [
     left-click<span class="Constant"> 3</span>,<span class="Constant"> 58</span>
     press ctrl-k
@@ -256,7 +273,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4  <span class="Comment"># update sandbox</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># error should disappear</span>
   screen-should-contain [
@@ -276,26 +293,31 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># define a shape-shifting recipe with an error</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo x:_elem -&gt; z:_elem [</span>
-<span class="Constant">local-scope</span>
-<span class="Constant">load-ingredients</span>
-<span class="Constant">y:&amp;:num &lt;- copy 0</span>
-<span class="Constant">z &lt;- add x, y</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo 2]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo x:_elem<span class="muRecipe"> -&gt; </span>z:_elem <span class="Constant">[|</span>
+<span class="Constant">      |  local-scope|</span>
+<span class="Constant">      |  load-ingredients|</span>
+<span class="Constant">      |  y:&amp;:num &lt;- copy 0|</span>
+<span class="Constant">      |  z &lt;- add x, y|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo 2]</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ╎                                                 .</span>
-   <span class="Constant"> .local-scope                                       ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .load-ingredients                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .y:&amp;:num &lt;- copy 0                                 ╎foo 2                                            .</span>
-   <span class="Constant"> .z &lt;- add x, y                                     ╎foo_2: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  load-ingredients                                ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .  y:&amp;:num &lt;- copy 0                               ╎foo 2                                            .</span>
+   <span class="Constant"> .  z &lt;- add x, y                                   ╎foo_2: 'add' requires number ingredients, but go↩.</span>
    <span class="Constant"> .]                                                 ╎t 'y'                                            .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
   <span class="Comment"># now rerun everything</span>
@@ -303,18 +325,19 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># error should remain unchanged</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo x:_elem -&gt; z:_elem [                   ╎                                                 .</span>
-   <span class="Constant"> .local-scope                                       ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .load-ingredients                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .y:&amp;:num &lt;- copy 0                                 ╎foo 2                                            .</span>
-   <span class="Constant"> .z &lt;- add x, y                                     ╎foo_3: 'add' requires number ingredients, but go↩.</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  load-ingredients                                ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .  y:&amp;:num &lt;- copy 0                               ╎foo 2                                            .</span>
+   <span class="Constant"> .  z &lt;- add x, y                                   ╎foo_3: 'add' requires number ingredients, but go↩.</span>
    <span class="Constant"> .]                                                 ╎t 'y'                                            .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
 ]
@@ -324,17 +347,21 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># overload a well-known shape-shifting recipe</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe length l:&amp;:list:_elem -&gt; n:num [</span>
-<span class="Constant">]</span>]
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> length l:&amp;:list:_elem<span class="muRecipe"> -&gt; </span>n:num <span class="Constant">[|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
   <span class="Comment"># call code that uses other variants of it, but not it itself</span>
-  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
+  test-sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[x:&amp;:list:num &lt;- copy 0</span>
 <span class="Constant">to-text x]</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, sandbox
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, test-sandbox
   <span class="Comment"># run it once</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   <span class="Comment"># no errors anywhere on screen (can't check anything else, since to-text will return an address)</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
    <span class="Constant"> .                                                                                                    .</span>
@@ -358,7 +385,7 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># still no errors</span>
   screen-should-contain-in-color <span class="Constant">1/red</span>, [
@@ -384,24 +411,30 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  x &lt;- copy 0</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  x &lt;- copy 0|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  x &lt;- copy 0                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  x &lt;- copy 0                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: missing type for 'x' in 'x &lt;- copy 0'        ╎                                                 .</span>
+   <span class="Constant"> .foo: can't copy '0' to 'x'; types don't match     ╎                                                 .</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
 ]
 
@@ -410,22 +443,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
   <span class="Comment"># recipe is incomplete (unbalanced '[')</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo \\[</span>
-<span class="Constant">  x &lt;- copy 0</span>
-<span class="Constant">]</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo \\\<span class="Constant">[|</span>
+<span class="Constant">      |  x &lt;- copy 0|</span>
+<span class="Constant">    ]</span>
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo \\[                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  x &lt;- copy 0                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo \\[                                      ╎foo                                              .</span>
+   <span class="Constant"> .  x &lt;- copy 0                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .9: unbalanced '\\[' for recipe                      ╎                                                 .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
@@ -437,27 +471,30 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  local-scope</span>
-<span class="Constant">  x:&amp;:point &lt;- new point:type</span>
-<span class="Constant">  get x:&amp;:point, 1:offset</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  local-scope|</span>
+<span class="Constant">      |  x:&amp;:point &lt;- new point:type|</span>
+<span class="Constant">      |  get x:&amp;:point, 1:offset|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  local-scope                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .  x:&amp;:point &lt;- new point:type                     ╎                                                 .</span>
    <span class="Constant"> .  get x:&amp;:point, 1:offset                         ╎                                                 .</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: first ingredient of 'get' should be a contai↩╎                                                 .</span>
    <span class="Constant"> .ner, but got 'x:&amp;:point'                          ╎                                                 .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
@@ -469,29 +506,32 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  local-scope</span>
-<span class="Constant">  x:num &lt;- copy 0</span>
-<span class="Constant">  y:&amp;:point &lt;- new point:type</span>
-<span class="Constant">  get *y:&amp;:point, x:num</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  local-scope|</span>
+<span class="Constant">      |  x:num &lt;- copy 0|</span>
+<span class="Constant">      |  y:&amp;:point &lt;- new point:type|</span>
+<span class="Constant">      |  get *y:&amp;:point, x:num|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  local-scope                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .  x:num &lt;- copy 0                                 ╎                                                 .</span>
    <span class="Constant"> .  y:&amp;:point &lt;- new point:type                     ╎                                                 .</span>
    <span class="Constant"> .  get *y:&amp;:point, x:num                           ╎                                                 .</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: second ingredient of 'get' should have type ↩╎                                                 .</span>
    <span class="Constant"> .'offset', but got 'x:num'                         ╎                                                 .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
@@ -502,25 +542,28 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <span class="muScenario">scenario</span> run-shows-errors-everytime [
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  <span class="Comment"># try to run a file with an error</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[ </span>
-<span class="Constant">recipe foo [</span>
-<span class="Constant">  local-scope</span>
-<span class="Constant">  x:num &lt;- copy y:num</span>
-<span class="Constant">]</span>]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  <span class="Comment"># try to run a file with an error</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  local-scope|</span>
+<span class="Constant">      |  x:num &lt;- copy y:num|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  local-scope                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .  x:num &lt;- copy y:num                             ╎                                                 .</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: tried to read ingredient 'y' in 'x:num &lt;- co↩╎                                                 .</span>
    <span class="Constant"> .py y:num' but it hasn't been written to yet       ╎                                                 .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
@@ -531,15 +574,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found                                                                   run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎foo                                              .</span>
-   <span class="Constant"> .recipe foo [                                      ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .  local-scope                                     ╎                                                 .</span>
+   <span class="Constant"> .recipe foo [                                      ╎foo                                              .</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .  x:num &lt;- copy y:num                             ╎                                                 .</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
    <span class="Constant"> .foo: tried to read ingredient 'y' in 'x:num &lt;- co↩╎                                                 .</span>
    <span class="Constant"> .py y:num' but it hasn't been written to yet       ╎                                                 .</span>
    <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
@@ -551,15 +594,15 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># right editor contains an illegal instruction</span>
-  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[get 1234:num, foo:offset]</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, sandbox
-  <span class="Comment"># run the code in the editors</span>
+  assume-resources [
+  ]
+  <span class="Comment"># sandbox editor contains an illegal instruction</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[get 1234:num, foo:offset]</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># check that screen prints error message in red</span>
   screen-should-contain [
@@ -613,16 +656,17 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># right editor contains an illegal instruction</span>
-  sandbox:text <span class="Special">&lt;-</span> new <span class="Constant">[get 1234:num, foo:offset]</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, <span class="Constant">[]</span>, sandbox
+  assume-resources [
+  ]
+  <span class="Comment"># sandbox editor contains an illegal instruction</span>
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[get 1234:num, foo:offset]</span>
   <span class="Comment"># run the code in the editors multiple times</span>
   assume-console [
     press F4
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># check that screen prints error message just once</span>
   screen-should-contain [
@@ -643,20 +687,23 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   <span class="Constant">local-scope</span>
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">20/height</span>
-  <span class="Comment"># left editor is empty</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo [</span>
-<span class="Constant">  {</span>
-<span class="Constant">    loop</span>
-<span class="Constant">  }</span>
-<span class="Constant">]</span>]
-  <span class="Comment"># right editor contains an instruction</span>
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo]</span>
+  <span class="Comment"># sandbox editor will trigger an infinite loop</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  {|</span>
+<span class="Constant">      |    loop|</span>
+<span class="Constant">      |  }|</span>
+<span class="Constant">      |]</span>|
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo]</span>
   <span class="Comment"># run the sandbox</span>
   assume-console [
     press F4
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
@@ -665,7 +712,8 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
    <span class="Constant"> .    loop                                          ╎0   edit          copy            delete         .</span>
    <span class="Constant"> .  }                                               ╎foo                                              .</span>
    <span class="Constant"> .]                                                 ╎took too long!                                   .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
    <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
 ]
@@ -675,51 +723,56 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
   trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
   assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
   <span class="Comment"># generate a stash and a error</span>
-  recipes:text <span class="Special">&lt;-</span> new <span class="Constant">[recipe foo [</span>
-<span class="Constant">local-scope</span>
-<span class="Constant">a:num &lt;- next-ingredient</span>
-<span class="Constant">b:num &lt;- next-ingredient</span>
-<span class="Constant">stash [dividing by]</span>, b
-_, c:num <span class="Special">&lt;-</span> divide-with-remainder a, b
-<span class="muControl">reply</span> b
-]]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment screen, recipes, <span class="Constant">[foo 4, 0]</span>
+  assume-resources [
+    <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+      <span class="Constant">|recipe</span> foo <span class="Constant">[|</span>
+<span class="Constant">      |  local-scope|</span>
+<span class="Constant">      |  a:num &lt;- next-ingredient|</span>
+<span class="Constant">      |  b:num &lt;- next-ingredient|</span>
+<span class="Constant">      |  stash [dividing by]</span>, b|
+      <span class="Constant">|</span>  _, c:num <span class="Special">&lt;-</span> divide-with-remainder a, b|
+      <span class="Constant">|</span>  <span class="muControl">reply</span> b|
+<span class="Constant">      |]|</span>
+    ]
+  ]
+  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[foo 4, 0]</span>
   <span class="Comment"># run</span>
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   <span class="Comment"># screen prints error message</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
-   <span class="Constant"> .local-scope                                       ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .a:num &lt;- next-ingredient                          ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .b:num &lt;- next-ingredient                          ╎foo 4, 0                                         .</span>
-   <span class="Constant"> .stash [dividing by], b                            ╎foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
-   <span class="Constant"> ._, c:num &lt;- divide-with-remainder a, b            ╎remainder a, b'                                  .</span>
-   <span class="Constant"> .reply b                                           ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  a:num &lt;- next-ingredient                        ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .  b:num &lt;- next-ingredient                        ╎foo 4, 0                                         .</span>
+   <span class="Constant"> .  stash [dividing by], b                          ╎foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
+   <span class="Constant"> .  _, c:num &lt;- divide-with-remainder a, b          ╎remainder a, b'                                  .</span>
+   <span class="Constant"> .  reply b                                         ╎─────────────────────────────────────────────────.</span>
    <span class="Constant"> .]                                                 ╎                                                 .</span>
+   <span class="Constant"> .                                                  ╎                                                 .</span>
   ]
   <span class="Comment"># click on the call in the sandbox</span>
   assume-console [
     left-click<span class="Constant"> 4</span>,<span class="Constant"> 55</span>
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   <span class="Comment"># screen should expand trace</span>
   screen-should-contain [
    <span class="Constant"> .  errors found (0)                                                               run (F4)           .</span>
    <span class="Constant"> .recipe foo [                                      ╎                                                 .</span>
-   <span class="Constant"> .local-scope                                       ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .a:num &lt;- next-ingredient                          ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .b:num &lt;- next-ingredient                          ╎foo 4, 0                                         .</span>
-   <span class="Constant"> .stash [dividing by], b                            ╎dividing by 0                                    .</span>
-   <span class="Constant"> ._, c:num &lt;- divide-with-remainder a, b            ╎14 instructions run                              .</span>
-   <span class="Constant"> .reply b                                           ╎foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
+   <span class="Constant"> .  local-scope                                     ╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .  a:num &lt;- next-ingredient                        ╎0   edit          copy            delete         .</span>
+   <span class="Constant"> .  b:num &lt;- next-ingredient                        ╎foo 4, 0                                         .</span>
+   <span class="Constant"> .  stash [dividing by], b                          ╎dividing by 0                                    .</span>
+   <span class="Constant"> .  _, c:num &lt;- divide-with-remainder a, b          ╎14 instructions run                              .</span>
+   <span class="Constant"> .  reply b                                         ╎foo: divide by zero in '_, c:num &lt;- divide-with-↩.</span>
    <span class="Constant"> .]                                                 ╎remainder a, b'                                  .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
   ]
 ]
 </pre>

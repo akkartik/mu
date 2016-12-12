@@ -5,22 +5,25 @@ scenario sandbox-click-on-code-toggles-app-trace [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  stash [abc]
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  stash [abc]|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  stash [abc]                                     ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
+    .recipe foo [                                      ┊                                                 .
+    .  stash [abc]                                     ┊─────────────────────────────────────────────────.
+    .]                                                 ┊0   edit          copy            delete         .
+    .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -29,17 +32,17 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     cursor:char <- copy 9251/␣
     print screen, cursor
   ]
   # trace now printed and cursor shouldn't have budged
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .␣                                                 ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  stash [abc]                                     ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
+    .␣ecipe foo [                                      ┊                                                 .
+    .  stash [abc]                                     ┊─────────────────────────────────────────────────.
+    .]                                                 ┊0   edit          copy            delete         .
+    .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
   ]
   screen-should-contain-in-color 245/grey, [
@@ -55,16 +58,16 @@ recipe foo [
     left-click 4, 55
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
     print screen, cursor
   ]
   # trace hidden again
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .␣                                                 ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  stash [abc]                                     ┊0   edit          copy            delete         .
-    .]                                                 ┊foo                                              .
+    .␣ecipe foo [                                      ┊                                                 .
+    .  stash [abc]                                     ┊─────────────────────────────────────────────────.
+    .]                                                 ┊0   edit          copy            delete         .
+    .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -75,24 +78,27 @@ scenario sandbox-shows-app-trace-and-result [
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
   # basic recipe
-  recipes:text <- new [ 
-recipe foo [
-  stash [abc]
-  reply 4
-]]
-  env:&:environment <- new-programming-environment screen, recipes, [foo]
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  stash [abc]|
+      |  reply 4|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
   # run it
   assume-console [
     press F4
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  stash [abc]                                     ┊0   edit          copy            delete         .
-    .  reply 4                                         ┊foo                                              .
-    .]                                                 ┊4                                                .
+    .recipe foo [                                      ┊                                                 .
+    .  stash [abc]                                     ┊─────────────────────────────────────────────────.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .                                                  ┊4                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
@@ -101,16 +107,16 @@ recipe foo [
     left-click 4, 51
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # trace now printed above result
   screen-should-contain [
     .                                                                                 run (F4)           .
-    .                                                  ┊                                                 .
-    .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  stash [abc]                                     ┊0   edit          copy            delete         .
-    .  reply 4                                         ┊foo                                              .
-    .]                                                 ┊abc                                              .
+    .recipe foo [                                      ┊                                                 .
+    .  stash [abc]                                     ┊─────────────────────────────────────────────────.
+    .  reply 4                                         ┊0   edit          copy            delete         .
+    .]                                                 ┊foo                                              .
+    .                                                  ┊abc                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊8 instructions run                               .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -122,13 +128,15 @@ scenario clicking-on-app-trace-does-nothing [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 100/width, 10/height
-  env:&:environment <- new-programming-environment screen, [], [stash 123456789]
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [stash 123456789]
   # create and expand the trace
   assume-console [
     press F4
     left-click 4, 51
   ]
-  event-loop screen, console, env
+  event-loop screen, console, env, resources
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
@@ -142,7 +150,7 @@ scenario clicking-on-app-trace-does-nothing [
     left-click 5, 57
   ]
   run [
-    event-loop screen, console, env
+    event-loop screen, console, env, resources
   ]
   # no change; doesn't die
   screen-should-contain [

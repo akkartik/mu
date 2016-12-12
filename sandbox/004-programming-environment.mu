@@ -3,15 +3,9 @@
 def! main [
   local-scope
   open-console
-  initial-sandbox:text <- new []
-  hide-screen 0/screen
-  env:&:environment <- new-programming-environment 0/screen, initial-sandbox
-  env <- restore-sandboxes env
-  render-sandbox-side 0/screen, env, render
-  current-sandbox:&:editor <- get *env, current-sandbox:offset
-  update-cursor 0/screen, current-sandbox, env
-  show-screen 0/screen
-  event-loop 0/screen, 0/console, env
+  env:&:environment <- new-programming-environment 0/filesystem, 0/screen
+  render-all 0/screen, env, render
+  event-loop 0/screen, 0/console, env, 0/filesystem
   # never gets here
 ]
 
@@ -19,26 +13,18 @@ container environment [
   current-sandbox:&:editor
 ]
 
-def new-programming-environment screen:&:screen, initial-sandbox-contents:text -> result:&:environment, screen:&:screen [
+def new-programming-environment resources:&:resources, screen:&:screen, test-sandbox-editor-contents:text -> result:&:environment [
   local-scope
   load-ingredients
   width:num <- screen-width screen
-  height:num <- screen-height screen
-  # top menu
   result <- new environment:type
-  draw-horizontal screen, 0, 0/left, width, 32/space, 0/black, 238/grey
-  button-start:num <- subtract width, 20
-  button-on-screen?:bool <- greater-or-equal button-start, 0
-  assert button-on-screen?, [screen too narrow for menu]
-  screen <- move-cursor screen, 0/row, button-start
-  print screen, [ run (F4) ], 255/white, 161/reddish
   # sandbox editor
-  current-sandbox:&:editor <- new-editor initial-sandbox-contents, 0, width/right
+  current-sandbox:&:editor <- new-editor test-sandbox-editor-contents, 0/left, width/right
   *result <- put *result, current-sandbox:offset, current-sandbox
   <programming-environment-initialization>
 ]
 
-def event-loop screen:&:screen, console:&:console, env:&:environment -> screen:&:screen, console:&:console, env:&:environment [
+def event-loop screen:&:screen, console:&:console, env:&:environment, resources:&:resources -> screen:&:screen, console:&:console, env:&:environment, resources:&:resources [
   local-scope
   load-ingredients
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -356,9 +342,4 @@ after <global-type> [
     sync-screen screen
     loop +next-event
   }
-]
-
-# dummy
-def restore-sandboxes env:&:environment -> env:&:environment [
-  # do nothing; redefined later
 ]
