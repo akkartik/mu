@@ -1357,7 +1357,7 @@ def move-to-start-of-line editor:&:editor -> editor:&:editor [
   # update before-cursor
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   init:&:duplex-list:char <- get *editor, data:offset
-  # while not at start of line, move 
+  # while not at start of line, move
   {
     at-start-of-text?:bool <- equal before-cursor, init
     break-if at-start-of-text?
@@ -1526,7 +1526,7 @@ def move-to-end-of-line editor:&:editor -> editor:&:editor [
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   cursor-column:num <- get *editor, cursor-column:offset
-  # while not at start of line, move 
+  # while not at start of line, move
   {
     next:&:duplex-list:char <- next before-cursor
     break-unless next  # end of text
