@@ -228,6 +228,7 @@ if (caller.name.find("run_") == 0) return;  // skip calls to 'run', which should
 
 //: Some variables for fake resources always get special /raw addresses in scenarios.
 
+:(code)
 // Should contain everything passed by is_special_name but failed by is_disqualified.
 void bind_special_scenario_names(const recipe_ordinal r) {
   // Special Scenario Variable Names(r)
