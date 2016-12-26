@@ -6,15 +6,16 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
 .Special { color: #c00000; }
+.Constant { color: #00a0a0; }
+.LineNr { color: #444444; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -22,16 +23,39 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="muRecipe">def</span> example1 [
-  <span class="Constant">local-scope</span>
-  a:num <span class="Special">&lt;-</span> add<span class="Constant"> 2</span>,<span class="Constant"> 2</span>
-  a <span class="Special">&lt;-</span> multiply a,<span class="Constant"> 3</span>
-]
+<a name="L1"></a><span id="L1" class="LineNr">1 </span><span class="muRecipe">def</span> example1 [
+<a name="L2"></a><span id="L2" class="LineNr">2 </span>  <span class="Constant">local-scope</span>
+<a name="L3"></a><span id="L3" class="LineNr">3 </span>  a:num <span class="Special">&lt;-</span> add<span class="Constant"> 2</span>,<span class="Constant"> 2</span>
+<a name="L4"></a><span id="L4" class="LineNr">4 </span>  a <span class="Special">&lt;-</span> multiply a,<span class="Constant"> 3</span>
+<a name="L5"></a><span id="L5" class="LineNr">5 </span>]
 </pre>
 </body>
 </html>

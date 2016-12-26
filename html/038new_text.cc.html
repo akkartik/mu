@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -14,253 +14,277 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.cSpecial { color: #008000; }
+.Special { color: #c00000; }
 .CommentedCode { color: #6c6c6c; }
 .muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #c0a020; }
+.cSpecial { color: #008000; }
 -->
 </style>
 
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Extend 'new' to handle a unicode string literal argument or 'text'.</span>
-
-<span class="Comment">//: A Mu text is an address to an array of characters.</span>
-<span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
-put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address:array:character&quot;</span><span class="Delimiter">));</span>
-
-<span class="Delimiter">:(scenario new_string)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
-  <span class="Constant">2</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">5</span>
-]
-<span class="Comment"># number code for 'e'</span>
-<span class="traceContains">+mem: storing 101 in location 2</span>
-
-<span class="Delimiter">:(scenario new_string_handles_unicode)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:text
-  <span class="Constant">3</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">1</span>
-]
-<span class="traceContains">+mem: storing 3 in location 2</span>
-<span class="Comment"># unicode for '«'</span>
-<span class="traceContains">+mem: storing 171 in location 3</span>
-
-<span class="Delimiter">:(before &quot;End NEW Check Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;Convert 'new' To 'allocate'&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span> &amp;&amp; is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new string alloc: &quot;</span> &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">int</span> new_mu_text<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Comment">// allocate an array just large enough for it</span>
-  <span class="Normal">int</span> string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
-<span class="CommentedCode">//?   Total_alloc += string_length+1;</span>
-<span class="CommentedCode">//?   ++Num_alloc;</span>
-  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>string_length+<span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string refcount 0 in location &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">int</span> curr_address = result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string length &quot;</span> &lt;&lt; string_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
-  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
-  ++curr_address<span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
-  <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; string_length<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
-    assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
-    tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string character &quot;</span> &lt;&lt; curr_character &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
-    curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
-    ++curr_address<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// Mu strings are not null-terminated in memory.</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: a new kind of typo</span>
-
-<span class="Delimiter">:(scenario string_literal_without_instruction)</span>
-<span class="Special">% Hide_errors = true;</span>
-<span class="muRecipe">def</span> main [
-  [abc]
-]
-<span class="traceContains">+error: main: instruction '[abc]' has no recipe</span>
-
-<span class="Comment">//: stash recognizes strings</span>
-
-<span class="Delimiter">:(scenario stash_string)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
-]
-<span class="traceContains">+app: foo: abc</span>
-
-<span class="Delimiter">:(before &quot;End inspect Special-cases(r, data)&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
-  <span class="Identifier">return</span> read_mu_text<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End $print Special-cases&quot;)</span>
-<span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-  cout &lt;&lt; read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(scenario unicode_string)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [♠]
-  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
-]
-<span class="traceContains">+app: foo: ♠</span>
-
-<span class="Delimiter">:(scenario stash_space_after_string)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash <span class="Constant">1</span>:text<span class="Delimiter">,</span> [foo]
-]
-<span class="traceContains">+app: abc foo</span>
-
-<span class="Delimiter">:(scenario stash_string_as_array)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
-  stash *<span class="Constant">1</span>:text
-]
-<span class="traceContains">+app: 3 97 98 99</span>
-
-<span class="Comment">//: fixes way more than just stash</span>
-<span class="Delimiter">:(before &quot;End Preprocess is_mu_text(reagent x)&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: Allocate more to routine when initializing a literal string</span>
-<span class="Delimiter">:(scenario new_string_overflow)</span>
-<span class="Special">% Initial_memory_per_routine = 3;</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  <span class="Constant">2</span>:text/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
-]
-<span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>
-<span class="traceContains">+new: routine allocated memory from 1003 to 1006</span>
-
-<span class="Comment">//: helpers</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">int</span> unicode_length<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">const</span> <span class="Normal">char</span>* in = s<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
-  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// carefully bounds-check on the string</span>
-    <span class="Comment">// before accessing its raw pointer</span>
-    ++result<span class="Delimiter">;</span>
-    curr += tb_utf8_char_length<span class="Delimiter">(</span>in[curr]<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-string read_mu_text<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  ++address<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
-  <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>size == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-  ostringstream tmp<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = address+<span class="Constant">1</span><span class="Delimiter">;</span>  curr &lt;= address+size<span class="Delimiter">;</span>  ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: some miscellaneous helpers now that we have text</span>
-
-<span class="Comment">//: assert: perform sanity checks at runtime</span>
-
-<span class="Delimiter">:(scenario assert)</span>
-<span class="Special">% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.</span>
-<span class="muRecipe">def</span> main [
-  assert <span class="Constant">0</span><span class="Delimiter">,</span> [<span class="Normal">this</span> is an assert in Mu]
-]
-<span class="traceContains">+error: this is an assert in Mu</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-ASSERT<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assert&quot;</span><span class="Delimiter">,</span> ASSERT<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> ASSERT: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_scalar<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a boolean for its first ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a text as its second ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> ASSERT: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
-      raise &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Normal">else</span>
-      raise &lt;&lt; read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-
-<span class="Comment">//: 'cheating' by using the host system</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_READ<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$read&quot;</span><span class="Delimiter">,</span> _READ<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
-  skip_whitespace<span class="Delimiter">(</span>cin<span class="Delimiter">);</span>
-  string result<span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>cin<span class="Delimiter">))</span>
-    cin &gt;&gt; result<span class="Delimiter">;</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
-    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
+<a name="L1"></a><span id="L1" class="LineNr">  1 </span><span class="Comment">//: Extend 'new' to handle a unicode string literal argument or 'text'.</span>
+<a name="L2"></a><span id="L2" class="LineNr">  2 </span>
+<a name="L3"></a><span id="L3" class="LineNr">  3 </span><span class="Comment">//: A Mu text is an address to an array of characters.</span>
+<a name="L4"></a><span id="L4" class="LineNr">  4 </span><span class="Delimiter">:(before &quot;End Mu Types Initialization&quot;)</span>
+<a name="L5"></a><span id="L5" class="LineNr">  5 </span>put<span class="Delimiter">(</span>Type_abbreviations<span class="Delimiter">,</span> <span class="Constant">&quot;text&quot;</span><span class="Delimiter">,</span> new_type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address:array:character&quot;</span><span class="Delimiter">));</span>
+<a name="L6"></a><span id="L6" class="LineNr">  6 </span>
+<a name="L7"></a><span id="L7" class="LineNr">  7 </span><span class="Delimiter">:(scenario new_string)</span>
+<a name="L8"></a><span id="L8" class="LineNr">  8 </span><span class="muRecipe">def</span> main [
+<a name="L9"></a><span id="L9" class="LineNr">  9 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc def]
+<a name="L10"></a><span id="L10" class="LineNr"> 10 </span>  <span class="Constant">2</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">5</span>
+<a name="L11"></a><span id="L11" class="LineNr"> 11 </span>]
+<a name="L12"></a><span id="L12" class="LineNr"> 12 </span><span class="Comment"># number code for 'e'</span>
+<a name="L13"></a><span id="L13" class="LineNr"> 13 </span><span class="traceContains">+mem: storing 101 in location 2</span>
+<a name="L14"></a><span id="L14" class="LineNr"> 14 </span>
+<a name="L15"></a><span id="L15" class="LineNr"> 15 </span><span class="Delimiter">:(scenario new_string_handles_unicode)</span>
+<a name="L16"></a><span id="L16" class="LineNr"> 16 </span><span class="muRecipe">def</span> main [
+<a name="L17"></a><span id="L17" class="LineNr"> 17 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [a«c]
+<a name="L18"></a><span id="L18" class="LineNr"> 18 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>length *<span class="Constant">1</span>:text
+<a name="L19"></a><span id="L19" class="LineNr"> 19 </span>  <span class="Constant">3</span>:<span class="Normal">char</span><span class="Special"> &lt;- </span>index *<span class="Constant">1</span>:text<span class="Delimiter">,</span> <span class="Constant">1</span>
+<a name="L20"></a><span id="L20" class="LineNr"> 20 </span>]
+<a name="L21"></a><span id="L21" class="LineNr"> 21 </span><span class="traceContains">+mem: storing 3 in location 2</span>
+<a name="L22"></a><span id="L22" class="LineNr"> 22 </span><span class="Comment"># unicode for '«'</span>
+<a name="L23"></a><span id="L23" class="LineNr"> 23 </span><span class="traceContains">+mem: storing 171 in location 3</span>
+<a name="L24"></a><span id="L24" class="LineNr"> 24 </span>
+<a name="L25"></a><span id="L25" class="LineNr"> 25 </span><span class="Delimiter">:(before &quot;End NEW Check Special-cases&quot;)</span>
+<a name="L26"></a><span id="L26" class="LineNr"> 26 </span><span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L27"></a><span id="L27" class="LineNr"> 27 </span><span class="Delimiter">:(before &quot;Convert 'new' To 'allocate'&quot;)</span>
+<a name="L28"></a><span id="L28" class="LineNr"> 28 </span><span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;new&quot;</span> &amp;&amp; is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<a name="L29"></a><span id="L29" class="LineNr"> 29 </span><span class="Delimiter">:(after &quot;case NEW&quot; following &quot;Primitive Recipe Implementations&quot;)</span>
+<a name="L30"></a><span id="L30" class="LineNr"> 30 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L31"></a><span id="L31" class="LineNr"> 31 </span>    products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L32"></a><span id="L32" class="LineNr"> 32 </span>    products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<a name="L33"></a><span id="L33" class="LineNr"> 33 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new string alloc: &quot;</span> &lt;&lt; products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L34"></a><span id="L34" class="LineNr"> 34 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L35"></a><span id="L35" class="LineNr"> 35 </span>  <span class="Delimiter">}</span>
+<a name="L36"></a><span id="L36" class="LineNr"> 36 </span>
+<a name="L37"></a><span id="L37" class="LineNr"> 37 </span><span class="Delimiter">:(code)</span>
+<a name="L38"></a><span id="L38" class="LineNr"> 38 </span><span class="Normal">int</span> new_mu_text<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; contents<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L39"></a><span id="L39" class="LineNr"> 39 </span>  <span class="Comment">// allocate an array just large enough for it</span>
+<a name="L40"></a><span id="L40" class="LineNr"> 40 </span>  <span class="Normal">int</span> string_length = unicode_length<span class="Delimiter">(</span>contents<span class="Delimiter">);</span>
+<a name="L41"></a><span id="L41" class="LineNr"> 41 </span><span class="CommentedCode">//?   Total_alloc += string_length+1;</span>
+<a name="L42"></a><span id="L42" class="LineNr"> 42 </span><span class="CommentedCode">//?   ++Num_alloc;</span>
+<a name="L43"></a><span id="L43" class="LineNr"> 43 </span>  <span class="Normal">int</span> result = allocate<span class="Delimiter">(</span>string_length+<span class="Comment">/*</span><span class="Comment">array length</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L44"></a><span id="L44" class="LineNr"> 44 </span>  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string refcount 0 in location &quot;</span> &lt;&lt; result &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L45"></a><span id="L45" class="LineNr"> 45 </span>  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> result<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L46"></a><span id="L46" class="LineNr"> 46 </span>  <span class="Normal">int</span> curr_address = result+<span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L47"></a><span id="L47" class="LineNr"> 47 </span>  trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string length &quot;</span> &lt;&lt; string_length &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L48"></a><span id="L48" class="LineNr"> 48 </span>  put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> string_length<span class="Delimiter">);</span>
+<a name="L49"></a><span id="L49" class="LineNr"> 49 </span>  ++curr_address<span class="Delimiter">;</span>  <span class="Comment">// skip length</span>
+<a name="L50"></a><span id="L50" class="LineNr"> 50 </span>  <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L51"></a><span id="L51" class="LineNr"> 51 </span>  <span class="Normal">const</span> <span class="Normal">char</span>* raw_contents = contents<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
+<a name="L52"></a><span id="L52" class="LineNr"> 52 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; string_length<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L53"></a><span id="L53" class="LineNr"> 53 </span>    <span class="Normal">uint32_t</span> curr_character<span class="Delimiter">;</span>
+<a name="L54"></a><span id="L54" class="LineNr"> 54 </span>    assert<span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>contents<span class="Delimiter">));</span>
+<a name="L55"></a><span id="L55" class="LineNr"> 55 </span>    tb_utf8_char_to_unicode<span class="Delimiter">(</span>&amp;curr_character<span class="Delimiter">,</span> &amp;raw_contents[curr]<span class="Delimiter">);</span>
+<a name="L56"></a><span id="L56" class="LineNr"> 56 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;mem&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing string character &quot;</span> &lt;&lt; curr_character &lt;&lt; <span class="Constant">&quot; in location &quot;</span> &lt;&lt; curr_address &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L57"></a><span id="L57" class="LineNr"> 57 </span>    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr_address<span class="Delimiter">,</span> curr_character<span class="Delimiter">);</span>
+<a name="L58"></a><span id="L58" class="LineNr"> 58 </span>    curr += tb_utf8_char_length<span class="Delimiter">(</span>raw_contents[curr]<span class="Delimiter">);</span>
+<a name="L59"></a><span id="L59" class="LineNr"> 59 </span>    ++curr_address<span class="Delimiter">;</span>
+<a name="L60"></a><span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">}</span>
+<a name="L61"></a><span id="L61" class="LineNr"> 61 </span>  <span class="Comment">// Mu strings are not null-terminated in memory.</span>
+<a name="L62"></a><span id="L62" class="LineNr"> 62 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<a name="L63"></a><span id="L63" class="LineNr"> 63 </span><span class="Delimiter">}</span>
+<a name="L64"></a><span id="L64" class="LineNr"> 64 </span>
+<a name="L65"></a><span id="L65" class="LineNr"> 65 </span><span class="Comment">//: a new kind of typo</span>
+<a name="L66"></a><span id="L66" class="LineNr"> 66 </span>
+<a name="L67"></a><span id="L67" class="LineNr"> 67 </span><span class="Delimiter">:(scenario string_literal_without_instruction)</span>
+<a name="L68"></a><span id="L68" class="LineNr"> 68 </span><span class="Special">% Hide_errors = true;</span>
+<a name="L69"></a><span id="L69" class="LineNr"> 69 </span><span class="muRecipe">def</span> main [
+<a name="L70"></a><span id="L70" class="LineNr"> 70 </span>  [abc]
+<a name="L71"></a><span id="L71" class="LineNr"> 71 </span>]
+<a name="L72"></a><span id="L72" class="LineNr"> 72 </span><span class="traceContains">+error: main: instruction '[abc]' has no recipe</span>
+<a name="L73"></a><span id="L73" class="LineNr"> 73 </span>
+<a name="L74"></a><span id="L74" class="LineNr"> 74 </span><span class="Comment">//: stash recognizes strings</span>
+<a name="L75"></a><span id="L75" class="LineNr"> 75 </span>
+<a name="L76"></a><span id="L76" class="LineNr"> 76 </span><span class="Delimiter">:(scenario stash_string)</span>
+<a name="L77"></a><span id="L77" class="LineNr"> 77 </span><span class="muRecipe">def</span> main [
+<a name="L78"></a><span id="L78" class="LineNr"> 78 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+<a name="L79"></a><span id="L79" class="LineNr"> 79 </span>  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
+<a name="L80"></a><span id="L80" class="LineNr"> 80 </span>]
+<a name="L81"></a><span id="L81" class="LineNr"> 81 </span><span class="traceContains">+app: foo: abc</span>
+<a name="L82"></a><span id="L82" class="LineNr"> 82 </span>
+<a name="L83"></a><span id="L83" class="LineNr"> 83 </span><span class="Delimiter">:(before &quot;End inspect Special-cases(r, data)&quot;)</span>
+<a name="L84"></a><span id="L84" class="LineNr"> 84 </span><span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<a name="L85"></a><span id="L85" class="LineNr"> 85 </span>  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
+<a name="L86"></a><span id="L86" class="LineNr"> 86 </span>  <span class="Identifier">return</span> read_mu_text<span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<a name="L87"></a><span id="L87" class="LineNr"> 87 </span><span class="Delimiter">}</span>
+<a name="L88"></a><span id="L88" class="LineNr"> 88 </span>
+<a name="L89"></a><span id="L89" class="LineNr"> 89 </span><span class="Delimiter">:(before &quot;End $print Special-cases&quot;)</span>
+<a name="L90"></a><span id="L90" class="LineNr"> 90 </span><span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L91"></a><span id="L91" class="LineNr"> 91 </span>  cout &lt;&lt; read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<a name="L92"></a><span id="L92" class="LineNr"> 92 </span><span class="Delimiter">}</span>
+<a name="L93"></a><span id="L93" class="LineNr"> 93 </span>
+<a name="L94"></a><span id="L94" class="LineNr"> 94 </span><span class="Delimiter">:(scenario unicode_string)</span>
+<a name="L95"></a><span id="L95" class="LineNr"> 95 </span><span class="muRecipe">def</span> main [
+<a name="L96"></a><span id="L96" class="LineNr"> 96 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [♠]
+<a name="L97"></a><span id="L97" class="LineNr"> 97 </span>  stash [foo:]<span class="Delimiter">,</span> <span class="Constant">1</span>:text
+<a name="L98"></a><span id="L98" class="LineNr"> 98 </span>]
+<a name="L99"></a><span id="L99" class="LineNr"> 99 </span><span class="traceContains">+app: foo: ♠</span>
+<a name="L100"></a><span id="L100" class="LineNr">100 </span>
+<a name="L101"></a><span id="L101" class="LineNr">101 </span><span class="Delimiter">:(scenario stash_space_after_string)</span>
+<a name="L102"></a><span id="L102" class="LineNr">102 </span><span class="muRecipe">def</span> main [
+<a name="L103"></a><span id="L103" class="LineNr">103 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+<a name="L104"></a><span id="L104" class="LineNr">104 </span>  stash <span class="Constant">1</span>:text<span class="Delimiter">,</span> [foo]
+<a name="L105"></a><span id="L105" class="LineNr">105 </span>]
+<a name="L106"></a><span id="L106" class="LineNr">106 </span><span class="traceContains">+app: abc foo</span>
+<a name="L107"></a><span id="L107" class="LineNr">107 </span>
+<a name="L108"></a><span id="L108" class="LineNr">108 </span><span class="Delimiter">:(scenario stash_string_as_array)</span>
+<a name="L109"></a><span id="L109" class="LineNr">109 </span><span class="muRecipe">def</span> main [
+<a name="L110"></a><span id="L110" class="LineNr">110 </span>  <span class="Constant">1</span>:text<span class="Special"> &lt;- </span><span class="Normal">new</span> [abc]
+<a name="L111"></a><span id="L111" class="LineNr">111 </span>  stash *<span class="Constant">1</span>:text
+<a name="L112"></a><span id="L112" class="LineNr">112 </span>]
+<a name="L113"></a><span id="L113" class="LineNr">113 </span><span class="traceContains">+app: 3 97 98 99</span>
+<a name="L114"></a><span id="L114" class="LineNr">114 </span>
+<a name="L115"></a><span id="L115" class="LineNr">115 </span><span class="Comment">//: fixes way more than just stash</span>
+<a name="L116"></a><span id="L116" class="LineNr">116 </span><span class="Delimiter">:(before &quot;End Preprocess is_mu_text(reagent x)&quot;)</span>
+<a name="L117"></a><span id="L117" class="LineNr">117 </span><span class="Normal">if</span> <span class="Delimiter">(</span>!canonize_type<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L118"></a><span id="L118" class="LineNr">118 </span>
+<a name="L119"></a><span id="L119" class="LineNr">119 </span><span class="Comment">//: Allocate more to routine when initializing a literal string</span>
+<a name="L120"></a><span id="L120" class="LineNr">120 </span><span class="Delimiter">:(scenario new_string_overflow)</span>
+<a name="L121"></a><span id="L121" class="LineNr">121 </span><span class="Special">% Initial_memory_per_routine = 3;</span>
+<a name="L122"></a><span id="L122" class="LineNr">122 </span><span class="muRecipe">def</span> main [
+<a name="L123"></a><span id="L123" class="LineNr">123 </span>  <span class="Constant">1</span>:address:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<a name="L124"></a><span id="L124" class="LineNr">124 </span>  <span class="Constant">2</span>:text/<span class="Special">raw &lt;- </span><span class="Normal">new</span> [a]  <span class="Comment"># not enough room in initial page, if you take the refcount and array length into account</span>
+<a name="L125"></a><span id="L125" class="LineNr">125 </span>]
+<a name="L126"></a><span id="L126" class="LineNr">126 </span><span class="traceContains">+new: routine allocated memory from 1000 to 1003</span>
+<a name="L127"></a><span id="L127" class="LineNr">127 </span><span class="traceContains">+new: routine allocated memory from 1003 to 1006</span>
+<a name="L128"></a><span id="L128" class="LineNr">128 </span>
+<a name="L129"></a><span id="L129" class="LineNr">129 </span><span class="Comment">//: helpers</span>
+<a name="L130"></a><span id="L130" class="LineNr">130 </span><span class="Delimiter">:(code)</span>
+<a name="L131"></a><span id="L131" class="LineNr">131 </span><span class="Normal">int</span> unicode_length<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L132"></a><span id="L132" class="LineNr">132 </span>  <span class="Normal">const</span> <span class="Normal">char</span>* in = s<span class="Delimiter">.</span>c_str<span class="Delimiter">();</span>
+<a name="L133"></a><span id="L133" class="LineNr">133 </span>  <span class="Normal">int</span> result = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L134"></a><span id="L134" class="LineNr">134 </span>  <span class="Normal">int</span> curr = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L135"></a><span id="L135" class="LineNr">135 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>curr &lt; SIZE<span class="Delimiter">(</span>s<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// carefully bounds-check on the string</span>
+<a name="L136"></a><span id="L136" class="LineNr">136 </span>    <span class="Comment">// before accessing its raw pointer</span>
+<a name="L137"></a><span id="L137" class="LineNr">137 </span>    ++result<span class="Delimiter">;</span>
+<a name="L138"></a><span id="L138" class="LineNr">138 </span>    curr += tb_utf8_char_length<span class="Delimiter">(</span>in[curr]<span class="Delimiter">);</span>
+<a name="L139"></a><span id="L139" class="LineNr">139 </span>  <span class="Delimiter">}</span>
+<a name="L140"></a><span id="L140" class="LineNr">140 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<a name="L141"></a><span id="L141" class="LineNr">141 </span><span class="Delimiter">}</span>
+<a name="L142"></a><span id="L142" class="LineNr">142 </span>
+<a name="L143"></a><span id="L143" class="LineNr">143 </span>string read_mu_text<span class="Delimiter">(</span><span class="Normal">int</span> address<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L144"></a><span id="L144" class="LineNr">144 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>address == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<a name="L145"></a><span id="L145" class="LineNr">145 </span>  ++address<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
+<a name="L146"></a><span id="L146" class="LineNr">146 </span>  <span class="Normal">int</span> size = get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> address<span class="Delimiter">);</span>
+<a name="L147"></a><span id="L147" class="LineNr">147 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>size == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<a name="L148"></a><span id="L148" class="LineNr">148 </span>  ostringstream tmp<span class="Delimiter">;</span>
+<a name="L149"></a><span id="L149" class="LineNr">149 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = address+<span class="Constant">1</span><span class="Delimiter">;</span>  curr &lt;= address+size<span class="Delimiter">;</span>  ++curr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L150"></a><span id="L150" class="LineNr">150 </span>    tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span>get_or_insert<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
+<a name="L151"></a><span id="L151" class="LineNr">151 </span>  <span class="Delimiter">}</span>
+<a name="L152"></a><span id="L152" class="LineNr">152 </span>  <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<a name="L153"></a><span id="L153" class="LineNr">153 </span><span class="Delimiter">}</span>
+<a name="L154"></a><span id="L154" class="LineNr">154 </span>
+<a name="L155"></a><span id="L155" class="LineNr">155 </span><span class="SalientComment">//:: some miscellaneous helpers now that we have text</span>
+<a name="L156"></a><span id="L156" class="LineNr">156 </span>
+<a name="L157"></a><span id="L157" class="LineNr">157 </span><span class="Comment">//: assert: perform sanity checks at runtime</span>
+<a name="L158"></a><span id="L158" class="LineNr">158 </span>
+<a name="L159"></a><span id="L159" class="LineNr">159 </span><span class="Delimiter">:(scenario assert)</span>
+<a name="L160"></a><span id="L160" class="LineNr">160 </span><span class="Special">% Hide_errors = true;  // '%' lines insert arbitrary C code into tests before calling 'run' with the lines below. Must be immediately after :(scenario) line.</span>
+<a name="L161"></a><span id="L161" class="LineNr">161 </span><span class="muRecipe">def</span> main [
+<a name="L162"></a><span id="L162" class="LineNr">162 </span>  assert <span class="Constant">0</span><span class="Delimiter">,</span> [<span class="Normal">this</span> is an assert in Mu]
+<a name="L163"></a><span id="L163" class="LineNr">163 </span>]
+<a name="L164"></a><span id="L164" class="LineNr">164 </span><span class="traceContains">+error: this is an assert in Mu</span>
+<a name="L165"></a><span id="L165" class="LineNr">165 </span>
+<a name="L166"></a><span id="L166" class="LineNr">166 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L167"></a><span id="L167" class="LineNr">167 </span>ASSERT<span class="Delimiter">,</span>
+<a name="L168"></a><span id="L168" class="LineNr">168 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L169"></a><span id="L169" class="LineNr">169 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;assert&quot;</span><span class="Delimiter">,</span> ASSERT<span class="Delimiter">);</span>
+<a name="L170"></a><span id="L170" class="LineNr">170 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L171"></a><span id="L171" class="LineNr">171 </span><span class="Normal">case</span> ASSERT: <span class="Delimiter">{</span>
+<a name="L172"></a><span id="L172" class="LineNr">172 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L173"></a><span id="L173" class="LineNr">173 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' takes exactly two ingredients rather than '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L174"></a><span id="L174" class="LineNr">174 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L175"></a><span id="L175" class="LineNr">175 </span>  <span class="Delimiter">}</span>
+<a name="L176"></a><span id="L176" class="LineNr">176 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_scalar<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L177"></a><span id="L177" class="LineNr">177 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a boolean for its first ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L178"></a><span id="L178" class="LineNr">178 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L179"></a><span id="L179" class="LineNr">179 </span>  <span class="Delimiter">}</span>
+<a name="L180"></a><span id="L180" class="LineNr">180 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">))</span> &amp;&amp; !is_mu_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L181"></a><span id="L181" class="LineNr">181 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'assert' requires a text as its second ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L182"></a><span id="L182" class="LineNr">182 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L183"></a><span id="L183" class="LineNr">183 </span>  <span class="Delimiter">}</span>
+<a name="L184"></a><span id="L184" class="LineNr">184 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L185"></a><span id="L185" class="LineNr">185 </span><span class="Delimiter">}</span>
+<a name="L186"></a><span id="L186" class="LineNr">186 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L187"></a><span id="L187" class="LineNr">187 </span><span class="Normal">case</span> ASSERT: <span class="Delimiter">{</span>
+<a name="L188"></a><span id="L188" class="LineNr">188 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<a name="L189"></a><span id="L189" class="LineNr">189 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal_text<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span>
+<a name="L190"></a><span id="L190" class="LineNr">190 </span>      raise &lt;&lt; current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>name &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L191"></a><span id="L191" class="LineNr">191 </span>    <span class="Normal">else</span>
+<a name="L192"></a><span id="L192" class="LineNr">192 </span>      raise &lt;&lt; read_mu_text<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L193"></a><span id="L193" class="LineNr">193 </span>  <span class="Delimiter">}</span>
+<a name="L194"></a><span id="L194" class="LineNr">194 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L195"></a><span id="L195" class="LineNr">195 </span><span class="Delimiter">}</span>
+<a name="L196"></a><span id="L196" class="LineNr">196 </span>
+<a name="L197"></a><span id="L197" class="LineNr">197 </span>
+<a name="L198"></a><span id="L198" class="LineNr">198 </span><span class="Comment">//: 'cheating' by using the host system</span>
+<a name="L199"></a><span id="L199" class="LineNr">199 </span>
+<a name="L200"></a><span id="L200" class="LineNr">200 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L201"></a><span id="L201" class="LineNr">201 </span>_READ<span class="Delimiter">,</span>
+<a name="L202"></a><span id="L202" class="LineNr">202 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L203"></a><span id="L203" class="LineNr">203 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$read&quot;</span><span class="Delimiter">,</span> _READ<span class="Delimiter">);</span>
+<a name="L204"></a><span id="L204" class="LineNr">204 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L205"></a><span id="L205" class="LineNr">205 </span><span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
+<a name="L206"></a><span id="L206" class="LineNr">206 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L207"></a><span id="L207" class="LineNr">207 </span><span class="Delimiter">}</span>
+<a name="L208"></a><span id="L208" class="LineNr">208 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L209"></a><span id="L209" class="LineNr">209 </span><span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
+<a name="L210"></a><span id="L210" class="LineNr">210 </span>  skip_whitespace<span class="Delimiter">(</span>cin<span class="Delimiter">);</span>
+<a name="L211"></a><span id="L211" class="LineNr">211 </span>  string result<span class="Delimiter">;</span>
+<a name="L212"></a><span id="L212" class="LineNr">212 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>has_data<span class="Delimiter">(</span>cin<span class="Delimiter">))</span>
+<a name="L213"></a><span id="L213" class="LineNr">213 </span>    cin &gt;&gt; result<span class="Delimiter">;</span>
+<a name="L214"></a><span id="L214" class="LineNr">214 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L215"></a><span id="L215" class="LineNr">215 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>result<span class="Delimiter">));</span>
+<a name="L216"></a><span id="L216" class="LineNr">216 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L217"></a><span id="L217" class="LineNr">217 </span><span class="Delimiter">}</span>
+<a name="L218"></a><span id="L218" class="LineNr">218 </span>
+<a name="L219"></a><span id="L219" class="LineNr">219 </span><span class="Delimiter">:(code)</span>
+<a name="L220"></a><span id="L220" class="LineNr">220 </span><span class="Normal">void</span> skip_whitespace<span class="Delimiter">(</span>istream&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L221"></a><span id="L221" class="LineNr">221 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><span class="Constant">true</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L222"></a><span id="L222" class="LineNr">222 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!has_data<span class="Delimiter">(</span>in<span class="Delimiter">))</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L223"></a><span id="L223" class="LineNr">223 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>isspace<span class="Delimiter">(</span>in<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> in<span class="Delimiter">.</span>get<span class="Delimiter">();</span>
+<a name="L224"></a><span id="L224" class="LineNr">224 </span>    <span class="Normal">else</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L225"></a><span id="L225" class="LineNr">225 </span>  <span class="Delimiter">}</span>
+<a name="L226"></a><span id="L226" class="LineNr">226 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

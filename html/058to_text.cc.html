@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -14,9 +14,10 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.cSpecial { color: #008000; }
+.LineNr { color: #444444; }
 .Identifier { color: #c0a020; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 -->
@@ -25,34 +26,57 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Primitive to convert any type to text (array of characters).</span>
-<span class="Comment">//: Later layers will allow us to override this to do something smarter for</span>
-<span class="Comment">//: specific types.</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-TO_TEXT<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;to-text&quot;</span><span class="Delimiter">,</span> TO_TEXT<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> TO_TEXT: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'to-text' requires a single ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// can handle any type</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> TO_TEXT: <span class="Delimiter">{</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>inspect<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))));</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
+<a name="L1"></a><span id="L1" class="LineNr"> 1 </span><span class="Comment">//: Primitive to convert any type to text (array of characters).</span>
+<a name="L2"></a><span id="L2" class="LineNr"> 2 </span><span class="Comment">//: Later layers will allow us to override this to do something smarter for</span>
+<a name="L3"></a><span id="L3" class="LineNr"> 3 </span><span class="Comment">//: specific types.</span>
+<a name="L4"></a><span id="L4" class="LineNr"> 4 </span>
+<a name="L5"></a><span id="L5" class="LineNr"> 5 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L6"></a><span id="L6" class="LineNr"> 6 </span>TO_TEXT<span class="Delimiter">,</span>
+<a name="L7"></a><span id="L7" class="LineNr"> 7 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L8"></a><span id="L8" class="LineNr"> 8 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;to-text&quot;</span><span class="Delimiter">,</span> TO_TEXT<span class="Delimiter">);</span>
+<a name="L9"></a><span id="L9" class="LineNr"> 9 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L10"></a><span id="L10" class="LineNr">10 </span><span class="Normal">case</span> TO_TEXT: <span class="Delimiter">{</span>
+<a name="L11"></a><span id="L11" class="LineNr">11 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L12"></a><span id="L12" class="LineNr">12 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'to-text' requires a single ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L13"></a><span id="L13" class="LineNr">13 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L14"></a><span id="L14" class="LineNr">14 </span>  <span class="Delimiter">}</span>
+<a name="L15"></a><span id="L15" class="LineNr">15 </span>  <span class="Comment">// can handle any type</span>
+<a name="L16"></a><span id="L16" class="LineNr">16 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L17"></a><span id="L17" class="LineNr">17 </span><span class="Delimiter">}</span>
+<a name="L18"></a><span id="L18" class="LineNr">18 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L19"></a><span id="L19" class="LineNr">19 </span><span class="Normal">case</span> TO_TEXT: <span class="Delimiter">{</span>
+<a name="L20"></a><span id="L20" class="LineNr">20 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L21"></a><span id="L21" class="LineNr">21 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>inspect<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))));</span>
+<a name="L22"></a><span id="L22" class="LineNr">22 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L23"></a><span id="L23" class="LineNr">23 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

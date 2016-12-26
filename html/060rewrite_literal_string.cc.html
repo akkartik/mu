@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -14,10 +14,11 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
+.Special { color: #c00000; }
 .muRecipe { color: #ff8700; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #c0a020; }
@@ -27,84 +28,107 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment">//: allow using literal strings anywhere that will accept immutable strings</span>
-
-<span class="Delimiter">:(scenario passing_literals_to_recipes)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo [abc]
-]
-<span class="muRecipe">def</span> foo x:text<span class="muRecipe"> -&gt; </span>n:num [
-  local-scope
-  load-ingredients
-  n<span class="Special"> &lt;- </span>length *x
-]
-<span class="traceContains">+mem: storing 3 in location 1</span>
-
-<span class="Delimiter">:(before &quot;End Instruction Inserting/Deleting Transforms&quot;)</span>
-initialize_transform_rewrite_literal_string_to_text<span class="Delimiter">();</span>
-Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_literal_string_to_text<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
-
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-set&lt;string&gt; recipes_taking_literal_strings<span class="Delimiter">;</span>
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> initialize_transform_rewrite_literal_string_to_text<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$print&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$dump-trace&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$system&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;stash&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;memory-should-contain&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace-should-contain&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace-should-not-contain&quot;</span><span class="Delimiter">);</span>
-  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;check-trace-count-for-label&quot;</span><span class="Delimiter">);</span>
-  <span class="Comment">// End initialize_transform_rewrite_literal_string_to_text()</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">void</span> rewrite_literal_string_to_text<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite literal strings in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-  vector&lt;instruction&gt; new_instructions<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>recipes_taking_literal_strings<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == recipes_taking_literal_strings<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-        <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-        instruction def<span class="Delimiter">;</span>
-        ostringstream ingredient_name<span class="Delimiter">;</span>
-        ingredient_name &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:text&quot;</span><span class="Delimiter">;</span>
-        def<span class="Delimiter">.</span>name = <span class="Constant">&quot;new&quot;</span><span class="Delimiter">;</span>
-        def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
-        def<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">()));</span>
-        new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>def<span class="Delimiter">);</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>clear<span class="Delimiter">();</span>  <span class="Comment">// reclaim old memory</span>
-        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> = reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-      <span class="Delimiter">}</span>
-    <span class="Delimiter">}</span>
-    new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_instructions<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> contains_numeric_locations<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span>  in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++in<span class="Delimiter">)</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span>
-        <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span>  out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++out<span class="Delimiter">)</span>
-      <span class="Normal">if</span> <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span>
-        <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
+<a name="L1"></a><span id="L1" class="LineNr"> 1 </span><span class="Comment">//: allow using literal strings anywhere that will accept immutable strings</span>
+<a name="L2"></a><span id="L2" class="LineNr"> 2 </span>
+<a name="L3"></a><span id="L3" class="LineNr"> 3 </span><span class="Delimiter">:(scenario passing_literals_to_recipes)</span>
+<a name="L4"></a><span id="L4" class="LineNr"> 4 </span><span class="muRecipe">def</span> main [
+<a name="L5"></a><span id="L5" class="LineNr"> 5 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>foo [abc]
+<a name="L6"></a><span id="L6" class="LineNr"> 6 </span>]
+<a name="L7"></a><span id="L7" class="LineNr"> 7 </span><span class="muRecipe">def</span> foo x:text<span class="muRecipe"> -&gt; </span>n:num [
+<a name="L8"></a><span id="L8" class="LineNr"> 8 </span>  local-scope
+<a name="L9"></a><span id="L9" class="LineNr"> 9 </span>  load-ingredients
+<a name="L10"></a><span id="L10" class="LineNr">10 </span>  n<span class="Special"> &lt;- </span>length *x
+<a name="L11"></a><span id="L11" class="LineNr">11 </span>]
+<a name="L12"></a><span id="L12" class="LineNr">12 </span><span class="traceContains">+mem: storing 3 in location 1</span>
+<a name="L13"></a><span id="L13" class="LineNr">13 </span>
+<a name="L14"></a><span id="L14" class="LineNr">14 </span><span class="Delimiter">:(before &quot;End Instruction Inserting/Deleting Transforms&quot;)</span>
+<a name="L15"></a><span id="L15" class="LineNr">15 </span>initialize_transform_rewrite_literal_string_to_text<span class="Delimiter">();</span>
+<a name="L16"></a><span id="L16" class="LineNr">16 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rewrite_literal_string_to_text<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<a name="L17"></a><span id="L17" class="LineNr">17 </span>
+<a name="L18"></a><span id="L18" class="LineNr">18 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<a name="L19"></a><span id="L19" class="LineNr">19 </span>set&lt;string&gt; recipes_taking_literal_strings<span class="Delimiter">;</span>
+<a name="L20"></a><span id="L20" class="LineNr">20 </span><span class="Delimiter">:(code)</span>
+<a name="L21"></a><span id="L21" class="LineNr">21 </span><span class="Normal">void</span> initialize_transform_rewrite_literal_string_to_text<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<a name="L22"></a><span id="L22" class="LineNr">22 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$print&quot;</span><span class="Delimiter">);</span>
+<a name="L23"></a><span id="L23" class="LineNr">23 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$dump-trace&quot;</span><span class="Delimiter">);</span>
+<a name="L24"></a><span id="L24" class="LineNr">24 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;$system&quot;</span><span class="Delimiter">);</span>
+<a name="L25"></a><span id="L25" class="LineNr">25 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">);</span>
+<a name="L26"></a><span id="L26" class="LineNr">26 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;stash&quot;</span><span class="Delimiter">);</span>
+<a name="L27"></a><span id="L27" class="LineNr">27 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;new&quot;</span><span class="Delimiter">);</span>
+<a name="L28"></a><span id="L28" class="LineNr">28 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;run&quot;</span><span class="Delimiter">);</span>
+<a name="L29"></a><span id="L29" class="LineNr">29 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;memory-should-contain&quot;</span><span class="Delimiter">);</span>
+<a name="L30"></a><span id="L30" class="LineNr">30 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace-should-contain&quot;</span><span class="Delimiter">);</span>
+<a name="L31"></a><span id="L31" class="LineNr">31 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;trace-should-not-contain&quot;</span><span class="Delimiter">);</span>
+<a name="L32"></a><span id="L32" class="LineNr">32 </span>  recipes_taking_literal_strings<span class="Delimiter">.</span>insert<span class="Delimiter">(</span><span class="Constant">&quot;check-trace-count-for-label&quot;</span><span class="Delimiter">);</span>
+<a name="L33"></a><span id="L33" class="LineNr">33 </span>  <span class="Comment">// End initialize_transform_rewrite_literal_string_to_text()</span>
+<a name="L34"></a><span id="L34" class="LineNr">34 </span><span class="Delimiter">}</span>
+<a name="L35"></a><span id="L35" class="LineNr">35 </span>
+<a name="L36"></a><span id="L36" class="LineNr">36 </span><span class="Normal">void</span> rewrite_literal_string_to_text<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L37"></a><span id="L37" class="LineNr">37 </span>  recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<a name="L38"></a><span id="L38" class="LineNr">38 </span>  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- rewrite literal strings in recipe &quot;</span> &lt;&lt; caller<span class="Delimiter">.</span>name &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L39"></a><span id="L39" class="LineNr">39 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_numeric_locations<span class="Delimiter">(</span>caller<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<a name="L40"></a><span id="L40" class="LineNr">40 </span>  vector&lt;instruction&gt; new_instructions<span class="Delimiter">;</span>
+<a name="L41"></a><span id="L41" class="LineNr">41 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L42"></a><span id="L42" class="LineNr">42 </span>    instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<a name="L43"></a><span id="L43" class="LineNr">43 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>recipes_taking_literal_strings<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name<span class="Delimiter">)</span> == recipes_taking_literal_strings<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<a name="L44"></a><span id="L44" class="LineNr">44 </span>      <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = <span class="Constant">0</span><span class="Delimiter">;</span>  j &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++j<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L45"></a><span id="L45" class="LineNr">45 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>!is_literal_text<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<a name="L46"></a><span id="L46" class="LineNr">46 </span>        instruction def<span class="Delimiter">;</span>
+<a name="L47"></a><span id="L47" class="LineNr">47 </span>        ostringstream ingredient_name<span class="Delimiter">;</span>
+<a name="L48"></a><span id="L48" class="LineNr">48 </span>        ingredient_name &lt;&lt; inst<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; i &lt;&lt; <span class="Constant">'_'</span> &lt;&lt; j &lt;&lt; <span class="Constant">&quot;:text&quot;</span><span class="Delimiter">;</span>
+<a name="L49"></a><span id="L49" class="LineNr">49 </span>        def<span class="Delimiter">.</span>name = <span class="Constant">&quot;new&quot;</span><span class="Delimiter">;</span>
+<a name="L50"></a><span id="L50" class="LineNr">50 </span>        def<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">));</span>
+<a name="L51"></a><span id="L51" class="LineNr">51 </span>        def<span class="Delimiter">.</span>products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">()));</span>
+<a name="L52"></a><span id="L52" class="LineNr">52 </span>        new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>def<span class="Delimiter">);</span>
+<a name="L53"></a><span id="L53" class="LineNr">53 </span>        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">).</span>clear<span class="Delimiter">();</span>  <span class="Comment">// reclaim old memory</span>
+<a name="L54"></a><span id="L54" class="LineNr">54 </span>        inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)</span> = reagent<span class="Delimiter">(</span>ingredient_name<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+<a name="L55"></a><span id="L55" class="LineNr">55 </span>      <span class="Delimiter">}</span>
+<a name="L56"></a><span id="L56" class="LineNr">56 </span>    <span class="Delimiter">}</span>
+<a name="L57"></a><span id="L57" class="LineNr">57 </span>    new_instructions<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+<a name="L58"></a><span id="L58" class="LineNr">58 </span>  <span class="Delimiter">}</span>
+<a name="L59"></a><span id="L59" class="LineNr">59 </span>  caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>swap<span class="Delimiter">(</span>new_instructions<span class="Delimiter">);</span>
+<a name="L60"></a><span id="L60" class="LineNr">60 </span><span class="Delimiter">}</span>
+<a name="L61"></a><span id="L61" class="LineNr">61 </span>
+<a name="L62"></a><span id="L62" class="LineNr">62 </span><span class="Normal">bool</span> contains_numeric_locations<span class="Delimiter">(</span><span class="Normal">const</span> recipe&amp; caller<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L63"></a><span id="L63" class="LineNr">63 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>caller<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L64"></a><span id="L64" class="LineNr">64 </span>    <span class="Normal">const</span> instruction&amp; inst = caller<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<a name="L65"></a><span id="L65" class="LineNr">65 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> in = <span class="Constant">0</span><span class="Delimiter">;</span>  in &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++in<span class="Delimiter">)</span>
+<a name="L66"></a><span id="L66" class="LineNr">66 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>in<span class="Delimiter">)))</span>
+<a name="L67"></a><span id="L67" class="LineNr">67 </span>        <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L68"></a><span id="L68" class="LineNr">68 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> out = <span class="Constant">0</span><span class="Delimiter">;</span>  out &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++out<span class="Delimiter">)</span>
+<a name="L69"></a><span id="L69" class="LineNr">69 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>is_numeric_location<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>out<span class="Delimiter">)))</span>
+<a name="L70"></a><span id="L70" class="LineNr">70 </span>        <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L71"></a><span id="L71" class="LineNr">71 </span>  <span class="Delimiter">}</span>
+<a name="L72"></a><span id="L72" class="LineNr">72 </span>  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L73"></a><span id="L73" class="LineNr">73 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

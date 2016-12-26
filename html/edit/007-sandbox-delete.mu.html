@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -16,9 +16,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 .Delimiter { color: #800080; }
 .muControl { color: #c0a020; }
 .Special { color: #c00000; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .SalientComment { color: #00ffff; }
+.Constant { color: #00a0a0; }
+.LineNr { color: #444444; }
+.Comment { color: #9090ff; }
 .muRecipe { color: #ff8700; }
 .muScenario { color: #00af00; }
 -->
@@ -27,354 +28,377 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="SalientComment">## deleting sandboxes</span>
-
-<span class="muScenario">scenario</span> deleting-sandboxes [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
-  assume-resources [
-  ]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
-  <span class="Comment"># run a few commands</span>
-  assume-console [
-    left-click<span class="Constant"> 1</span>,<span class="Constant"> 80</span>
-    type <span class="Constant">[divide-with-remainder 11, 3]</span>
-    press F4
-    type <span class="Constant">[add 2, 2]</span>
-    press F4
-  ]
-  event-loop screen, console, env, resources
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎divide-with-remainder 11, 3                      .</span>
-   <span class="Constant"> .                                                  ╎3                                                .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-  <span class="Comment"># delete second sandbox by clicking on left edge of 'delete' button</span>
-  assume-console [
-    left-click<span class="Constant"> 7</span>,<span class="Constant"> 85</span>
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-  <span class="Comment"># delete first sandbox by clicking at right edge of 'delete' button</span>
-  assume-console [
-    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-]
-
-<span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
-  <span class="Comment"># support 'delete' button</span>
-  <span class="Delimiter">{</span>
-    delete?:bool <span class="Special">&lt;-</span> should-attempt-delete? click-row, click-column, env
-    <span class="muControl">break-unless</span> delete?
-    delete?, env <span class="Special">&lt;-</span> try-delete-sandbox click-row, env
-    <span class="muControl">break-unless</span> delete?
-    hide-screen screen
-    screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
-    screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    show-screen screen
-    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-  <span class="Delimiter">}</span>
-]
-
-<span class="Comment"># some preconditions for attempting to delete a sandbox</span>
-<span class="muRecipe">def</span> should-attempt-delete? click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Comment"># are we below the sandbox editor?</span>
-  click-sandbox-area?:bool <span class="Special">&lt;-</span> click-on-sandbox-area? click-row, click-column, env
-  <span class="muControl">return-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
-  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
-  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-  assert first-sandbox, <span class="Constant">[!!]</span>
-  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
-  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
-  _, _, _, _, delete-button-left:num <span class="Special">&lt;-</span> sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
-  result <span class="Special">&lt;-</span> within-range? click-column, delete-button-left, sandbox-right-margin
-]
-
-<span class="muRecipe">def</span> try-delete-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:bool, env:&amp;:environment [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  <span class="Comment"># identify the sandbox to delete, if the click was actually on the 'delete' button</span>
-  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> find-sandbox env, click-row
-  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
-  clicked-on-delete-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-  env <span class="Special">&lt;-</span> delete-sandbox env, sandbox
-]
-
-<span class="muRecipe">def</span> delete-sandbox env:&amp;:environment, sandbox:&amp;:sandbox<span class="muRecipe"> -&gt; </span>env:&amp;:environment [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-  first-sandbox?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
-  <span class="Delimiter">{</span>
-    <span class="Comment"># first sandbox? pop</span>
-    <span class="muControl">break-unless</span> first-sandbox?
-    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
-  <span class="Delimiter">}</span>
-  <span class="Delimiter">{</span>
-    <span class="Comment"># not first sandbox?</span>
-    <span class="muControl">break-if</span> first-sandbox?
-    prev-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> copy curr-sandbox
-    curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-    <span class="Delimiter">{</span>
-      assert curr-sandbox, <span class="Constant">[sandbox not found! something is wrong.]</span>
-      found?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
-      <span class="muControl">break-if</span> found?
-      prev-sandbox <span class="Special">&lt;-</span> copy curr-sandbox
-      curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-      <span class="muControl">loop</span>
-    <span class="Delimiter">}</span>
-    <span class="Comment"># snip sandbox out of its list</span>
-    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-    *prev-sandbox <span class="Special">&lt;-</span> put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
-  <span class="Delimiter">}</span>
-  <span class="Comment"># update sandbox count</span>
-  sandbox-count:num <span class="Special">&lt;-</span> get *env, <span class="Constant">number-of-sandboxes:offset</span>
-  sandbox-count <span class="Special">&lt;-</span> subtract sandbox-count,<span class="Constant"> 1</span>
-  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
-  <span class="Comment"># reset scroll if deleted sandbox was last</span>
-  <span class="Delimiter">{</span>
-    <span class="muControl">break-if</span> next-sandbox
-    render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
-    reset-scroll?:bool <span class="Special">&lt;-</span> equal render-from, sandbox-count
-    <span class="muControl">break-unless</span> reset-scroll?
-    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
-  <span class="Delimiter">}</span>
-]
-
-<span class="muScenario">scenario</span> deleting-sandbox-after-scroll [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># initialize environment</span>
-  assume-resources [
-  ]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
-  render-all screen, env, render
-  <span class="Comment"># create 2 sandboxes and scroll to second</span>
-  assume-console [
-    press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
-    press F4
-    type <span class="Constant">[add 1, 1]</span>
-    press F4
-    press page-down
-  ]
-  event-loop screen, console, env, resources
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
-  ]
-  <span class="Comment"># delete the second sandbox</span>
-  assume-console [
-    left-click<span class="Constant"> 6</span>,<span class="Constant"> 99</span>
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> deleting-top-sandbox-after-scroll [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># initialize environment</span>
-  assume-resources [
-  ]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
-  render-all screen, env, render
-  <span class="Comment"># create 2 sandboxes and scroll to second</span>
-  assume-console [
-    press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
-    press F4
-    type <span class="Constant">[add 1, 1]</span>
-    press F4
-    press page-down
-  ]
-  event-loop screen, console, env, resources
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
-  ]
-  <span class="Comment"># delete the second sandbox</span>
-  assume-console [
-    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> deleting-final-sandbox-after-scroll [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># initialize environment</span>
-  assume-resources [
-  ]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
-  render-all screen, env, render
-  <span class="Comment"># create 2 sandboxes and scroll to second</span>
-  assume-console [
-    press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
-    press F4
-    type <span class="Constant">[add 1, 1]</span>
-    press F4
-    press page-down
-    press page-down
-  ]
-  event-loop screen, console, env, resources
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-  <span class="Comment"># delete the second sandbox</span>
-  assume-console [
-    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  <span class="Comment"># implicitly scroll up to first sandbox</span>
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-]
-
-<span class="muScenario">scenario</span> deleting-updates-sandbox-count [
-  <span class="Constant">local-scope</span>
-  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-  <span class="Comment"># initialize environment</span>
-  assume-resources [
-  ]
-  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
-  render-all screen, env, render
-  <span class="Comment"># create 2 sandboxes</span>
-  assume-console [
-    press ctrl-n
-    type <span class="Constant">[add 2, 2]</span>
-    press F4
-    type <span class="Constant">[add 1, 1]</span>
-    press F4
-  ]
-  event-loop screen, console, env, resources
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-<span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-   <span class="Constant"> .                                                  ╎2                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-  ]
-  <span class="Comment"># delete the second sandbox, then try to scroll down twice</span>
-  assume-console [
-    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
-    press page-down
-    press page-down
-  ]
-  run [
-    event-loop screen, console, env, resources
-  ]
-  <span class="Comment"># shouldn't go past last sandbox</span>
-  screen-should-contain [
-   <span class="Constant"> .                                                                                 run (F4)           .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
-   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-   <span class="Constant"> .                                                  ╎4                                                .</span>
-   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-   <span class="Constant"> .                                                  ╎                                                 .</span>
-  ]
-]
+<a name="L1"></a><span id="L1" class="LineNr">  1 </span><span class="SalientComment">## deleting sandboxes</span>
+<a name="L2"></a><span id="L2" class="LineNr">  2 </span>
+<a name="L3"></a><span id="L3" class="LineNr">  3 </span><span class="muScenario">scenario</span> deleting-sandboxes [
+<a name="L4"></a><span id="L4" class="LineNr">  4 </span>  <span class="Constant">local-scope</span>
+<a name="L5"></a><span id="L5" class="LineNr">  5 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<a name="L6"></a><span id="L6" class="LineNr">  6 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">15/height</span>
+<a name="L7"></a><span id="L7" class="LineNr">  7 </span>  assume-resources [
+<a name="L8"></a><span id="L8" class="LineNr">  8 </span>  ]
+<a name="L9"></a><span id="L9" class="LineNr">  9 </span>  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
+<a name="L10"></a><span id="L10" class="LineNr"> 10 </span>  <span class="Comment"># run a few commands</span>
+<a name="L11"></a><span id="L11" class="LineNr"> 11 </span>  assume-console [
+<a name="L12"></a><span id="L12" class="LineNr"> 12 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 80</span>
+<a name="L13"></a><span id="L13" class="LineNr"> 13 </span>    type <span class="Constant">[divide-with-remainder 11, 3]</span>
+<a name="L14"></a><span id="L14" class="LineNr"> 14 </span>    press F4
+<a name="L15"></a><span id="L15" class="LineNr"> 15 </span>    type <span class="Constant">[add 2, 2]</span>
+<a name="L16"></a><span id="L16" class="LineNr"> 16 </span>    press F4
+<a name="L17"></a><span id="L17" class="LineNr"> 17 </span>  ]
+<a name="L18"></a><span id="L18" class="LineNr"> 18 </span>  event-loop screen, console, env, resources
+<a name="L19"></a><span id="L19" class="LineNr"> 19 </span>  screen-should-contain [
+<a name="L20"></a><span id="L20" class="LineNr"> 20 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L21"></a><span id="L21" class="LineNr"> 21 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L22"></a><span id="L22" class="LineNr"> 22 </span><span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<a name="L23"></a><span id="L23" class="LineNr"> 23 </span>   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<a name="L24"></a><span id="L24" class="LineNr"> 24 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L25"></a><span id="L25" class="LineNr"> 25 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L26"></a><span id="L26" class="LineNr"> 26 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L27"></a><span id="L27" class="LineNr"> 27 </span>   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
+<a name="L28"></a><span id="L28" class="LineNr"> 28 </span>   <span class="Constant"> .                                                  ╎divide-with-remainder 11, 3                      .</span>
+<a name="L29"></a><span id="L29" class="LineNr"> 29 </span>   <span class="Constant"> .                                                  ╎3                                                .</span>
+<a name="L30"></a><span id="L30" class="LineNr"> 30 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L31"></a><span id="L31" class="LineNr"> 31 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L32"></a><span id="L32" class="LineNr"> 32 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L33"></a><span id="L33" class="LineNr"> 33 </span>  ]
+<a name="L34"></a><span id="L34" class="LineNr"> 34 </span>  <span class="Comment"># delete second sandbox by clicking on left edge of 'delete' button</span>
+<a name="L35"></a><span id="L35" class="LineNr"> 35 </span>  assume-console [
+<a name="L36"></a><span id="L36" class="LineNr"> 36 </span>    left-click<span class="Constant"> 7</span>,<span class="Constant"> 85</span>
+<a name="L37"></a><span id="L37" class="LineNr"> 37 </span>  ]
+<a name="L38"></a><span id="L38" class="LineNr"> 38 </span>  run [
+<a name="L39"></a><span id="L39" class="LineNr"> 39 </span>    event-loop screen, console, env, resources
+<a name="L40"></a><span id="L40" class="LineNr"> 40 </span>  ]
+<a name="L41"></a><span id="L41" class="LineNr"> 41 </span>  screen-should-contain [
+<a name="L42"></a><span id="L42" class="LineNr"> 42 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L43"></a><span id="L43" class="LineNr"> 43 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L44"></a><span id="L44" class="LineNr"> 44 </span><span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<a name="L45"></a><span id="L45" class="LineNr"> 45 </span>   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<a name="L46"></a><span id="L46" class="LineNr"> 46 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L47"></a><span id="L47" class="LineNr"> 47 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L48"></a><span id="L48" class="LineNr"> 48 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L49"></a><span id="L49" class="LineNr"> 49 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L50"></a><span id="L50" class="LineNr"> 50 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L51"></a><span id="L51" class="LineNr"> 51 </span>  ]
+<a name="L52"></a><span id="L52" class="LineNr"> 52 </span>  <span class="Comment"># delete first sandbox by clicking at right edge of 'delete' button</span>
+<a name="L53"></a><span id="L53" class="LineNr"> 53 </span>  assume-console [
+<a name="L54"></a><span id="L54" class="LineNr"> 54 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
+<a name="L55"></a><span id="L55" class="LineNr"> 55 </span>  ]
+<a name="L56"></a><span id="L56" class="LineNr"> 56 </span>  run [
+<a name="L57"></a><span id="L57" class="LineNr"> 57 </span>    event-loop screen, console, env, resources
+<a name="L58"></a><span id="L58" class="LineNr"> 58 </span>  ]
+<a name="L59"></a><span id="L59" class="LineNr"> 59 </span>  screen-should-contain [
+<a name="L60"></a><span id="L60" class="LineNr"> 60 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L61"></a><span id="L61" class="LineNr"> 61 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L62"></a><span id="L62" class="LineNr"> 62 </span><span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<a name="L63"></a><span id="L63" class="LineNr"> 63 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L64"></a><span id="L64" class="LineNr"> 64 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L65"></a><span id="L65" class="LineNr"> 65 </span>  ]
+<a name="L66"></a><span id="L66" class="LineNr"> 66 </span>]
+<a name="L67"></a><span id="L67" class="LineNr"> 67 </span>
+<a name="L68"></a><span id="L68" class="LineNr"> 68 </span><span class="muRecipe">after</span> <span class="Constant">&lt;global-touch&gt;</span> [
+<a name="L69"></a><span id="L69" class="LineNr"> 69 </span>  <span class="Comment"># support 'delete' button</span>
+<a name="L70"></a><span id="L70" class="LineNr"> 70 </span>  <span class="Delimiter">{</span>
+<a name="L71"></a><span id="L71" class="LineNr"> 71 </span>    delete?:bool <span class="Special">&lt;-</span> should-attempt-delete? click-row, click-column, env
+<a name="L72"></a><span id="L72" class="LineNr"> 72 </span>    <span class="muControl">break-unless</span> delete?
+<a name="L73"></a><span id="L73" class="LineNr"> 73 </span>    delete?, env <span class="Special">&lt;-</span> try-delete-sandbox click-row, env
+<a name="L74"></a><span id="L74" class="LineNr"> 74 </span>    <span class="muControl">break-unless</span> delete?
+<a name="L75"></a><span id="L75" class="LineNr"> 75 </span>    hide-screen screen
+<a name="L76"></a><span id="L76" class="LineNr"> 76 </span>    screen <span class="Special">&lt;-</span> render-sandbox-side screen, env, render
+<a name="L77"></a><span id="L77" class="LineNr"> 77 </span>    screen <span class="Special">&lt;-</span> update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+<a name="L78"></a><span id="L78" class="LineNr"> 78 </span>    show-screen screen
+<a name="L79"></a><span id="L79" class="LineNr"> 79 </span>    <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<a name="L80"></a><span id="L80" class="LineNr"> 80 </span>  <span class="Delimiter">}</span>
+<a name="L81"></a><span id="L81" class="LineNr"> 81 </span>]
+<a name="L82"></a><span id="L82" class="LineNr"> 82 </span>
+<a name="L83"></a><span id="L83" class="LineNr"> 83 </span><span class="Comment"># some preconditions for attempting to delete a sandbox</span>
+<a name="L84"></a><span id="L84" class="LineNr"> 84 </span><span class="muRecipe">def</span> should-attempt-delete? click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
+<a name="L85"></a><span id="L85" class="LineNr"> 85 </span>  <span class="Constant">local-scope</span>
+<a name="L86"></a><span id="L86" class="LineNr"> 86 </span>  <span class="Constant">load-ingredients</span>
+<a name="L87"></a><span id="L87" class="LineNr"> 87 </span>  <span class="Comment"># are we below the sandbox editor?</span>
+<a name="L88"></a><span id="L88" class="LineNr"> 88 </span>  click-sandbox-area?:bool <span class="Special">&lt;-</span> click-on-sandbox-area? click-row, click-column, env
+<a name="L89"></a><span id="L89" class="LineNr"> 89 </span>  <span class="muControl">return-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
+<a name="L90"></a><span id="L90" class="LineNr"> 90 </span>  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
+<a name="L91"></a><span id="L91" class="LineNr"> 91 </span>  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<a name="L92"></a><span id="L92" class="LineNr"> 92 </span>  assert first-sandbox, <span class="Constant">[!!]</span>
+<a name="L93"></a><span id="L93" class="LineNr"> 93 </span>  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
+<a name="L94"></a><span id="L94" class="LineNr"> 94 </span>  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
+<a name="L95"></a><span id="L95" class="LineNr"> 95 </span>  _, _, _, _, delete-button-left:num <span class="Special">&lt;-</span> sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+<a name="L96"></a><span id="L96" class="LineNr"> 96 </span>  result <span class="Special">&lt;-</span> within-range? click-column, delete-button-left, sandbox-right-margin
+<a name="L97"></a><span id="L97" class="LineNr"> 97 </span>]
+<a name="L98"></a><span id="L98" class="LineNr"> 98 </span>
+<a name="L99"></a><span id="L99" class="LineNr"> 99 </span><span class="muRecipe">def</span> try-delete-sandbox click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-delete-button?:bool, env:&amp;:environment [
+<a name="L100"></a><span id="L100" class="LineNr">100 </span>  <span class="Constant">local-scope</span>
+<a name="L101"></a><span id="L101" class="LineNr">101 </span>  <span class="Constant">load-ingredients</span>
+<a name="L102"></a><span id="L102" class="LineNr">102 </span>  <span class="Comment"># identify the sandbox to delete, if the click was actually on the 'delete' button</span>
+<a name="L103"></a><span id="L103" class="LineNr">103 </span>  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> find-sandbox env, click-row
+<a name="L104"></a><span id="L104" class="LineNr">104 </span>  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
+<a name="L105"></a><span id="L105" class="LineNr">105 </span>  clicked-on-delete-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
+<a name="L106"></a><span id="L106" class="LineNr">106 </span>  env <span class="Special">&lt;-</span> delete-sandbox env, sandbox
+<a name="L107"></a><span id="L107" class="LineNr">107 </span>]
+<a name="L108"></a><span id="L108" class="LineNr">108 </span>
+<a name="L109"></a><span id="L109" class="LineNr">109 </span><span class="muRecipe">def</span> delete-sandbox env:&amp;:environment, sandbox:&amp;:sandbox<span class="muRecipe"> -&gt; </span>env:&amp;:environment [
+<a name="L110"></a><span id="L110" class="LineNr">110 </span>  <span class="Constant">local-scope</span>
+<a name="L111"></a><span id="L111" class="LineNr">111 </span>  <span class="Constant">load-ingredients</span>
+<a name="L112"></a><span id="L112" class="LineNr">112 </span>  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<a name="L113"></a><span id="L113" class="LineNr">113 </span>  first-sandbox?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
+<a name="L114"></a><span id="L114" class="LineNr">114 </span>  <span class="Delimiter">{</span>
+<a name="L115"></a><span id="L115" class="LineNr">115 </span>    <span class="Comment"># first sandbox? pop</span>
+<a name="L116"></a><span id="L116" class="LineNr">116 </span>    <span class="muControl">break-unless</span> first-sandbox?
+<a name="L117"></a><span id="L117" class="LineNr">117 </span>    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+<a name="L118"></a><span id="L118" class="LineNr">118 </span>    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox:offset</span>, next-sandbox
+<a name="L119"></a><span id="L119" class="LineNr">119 </span>  <span class="Delimiter">}</span>
+<a name="L120"></a><span id="L120" class="LineNr">120 </span>  <span class="Delimiter">{</span>
+<a name="L121"></a><span id="L121" class="LineNr">121 </span>    <span class="Comment"># not first sandbox?</span>
+<a name="L122"></a><span id="L122" class="LineNr">122 </span>    <span class="muControl">break-if</span> first-sandbox?
+<a name="L123"></a><span id="L123" class="LineNr">123 </span>    prev-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> copy curr-sandbox
+<a name="L124"></a><span id="L124" class="LineNr">124 </span>    curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+<a name="L125"></a><span id="L125" class="LineNr">125 </span>    <span class="Delimiter">{</span>
+<a name="L126"></a><span id="L126" class="LineNr">126 </span>      assert curr-sandbox, <span class="Constant">[sandbox not found! something is wrong.]</span>
+<a name="L127"></a><span id="L127" class="LineNr">127 </span>      found?:bool <span class="Special">&lt;-</span> equal curr-sandbox, sandbox
+<a name="L128"></a><span id="L128" class="LineNr">128 </span>      <span class="muControl">break-if</span> found?
+<a name="L129"></a><span id="L129" class="LineNr">129 </span>      prev-sandbox <span class="Special">&lt;-</span> copy curr-sandbox
+<a name="L130"></a><span id="L130" class="LineNr">130 </span>      curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+<a name="L131"></a><span id="L131" class="LineNr">131 </span>      <span class="muControl">loop</span>
+<a name="L132"></a><span id="L132" class="LineNr">132 </span>    <span class="Delimiter">}</span>
+<a name="L133"></a><span id="L133" class="LineNr">133 </span>    <span class="Comment"># snip sandbox out of its list</span>
+<a name="L134"></a><span id="L134" class="LineNr">134 </span>    next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+<a name="L135"></a><span id="L135" class="LineNr">135 </span>    *prev-sandbox <span class="Special">&lt;-</span> put *prev-sandbox, <span class="Constant">next-sandbox:offset</span>, next-sandbox
+<a name="L136"></a><span id="L136" class="LineNr">136 </span>  <span class="Delimiter">}</span>
+<a name="L137"></a><span id="L137" class="LineNr">137 </span>  <span class="Comment"># update sandbox count</span>
+<a name="L138"></a><span id="L138" class="LineNr">138 </span>  sandbox-count:num <span class="Special">&lt;-</span> get *env, <span class="Constant">number-of-sandboxes:offset</span>
+<a name="L139"></a><span id="L139" class="LineNr">139 </span>  sandbox-count <span class="Special">&lt;-</span> subtract sandbox-count,<span class="Constant"> 1</span>
+<a name="L140"></a><span id="L140" class="LineNr">140 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">number-of-sandboxes:offset</span>, sandbox-count
+<a name="L141"></a><span id="L141" class="LineNr">141 </span>  <span class="Comment"># reset scroll if deleted sandbox was last</span>
+<a name="L142"></a><span id="L142" class="LineNr">142 </span>  <span class="Delimiter">{</span>
+<a name="L143"></a><span id="L143" class="LineNr">143 </span>    <span class="muControl">break-if</span> next-sandbox
+<a name="L144"></a><span id="L144" class="LineNr">144 </span>    render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
+<a name="L145"></a><span id="L145" class="LineNr">145 </span>    reset-scroll?:bool <span class="Special">&lt;-</span> equal render-from, sandbox-count
+<a name="L146"></a><span id="L146" class="LineNr">146 </span>    <span class="muControl">break-unless</span> reset-scroll?
+<a name="L147"></a><span id="L147" class="LineNr">147 </span>    *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
+<a name="L148"></a><span id="L148" class="LineNr">148 </span>  <span class="Delimiter">}</span>
+<a name="L149"></a><span id="L149" class="LineNr">149 </span>]
+<a name="L150"></a><span id="L150" class="LineNr">150 </span>
+<a name="L151"></a><span id="L151" class="LineNr">151 </span><span class="muScenario">scenario</span> deleting-sandbox-after-scroll [
+<a name="L152"></a><span id="L152" class="LineNr">152 </span>  <span class="Constant">local-scope</span>
+<a name="L153"></a><span id="L153" class="LineNr">153 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<a name="L154"></a><span id="L154" class="LineNr">154 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<a name="L155"></a><span id="L155" class="LineNr">155 </span>  <span class="Comment"># initialize environment</span>
+<a name="L156"></a><span id="L156" class="LineNr">156 </span>  assume-resources [
+<a name="L157"></a><span id="L157" class="LineNr">157 </span>  ]
+<a name="L158"></a><span id="L158" class="LineNr">158 </span>  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
+<a name="L159"></a><span id="L159" class="LineNr">159 </span>  render-all screen, env, render
+<a name="L160"></a><span id="L160" class="LineNr">160 </span>  <span class="Comment"># create 2 sandboxes and scroll to second</span>
+<a name="L161"></a><span id="L161" class="LineNr">161 </span>  assume-console [
+<a name="L162"></a><span id="L162" class="LineNr">162 </span>    press ctrl-n
+<a name="L163"></a><span id="L163" class="LineNr">163 </span>    type <span class="Constant">[add 2, 2]</span>
+<a name="L164"></a><span id="L164" class="LineNr">164 </span>    press F4
+<a name="L165"></a><span id="L165" class="LineNr">165 </span>    type <span class="Constant">[add 1, 1]</span>
+<a name="L166"></a><span id="L166" class="LineNr">166 </span>    press F4
+<a name="L167"></a><span id="L167" class="LineNr">167 </span>    press page-down
+<a name="L168"></a><span id="L168" class="LineNr">168 </span>  ]
+<a name="L169"></a><span id="L169" class="LineNr">169 </span>  event-loop screen, console, env, resources
+<a name="L170"></a><span id="L170" class="LineNr">170 </span>  screen-should-contain [
+<a name="L171"></a><span id="L171" class="LineNr">171 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L172"></a><span id="L172" class="LineNr">172 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L173"></a><span id="L173" class="LineNr">173 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
+<a name="L174"></a><span id="L174" class="LineNr">174 </span>   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<a name="L175"></a><span id="L175" class="LineNr">175 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L176"></a><span id="L176" class="LineNr">176 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L177"></a><span id="L177" class="LineNr">177 </span>   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
+<a name="L178"></a><span id="L178" class="LineNr">178 </span>  ]
+<a name="L179"></a><span id="L179" class="LineNr">179 </span>  <span class="Comment"># delete the second sandbox</span>
+<a name="L180"></a><span id="L180" class="LineNr">180 </span>  assume-console [
+<a name="L181"></a><span id="L181" class="LineNr">181 </span>    left-click<span class="Constant"> 6</span>,<span class="Constant"> 99</span>
+<a name="L182"></a><span id="L182" class="LineNr">182 </span>  ]
+<a name="L183"></a><span id="L183" class="LineNr">183 </span>  run [
+<a name="L184"></a><span id="L184" class="LineNr">184 </span>    event-loop screen, console, env, resources
+<a name="L185"></a><span id="L185" class="LineNr">185 </span>  ]
+<a name="L186"></a><span id="L186" class="LineNr">186 </span>  <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
+<a name="L187"></a><span id="L187" class="LineNr">187 </span>  screen-should-contain [
+<a name="L188"></a><span id="L188" class="LineNr">188 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L189"></a><span id="L189" class="LineNr">189 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L190"></a><span id="L190" class="LineNr">190 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
+<a name="L191"></a><span id="L191" class="LineNr">191 </span>   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<a name="L192"></a><span id="L192" class="LineNr">192 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L193"></a><span id="L193" class="LineNr">193 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L194"></a><span id="L194" class="LineNr">194 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L195"></a><span id="L195" class="LineNr">195 </span>  ]
+<a name="L196"></a><span id="L196" class="LineNr">196 </span>]
+<a name="L197"></a><span id="L197" class="LineNr">197 </span>
+<a name="L198"></a><span id="L198" class="LineNr">198 </span><span class="muScenario">scenario</span> deleting-top-sandbox-after-scroll [
+<a name="L199"></a><span id="L199" class="LineNr">199 </span>  <span class="Constant">local-scope</span>
+<a name="L200"></a><span id="L200" class="LineNr">200 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<a name="L201"></a><span id="L201" class="LineNr">201 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<a name="L202"></a><span id="L202" class="LineNr">202 </span>  <span class="Comment"># initialize environment</span>
+<a name="L203"></a><span id="L203" class="LineNr">203 </span>  assume-resources [
+<a name="L204"></a><span id="L204" class="LineNr">204 </span>  ]
+<a name="L205"></a><span id="L205" class="LineNr">205 </span>  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
+<a name="L206"></a><span id="L206" class="LineNr">206 </span>  render-all screen, env, render
+<a name="L207"></a><span id="L207" class="LineNr">207 </span>  <span class="Comment"># create 2 sandboxes and scroll to second</span>
+<a name="L208"></a><span id="L208" class="LineNr">208 </span>  assume-console [
+<a name="L209"></a><span id="L209" class="LineNr">209 </span>    press ctrl-n
+<a name="L210"></a><span id="L210" class="LineNr">210 </span>    type <span class="Constant">[add 2, 2]</span>
+<a name="L211"></a><span id="L211" class="LineNr">211 </span>    press F4
+<a name="L212"></a><span id="L212" class="LineNr">212 </span>    type <span class="Constant">[add 1, 1]</span>
+<a name="L213"></a><span id="L213" class="LineNr">213 </span>    press F4
+<a name="L214"></a><span id="L214" class="LineNr">214 </span>    press page-down
+<a name="L215"></a><span id="L215" class="LineNr">215 </span>  ]
+<a name="L216"></a><span id="L216" class="LineNr">216 </span>  event-loop screen, console, env, resources
+<a name="L217"></a><span id="L217" class="LineNr">217 </span>  screen-should-contain [
+<a name="L218"></a><span id="L218" class="LineNr">218 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L219"></a><span id="L219" class="LineNr">219 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L220"></a><span id="L220" class="LineNr">220 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
+<a name="L221"></a><span id="L221" class="LineNr">221 </span>   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<a name="L222"></a><span id="L222" class="LineNr">222 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L223"></a><span id="L223" class="LineNr">223 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L224"></a><span id="L224" class="LineNr">224 </span>   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
+<a name="L225"></a><span id="L225" class="LineNr">225 </span>  ]
+<a name="L226"></a><span id="L226" class="LineNr">226 </span>  <span class="Comment"># delete the second sandbox</span>
+<a name="L227"></a><span id="L227" class="LineNr">227 </span>  assume-console [
+<a name="L228"></a><span id="L228" class="LineNr">228 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
+<a name="L229"></a><span id="L229" class="LineNr">229 </span>  ]
+<a name="L230"></a><span id="L230" class="LineNr">230 </span>  run [
+<a name="L231"></a><span id="L231" class="LineNr">231 </span>    event-loop screen, console, env, resources
+<a name="L232"></a><span id="L232" class="LineNr">232 </span>  ]
+<a name="L233"></a><span id="L233" class="LineNr">233 </span>  <span class="Comment"># second sandbox shows in editor; scroll resets to display first sandbox</span>
+<a name="L234"></a><span id="L234" class="LineNr">234 </span>  screen-should-contain [
+<a name="L235"></a><span id="L235" class="LineNr">235 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L236"></a><span id="L236" class="LineNr">236 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L237"></a><span id="L237" class="LineNr">237 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
+<a name="L238"></a><span id="L238" class="LineNr">238 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L239"></a><span id="L239" class="LineNr">239 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L240"></a><span id="L240" class="LineNr">240 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L241"></a><span id="L241" class="LineNr">241 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L242"></a><span id="L242" class="LineNr">242 </span>  ]
+<a name="L243"></a><span id="L243" class="LineNr">243 </span>]
+<a name="L244"></a><span id="L244" class="LineNr">244 </span>
+<a name="L245"></a><span id="L245" class="LineNr">245 </span><span class="muScenario">scenario</span> deleting-final-sandbox-after-scroll [
+<a name="L246"></a><span id="L246" class="LineNr">246 </span>  <span class="Constant">local-scope</span>
+<a name="L247"></a><span id="L247" class="LineNr">247 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<a name="L248"></a><span id="L248" class="LineNr">248 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<a name="L249"></a><span id="L249" class="LineNr">249 </span>  <span class="Comment"># initialize environment</span>
+<a name="L250"></a><span id="L250" class="LineNr">250 </span>  assume-resources [
+<a name="L251"></a><span id="L251" class="LineNr">251 </span>  ]
+<a name="L252"></a><span id="L252" class="LineNr">252 </span>  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
+<a name="L253"></a><span id="L253" class="LineNr">253 </span>  render-all screen, env, render
+<a name="L254"></a><span id="L254" class="LineNr">254 </span>  <span class="Comment"># create 2 sandboxes and scroll to second</span>
+<a name="L255"></a><span id="L255" class="LineNr">255 </span>  assume-console [
+<a name="L256"></a><span id="L256" class="LineNr">256 </span>    press ctrl-n
+<a name="L257"></a><span id="L257" class="LineNr">257 </span>    type <span class="Constant">[add 2, 2]</span>
+<a name="L258"></a><span id="L258" class="LineNr">258 </span>    press F4
+<a name="L259"></a><span id="L259" class="LineNr">259 </span>    type <span class="Constant">[add 1, 1]</span>
+<a name="L260"></a><span id="L260" class="LineNr">260 </span>    press F4
+<a name="L261"></a><span id="L261" class="LineNr">261 </span>    press page-down
+<a name="L262"></a><span id="L262" class="LineNr">262 </span>    press page-down
+<a name="L263"></a><span id="L263" class="LineNr">263 </span>  ]
+<a name="L264"></a><span id="L264" class="LineNr">264 </span>  event-loop screen, console, env, resources
+<a name="L265"></a><span id="L265" class="LineNr">265 </span>  screen-should-contain [
+<a name="L266"></a><span id="L266" class="LineNr">266 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L267"></a><span id="L267" class="LineNr">267 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L268"></a><span id="L268" class="LineNr">268 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit          copy            delete         .</span>
+<a name="L269"></a><span id="L269" class="LineNr">269 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L270"></a><span id="L270" class="LineNr">270 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L271"></a><span id="L271" class="LineNr">271 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L272"></a><span id="L272" class="LineNr">272 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L273"></a><span id="L273" class="LineNr">273 </span>  ]
+<a name="L274"></a><span id="L274" class="LineNr">274 </span>  <span class="Comment"># delete the second sandbox</span>
+<a name="L275"></a><span id="L275" class="LineNr">275 </span>  assume-console [
+<a name="L276"></a><span id="L276" class="LineNr">276 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 99</span>
+<a name="L277"></a><span id="L277" class="LineNr">277 </span>  ]
+<a name="L278"></a><span id="L278" class="LineNr">278 </span>  run [
+<a name="L279"></a><span id="L279" class="LineNr">279 </span>    event-loop screen, console, env, resources
+<a name="L280"></a><span id="L280" class="LineNr">280 </span>  ]
+<a name="L281"></a><span id="L281" class="LineNr">281 </span>  <span class="Comment"># implicitly scroll up to first sandbox</span>
+<a name="L282"></a><span id="L282" class="LineNr">282 </span>  screen-should-contain [
+<a name="L283"></a><span id="L283" class="LineNr">283 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L284"></a><span id="L284" class="LineNr">284 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L285"></a><span id="L285" class="LineNr">285 </span><span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<a name="L286"></a><span id="L286" class="LineNr">286 </span>   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<a name="L287"></a><span id="L287" class="LineNr">287 </span>   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<a name="L288"></a><span id="L288" class="LineNr">288 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L289"></a><span id="L289" class="LineNr">289 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L290"></a><span id="L290" class="LineNr">290 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L291"></a><span id="L291" class="LineNr">291 </span>  ]
+<a name="L292"></a><span id="L292" class="LineNr">292 </span>]
+<a name="L293"></a><span id="L293" class="LineNr">293 </span>
+<a name="L294"></a><span id="L294" class="LineNr">294 </span><span class="muScenario">scenario</span> deleting-updates-sandbox-count [
+<a name="L295"></a><span id="L295" class="LineNr">295 </span>  <span class="Constant">local-scope</span>
+<a name="L296"></a><span id="L296" class="LineNr">296 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<a name="L297"></a><span id="L297" class="LineNr">297 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<a name="L298"></a><span id="L298" class="LineNr">298 </span>  <span class="Comment"># initialize environment</span>
+<a name="L299"></a><span id="L299" class="LineNr">299 </span>  assume-resources [
+<a name="L300"></a><span id="L300" class="LineNr">300 </span>  ]
+<a name="L301"></a><span id="L301" class="LineNr">301 </span>  env:&amp;:environment <span class="Special">&lt;-</span> new-programming-environment resources, screen, <span class="Constant">[]</span>
+<a name="L302"></a><span id="L302" class="LineNr">302 </span>  render-all screen, env, render
+<a name="L303"></a><span id="L303" class="LineNr">303 </span>  <span class="Comment"># create 2 sandboxes</span>
+<a name="L304"></a><span id="L304" class="LineNr">304 </span>  assume-console [
+<a name="L305"></a><span id="L305" class="LineNr">305 </span>    press ctrl-n
+<a name="L306"></a><span id="L306" class="LineNr">306 </span>    type <span class="Constant">[add 2, 2]</span>
+<a name="L307"></a><span id="L307" class="LineNr">307 </span>    press F4
+<a name="L308"></a><span id="L308" class="LineNr">308 </span>    type <span class="Constant">[add 1, 1]</span>
+<a name="L309"></a><span id="L309" class="LineNr">309 </span>    press F4
+<a name="L310"></a><span id="L310" class="LineNr">310 </span>  ]
+<a name="L311"></a><span id="L311" class="LineNr">311 </span>  event-loop screen, console, env, resources
+<a name="L312"></a><span id="L312" class="LineNr">312 </span>  screen-should-contain [
+<a name="L313"></a><span id="L313" class="LineNr">313 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L314"></a><span id="L314" class="LineNr">314 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L315"></a><span id="L315" class="LineNr">315 </span><span class="Constant">    .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<a name="L316"></a><span id="L316" class="LineNr">316 </span>   <span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<a name="L317"></a><span id="L317" class="LineNr">317 </span>   <span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<a name="L318"></a><span id="L318" class="LineNr">318 </span>   <span class="Constant"> .                                                  ╎2                                                .</span>
+<a name="L319"></a><span id="L319" class="LineNr">319 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L320"></a><span id="L320" class="LineNr">320 </span>   <span class="Constant"> .                                                  ╎1   edit          copy            delete         .</span>
+<a name="L321"></a><span id="L321" class="LineNr">321 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L322"></a><span id="L322" class="LineNr">322 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L323"></a><span id="L323" class="LineNr">323 </span>  ]
+<a name="L324"></a><span id="L324" class="LineNr">324 </span>  <span class="Comment"># delete the second sandbox, then try to scroll down twice</span>
+<a name="L325"></a><span id="L325" class="LineNr">325 </span>  assume-console [
+<a name="L326"></a><span id="L326" class="LineNr">326 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 99</span>
+<a name="L327"></a><span id="L327" class="LineNr">327 </span>    press page-down
+<a name="L328"></a><span id="L328" class="LineNr">328 </span>    press page-down
+<a name="L329"></a><span id="L329" class="LineNr">329 </span>  ]
+<a name="L330"></a><span id="L330" class="LineNr">330 </span>  run [
+<a name="L331"></a><span id="L331" class="LineNr">331 </span>    event-loop screen, console, env, resources
+<a name="L332"></a><span id="L332" class="LineNr">332 </span>  ]
+<a name="L333"></a><span id="L333" class="LineNr">333 </span>  <span class="Comment"># shouldn't go past last sandbox</span>
+<a name="L334"></a><span id="L334" class="LineNr">334 </span>  screen-should-contain [
+<a name="L335"></a><span id="L335" class="LineNr">335 </span>   <span class="Constant"> .                                                                                 run (F4)           .</span>
+<a name="L336"></a><span id="L336" class="LineNr">336 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L337"></a><span id="L337" class="LineNr">337 </span>   <span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit          copy            delete         .</span>
+<a name="L338"></a><span id="L338" class="LineNr">338 </span>   <span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<a name="L339"></a><span id="L339" class="LineNr">339 </span>   <span class="Constant"> .                                                  ╎4                                                .</span>
+<a name="L340"></a><span id="L340" class="LineNr">340 </span>   <span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<a name="L341"></a><span id="L341" class="LineNr">341 </span>   <span class="Constant"> .                                                  ╎                                                 .</span>
+<a name="L342"></a><span id="L342" class="LineNr">342 </span>  ]
+<a name="L343"></a><span id="L343" class="LineNr">343 </span>]
 </pre>
 </body>
 </html>

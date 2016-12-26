@@ -6,16 +6,17 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
+.Special { color: #c00000; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -23,19 +24,42 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment"># example program: add two numbers</span>
-
-<span class="muRecipe">def</span> main [
-  11:num <span class="Special">&lt;-</span> copy<span class="Constant"> 1</span>
-  12:num <span class="Special">&lt;-</span> copy<span class="Constant"> 3</span>
-  13:num <span class="Special">&lt;-</span> add 11:num, 12:num
-  $dump-memory
-]
+<a name="L1"></a><span id="L1" class="LineNr">1 </span><span class="Comment"># example program: add two numbers</span>
+<a name="L2"></a><span id="L2" class="LineNr">2 </span>
+<a name="L3"></a><span id="L3" class="LineNr">3 </span><span class="muRecipe">def</span> main [
+<a name="L4"></a><span id="L4" class="LineNr">4 </span>  11:num <span class="Special">&lt;-</span> copy<span class="Constant"> 1</span>
+<a name="L5"></a><span id="L5" class="LineNr">5 </span>  12:num <span class="Special">&lt;-</span> copy<span class="Constant"> 3</span>
+<a name="L6"></a><span id="L6" class="LineNr">6 </span>  13:num <span class="Special">&lt;-</span> add 11:num, 12:num
+<a name="L7"></a><span id="L7" class="LineNr">7 </span>  $dump-memory
+<a name="L8"></a><span id="L8" class="LineNr">8 </span>]
 </pre>
 </body>
 </html>

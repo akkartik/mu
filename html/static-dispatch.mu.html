@@ -6,16 +6,17 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
 pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-color: #080808; }
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
-.Comment { color: #9090ff; }
-.Constant { color: #00a0a0; }
 .Special { color: #c00000; }
+.Constant { color: #00a0a0; }
+.LineNr { color: #444444; }
+.Comment { color: #9090ff; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -23,32 +24,55 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="muRecipe">def</span> test a:num<span class="muRecipe"> -&gt; </span>b:num [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  b <span class="Special">&lt;-</span> add a,<span class="Constant"> 1</span>
-]
-
-<span class="muRecipe">def</span> test a:num, b:num<span class="muRecipe"> -&gt; </span>c:num [
-  <span class="Constant">local-scope</span>
-  <span class="Constant">load-ingredients</span>
-  c <span class="Special">&lt;-</span> add a, b
-]
-
-<span class="muRecipe">def</span> main [
-  <span class="Constant">local-scope</span>
-  a:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>  <span class="Comment"># selects single-ingredient version</span>
-  $print a, <span class="Constant">10/newline</span>
-  b:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>,<span class="Constant"> 4</span>  <span class="Comment"># selects double-ingredient version</span>
-  $print b, <span class="Constant">10/newline</span>
-  c:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>,<span class="Constant"> 4</span>,<span class="Constant"> 5</span>  <span class="Comment"># prefers double- to single-ingredient version</span>
-  $print c, <span class="Constant">10/newline</span>
-]
+<a name="L1"></a><span id="L1" class="LineNr"> 1 </span><span class="muRecipe">def</span> test a:num<span class="muRecipe"> -&gt; </span>b:num [
+<a name="L2"></a><span id="L2" class="LineNr"> 2 </span>  <span class="Constant">local-scope</span>
+<a name="L3"></a><span id="L3" class="LineNr"> 3 </span>  <span class="Constant">load-ingredients</span>
+<a name="L4"></a><span id="L4" class="LineNr"> 4 </span>  b <span class="Special">&lt;-</span> add a,<span class="Constant"> 1</span>
+<a name="L5"></a><span id="L5" class="LineNr"> 5 </span>]
+<a name="L6"></a><span id="L6" class="LineNr"> 6 </span>
+<a name="L7"></a><span id="L7" class="LineNr"> 7 </span><span class="muRecipe">def</span> test a:num, b:num<span class="muRecipe"> -&gt; </span>c:num [
+<a name="L8"></a><span id="L8" class="LineNr"> 8 </span>  <span class="Constant">local-scope</span>
+<a name="L9"></a><span id="L9" class="LineNr"> 9 </span>  <span class="Constant">load-ingredients</span>
+<a name="L10"></a><span id="L10" class="LineNr">10 </span>  c <span class="Special">&lt;-</span> add a, b
+<a name="L11"></a><span id="L11" class="LineNr">11 </span>]
+<a name="L12"></a><span id="L12" class="LineNr">12 </span>
+<a name="L13"></a><span id="L13" class="LineNr">13 </span><span class="muRecipe">def</span> main [
+<a name="L14"></a><span id="L14" class="LineNr">14 </span>  <span class="Constant">local-scope</span>
+<a name="L15"></a><span id="L15" class="LineNr">15 </span>  a:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>  <span class="Comment"># selects single-ingredient version</span>
+<a name="L16"></a><span id="L16" class="LineNr">16 </span>  $print a, <span class="Constant">10/newline</span>
+<a name="L17"></a><span id="L17" class="LineNr">17 </span>  b:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>,<span class="Constant"> 4</span>  <span class="Comment"># selects double-ingredient version</span>
+<a name="L18"></a><span id="L18" class="LineNr">18 </span>  $print b, <span class="Constant">10/newline</span>
+<a name="L19"></a><span id="L19" class="LineNr">19 </span>  c:num <span class="Special">&lt;-</span> test<span class="Constant"> 3</span>,<span class="Constant"> 4</span>,<span class="Constant"> 5</span>  <span class="Comment"># prefers double- to single-ingredient version</span>
+<a name="L20"></a><span id="L20" class="LineNr">20 </span>  $print c, <span class="Constant">10/newline</span>
+<a name="L21"></a><span id="L21" class="LineNr">21 </span>]
 </pre>
 </body>
 </html>

@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -15,735 +15,759 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
 .traceAbsent { color: #c00000; }
-.cSpecial { color: #008000; }
+.Special { color: #c00000; }
 .muRecipe { color: #ff8700; }
 .SalientComment { color: #00ffff; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #c0a020; }
+.cSpecial { color: #008000; }
 -->
 </style>
 
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment">//: Run a second routine concurrently using 'start-running', without any</span>
-<span class="Comment">//: guarantees on how the operations in each are interleaved with each other.</span>
-
-<span class="Delimiter">:(scenario scheduler)</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2
-  <span class="Comment"># wait for f2 to run</span>
-  <span class="Delimiter">{</span>
-    jump-unless <span class="Constant">1</span>:num<span class="Delimiter">,</span> -<span class="Constant">1</span>
-  <span class="Delimiter">}</span>
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-]
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+schedule: f2</span>
-
-<span class="Comment">//: first, add a deadline to run(routine)</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">int</span> Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
- ++Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
-<span class="Delimiter">:(replace{} &quot;bool should_continue_running(const routine* current_routine)&quot;)</span>
-<span class="Normal">bool</span> should_continue_running<span class="Delimiter">(</span><span class="Normal">const</span> routine* current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>current_routine == Current_routine<span class="Delimiter">);</span>  <span class="Comment">// argument passed in just to make caller readable above</span>
-  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING
-      &amp;&amp; Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice &lt; Scheduling_interval<span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(after &quot;stop_running_current_routine:&quot;)</span>
-<span class="Comment">// Reset instructions_run_this_scheduling_slice</span>
-Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: now the rest of the scheduler is clean</span>
-
-<span class="Delimiter">:(before &quot;struct routine&quot;)</span>
-<span class="Normal">enum</span> routine_state <span class="Delimiter">{</span>
-  RUNNING<span class="Delimiter">,</span>
-  COMPLETED<span class="Delimiter">,</span>
-  <span class="Comment">// End routine States</span>
-<span class="Delimiter">};</span>
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">enum</span> routine_state state<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-state = RUNNING<span class="Delimiter">;</span>
-
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-vector&lt;routine*&gt; Routines<span class="Delimiter">;</span>
-<span class="Normal">int</span> Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
-Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-<span class="Delimiter">:(replace{} &quot;void run(const recipe_ordinal r)&quot;)</span>
-<span class="Normal">void</span> run<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  run<span class="Delimiter">(</span><span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">void</span> run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rr<span class="Delimiter">);</span>
-  Current_routine_index = <span class="Constant">0</span><span class="Delimiter">,</span> Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">while</span> <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    skip_to_next_routine<span class="Delimiter">();</span>
-    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
-    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_routine_label<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
-    run_current_routine<span class="Delimiter">();</span>
-    <span class="Comment">// Scheduler State Transitions</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
-      Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
-    <span class="Comment">// End Scheduler State Transitions</span>
-
-    <span class="Comment">// Scheduler Cleanup</span>
-    <span class="Comment">// End Scheduler Cleanup</span>
-  <span class="Delimiter">}</span>
-  <span class="Comment">// End Run Routine</span>
-<span class="Delimiter">}</span>
-
-<span class="Normal">bool</span> all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span>
-      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">// skip Current_routine_index past non-RUNNING routines</span>
-<span class="Normal">void</span> skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  assert<span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-  assert<span class="Delimiter">(</span>Current_routine_index &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">));</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Delimiter">(</span>Current_routine_index+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  i != Current_routine_index<span class="Delimiter">;</span>  i = <span class="Delimiter">(</span>i+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Current_routine_index = i<span class="Delimiter">;</span>
-      Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-      <span class="Identifier">return</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-string current_routine_label<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Identifier">return</span> routine_label<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-string routine_label<span class="Delimiter">(</span>routine* r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  ostringstream result<span class="Delimiter">;</span>
-  <span class="Normal">const</span> call_stack&amp; calls = r<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_iterator p = calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != calls<span class="Delimiter">.</span>end<span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>p != calls<span class="Delimiter">.</span>begin<span class="Delimiter">())</span> result &lt;&lt; <span class="Constant">'/'</span><span class="Delimiter">;</span>
-    result &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Teardown&quot;)</span>
-<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
-  <span class="Normal">delete</span> Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
-Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: special case for the very first routine</span>
-<span class="Delimiter">:(replace{} &quot;void run_main(int argc, char* argv[])&quot;)</span>
-<span class="Normal">void</span> run_main<span class="Delimiter">(</span><span class="Normal">int</span> argc<span class="Delimiter">,</span> <span class="Normal">char</span>* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">);</span>
-  assert<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  routine* main_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
-  <span class="Comment">// pass in commandline args as ingredients to main</span>
-  <span class="Comment">// todo: test this</span>
-  Current_routine = main_routine<span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; argc<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    vector&lt;<span class="Normal">double</span>&gt; arg<span class="Delimiter">;</span>
-    arg<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>argv[i]<span class="Delimiter">));</span>
-    assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> arg<span class="Delimiter">.</span>back<span class="Delimiter">())</span> == <span class="Constant">0</span><span class="Delimiter">);</span>
-    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> arg<span class="Delimiter">.</span>back<span class="Delimiter">(),</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// update refcount</span>
-    current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg<span class="Delimiter">);</span>
-  <span class="Delimiter">}</span>
-  run<span class="Delimiter">(</span>main_routine<span class="Delimiter">);</span>
-<span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: To schedule new routines to run, call 'start-running'.</span>
-
-<span class="Comment">//: 'start-running' will return a unique id for the routine that was created.</span>
-<span class="Comment">//: routine id is a number, but don't do any arithmetic on it</span>
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> id<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span class="Normal">int</span> Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Setup&quot;)</span>
-Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-id = Next_routine_id<span class="Delimiter">;</span>
-<span class="traceContains">++Next_routine_id;</span>
-
-<span class="Comment">//: routines save the routine that spawned them</span>
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Comment">// todo: really should be routine_id, but that's less efficient.</span>
-<span class="Normal">int</span> parent_index<span class="Delimiter">;</span>  <span class="Comment">// only &lt; 0 if there's no parent_index</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-parent_index = -<span class="Constant">1</span><span class="Delimiter">;</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-START_RUNNING<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;start-running&quot;</span><span class="Delimiter">,</span> START_RUNNING<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'start-running' requires at least one ingredient: the recipe to start running</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
-  routine* new_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-  new_routine<span class="Delimiter">-&gt;</span>parent_index = Current_routine_index<span class="Delimiter">;</span>
-  <span class="Comment">// populate ingredients</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> ingredient = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-    canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
-    new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
-    <span class="Comment">// End Populate start-running Ingredient</span>
-  <span class="Delimiter">}</span>
-  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(scenario scheduler_runs_single_routine)</span>
-<span class="Special">% Scheduling_interval = 1;</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: {2: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-
-<span class="Delimiter">:(scenario scheduler_interleaves_routines)</span>
-<span class="Special">% Scheduling_interval = 1;</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: start-running {f2: &quot;recipe-literal&quot;}</span>
-<span class="traceContains">+schedule: f2</span>
-<span class="traceContains">+run: {3: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-<span class="traceContains">+schedule: f2</span>
-<span class="traceContains">+run: {4: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+run: {2: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
-
-<span class="Delimiter">:(scenario start_running_takes_ingredients)</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
-  <span class="Comment"># wait for f2 to run</span>
-  <span class="Delimiter">{</span>
-    jump-unless <span class="Constant">1</span>:num<span class="Delimiter">,</span> -<span class="Constant">1</span>
-  <span class="Delimiter">}</span>
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
-]
-<span class="traceContains">+mem: storing 4 in location 2</span>
-
-<span class="Comment">//: type-checking for 'start-running'</span>
-
-<span class="Delimiter">:(scenario start_running_checks_types)</span>
-<span class="Special">% Hide_errors = true;</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
-]
-<span class="muRecipe">def</span> f2 n:&amp;:num [
-]
-<span class="traceContains">+error: f1: ingredient 0 has the wrong type at 'start-running f2, 3'</span>
-
-<span class="Comment">// 'start-running' only uses the ingredients of the callee, not its products</span>
-<span class="Delimiter">:(before &quot;End is_indirect_call_with_ingredients Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>r == START_RUNNING<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: more complex: refcounting management when starting up new routines</span>
-
-<span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients)</span>
-<span class="Special">% Scheduling_interval = 1;</span>
-<span class="muRecipe">def</span> main [
-  local-scope
-  create-<span class="Normal">new</span>-routine
-  <span class="Comment"># padding to make sure we run new-routine before returning</span>
-  <span class="Normal">dummy</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Normal">dummy</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="muRecipe">def</span> create-<span class="Normal">new</span>-routine [
-  local-scope
-  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  start-running <span class="Normal">new</span>-routine<span class="Delimiter">,</span> n
-  <span class="Comment"># refcount of n decremented</span>
-]
-<span class="muRecipe">def</span> <span class="Normal">new</span>-routine n:&amp;:num [
-  local-scope
-  load-ingredients
-  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *n
-]
-<span class="Comment"># check that n wasn't reclaimed when create-new-routine returned</span>
-<span class="traceContains">+mem: storing 34 in location 1</span>
-
-<span class="Comment">//: to support the previous scenario we'll increment refcounts for all call</span>
-<span class="Comment">//: ingredients right at call time, and stop incrementing refcounts inside</span>
-<span class="Comment">//: next-ingredient</span>
-<span class="Delimiter">:(before &quot;End Populate Call Ingredient&quot;)</span>
-increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span class="Delimiter">:(before &quot;End Populate start-running Ingredient&quot;)</span>
-increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span class="Delimiter">:(before &quot;End should_update_refcounts_in_write_memory Special-cases For Primitives&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT || inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>space_index<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">// ensure this works with indirect calls using 'call' as well</span>
-<span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)</span>
-<span class="Special">% Scheduling_interval = 1;</span>
-<span class="muRecipe">def</span> main [
-  local-scope
-  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  call f1<span class="Delimiter">,</span> n
-  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *n
-]
-<span class="muRecipe">def</span> f1 n:&amp;:num [
-  local-scope
-  load-ingredients
-]
-<span class="Comment"># check that n wasn't reclaimed when f1 returned</span>
-<span class="traceContains">+mem: storing 34 in location 1</span>
-
-<span class="Delimiter">:(scenario next_ingredient_never_leaks_refcounts)</span>
-<span class="muRecipe">def</span> create-space n:&amp;:num<span class="muRecipe"> -&gt; </span><span class="Normal">default</span>-space:space [
-  <span class="Normal">default</span>-space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">2</span>
-  load-ingredients
-]
-<span class="muRecipe">def</span> use-space [
-  local-scope
-  <span class="Constant">0</span>:space/names:create-space<span class="Special"> &lt;- </span>next-ingredient
-  <span class="Normal">n</span>:&amp;:num/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># should decrement refcount</span>
-  *n/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Normal">n2</span>:num<span class="Special"> &lt;- </span>add *n/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
-  <span class="Identifier">return</span> n2
-]
-<span class="muRecipe">def</span> main [
-  local-scope
-  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">12000</span>/unsafe  <span class="Comment"># pretend allocation with a known address</span>
-  *n<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Normal">space</span>:space<span class="Special"> &lt;- </span>create-space n
-  <span class="Normal">n2</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">13000</span>/unsafe
-  <span class="Normal">n3</span>:num<span class="Special"> &lt;- </span>use-space space<span class="Delimiter">,</span> n2
-]
-<span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;} &lt;- next-ingredient</span>
-<span class="traceContains">+mem: decrementing refcount of 12000: 2 -&gt; 1</span>
-<span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;, &quot;lookup&quot;: ()} &lt;- copy {34: &quot;literal&quot;}</span>
-
-<span class="Comment">//: back to testing 'start-running'</span>
-
-<span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>start-running f2
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">44</span>
-]
-<span class="traceContains">+mem: storing 2 in location 1</span>
-
-<span class="Comment">//: this scenario will require some careful setup in escaped C++</span>
-<span class="Comment">//: (straining our tangle capabilities to near-breaking point)</span>
-<span class="Delimiter">:(scenario scheduler_skips_completed_routines)</span>
-<span class="Special">% recipe_ordinal f1 = load(&quot;recipe f1 [\n1:num &lt;- copy 0\n]\n&quot;).front();</span>
-<span class="Special">% recipe_ordinal f2 = load(&quot;recipe f2 [\n2:num &lt;- copy 0\n]\n&quot;).front();</span>
-<span class="Special">% Routines.push_back(new routine(f1));  // f1 meant to run</span>
-<span class="Special">% Routines.push_back(new routine(f2));</span>
-<span class="Special">% Routines.back()-&gt;state = COMPLETED;  // f2 not meant to run</span>
-<span class="Comment"># must have at least one routine without escaping</span>
-<span class="muRecipe">def</span> f3 [
-  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="Comment"># by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order</span>
-<span class="traceContains">+schedule: f1</span>
-<span class="traceContains">+mem: storing 0 in location 1</span>
-<span class="traceAbsent">-schedule: f2</span>
-<span class="traceAbsent">-mem: storing 0 in location 2</span>
-<span class="traceContains">+schedule: f3</span>
-<span class="traceContains">+mem: storing 0 in location 3</span>
-
-<span class="Delimiter">:(scenario scheduler_starts_at_middle_of_routines)</span>
-<span class="Special">% Routines.push_back(new routine(COPY));</span>
-<span class="Special">% Routines.back()-&gt;state = COMPLETED;</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="traceContains">+schedule: f1</span>
-<span class="traceAbsent">-run: idle</span>
-
-<span class="SalientComment">//:: Errors in a routine cause it to terminate.</span>
-
-<span class="Delimiter">:(scenario scheduler_terminates_routines_after_errors)</span>
-<span class="Special">% Hide_errors = true;</span>
-<span class="Special">% Scheduling_interval = 2;</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Comment"># divide by 0 twice</span>
-  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
-  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
-]
-<span class="Comment"># f2 should stop after first divide by 0</span>
-<span class="traceContains">+error: f2: divide by zero in '3:num &lt;- divide-with-remainder 4, 0'</span>
-<span class="traceAbsent">-error: f2: divide by zero in '4:num &lt;- divide-with-remainder 4, 0'</span>
-
-<span class="Delimiter">:(after &quot;operator&lt;&lt;(ostream&amp; os, unused end)&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream &amp;&amp; Trace_stream<span class="Delimiter">-&gt;</span>curr_label == <span class="Constant">&quot;error&quot;</span> &amp;&amp; Current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: Routines are marked completed when their parent completes.</span>
-
-<span class="Delimiter">:(scenario scheduler_kills_orphans)</span>
-<span class="muRecipe">def</span> main [
-  start-running f1
-  <span class="Comment"># f1 never actually runs because its parent completes without waiting for it</span>
-]
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-]
-<span class="traceAbsent">-schedule: f1</span>
-
-<span class="Delimiter">:(before &quot;End Scheduler Cleanup&quot;)</span>
-<span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// root thread</span>
-  <span class="Comment">// structured concurrency: <a href="http://250bpm.com/blog:71">http://250bpm.com/blog:71</a></span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>has_completed_parent<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> has_completed_parent<span class="Delimiter">(</span><span class="Normal">int</span> routine_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = routine_index<span class="Delimiter">;</span>  j &gt;= <span class="Constant">0</span><span class="Delimiter">;</span>  j = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>parent_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span>
-      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: 'routine-state' can tell if a given routine id is running</span>
-
-<span class="Delimiter">:(scenario routine_state_test)</span>
-<span class="Special">% Scheduling_interval = 2;</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
-  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># race condition since we don't care about location 12</span>
-  <span class="Comment"># thanks to Scheduling_interval, f2's one instruction runs in between here and completes</span>
-  <span class="Constant">2</span>:num/state<span class="Special"> &lt;- </span>routine-state <span class="Constant">1</span>:num/child-id
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
-  <span class="Comment"># trying to run a second instruction marks routine as completed</span>
-]
-<span class="Comment"># recipe f2 should be in state COMPLETED</span>
-<span class="traceContains">+mem: storing 1 in location 2</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-ROUTINE_STATE<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;routine-state&quot;</span><span class="Delimiter">,</span> ROUTINE_STATE<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'routine-state' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'routine-state' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
-  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state<span class="Delimiter">;</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="SalientComment">//:: miscellaneous helpers</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-STOP<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;stop&quot;</span><span class="Delimiter">,</span> STOP<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'stop' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'stop' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
-  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-_DUMP_ROUTINES<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump-routines&quot;</span><span class="Delimiter">,</span> _DUMP_ROUTINES<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    cerr &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: support for stopping routines after some number of cycles</span>
-
-<span class="Delimiter">:(scenario routine_discontinues_past_limit)</span>
-<span class="Special">% Scheduling_interval = 2;</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">1</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
-  limit-time <span class="Constant">1</span>:num/child-id<span class="Delimiter">,</span> <span class="Constant">10</span>
-  <span class="Comment"># padding loop just to make sure f2 has time to completed</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>subtract <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
-  jump-<span class="Normal">if</span> <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">-2:offset</span>
-]
-<span class="muRecipe">def</span> f2 [
-  jump <span class="Constant">-1:offset</span>  <span class="Comment"># run forever</span>
-  $print [should never get here]<span class="Delimiter">,</span> <span class="Constant">10</span>/newline
-]
-<span class="Comment"># f2 terminates</span>
-<span class="traceContains">+schedule: discontinuing routine 2</span>
-
-<span class="Delimiter">:(before &quot;End routine States&quot;)</span>
-DISCONTINUED<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Scheduler State Transitions&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &lt;= Scheduling_interval<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;discontinuing routine &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>id &lt;&lt; end<span class="Delimiter">();</span>
-    Current_routine<span class="Delimiter">-&gt;</span>state = DISCONTINUED<span class="Delimiter">;</span>
-    Current_routine<span class="Delimiter">-&gt;</span>limit = <span class="Constant">0</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">else</span> <span class="Delimiter">{</span>
-    Current_routine<span class="Delimiter">-&gt;</span>limit -= Scheduling_interval<span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
-  raise &lt;&lt; <span class="Constant">&quot;some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span class="Delimiter">:(before &quot;End Mu Test Teardown&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
-  raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> any_routines_with_error<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == DISCONTINUED<span class="Delimiter">)</span>
-      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> limit<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-limit = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> no limit </span><span class="Comment">*/</span>
-
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-LIMIT_TIME<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;limit-time&quot;</span><span class="Delimiter">,</span> LIMIT_TIME<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'limit-time' requires exactly two ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'limit-time' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'limit-time' should be a number (of instructions to run for), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
-  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>limit = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> instructions_run<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-instructions_run = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;Reset instructions_run_this_scheduling_slice&quot;)</span>
-Current_routine<span class="Delimiter">-&gt;</span>instructions_run += Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-NUMBER_OF_INSTRUCTIONS<span class="Delimiter">,</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number-of-instructions&quot;</span><span class="Delimiter">,</span> NUMBER_OF_INSTRUCTIONS<span class="Delimiter">);</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span class="Normal">case</span> NUMBER_OF_INSTRUCTIONS: <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'number-of-instructions' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'number-of-instructions' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">break</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-<span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span class="Normal">case</span> NUMBER_OF_INSTRUCTIONS: <span class="Delimiter">{</span>
-  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>instructions_run<span class="Delimiter">;</span>
-      <span class="Identifier">break</span><span class="Delimiter">;</span>
-    <span class="Delimiter">}</span>
-  <span class="Delimiter">}</span>
-  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
-  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Delimiter">:(scenario number_of_instructions)</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">10</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
-  <span class="Delimiter">{</span>
-    loop-unless <span class="Constant">20</span>:num
-  <span class="Delimiter">}</span>
-  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>number-of-instructions <span class="Constant">10</span>:num
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Comment"># 2 instructions worth of work</span>
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-]
-<span class="Comment"># f2 runs an extra instruction for the implicit return added by the</span>
-<span class="Comment"># fill_in_return_ingredients transform</span>
-<span class="traceContains">+mem: storing 3 in location 11</span>
-
-<span class="Delimiter">:(scenario number_of_instructions_across_multiple_scheduling_intervals)</span>
-<span class="Special">% Scheduling_interval = 1;</span>
-<span class="muRecipe">def</span> f1 [
-  <span class="Constant">10</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
-  <span class="Delimiter">{</span>
-    loop-unless <span class="Constant">20</span>:num
-  <span class="Delimiter">}</span>
-  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>number-of-instructions <span class="Constant">10</span>:num
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Comment"># 4 instructions worth of work</span>
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
-  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
-]
-<span class="Comment"># f2 runs an extra instruction for the implicit return added by the</span>
-<span class="Comment"># fill_in_return_ingredients transform</span>
-<span class="traceContains">+mem: storing 5 in location 11</span>
-
-<span class="SalientComment">//:: make sure that each routine gets a different alloc to start</span>
-
-<span class="Delimiter">:(scenario new_concurrent)</span>
-<span class="muRecipe">def</span> f1 [
-  start-running f2
-  <span class="Constant">1</span>:&amp;:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  <span class="Comment"># wait for f2 to complete</span>
-  <span class="Delimiter">{</span>
-    loop-unless <span class="Constant">4</span>:num/<span class="Special">raw</span>
-  <span class="Delimiter">}</span>
-]
-<span class="muRecipe">def</span> f2 [
-  <span class="Constant">2</span>:&amp;:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-  <span class="Comment"># hack: assumes scheduler implementation</span>
-  <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:&amp;:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:&amp;:num/<span class="Special">raw</span>
-  <span class="Comment"># signal f2 complete</span>
-  <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
-]
-<span class="traceContains">+mem: storing 0 in location 3</span>
+<a name="L1"></a><span id="L1" class="LineNr">  1 </span><span class="Comment">//: Run a second routine concurrently using 'start-running', without any</span>
+<a name="L2"></a><span id="L2" class="LineNr">  2 </span><span class="Comment">//: guarantees on how the operations in each are interleaved with each other.</span>
+<a name="L3"></a><span id="L3" class="LineNr">  3 </span>
+<a name="L4"></a><span id="L4" class="LineNr">  4 </span><span class="Delimiter">:(scenario scheduler)</span>
+<a name="L5"></a><span id="L5" class="LineNr">  5 </span><span class="muRecipe">def</span> f1 [
+<a name="L6"></a><span id="L6" class="LineNr">  6 </span>  start-running f2
+<a name="L7"></a><span id="L7" class="LineNr">  7 </span>  <span class="Comment"># wait for f2 to run</span>
+<a name="L8"></a><span id="L8" class="LineNr">  8 </span>  <span class="Delimiter">{</span>
+<a name="L9"></a><span id="L9" class="LineNr">  9 </span>    jump-unless <span class="Constant">1</span>:num<span class="Delimiter">,</span> -<span class="Constant">1</span>
+<a name="L10"></a><span id="L10" class="LineNr"> 10 </span>  <span class="Delimiter">}</span>
+<a name="L11"></a><span id="L11" class="LineNr"> 11 </span>]
+<a name="L12"></a><span id="L12" class="LineNr"> 12 </span><span class="muRecipe">def</span> f2 [
+<a name="L13"></a><span id="L13" class="LineNr"> 13 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+<a name="L14"></a><span id="L14" class="LineNr"> 14 </span>]
+<a name="L15"></a><span id="L15" class="LineNr"> 15 </span><span class="traceContains">+schedule: f1</span>
+<a name="L16"></a><span id="L16" class="LineNr"> 16 </span><span class="traceContains">+schedule: f2</span>
+<a name="L17"></a><span id="L17" class="LineNr"> 17 </span>
+<a name="L18"></a><span id="L18" class="LineNr"> 18 </span><span class="Comment">//: first, add a deadline to run(routine)</span>
+<a name="L19"></a><span id="L19" class="LineNr"> 19 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<a name="L20"></a><span id="L20" class="LineNr"> 20 </span><span class="Normal">int</span> Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<a name="L21"></a><span id="L21" class="LineNr"> 21 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L22"></a><span id="L22" class="LineNr"> 22 </span><span class="Normal">int</span> instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
+<a name="L23"></a><span id="L23" class="LineNr"> 23 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L24"></a><span id="L24" class="LineNr"> 24 </span>instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L25"></a><span id="L25" class="LineNr"> 25 </span><span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
+<a name="L26"></a><span id="L26" class="LineNr"> 26 </span> ++Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
+<a name="L27"></a><span id="L27" class="LineNr"> 27 </span><span class="Delimiter">:(replace{} &quot;bool should_continue_running(const routine* current_routine)&quot;)</span>
+<a name="L28"></a><span id="L28" class="LineNr"> 28 </span><span class="Normal">bool</span> should_continue_running<span class="Delimiter">(</span><span class="Normal">const</span> routine* current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L29"></a><span id="L29" class="LineNr"> 29 </span>  assert<span class="Delimiter">(</span>current_routine == Current_routine<span class="Delimiter">);</span>  <span class="Comment">// argument passed in just to make caller readable above</span>
+<a name="L30"></a><span id="L30" class="LineNr"> 30 </span>  <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING
+<a name="L31"></a><span id="L31" class="LineNr"> 31 </span>      &amp;&amp; Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice &lt; Scheduling_interval<span class="Delimiter">;</span>
+<a name="L32"></a><span id="L32" class="LineNr"> 32 </span><span class="Delimiter">}</span>
+<a name="L33"></a><span id="L33" class="LineNr"> 33 </span><span class="Delimiter">:(after &quot;stop_running_current_routine:&quot;)</span>
+<a name="L34"></a><span id="L34" class="LineNr"> 34 </span><span class="Comment">// Reset instructions_run_this_scheduling_slice</span>
+<a name="L35"></a><span id="L35" class="LineNr"> 35 </span>Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L36"></a><span id="L36" class="LineNr"> 36 </span>
+<a name="L37"></a><span id="L37" class="LineNr"> 37 </span><span class="Comment">//: now the rest of the scheduler is clean</span>
+<a name="L38"></a><span id="L38" class="LineNr"> 38 </span>
+<a name="L39"></a><span id="L39" class="LineNr"> 39 </span><span class="Delimiter">:(before &quot;struct routine&quot;)</span>
+<a name="L40"></a><span id="L40" class="LineNr"> 40 </span><span class="Normal">enum</span> routine_state <span class="Delimiter">{</span>
+<a name="L41"></a><span id="L41" class="LineNr"> 41 </span>  RUNNING<span class="Delimiter">,</span>
+<a name="L42"></a><span id="L42" class="LineNr"> 42 </span>  COMPLETED<span class="Delimiter">,</span>
+<a name="L43"></a><span id="L43" class="LineNr"> 43 </span>  <span class="Comment">// End routine States</span>
+<a name="L44"></a><span id="L44" class="LineNr"> 44 </span><span class="Delimiter">};</span>
+<a name="L45"></a><span id="L45" class="LineNr"> 45 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L46"></a><span id="L46" class="LineNr"> 46 </span><span class="Normal">enum</span> routine_state state<span class="Delimiter">;</span>
+<a name="L47"></a><span id="L47" class="LineNr"> 47 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L48"></a><span id="L48" class="LineNr"> 48 </span>state = RUNNING<span class="Delimiter">;</span>
+<a name="L49"></a><span id="L49" class="LineNr"> 49 </span>
+<a name="L50"></a><span id="L50" class="LineNr"> 50 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<a name="L51"></a><span id="L51" class="LineNr"> 51 </span>vector&lt;routine*&gt; Routines<span class="Delimiter">;</span>
+<a name="L52"></a><span id="L52" class="LineNr"> 52 </span><span class="Normal">int</span> Current_routine_index = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L53"></a><span id="L53" class="LineNr"> 53 </span><span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+<a name="L54"></a><span id="L54" class="LineNr"> 54 </span>Scheduling_interval = <span class="Constant">500</span><span class="Delimiter">;</span>
+<a name="L55"></a><span id="L55" class="LineNr"> 55 </span>Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+<a name="L56"></a><span id="L56" class="LineNr"> 56 </span><span class="Delimiter">:(replace{} &quot;void run(const recipe_ordinal r)&quot;)</span>
+<a name="L57"></a><span id="L57" class="LineNr"> 57 </span><span class="Normal">void</span> run<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L58"></a><span id="L58" class="LineNr"> 58 </span>  run<span class="Delimiter">(</span><span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+<a name="L59"></a><span id="L59" class="LineNr"> 59 </span><span class="Delimiter">}</span>
+<a name="L60"></a><span id="L60" class="LineNr"> 60 </span>
+<a name="L61"></a><span id="L61" class="LineNr"> 61 </span><span class="Delimiter">:(code)</span>
+<a name="L62"></a><span id="L62" class="LineNr"> 62 </span><span class="Normal">void</span> run<span class="Delimiter">(</span>routine* rr<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L63"></a><span id="L63" class="LineNr"> 63 </span>  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>rr<span class="Delimiter">);</span>
+<a name="L64"></a><span id="L64" class="LineNr"> 64 </span>  Current_routine_index = <span class="Constant">0</span><span class="Delimiter">,</span> Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L65"></a><span id="L65" class="LineNr"> 65 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>!all_routines_done<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<a name="L66"></a><span id="L66" class="LineNr"> 66 </span>    skip_to_next_routine<span class="Delimiter">();</span>
+<a name="L67"></a><span id="L67" class="LineNr"> 67 </span>    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
+<a name="L68"></a><span id="L68" class="LineNr"> 68 </span>    assert<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>state == RUNNING<span class="Delimiter">);</span>
+<a name="L69"></a><span id="L69" class="LineNr"> 69 </span>    trace<span class="Delimiter">(</span><span class="Constant">9990</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; current_routine_label<span class="Delimiter">()</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L70"></a><span id="L70" class="LineNr"> 70 </span>    run_current_routine<span class="Delimiter">();</span>
+<a name="L71"></a><span id="L71" class="LineNr"> 71 </span>    <span class="Comment">// Scheduler State Transitions</span>
+<a name="L72"></a><span id="L72" class="LineNr"> 72 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>completed<span class="Delimiter">())</span>
+<a name="L73"></a><span id="L73" class="LineNr"> 73 </span>      Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
+<a name="L74"></a><span id="L74" class="LineNr"> 74 </span>    <span class="Comment">// End Scheduler State Transitions</span>
+<a name="L75"></a><span id="L75" class="LineNr"> 75 </span>
+<a name="L76"></a><span id="L76" class="LineNr"> 76 </span>    <span class="Comment">// Scheduler Cleanup</span>
+<a name="L77"></a><span id="L77" class="LineNr"> 77 </span>    <span class="Comment">// End Scheduler Cleanup</span>
+<a name="L78"></a><span id="L78" class="LineNr"> 78 </span>  <span class="Delimiter">}</span>
+<a name="L79"></a><span id="L79" class="LineNr"> 79 </span>  <span class="Comment">// End Run Routine</span>
+<a name="L80"></a><span id="L80" class="LineNr"> 80 </span><span class="Delimiter">}</span>
+<a name="L81"></a><span id="L81" class="LineNr"> 81 </span>
+<a name="L82"></a><span id="L82" class="LineNr"> 82 </span><span class="Normal">bool</span> all_routines_done<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<a name="L83"></a><span id="L83" class="LineNr"> 83 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L84"></a><span id="L84" class="LineNr"> 84 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span>
+<a name="L85"></a><span id="L85" class="LineNr"> 85 </span>      <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L86"></a><span id="L86" class="LineNr"> 86 </span>  <span class="Delimiter">}</span>
+<a name="L87"></a><span id="L87" class="LineNr"> 87 </span>  <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L88"></a><span id="L88" class="LineNr"> 88 </span><span class="Delimiter">}</span>
+<a name="L89"></a><span id="L89" class="LineNr"> 89 </span>
+<a name="L90"></a><span id="L90" class="LineNr"> 90 </span><span class="Comment">// skip Current_routine_index past non-RUNNING routines</span>
+<a name="L91"></a><span id="L91" class="LineNr"> 91 </span><span class="Normal">void</span> skip_to_next_routine<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<a name="L92"></a><span id="L92" class="LineNr"> 92 </span>  assert<span class="Delimiter">(</span>!Routines<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+<a name="L93"></a><span id="L93" class="LineNr"> 93 </span>  assert<span class="Delimiter">(</span>Current_routine_index &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">));</span>
+<a name="L94"></a><span id="L94" class="LineNr"> 94 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Delimiter">(</span>Current_routine_index+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  i != Current_routine_index<span class="Delimiter">;</span>  i = <span class="Delimiter">(</span>i+<span class="Constant">1</span><span class="Delimiter">)</span>%SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<a name="L95"></a><span id="L95" class="LineNr"> 95 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == RUNNING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L96"></a><span id="L96" class="LineNr"> 96 </span>      Current_routine_index = i<span class="Delimiter">;</span>
+<a name="L97"></a><span id="L97" class="LineNr"> 97 </span>      Current_routine = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<a name="L98"></a><span id="L98" class="LineNr"> 98 </span>      <span class="Identifier">return</span><span class="Delimiter">;</span>
+<a name="L99"></a><span id="L99" class="LineNr"> 99 </span>    <span class="Delimiter">}</span>
+<a name="L100"></a><span id="L100" class="LineNr">100 </span>  <span class="Delimiter">}</span>
+<a name="L101"></a><span id="L101" class="LineNr">101 </span><span class="Delimiter">}</span>
+<a name="L102"></a><span id="L102" class="LineNr">102 </span>
+<a name="L103"></a><span id="L103" class="LineNr">103 </span>string current_routine_label<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<a name="L104"></a><span id="L104" class="LineNr">104 </span>  <span class="Identifier">return</span> routine_label<span class="Delimiter">(</span>Current_routine<span class="Delimiter">);</span>
+<a name="L105"></a><span id="L105" class="LineNr">105 </span><span class="Delimiter">}</span>
+<a name="L106"></a><span id="L106" class="LineNr">106 </span>
+<a name="L107"></a><span id="L107" class="LineNr">107 </span>string routine_label<span class="Delimiter">(</span>routine* r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L108"></a><span id="L108" class="LineNr">108 </span>  ostringstream result<span class="Delimiter">;</span>
+<a name="L109"></a><span id="L109" class="LineNr">109 </span>  <span class="Normal">const</span> call_stack&amp; calls = r<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">;</span>
+<a name="L110"></a><span id="L110" class="LineNr">110 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_iterator p = calls<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != calls<span class="Delimiter">.</span>end<span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L111"></a><span id="L111" class="LineNr">111 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>p != calls<span class="Delimiter">.</span>begin<span class="Delimiter">())</span> result &lt;&lt; <span class="Constant">'/'</span><span class="Delimiter">;</span>
+<a name="L112"></a><span id="L112" class="LineNr">112 </span>    result &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name<span class="Delimiter">;</span>
+<a name="L113"></a><span id="L113" class="LineNr">113 </span>  <span class="Delimiter">}</span>
+<a name="L114"></a><span id="L114" class="LineNr">114 </span>  <span class="Identifier">return</span> result<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
+<a name="L115"></a><span id="L115" class="LineNr">115 </span><span class="Delimiter">}</span>
+<a name="L116"></a><span id="L116" class="LineNr">116 </span>
+<a name="L117"></a><span id="L117" class="LineNr">117 </span><span class="Delimiter">:(before &quot;End Teardown&quot;)</span>
+<a name="L118"></a><span id="L118" class="LineNr">118 </span><span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span>
+<a name="L119"></a><span id="L119" class="LineNr">119 </span>  <span class="Normal">delete</span> Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<a name="L120"></a><span id="L120" class="LineNr">120 </span>Routines<span class="Delimiter">.</span>clear<span class="Delimiter">();</span>
+<a name="L121"></a><span id="L121" class="LineNr">121 </span>Current_routine = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<a name="L122"></a><span id="L122" class="LineNr">122 </span>
+<a name="L123"></a><span id="L123" class="LineNr">123 </span><span class="Comment">//: special case for the very first routine</span>
+<a name="L124"></a><span id="L124" class="LineNr">124 </span><span class="Delimiter">:(replace{} &quot;void run_main(int argc, char* argv[])&quot;)</span>
+<a name="L125"></a><span id="L125" class="LineNr">125 </span><span class="Normal">void</span> run_main<span class="Delimiter">(</span><span class="Normal">int</span> argc<span class="Delimiter">,</span> <span class="Normal">char</span>* argv[]<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L126"></a><span id="L126" class="LineNr">126 </span>  recipe_ordinal r = get<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;main&quot;</span><span class="Delimiter">);</span>
+<a name="L127"></a><span id="L127" class="LineNr">127 </span>  assert<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+<a name="L128"></a><span id="L128" class="LineNr">128 </span>  routine* main_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>r<span class="Delimiter">);</span>
+<a name="L129"></a><span id="L129" class="LineNr">129 </span>  <span class="Comment">// pass in commandline args as ingredients to main</span>
+<a name="L130"></a><span id="L130" class="LineNr">130 </span>  <span class="Comment">// todo: test this</span>
+<a name="L131"></a><span id="L131" class="LineNr">131 </span>  Current_routine = main_routine<span class="Delimiter">;</span>
+<a name="L132"></a><span id="L132" class="LineNr">132 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; argc<span class="Delimiter">;</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L133"></a><span id="L133" class="LineNr">133 </span>    vector&lt;<span class="Normal">double</span>&gt; arg<span class="Delimiter">;</span>
+<a name="L134"></a><span id="L134" class="LineNr">134 </span>    arg<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_mu_text<span class="Delimiter">(</span>argv[i]<span class="Delimiter">));</span>
+<a name="L135"></a><span id="L135" class="LineNr">135 </span>    assert<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> arg<span class="Delimiter">.</span>back<span class="Delimiter">())</span> == <span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L136"></a><span id="L136" class="LineNr">136 </span>    put<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> arg<span class="Delimiter">.</span>back<span class="Delimiter">(),</span> <span class="Constant">1</span><span class="Delimiter">);</span>  <span class="Comment">// update refcount</span>
+<a name="L137"></a><span id="L137" class="LineNr">137 </span>    current_call<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>arg<span class="Delimiter">);</span>
+<a name="L138"></a><span id="L138" class="LineNr">138 </span>  <span class="Delimiter">}</span>
+<a name="L139"></a><span id="L139" class="LineNr">139 </span>  run<span class="Delimiter">(</span>main_routine<span class="Delimiter">);</span>
+<a name="L140"></a><span id="L140" class="LineNr">140 </span><span class="Delimiter">}</span>
+<a name="L141"></a><span id="L141" class="LineNr">141 </span>
+<a name="L142"></a><span id="L142" class="LineNr">142 </span><span class="SalientComment">//:: To schedule new routines to run, call 'start-running'.</span>
+<a name="L143"></a><span id="L143" class="LineNr">143 </span>
+<a name="L144"></a><span id="L144" class="LineNr">144 </span><span class="Comment">//: 'start-running' will return a unique id for the routine that was created.</span>
+<a name="L145"></a><span id="L145" class="LineNr">145 </span><span class="Comment">//: routine id is a number, but don't do any arithmetic on it</span>
+<a name="L146"></a><span id="L146" class="LineNr">146 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L147"></a><span id="L147" class="LineNr">147 </span><span class="Normal">int</span> id<span class="Delimiter">;</span>
+<a name="L148"></a><span id="L148" class="LineNr">148 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<a name="L149"></a><span id="L149" class="LineNr">149 </span><span class="Normal">int</span> Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L150"></a><span id="L150" class="LineNr">150 </span><span class="Delimiter">:(before &quot;End Setup&quot;)</span>
+<a name="L151"></a><span id="L151" class="LineNr">151 </span>Next_routine_id = <span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L152"></a><span id="L152" class="LineNr">152 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L153"></a><span id="L153" class="LineNr">153 </span>id = Next_routine_id<span class="Delimiter">;</span>
+<a name="L154"></a><span id="L154" class="LineNr">154 </span><span class="traceContains">++Next_routine_id;</span>
+<a name="L155"></a><span id="L155" class="LineNr">155 </span>
+<a name="L156"></a><span id="L156" class="LineNr">156 </span><span class="Comment">//: routines save the routine that spawned them</span>
+<a name="L157"></a><span id="L157" class="LineNr">157 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L158"></a><span id="L158" class="LineNr">158 </span><span class="Comment">// todo: really should be routine_id, but that's less efficient.</span>
+<a name="L159"></a><span id="L159" class="LineNr">159 </span><span class="Normal">int</span> parent_index<span class="Delimiter">;</span>  <span class="Comment">// only &lt; 0 if there's no parent_index</span>
+<a name="L160"></a><span id="L160" class="LineNr">160 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L161"></a><span id="L161" class="LineNr">161 </span>parent_index = -<span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L162"></a><span id="L162" class="LineNr">162 </span>
+<a name="L163"></a><span id="L163" class="LineNr">163 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L164"></a><span id="L164" class="LineNr">164 </span>START_RUNNING<span class="Delimiter">,</span>
+<a name="L165"></a><span id="L165" class="LineNr">165 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L166"></a><span id="L166" class="LineNr">166 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;start-running&quot;</span><span class="Delimiter">,</span> START_RUNNING<span class="Delimiter">);</span>
+<a name="L167"></a><span id="L167" class="LineNr">167 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L168"></a><span id="L168" class="LineNr">168 </span><span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
+<a name="L169"></a><span id="L169" class="LineNr">169 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Delimiter">{</span>
+<a name="L170"></a><span id="L170" class="LineNr">170 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'start-running' requires at least one ingredient: the recipe to start running</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L171"></a><span id="L171" class="LineNr">171 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L172"></a><span id="L172" class="LineNr">172 </span>  <span class="Delimiter">}</span>
+<a name="L173"></a><span id="L173" class="LineNr">173 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_recipe<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L174"></a><span id="L174" class="LineNr">174 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'start-running' should be a recipe, but got '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L175"></a><span id="L175" class="LineNr">175 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L176"></a><span id="L176" class="LineNr">176 </span>  <span class="Delimiter">}</span>
+<a name="L177"></a><span id="L177" class="LineNr">177 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L178"></a><span id="L178" class="LineNr">178 </span><span class="Delimiter">}</span>
+<a name="L179"></a><span id="L179" class="LineNr">179 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L180"></a><span id="L180" class="LineNr">180 </span><span class="Normal">case</span> START_RUNNING: <span class="Delimiter">{</span>
+<a name="L181"></a><span id="L181" class="LineNr">181 </span>  routine* new_routine = <span class="Normal">new</span> routine<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<a name="L182"></a><span id="L182" class="LineNr">182 </span>  new_routine<span class="Delimiter">-&gt;</span>parent_index = Current_routine_index<span class="Delimiter">;</span>
+<a name="L183"></a><span id="L183" class="LineNr">183 </span>  <span class="Comment">// populate ingredients</span>
+<a name="L184"></a><span id="L184" class="LineNr">184 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">1</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L185"></a><span id="L185" class="LineNr">185 </span>    new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredient_atoms<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<a name="L186"></a><span id="L186" class="LineNr">186 </span>    reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> ingredient = current_instruction<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<a name="L187"></a><span id="L187" class="LineNr">187 </span>    canonize_type<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
+<a name="L188"></a><span id="L188" class="LineNr">188 </span>    new_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>ingredient<span class="Delimiter">);</span>
+<a name="L189"></a><span id="L189" class="LineNr">189 </span>    <span class="Comment">// End Populate start-running Ingredient</span>
+<a name="L190"></a><span id="L190" class="LineNr">190 </span>  <span class="Delimiter">}</span>
+<a name="L191"></a><span id="L191" class="LineNr">191 </span>  Routines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">);</span>
+<a name="L192"></a><span id="L192" class="LineNr">192 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L193"></a><span id="L193" class="LineNr">193 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>new_routine<span class="Delimiter">-&gt;</span>id<span class="Delimiter">);</span>
+<a name="L194"></a><span id="L194" class="LineNr">194 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L195"></a><span id="L195" class="LineNr">195 </span><span class="Delimiter">}</span>
+<a name="L196"></a><span id="L196" class="LineNr">196 </span>
+<a name="L197"></a><span id="L197" class="LineNr">197 </span><span class="Delimiter">:(scenario scheduler_runs_single_routine)</span>
+<a name="L198"></a><span id="L198" class="LineNr">198 </span><span class="Special">% Scheduling_interval = 1;</span>
+<a name="L199"></a><span id="L199" class="LineNr">199 </span><span class="muRecipe">def</span> f1 [
+<a name="L200"></a><span id="L200" class="LineNr">200 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L201"></a><span id="L201" class="LineNr">201 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L202"></a><span id="L202" class="LineNr">202 </span>]
+<a name="L203"></a><span id="L203" class="LineNr">203 </span><span class="traceContains">+schedule: f1</span>
+<a name="L204"></a><span id="L204" class="LineNr">204 </span><span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L205"></a><span id="L205" class="LineNr">205 </span><span class="traceContains">+schedule: f1</span>
+<a name="L206"></a><span id="L206" class="LineNr">206 </span><span class="traceContains">+run: {2: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L207"></a><span id="L207" class="LineNr">207 </span>
+<a name="L208"></a><span id="L208" class="LineNr">208 </span><span class="Delimiter">:(scenario scheduler_interleaves_routines)</span>
+<a name="L209"></a><span id="L209" class="LineNr">209 </span><span class="Special">% Scheduling_interval = 1;</span>
+<a name="L210"></a><span id="L210" class="LineNr">210 </span><span class="muRecipe">def</span> f1 [
+<a name="L211"></a><span id="L211" class="LineNr">211 </span>  start-running f2
+<a name="L212"></a><span id="L212" class="LineNr">212 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L213"></a><span id="L213" class="LineNr">213 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L214"></a><span id="L214" class="LineNr">214 </span>]
+<a name="L215"></a><span id="L215" class="LineNr">215 </span><span class="muRecipe">def</span> f2 [
+<a name="L216"></a><span id="L216" class="LineNr">216 </span>  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L217"></a><span id="L217" class="LineNr">217 </span>  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L218"></a><span id="L218" class="LineNr">218 </span>]
+<a name="L219"></a><span id="L219" class="LineNr">219 </span><span class="traceContains">+schedule: f1</span>
+<a name="L220"></a><span id="L220" class="LineNr">220 </span><span class="traceContains">+run: start-running {f2: &quot;recipe-literal&quot;}</span>
+<a name="L221"></a><span id="L221" class="LineNr">221 </span><span class="traceContains">+schedule: f2</span>
+<a name="L222"></a><span id="L222" class="LineNr">222 </span><span class="traceContains">+run: {3: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L223"></a><span id="L223" class="LineNr">223 </span><span class="traceContains">+schedule: f1</span>
+<a name="L224"></a><span id="L224" class="LineNr">224 </span><span class="traceContains">+run: {1: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L225"></a><span id="L225" class="LineNr">225 </span><span class="traceContains">+schedule: f2</span>
+<a name="L226"></a><span id="L226" class="LineNr">226 </span><span class="traceContains">+run: {4: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L227"></a><span id="L227" class="LineNr">227 </span><span class="traceContains">+schedule: f1</span>
+<a name="L228"></a><span id="L228" class="LineNr">228 </span><span class="traceContains">+run: {2: &quot;number&quot;} &lt;- copy {0: &quot;literal&quot;}</span>
+<a name="L229"></a><span id="L229" class="LineNr">229 </span>
+<a name="L230"></a><span id="L230" class="LineNr">230 </span><span class="Delimiter">:(scenario start_running_takes_ingredients)</span>
+<a name="L231"></a><span id="L231" class="LineNr">231 </span><span class="muRecipe">def</span> f1 [
+<a name="L232"></a><span id="L232" class="LineNr">232 </span>  start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
+<a name="L233"></a><span id="L233" class="LineNr">233 </span>  <span class="Comment"># wait for f2 to run</span>
+<a name="L234"></a><span id="L234" class="LineNr">234 </span>  <span class="Delimiter">{</span>
+<a name="L235"></a><span id="L235" class="LineNr">235 </span>    jump-unless <span class="Constant">1</span>:num<span class="Delimiter">,</span> -<span class="Constant">1</span>
+<a name="L236"></a><span id="L236" class="LineNr">236 </span>  <span class="Delimiter">}</span>
+<a name="L237"></a><span id="L237" class="LineNr">237 </span>]
+<a name="L238"></a><span id="L238" class="LineNr">238 </span><span class="muRecipe">def</span> f2 [
+<a name="L239"></a><span id="L239" class="LineNr">239 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>next-ingredient
+<a name="L240"></a><span id="L240" class="LineNr">240 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>add <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+<a name="L241"></a><span id="L241" class="LineNr">241 </span>]
+<a name="L242"></a><span id="L242" class="LineNr">242 </span><span class="traceContains">+mem: storing 4 in location 2</span>
+<a name="L243"></a><span id="L243" class="LineNr">243 </span>
+<a name="L244"></a><span id="L244" class="LineNr">244 </span><span class="Comment">//: type-checking for 'start-running'</span>
+<a name="L245"></a><span id="L245" class="LineNr">245 </span>
+<a name="L246"></a><span id="L246" class="LineNr">246 </span><span class="Delimiter">:(scenario start_running_checks_types)</span>
+<a name="L247"></a><span id="L247" class="LineNr">247 </span><span class="Special">% Hide_errors = true;</span>
+<a name="L248"></a><span id="L248" class="LineNr">248 </span><span class="muRecipe">def</span> f1 [
+<a name="L249"></a><span id="L249" class="LineNr">249 </span>  start-running f2<span class="Delimiter">,</span> <span class="Constant">3</span>
+<a name="L250"></a><span id="L250" class="LineNr">250 </span>]
+<a name="L251"></a><span id="L251" class="LineNr">251 </span><span class="muRecipe">def</span> f2 n:&amp;:num [
+<a name="L252"></a><span id="L252" class="LineNr">252 </span>]
+<a name="L253"></a><span id="L253" class="LineNr">253 </span><span class="traceContains">+error: f1: ingredient 0 has the wrong type at 'start-running f2, 3'</span>
+<a name="L254"></a><span id="L254" class="LineNr">254 </span>
+<a name="L255"></a><span id="L255" class="LineNr">255 </span><span class="Comment">// 'start-running' only uses the ingredients of the callee, not its products</span>
+<a name="L256"></a><span id="L256" class="LineNr">256 </span><span class="Delimiter">:(before &quot;End is_indirect_call_with_ingredients Special-cases&quot;)</span>
+<a name="L257"></a><span id="L257" class="LineNr">257 </span><span class="Normal">if</span> <span class="Delimiter">(</span>r == START_RUNNING<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L258"></a><span id="L258" class="LineNr">258 </span>
+<a name="L259"></a><span id="L259" class="LineNr">259 </span><span class="Comment">//: more complex: refcounting management when starting up new routines</span>
+<a name="L260"></a><span id="L260" class="LineNr">260 </span>
+<a name="L261"></a><span id="L261" class="LineNr">261 </span><span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients)</span>
+<a name="L262"></a><span id="L262" class="LineNr">262 </span><span class="Special">% Scheduling_interval = 1;</span>
+<a name="L263"></a><span id="L263" class="LineNr">263 </span><span class="muRecipe">def</span> main [
+<a name="L264"></a><span id="L264" class="LineNr">264 </span>  local-scope
+<a name="L265"></a><span id="L265" class="LineNr">265 </span>  create-<span class="Normal">new</span>-routine
+<a name="L266"></a><span id="L266" class="LineNr">266 </span>  <span class="Comment"># padding to make sure we run new-routine before returning</span>
+<a name="L267"></a><span id="L267" class="LineNr">267 </span>  <span class="Normal">dummy</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L268"></a><span id="L268" class="LineNr">268 </span>  <span class="Normal">dummy</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L269"></a><span id="L269" class="LineNr">269 </span>]
+<a name="L270"></a><span id="L270" class="LineNr">270 </span><span class="muRecipe">def</span> create-<span class="Normal">new</span>-routine [
+<a name="L271"></a><span id="L271" class="LineNr">271 </span>  local-scope
+<a name="L272"></a><span id="L272" class="LineNr">272 </span>  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<a name="L273"></a><span id="L273" class="LineNr">273 </span>  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<a name="L274"></a><span id="L274" class="LineNr">274 </span>  start-running <span class="Normal">new</span>-routine<span class="Delimiter">,</span> n
+<a name="L275"></a><span id="L275" class="LineNr">275 </span>  <span class="Comment"># refcount of n decremented</span>
+<a name="L276"></a><span id="L276" class="LineNr">276 </span>]
+<a name="L277"></a><span id="L277" class="LineNr">277 </span><span class="muRecipe">def</span> <span class="Normal">new</span>-routine n:&amp;:num [
+<a name="L278"></a><span id="L278" class="LineNr">278 </span>  local-scope
+<a name="L279"></a><span id="L279" class="LineNr">279 </span>  load-ingredients
+<a name="L280"></a><span id="L280" class="LineNr">280 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *n
+<a name="L281"></a><span id="L281" class="LineNr">281 </span>]
+<a name="L282"></a><span id="L282" class="LineNr">282 </span><span class="Comment"># check that n wasn't reclaimed when create-new-routine returned</span>
+<a name="L283"></a><span id="L283" class="LineNr">283 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<a name="L284"></a><span id="L284" class="LineNr">284 </span>
+<a name="L285"></a><span id="L285" class="LineNr">285 </span><span class="Comment">//: to support the previous scenario we'll increment refcounts for all call</span>
+<a name="L286"></a><span id="L286" class="LineNr">286 </span><span class="Comment">//: ingredients right at call time, and stop incrementing refcounts inside</span>
+<a name="L287"></a><span id="L287" class="LineNr">287 </span><span class="Comment">//: next-ingredient</span>
+<a name="L288"></a><span id="L288" class="LineNr">288 </span><span class="Delimiter">:(before &quot;End Populate Call Ingredient&quot;)</span>
+<a name="L289"></a><span id="L289" class="LineNr">289 </span>increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<a name="L290"></a><span id="L290" class="LineNr">290 </span><span class="Delimiter">:(before &quot;End Populate start-running Ingredient&quot;)</span>
+<a name="L291"></a><span id="L291" class="LineNr">291 </span>increment_any_refcounts<span class="Delimiter">(</span>ingredient<span class="Delimiter">,</span> ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<a name="L292"></a><span id="L292" class="LineNr">292 </span><span class="Delimiter">:(before &quot;End should_update_refcounts_in_write_memory Special-cases For Primitives&quot;)</span>
+<a name="L293"></a><span id="L293" class="LineNr">293 </span><span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT || inst<span class="Delimiter">.</span>operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L294"></a><span id="L294" class="LineNr">294 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>space_index<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))</span> &gt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L295"></a><span id="L295" class="LineNr">295 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">),</span> <span class="Constant">&quot;raw&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L296"></a><span id="L296" class="LineNr">296 </span>  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L297"></a><span id="L297" class="LineNr">297 </span><span class="Delimiter">}</span>
+<a name="L298"></a><span id="L298" class="LineNr">298 </span>
+<a name="L299"></a><span id="L299" class="LineNr">299 </span><span class="Comment">// ensure this works with indirect calls using 'call' as well</span>
+<a name="L300"></a><span id="L300" class="LineNr">300 </span><span class="Delimiter">:(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)</span>
+<a name="L301"></a><span id="L301" class="LineNr">301 </span><span class="Special">% Scheduling_interval = 1;</span>
+<a name="L302"></a><span id="L302" class="LineNr">302 </span><span class="muRecipe">def</span> main [
+<a name="L303"></a><span id="L303" class="LineNr">303 </span>  local-scope
+<a name="L304"></a><span id="L304" class="LineNr">304 </span>  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<a name="L305"></a><span id="L305" class="LineNr">305 </span>  *n<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<a name="L306"></a><span id="L306" class="LineNr">306 </span>  call f1<span class="Delimiter">,</span> n
+<a name="L307"></a><span id="L307" class="LineNr">307 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *n
+<a name="L308"></a><span id="L308" class="LineNr">308 </span>]
+<a name="L309"></a><span id="L309" class="LineNr">309 </span><span class="muRecipe">def</span> f1 n:&amp;:num [
+<a name="L310"></a><span id="L310" class="LineNr">310 </span>  local-scope
+<a name="L311"></a><span id="L311" class="LineNr">311 </span>  load-ingredients
+<a name="L312"></a><span id="L312" class="LineNr">312 </span>]
+<a name="L313"></a><span id="L313" class="LineNr">313 </span><span class="Comment"># check that n wasn't reclaimed when f1 returned</span>
+<a name="L314"></a><span id="L314" class="LineNr">314 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<a name="L315"></a><span id="L315" class="LineNr">315 </span>
+<a name="L316"></a><span id="L316" class="LineNr">316 </span><span class="Delimiter">:(scenario next_ingredient_never_leaks_refcounts)</span>
+<a name="L317"></a><span id="L317" class="LineNr">317 </span><span class="muRecipe">def</span> create-space n:&amp;:num<span class="muRecipe"> -&gt; </span><span class="Normal">default</span>-space:space [
+<a name="L318"></a><span id="L318" class="LineNr">318 </span>  <span class="Normal">default</span>-space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">2</span>
+<a name="L319"></a><span id="L319" class="LineNr">319 </span>  load-ingredients
+<a name="L320"></a><span id="L320" class="LineNr">320 </span>]
+<a name="L321"></a><span id="L321" class="LineNr">321 </span><span class="muRecipe">def</span> use-space [
+<a name="L322"></a><span id="L322" class="LineNr">322 </span>  local-scope
+<a name="L323"></a><span id="L323" class="LineNr">323 </span>  <span class="Constant">0</span>:space/names:create-space<span class="Special"> &lt;- </span>next-ingredient
+<a name="L324"></a><span id="L324" class="LineNr">324 </span>  <span class="Normal">n</span>:&amp;:num/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>next-ingredient  <span class="Comment"># should decrement refcount</span>
+<a name="L325"></a><span id="L325" class="LineNr">325 </span>  *n/space:<span class="Constant">1</span><span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<a name="L326"></a><span id="L326" class="LineNr">326 </span>  <span class="Normal">n2</span>:num<span class="Special"> &lt;- </span>add *n/space:<span class="Constant">1</span><span class="Delimiter">,</span> <span class="Constant">1</span>
+<a name="L327"></a><span id="L327" class="LineNr">327 </span>  <span class="Identifier">return</span> n2
+<a name="L328"></a><span id="L328" class="LineNr">328 </span>]
+<a name="L329"></a><span id="L329" class="LineNr">329 </span><span class="muRecipe">def</span> main [
+<a name="L330"></a><span id="L330" class="LineNr">330 </span>  local-scope
+<a name="L331"></a><span id="L331" class="LineNr">331 </span>  <span class="Normal">n</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">12000</span>/unsafe  <span class="Comment"># pretend allocation with a known address</span>
+<a name="L332"></a><span id="L332" class="LineNr">332 </span>  *n<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+<a name="L333"></a><span id="L333" class="LineNr">333 </span>  <span class="Normal">space</span>:space<span class="Special"> &lt;- </span>create-space n
+<a name="L334"></a><span id="L334" class="LineNr">334 </span>  <span class="Normal">n2</span>:&amp;:num<span class="Special"> &lt;- </span>copy <span class="Constant">13000</span>/unsafe
+<a name="L335"></a><span id="L335" class="LineNr">335 </span>  <span class="Normal">n3</span>:num<span class="Special"> &lt;- </span>use-space space<span class="Delimiter">,</span> n2
+<a name="L336"></a><span id="L336" class="LineNr">336 </span>]
+<a name="L337"></a><span id="L337" class="LineNr">337 </span><span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;} &lt;- next-ingredient</span>
+<a name="L338"></a><span id="L338" class="LineNr">338 </span><span class="traceContains">+mem: decrementing refcount of 12000: 2 -&gt; 1</span>
+<a name="L339"></a><span id="L339" class="LineNr">339 </span><span class="traceContains">+run: {n: (&quot;address&quot; &quot;number&quot;), &quot;space&quot;: &quot;1&quot;, &quot;lookup&quot;: ()} &lt;- copy {34: &quot;literal&quot;}</span>
+<a name="L340"></a><span id="L340" class="LineNr">340 </span>
+<a name="L341"></a><span id="L341" class="LineNr">341 </span><span class="Comment">//: back to testing 'start-running'</span>
+<a name="L342"></a><span id="L342" class="LineNr">342 </span>
+<a name="L343"></a><span id="L343" class="LineNr">343 </span><span class="Delimiter">:(scenario start_running_returns_routine_id)</span>
+<a name="L344"></a><span id="L344" class="LineNr">344 </span><span class="muRecipe">def</span> f1 [
+<a name="L345"></a><span id="L345" class="LineNr">345 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>start-running f2
+<a name="L346"></a><span id="L346" class="LineNr">346 </span>]
+<a name="L347"></a><span id="L347" class="LineNr">347 </span><span class="muRecipe">def</span> f2 [
+<a name="L348"></a><span id="L348" class="LineNr">348 </span>  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">44</span>
+<a name="L349"></a><span id="L349" class="LineNr">349 </span>]
+<a name="L350"></a><span id="L350" class="LineNr">350 </span><span class="traceContains">+mem: storing 2 in location 1</span>
+<a name="L351"></a><span id="L351" class="LineNr">351 </span>
+<a name="L352"></a><span id="L352" class="LineNr">352 </span><span class="Comment">//: this scenario will require some careful setup in escaped C++</span>
+<a name="L353"></a><span id="L353" class="LineNr">353 </span><span class="Comment">//: (straining our tangle capabilities to near-breaking point)</span>
+<a name="L354"></a><span id="L354" class="LineNr">354 </span><span class="Delimiter">:(scenario scheduler_skips_completed_routines)</span>
+<a name="L355"></a><span id="L355" class="LineNr">355 </span><span class="Special">% recipe_ordinal f1 = load(&quot;recipe f1 [\n1:num &lt;- copy 0\n]\n&quot;).front();</span>
+<a name="L356"></a><span id="L356" class="LineNr">356 </span><span class="Special">% recipe_ordinal f2 = load(&quot;recipe f2 [\n2:num &lt;- copy 0\n]\n&quot;).front();</span>
+<a name="L357"></a><span id="L357" class="LineNr">357 </span><span class="Special">% Routines.push_back(new routine(f1));  // f1 meant to run</span>
+<a name="L358"></a><span id="L358" class="LineNr">358 </span><span class="Special">% Routines.push_back(new routine(f2));</span>
+<a name="L359"></a><span id="L359" class="LineNr">359 </span><span class="Special">% Routines.back()-&gt;state = COMPLETED;  // f2 not meant to run</span>
+<a name="L360"></a><span id="L360" class="LineNr">360 </span><span class="Comment"># must have at least one routine without escaping</span>
+<a name="L361"></a><span id="L361" class="LineNr">361 </span><span class="muRecipe">def</span> f3 [
+<a name="L362"></a><span id="L362" class="LineNr">362 </span>  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L363"></a><span id="L363" class="LineNr">363 </span>]
+<a name="L364"></a><span id="L364" class="LineNr">364 </span><span class="Comment"># by interleaving '+' lines with '-' lines, we allow f1 and f3 to run in any order</span>
+<a name="L365"></a><span id="L365" class="LineNr">365 </span><span class="traceContains">+schedule: f1</span>
+<a name="L366"></a><span id="L366" class="LineNr">366 </span><span class="traceContains">+mem: storing 0 in location 1</span>
+<a name="L367"></a><span id="L367" class="LineNr">367 </span><span class="traceAbsent">-schedule: f2</span>
+<a name="L368"></a><span id="L368" class="LineNr">368 </span><span class="traceAbsent">-mem: storing 0 in location 2</span>
+<a name="L369"></a><span id="L369" class="LineNr">369 </span><span class="traceContains">+schedule: f3</span>
+<a name="L370"></a><span id="L370" class="LineNr">370 </span><span class="traceContains">+mem: storing 0 in location 3</span>
+<a name="L371"></a><span id="L371" class="LineNr">371 </span>
+<a name="L372"></a><span id="L372" class="LineNr">372 </span><span class="Delimiter">:(scenario scheduler_starts_at_middle_of_routines)</span>
+<a name="L373"></a><span id="L373" class="LineNr">373 </span><span class="Special">% Routines.push_back(new routine(COPY));</span>
+<a name="L374"></a><span id="L374" class="LineNr">374 </span><span class="Special">% Routines.back()-&gt;state = COMPLETED;</span>
+<a name="L375"></a><span id="L375" class="LineNr">375 </span><span class="muRecipe">def</span> f1 [
+<a name="L376"></a><span id="L376" class="LineNr">376 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L377"></a><span id="L377" class="LineNr">377 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L378"></a><span id="L378" class="LineNr">378 </span>]
+<a name="L379"></a><span id="L379" class="LineNr">379 </span><span class="traceContains">+schedule: f1</span>
+<a name="L380"></a><span id="L380" class="LineNr">380 </span><span class="traceAbsent">-run: idle</span>
+<a name="L381"></a><span id="L381" class="LineNr">381 </span>
+<a name="L382"></a><span id="L382" class="LineNr">382 </span><span class="SalientComment">//:: Errors in a routine cause it to terminate.</span>
+<a name="L383"></a><span id="L383" class="LineNr">383 </span>
+<a name="L384"></a><span id="L384" class="LineNr">384 </span><span class="Delimiter">:(scenario scheduler_terminates_routines_after_errors)</span>
+<a name="L385"></a><span id="L385" class="LineNr">385 </span><span class="Special">% Hide_errors = true;</span>
+<a name="L386"></a><span id="L386" class="LineNr">386 </span><span class="Special">% Scheduling_interval = 2;</span>
+<a name="L387"></a><span id="L387" class="LineNr">387 </span><span class="muRecipe">def</span> f1 [
+<a name="L388"></a><span id="L388" class="LineNr">388 </span>  start-running f2
+<a name="L389"></a><span id="L389" class="LineNr">389 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L390"></a><span id="L390" class="LineNr">390 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L391"></a><span id="L391" class="LineNr">391 </span>]
+<a name="L392"></a><span id="L392" class="LineNr">392 </span><span class="muRecipe">def</span> f2 [
+<a name="L393"></a><span id="L393" class="LineNr">393 </span>  <span class="Comment"># divide by 0 twice</span>
+<a name="L394"></a><span id="L394" class="LineNr">394 </span>  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
+<a name="L395"></a><span id="L395" class="LineNr">395 </span>  <span class="Constant">4</span>:num<span class="Special"> &lt;- </span>divide-with-remainder <span class="Constant">4</span><span class="Delimiter">,</span> <span class="Constant">0</span>
+<a name="L396"></a><span id="L396" class="LineNr">396 </span>]
+<a name="L397"></a><span id="L397" class="LineNr">397 </span><span class="Comment"># f2 should stop after first divide by 0</span>
+<a name="L398"></a><span id="L398" class="LineNr">398 </span><span class="traceContains">+error: f2: divide by zero in '3:num &lt;- divide-with-remainder 4, 0'</span>
+<a name="L399"></a><span id="L399" class="LineNr">399 </span><span class="traceAbsent">-error: f2: divide by zero in '4:num &lt;- divide-with-remainder 4, 0'</span>
+<a name="L400"></a><span id="L400" class="LineNr">400 </span>
+<a name="L401"></a><span id="L401" class="LineNr">401 </span><span class="Delimiter">:(after &quot;operator&lt;&lt;(ostream&amp; os, unused end)&quot;)</span>
+<a name="L402"></a><span id="L402" class="LineNr">402 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream &amp;&amp; Trace_stream<span class="Delimiter">-&gt;</span>curr_label == <span class="Constant">&quot;error&quot;</span> &amp;&amp; Current_routine<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L403"></a><span id="L403" class="LineNr">403 </span>    Current_routine<span class="Delimiter">-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
+<a name="L404"></a><span id="L404" class="LineNr">404 </span>  <span class="Delimiter">}</span>
+<a name="L405"></a><span id="L405" class="LineNr">405 </span>
+<a name="L406"></a><span id="L406" class="LineNr">406 </span><span class="SalientComment">//:: Routines are marked completed when their parent completes.</span>
+<a name="L407"></a><span id="L407" class="LineNr">407 </span>
+<a name="L408"></a><span id="L408" class="LineNr">408 </span><span class="Delimiter">:(scenario scheduler_kills_orphans)</span>
+<a name="L409"></a><span id="L409" class="LineNr">409 </span><span class="muRecipe">def</span> main [
+<a name="L410"></a><span id="L410" class="LineNr">410 </span>  start-running f1
+<a name="L411"></a><span id="L411" class="LineNr">411 </span>  <span class="Comment"># f1 never actually runs because its parent completes without waiting for it</span>
+<a name="L412"></a><span id="L412" class="LineNr">412 </span>]
+<a name="L413"></a><span id="L413" class="LineNr">413 </span><span class="muRecipe">def</span> f1 [
+<a name="L414"></a><span id="L414" class="LineNr">414 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L415"></a><span id="L415" class="LineNr">415 </span>]
+<a name="L416"></a><span id="L416" class="LineNr">416 </span><span class="traceAbsent">-schedule: f1</span>
+<a name="L417"></a><span id="L417" class="LineNr">417 </span>
+<a name="L418"></a><span id="L418" class="LineNr">418 </span><span class="Delimiter">:(before &quot;End Scheduler Cleanup&quot;)</span>
+<a name="L419"></a><span id="L419" class="LineNr">419 </span><span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L420"></a><span id="L420" class="LineNr">420 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<a name="L421"></a><span id="L421" class="LineNr">421 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt; <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// root thread</span>
+<a name="L422"></a><span id="L422" class="LineNr">422 </span>  <span class="Comment">// structured concurrency: <a href="http://250bpm.com/blog:71">http://250bpm.com/blog:71</a></span>
+<a name="L423"></a><span id="L423" class="LineNr">423 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>has_completed_parent<span class="Delimiter">(</span>i<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<a name="L424"></a><span id="L424" class="LineNr">424 </span>    Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
+<a name="L425"></a><span id="L425" class="LineNr">425 </span>  <span class="Delimiter">}</span>
+<a name="L426"></a><span id="L426" class="LineNr">426 </span><span class="Delimiter">}</span>
+<a name="L427"></a><span id="L427" class="LineNr">427 </span>
+<a name="L428"></a><span id="L428" class="LineNr">428 </span><span class="Delimiter">:(code)</span>
+<a name="L429"></a><span id="L429" class="LineNr">429 </span><span class="Normal">bool</span> has_completed_parent<span class="Delimiter">(</span><span class="Normal">int</span> routine_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L430"></a><span id="L430" class="LineNr">430 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> j = routine_index<span class="Delimiter">;</span>  j &gt;= <span class="Constant">0</span><span class="Delimiter">;</span>  j = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>parent_index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L431"></a><span id="L431" class="LineNr">431 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>j<span class="Delimiter">)-&gt;</span>state == COMPLETED<span class="Delimiter">)</span>
+<a name="L432"></a><span id="L432" class="LineNr">432 </span>      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L433"></a><span id="L433" class="LineNr">433 </span>  <span class="Delimiter">}</span>
+<a name="L434"></a><span id="L434" class="LineNr">434 </span>  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L435"></a><span id="L435" class="LineNr">435 </span><span class="Delimiter">}</span>
+<a name="L436"></a><span id="L436" class="LineNr">436 </span>
+<a name="L437"></a><span id="L437" class="LineNr">437 </span><span class="SalientComment">//:: 'routine-state' can tell if a given routine id is running</span>
+<a name="L438"></a><span id="L438" class="LineNr">438 </span>
+<a name="L439"></a><span id="L439" class="LineNr">439 </span><span class="Delimiter">:(scenario routine_state_test)</span>
+<a name="L440"></a><span id="L440" class="LineNr">440 </span><span class="Special">% Scheduling_interval = 2;</span>
+<a name="L441"></a><span id="L441" class="LineNr">441 </span><span class="muRecipe">def</span> f1 [
+<a name="L442"></a><span id="L442" class="LineNr">442 </span>  <span class="Constant">1</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
+<a name="L443"></a><span id="L443" class="LineNr">443 </span>  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># race condition since we don't care about location 12</span>
+<a name="L444"></a><span id="L444" class="LineNr">444 </span>  <span class="Comment"># thanks to Scheduling_interval, f2's one instruction runs in between here and completes</span>
+<a name="L445"></a><span id="L445" class="LineNr">445 </span>  <span class="Constant">2</span>:num/state<span class="Special"> &lt;- </span>routine-state <span class="Constant">1</span>:num/child-id
+<a name="L446"></a><span id="L446" class="LineNr">446 </span>]
+<a name="L447"></a><span id="L447" class="LineNr">447 </span><span class="muRecipe">def</span> f2 [
+<a name="L448"></a><span id="L448" class="LineNr">448 </span>  <span class="Constant">12</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
+<a name="L449"></a><span id="L449" class="LineNr">449 </span>  <span class="Comment"># trying to run a second instruction marks routine as completed</span>
+<a name="L450"></a><span id="L450" class="LineNr">450 </span>]
+<a name="L451"></a><span id="L451" class="LineNr">451 </span><span class="Comment"># recipe f2 should be in state COMPLETED</span>
+<a name="L452"></a><span id="L452" class="LineNr">452 </span><span class="traceContains">+mem: storing 1 in location 2</span>
+<a name="L453"></a><span id="L453" class="LineNr">453 </span>
+<a name="L454"></a><span id="L454" class="LineNr">454 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L455"></a><span id="L455" class="LineNr">455 </span>ROUTINE_STATE<span class="Delimiter">,</span>
+<a name="L456"></a><span id="L456" class="LineNr">456 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L457"></a><span id="L457" class="LineNr">457 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;routine-state&quot;</span><span class="Delimiter">,</span> ROUTINE_STATE<span class="Delimiter">);</span>
+<a name="L458"></a><span id="L458" class="LineNr">458 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L459"></a><span id="L459" class="LineNr">459 </span><span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
+<a name="L460"></a><span id="L460" class="LineNr">460 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L461"></a><span id="L461" class="LineNr">461 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'routine-state' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L462"></a><span id="L462" class="LineNr">462 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L463"></a><span id="L463" class="LineNr">463 </span>  <span class="Delimiter">}</span>
+<a name="L464"></a><span id="L464" class="LineNr">464 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L465"></a><span id="L465" class="LineNr">465 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'routine-state' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L466"></a><span id="L466" class="LineNr">466 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L467"></a><span id="L467" class="LineNr">467 </span>  <span class="Delimiter">}</span>
+<a name="L468"></a><span id="L468" class="LineNr">468 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L469"></a><span id="L469" class="LineNr">469 </span><span class="Delimiter">}</span>
+<a name="L470"></a><span id="L470" class="LineNr">470 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L471"></a><span id="L471" class="LineNr">471 </span><span class="Normal">case</span> ROUTINE_STATE: <span class="Delimiter">{</span>
+<a name="L472"></a><span id="L472" class="LineNr">472 </span>  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L473"></a><span id="L473" class="LineNr">473 </span>  <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L474"></a><span id="L474" class="LineNr">474 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L475"></a><span id="L475" class="LineNr">475 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L476"></a><span id="L476" class="LineNr">476 </span>      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state<span class="Delimiter">;</span>
+<a name="L477"></a><span id="L477" class="LineNr">477 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L478"></a><span id="L478" class="LineNr">478 </span>    <span class="Delimiter">}</span>
+<a name="L479"></a><span id="L479" class="LineNr">479 </span>  <span class="Delimiter">}</span>
+<a name="L480"></a><span id="L480" class="LineNr">480 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L481"></a><span id="L481" class="LineNr">481 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<a name="L482"></a><span id="L482" class="LineNr">482 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L483"></a><span id="L483" class="LineNr">483 </span><span class="Delimiter">}</span>
+<a name="L484"></a><span id="L484" class="LineNr">484 </span>
+<a name="L485"></a><span id="L485" class="LineNr">485 </span><span class="SalientComment">//:: miscellaneous helpers</span>
+<a name="L486"></a><span id="L486" class="LineNr">486 </span>
+<a name="L487"></a><span id="L487" class="LineNr">487 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L488"></a><span id="L488" class="LineNr">488 </span>STOP<span class="Delimiter">,</span>
+<a name="L489"></a><span id="L489" class="LineNr">489 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L490"></a><span id="L490" class="LineNr">490 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;stop&quot;</span><span class="Delimiter">,</span> STOP<span class="Delimiter">);</span>
+<a name="L491"></a><span id="L491" class="LineNr">491 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L492"></a><span id="L492" class="LineNr">492 </span><span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
+<a name="L493"></a><span id="L493" class="LineNr">493 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L494"></a><span id="L494" class="LineNr">494 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'stop' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L495"></a><span id="L495" class="LineNr">495 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L496"></a><span id="L496" class="LineNr">496 </span>  <span class="Delimiter">}</span>
+<a name="L497"></a><span id="L497" class="LineNr">497 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L498"></a><span id="L498" class="LineNr">498 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'stop' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L499"></a><span id="L499" class="LineNr">499 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L500"></a><span id="L500" class="LineNr">500 </span>  <span class="Delimiter">}</span>
+<a name="L501"></a><span id="L501" class="LineNr">501 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L502"></a><span id="L502" class="LineNr">502 </span><span class="Delimiter">}</span>
+<a name="L503"></a><span id="L503" class="LineNr">503 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L504"></a><span id="L504" class="LineNr">504 </span><span class="Normal">case</span> STOP: <span class="Delimiter">{</span>
+<a name="L505"></a><span id="L505" class="LineNr">505 </span>  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L506"></a><span id="L506" class="LineNr">506 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L507"></a><span id="L507" class="LineNr">507 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L508"></a><span id="L508" class="LineNr">508 </span>      Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state = COMPLETED<span class="Delimiter">;</span>
+<a name="L509"></a><span id="L509" class="LineNr">509 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L510"></a><span id="L510" class="LineNr">510 </span>    <span class="Delimiter">}</span>
+<a name="L511"></a><span id="L511" class="LineNr">511 </span>  <span class="Delimiter">}</span>
+<a name="L512"></a><span id="L512" class="LineNr">512 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L513"></a><span id="L513" class="LineNr">513 </span><span class="Delimiter">}</span>
+<a name="L514"></a><span id="L514" class="LineNr">514 </span>
+<a name="L515"></a><span id="L515" class="LineNr">515 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L516"></a><span id="L516" class="LineNr">516 </span>_DUMP_ROUTINES<span class="Delimiter">,</span>
+<a name="L517"></a><span id="L517" class="LineNr">517 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L518"></a><span id="L518" class="LineNr">518 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump-routines&quot;</span><span class="Delimiter">,</span> _DUMP_ROUTINES<span class="Delimiter">);</span>
+<a name="L519"></a><span id="L519" class="LineNr">519 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L520"></a><span id="L520" class="LineNr">520 </span><span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
+<a name="L521"></a><span id="L521" class="LineNr">521 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L522"></a><span id="L522" class="LineNr">522 </span><span class="Delimiter">}</span>
+<a name="L523"></a><span id="L523" class="LineNr">523 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L524"></a><span id="L524" class="LineNr">524 </span><span class="Normal">case</span> _DUMP_ROUTINES: <span class="Delimiter">{</span>
+<a name="L525"></a><span id="L525" class="LineNr">525 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L526"></a><span id="L526" class="LineNr">526 </span>    cerr &lt;&lt; i &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state &lt;&lt; <span class="Constant">' '</span> &lt;&lt; Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>parent_index &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<a name="L527"></a><span id="L527" class="LineNr">527 </span>  <span class="Delimiter">}</span>
+<a name="L528"></a><span id="L528" class="LineNr">528 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L529"></a><span id="L529" class="LineNr">529 </span><span class="Delimiter">}</span>
+<a name="L530"></a><span id="L530" class="LineNr">530 </span>
+<a name="L531"></a><span id="L531" class="LineNr">531 </span><span class="Comment">//: support for stopping routines after some number of cycles</span>
+<a name="L532"></a><span id="L532" class="LineNr">532 </span>
+<a name="L533"></a><span id="L533" class="LineNr">533 </span><span class="Delimiter">:(scenario routine_discontinues_past_limit)</span>
+<a name="L534"></a><span id="L534" class="LineNr">534 </span><span class="Special">% Scheduling_interval = 2;</span>
+<a name="L535"></a><span id="L535" class="LineNr">535 </span><span class="muRecipe">def</span> f1 [
+<a name="L536"></a><span id="L536" class="LineNr">536 </span>  <span class="Constant">1</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
+<a name="L537"></a><span id="L537" class="LineNr">537 </span>  limit-time <span class="Constant">1</span>:num/child-id<span class="Delimiter">,</span> <span class="Constant">10</span>
+<a name="L538"></a><span id="L538" class="LineNr">538 </span>  <span class="Comment"># padding loop just to make sure f2 has time to completed</span>
+<a name="L539"></a><span id="L539" class="LineNr">539 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>
+<a name="L540"></a><span id="L540" class="LineNr">540 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>subtract <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">1</span>
+<a name="L541"></a><span id="L541" class="LineNr">541 </span>  jump-<span class="Normal">if</span> <span class="Constant">2</span>:num<span class="Delimiter">,</span> <span class="Constant">-2:offset</span>
+<a name="L542"></a><span id="L542" class="LineNr">542 </span>]
+<a name="L543"></a><span id="L543" class="LineNr">543 </span><span class="muRecipe">def</span> f2 [
+<a name="L544"></a><span id="L544" class="LineNr">544 </span>  jump <span class="Constant">-1:offset</span>  <span class="Comment"># run forever</span>
+<a name="L545"></a><span id="L545" class="LineNr">545 </span>  $print [should never get here]<span class="Delimiter">,</span> <span class="Constant">10</span>/newline
+<a name="L546"></a><span id="L546" class="LineNr">546 </span>]
+<a name="L547"></a><span id="L547" class="LineNr">547 </span><span class="Comment"># f2 terminates</span>
+<a name="L548"></a><span id="L548" class="LineNr">548 </span><span class="traceContains">+schedule: discontinuing routine 2</span>
+<a name="L549"></a><span id="L549" class="LineNr">549 </span>
+<a name="L550"></a><span id="L550" class="LineNr">550 </span><span class="Delimiter">:(before &quot;End routine States&quot;)</span>
+<a name="L551"></a><span id="L551" class="LineNr">551 </span>DISCONTINUED<span class="Delimiter">,</span>
+<a name="L552"></a><span id="L552" class="LineNr">552 </span><span class="Delimiter">:(before &quot;End Scheduler State Transitions&quot;)</span>
+<a name="L553"></a><span id="L553" class="LineNr">553 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &gt;= <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L554"></a><span id="L554" class="LineNr">554 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>limit &lt;= Scheduling_interval<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L555"></a><span id="L555" class="LineNr">555 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;schedule&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;discontinuing routine &quot;</span> &lt;&lt; Current_routine<span class="Delimiter">-&gt;</span>id &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L556"></a><span id="L556" class="LineNr">556 </span>    Current_routine<span class="Delimiter">-&gt;</span>state = DISCONTINUED<span class="Delimiter">;</span>
+<a name="L557"></a><span id="L557" class="LineNr">557 </span>    Current_routine<span class="Delimiter">-&gt;</span>limit = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L558"></a><span id="L558" class="LineNr">558 </span>  <span class="Delimiter">}</span>
+<a name="L559"></a><span id="L559" class="LineNr">559 </span>  <span class="Normal">else</span> <span class="Delimiter">{</span>
+<a name="L560"></a><span id="L560" class="LineNr">560 </span>    Current_routine<span class="Delimiter">-&gt;</span>limit -= Scheduling_interval<span class="Delimiter">;</span>
+<a name="L561"></a><span id="L561" class="LineNr">561 </span>  <span class="Delimiter">}</span>
+<a name="L562"></a><span id="L562" class="LineNr">562 </span><span class="Delimiter">}</span>
+<a name="L563"></a><span id="L563" class="LineNr">563 </span>
+<a name="L564"></a><span id="L564" class="LineNr">564 </span><span class="Delimiter">:(before &quot;End Test Teardown&quot;)</span>
+<a name="L565"></a><span id="L565" class="LineNr">565 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
+<a name="L566"></a><span id="L566" class="LineNr">566 </span>  raise &lt;&lt; <span class="Constant">&quot;some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L567"></a><span id="L567" class="LineNr">567 </span><span class="Delimiter">:(before &quot;End Mu Test Teardown&quot;)</span>
+<a name="L568"></a><span id="L568" class="LineNr">568 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Passed &amp;&amp; any_routines_with_error<span class="Delimiter">())</span>
+<a name="L569"></a><span id="L569" class="LineNr">569 </span>  raise &lt;&lt; Current_scenario<span class="Delimiter">-&gt;</span>name &lt;&lt; <span class="Constant">&quot;: some routines died with errors</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L570"></a><span id="L570" class="LineNr">570 </span>
+<a name="L571"></a><span id="L571" class="LineNr">571 </span><span class="Delimiter">:(code)</span>
+<a name="L572"></a><span id="L572" class="LineNr">572 </span><span class="Normal">bool</span> any_routines_with_error<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<a name="L573"></a><span id="L573" class="LineNr">573 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L574"></a><span id="L574" class="LineNr">574 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>state == DISCONTINUED<span class="Delimiter">)</span>
+<a name="L575"></a><span id="L575" class="LineNr">575 </span>      <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L576"></a><span id="L576" class="LineNr">576 </span>  <span class="Delimiter">}</span>
+<a name="L577"></a><span id="L577" class="LineNr">577 </span>  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L578"></a><span id="L578" class="LineNr">578 </span><span class="Delimiter">}</span>
+<a name="L579"></a><span id="L579" class="LineNr">579 </span>
+<a name="L580"></a><span id="L580" class="LineNr">580 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L581"></a><span id="L581" class="LineNr">581 </span><span class="Normal">int</span> limit<span class="Delimiter">;</span>
+<a name="L582"></a><span id="L582" class="LineNr">582 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L583"></a><span id="L583" class="LineNr">583 </span>limit = -<span class="Constant">1</span><span class="Delimiter">;</span>  <span class="Comment">/*</span><span class="Comment"> no limit </span><span class="Comment">*/</span>
+<a name="L584"></a><span id="L584" class="LineNr">584 </span>
+<a name="L585"></a><span id="L585" class="LineNr">585 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L586"></a><span id="L586" class="LineNr">586 </span>LIMIT_TIME<span class="Delimiter">,</span>
+<a name="L587"></a><span id="L587" class="LineNr">587 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L588"></a><span id="L588" class="LineNr">588 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;limit-time&quot;</span><span class="Delimiter">,</span> LIMIT_TIME<span class="Delimiter">);</span>
+<a name="L589"></a><span id="L589" class="LineNr">589 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L590"></a><span id="L590" class="LineNr">590 </span><span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
+<a name="L591"></a><span id="L591" class="LineNr">591 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">2</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L592"></a><span id="L592" class="LineNr">592 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'limit-time' requires exactly two ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L593"></a><span id="L593" class="LineNr">593 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L594"></a><span id="L594" class="LineNr">594 </span>  <span class="Delimiter">}</span>
+<a name="L595"></a><span id="L595" class="LineNr">595 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L596"></a><span id="L596" class="LineNr">596 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'limit-time' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L597"></a><span id="L597" class="LineNr">597 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L598"></a><span id="L598" class="LineNr">598 </span>  <span class="Delimiter">}</span>
+<a name="L599"></a><span id="L599" class="LineNr">599 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L600"></a><span id="L600" class="LineNr">600 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;second ingredient of 'limit-time' should be a number (of instructions to run for), but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L601"></a><span id="L601" class="LineNr">601 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L602"></a><span id="L602" class="LineNr">602 </span>  <span class="Delimiter">}</span>
+<a name="L603"></a><span id="L603" class="LineNr">603 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L604"></a><span id="L604" class="LineNr">604 </span><span class="Delimiter">}</span>
+<a name="L605"></a><span id="L605" class="LineNr">605 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L606"></a><span id="L606" class="LineNr">606 </span><span class="Normal">case</span> LIMIT_TIME: <span class="Delimiter">{</span>
+<a name="L607"></a><span id="L607" class="LineNr">607 </span>  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L608"></a><span id="L608" class="LineNr">608 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L609"></a><span id="L609" class="LineNr">609 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L610"></a><span id="L610" class="LineNr">610 </span>      Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>limit = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L611"></a><span id="L611" class="LineNr">611 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L612"></a><span id="L612" class="LineNr">612 </span>    <span class="Delimiter">}</span>
+<a name="L613"></a><span id="L613" class="LineNr">613 </span>  <span class="Delimiter">}</span>
+<a name="L614"></a><span id="L614" class="LineNr">614 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L615"></a><span id="L615" class="LineNr">615 </span><span class="Delimiter">}</span>
+<a name="L616"></a><span id="L616" class="LineNr">616 </span>
+<a name="L617"></a><span id="L617" class="LineNr">617 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L618"></a><span id="L618" class="LineNr">618 </span><span class="Normal">int</span> instructions_run<span class="Delimiter">;</span>
+<a name="L619"></a><span id="L619" class="LineNr">619 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L620"></a><span id="L620" class="LineNr">620 </span>instructions_run = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L621"></a><span id="L621" class="LineNr">621 </span><span class="Delimiter">:(before &quot;Reset instructions_run_this_scheduling_slice&quot;)</span>
+<a name="L622"></a><span id="L622" class="LineNr">622 </span>Current_routine<span class="Delimiter">-&gt;</span>instructions_run += Current_routine<span class="Delimiter">-&gt;</span>instructions_run_this_scheduling_slice<span class="Delimiter">;</span>
+<a name="L623"></a><span id="L623" class="LineNr">623 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<a name="L624"></a><span id="L624" class="LineNr">624 </span>NUMBER_OF_INSTRUCTIONS<span class="Delimiter">,</span>
+<a name="L625"></a><span id="L625" class="LineNr">625 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<a name="L626"></a><span id="L626" class="LineNr">626 </span>put<span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number-of-instructions&quot;</span><span class="Delimiter">,</span> NUMBER_OF_INSTRUCTIONS<span class="Delimiter">);</span>
+<a name="L627"></a><span id="L627" class="LineNr">627 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<a name="L628"></a><span id="L628" class="LineNr">628 </span><span class="Normal">case</span> NUMBER_OF_INSTRUCTIONS: <span class="Delimiter">{</span>
+<a name="L629"></a><span id="L629" class="LineNr">629 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> != <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L630"></a><span id="L630" class="LineNr">630 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'number-of-instructions' requires exactly one ingredient, but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L631"></a><span id="L631" class="LineNr">631 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L632"></a><span id="L632" class="LineNr">632 </span>  <span class="Delimiter">}</span>
+<a name="L633"></a><span id="L633" class="LineNr">633 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!is_mu_number<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<a name="L634"></a><span id="L634" class="LineNr">634 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;first ingredient of 'number-of-instructions' should be a routine id generated by 'start-running', but got '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L635"></a><span id="L635" class="LineNr">635 </span>    <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L636"></a><span id="L636" class="LineNr">636 </span>  <span class="Delimiter">}</span>
+<a name="L637"></a><span id="L637" class="LineNr">637 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L638"></a><span id="L638" class="LineNr">638 </span><span class="Delimiter">}</span>
+<a name="L639"></a><span id="L639" class="LineNr">639 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<a name="L640"></a><span id="L640" class="LineNr">640 </span><span class="Normal">case</span> NUMBER_OF_INSTRUCTIONS: <span class="Delimiter">{</span>
+<a name="L641"></a><span id="L641" class="LineNr">641 </span>  <span class="Normal">int</span> id = ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L642"></a><span id="L642" class="LineNr">642 </span>  <span class="Normal">int</span> result = -<span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L643"></a><span id="L643" class="LineNr">643 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>Routines<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L644"></a><span id="L644" class="LineNr">644 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>id == id<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L645"></a><span id="L645" class="LineNr">645 </span>      result = Routines<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)-&gt;</span>instructions_run<span class="Delimiter">;</span>
+<a name="L646"></a><span id="L646" class="LineNr">646 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L647"></a><span id="L647" class="LineNr">647 </span>    <span class="Delimiter">}</span>
+<a name="L648"></a><span id="L648" class="LineNr">648 </span>  <span class="Delimiter">}</span>
+<a name="L649"></a><span id="L649" class="LineNr">649 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<a name="L650"></a><span id="L650" class="LineNr">650 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span>result<span class="Delimiter">);</span>
+<a name="L651"></a><span id="L651" class="LineNr">651 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<a name="L652"></a><span id="L652" class="LineNr">652 </span><span class="Delimiter">}</span>
+<a name="L653"></a><span id="L653" class="LineNr">653 </span>
+<a name="L654"></a><span id="L654" class="LineNr">654 </span><span class="Delimiter">:(scenario number_of_instructions)</span>
+<a name="L655"></a><span id="L655" class="LineNr">655 </span><span class="muRecipe">def</span> f1 [
+<a name="L656"></a><span id="L656" class="LineNr">656 </span>  <span class="Constant">10</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
+<a name="L657"></a><span id="L657" class="LineNr">657 </span>  <span class="Delimiter">{</span>
+<a name="L658"></a><span id="L658" class="LineNr">658 </span>    loop-unless <span class="Constant">20</span>:num
+<a name="L659"></a><span id="L659" class="LineNr">659 </span>  <span class="Delimiter">}</span>
+<a name="L660"></a><span id="L660" class="LineNr">660 </span>  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>number-of-instructions <span class="Constant">10</span>:num
+<a name="L661"></a><span id="L661" class="LineNr">661 </span>]
+<a name="L662"></a><span id="L662" class="LineNr">662 </span><span class="muRecipe">def</span> f2 [
+<a name="L663"></a><span id="L663" class="LineNr">663 </span>  <span class="Comment"># 2 instructions worth of work</span>
+<a name="L664"></a><span id="L664" class="LineNr">664 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<a name="L665"></a><span id="L665" class="LineNr">665 </span>  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+<a name="L666"></a><span id="L666" class="LineNr">666 </span>]
+<a name="L667"></a><span id="L667" class="LineNr">667 </span><span class="Comment"># f2 runs an extra instruction for the implicit return added by the</span>
+<a name="L668"></a><span id="L668" class="LineNr">668 </span><span class="Comment"># fill_in_return_ingredients transform</span>
+<a name="L669"></a><span id="L669" class="LineNr">669 </span><span class="traceContains">+mem: storing 3 in location 11</span>
+<a name="L670"></a><span id="L670" class="LineNr">670 </span>
+<a name="L671"></a><span id="L671" class="LineNr">671 </span><span class="Delimiter">:(scenario number_of_instructions_across_multiple_scheduling_intervals)</span>
+<a name="L672"></a><span id="L672" class="LineNr">672 </span><span class="Special">% Scheduling_interval = 1;</span>
+<a name="L673"></a><span id="L673" class="LineNr">673 </span><span class="muRecipe">def</span> f1 [
+<a name="L674"></a><span id="L674" class="LineNr">674 </span>  <span class="Constant">10</span>:num/child-id<span class="Special"> &lt;- </span>start-running f2
+<a name="L675"></a><span id="L675" class="LineNr">675 </span>  <span class="Delimiter">{</span>
+<a name="L676"></a><span id="L676" class="LineNr">676 </span>    loop-unless <span class="Constant">20</span>:num
+<a name="L677"></a><span id="L677" class="LineNr">677 </span>  <span class="Delimiter">}</span>
+<a name="L678"></a><span id="L678" class="LineNr">678 </span>  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>number-of-instructions <span class="Constant">10</span>:num
+<a name="L679"></a><span id="L679" class="LineNr">679 </span>]
+<a name="L680"></a><span id="L680" class="LineNr">680 </span><span class="muRecipe">def</span> f2 [
+<a name="L681"></a><span id="L681" class="LineNr">681 </span>  <span class="Comment"># 4 instructions worth of work</span>
+<a name="L682"></a><span id="L682" class="LineNr">682 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<a name="L683"></a><span id="L683" class="LineNr">683 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+<a name="L684"></a><span id="L684" class="LineNr">684 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">3</span>
+<a name="L685"></a><span id="L685" class="LineNr">685 </span>  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>
+<a name="L686"></a><span id="L686" class="LineNr">686 </span>]
+<a name="L687"></a><span id="L687" class="LineNr">687 </span><span class="Comment"># f2 runs an extra instruction for the implicit return added by the</span>
+<a name="L688"></a><span id="L688" class="LineNr">688 </span><span class="Comment"># fill_in_return_ingredients transform</span>
+<a name="L689"></a><span id="L689" class="LineNr">689 </span><span class="traceContains">+mem: storing 5 in location 11</span>
+<a name="L690"></a><span id="L690" class="LineNr">690 </span>
+<a name="L691"></a><span id="L691" class="LineNr">691 </span><span class="SalientComment">//:: make sure that each routine gets a different alloc to start</span>
+<a name="L692"></a><span id="L692" class="LineNr">692 </span>
+<a name="L693"></a><span id="L693" class="LineNr">693 </span><span class="Delimiter">:(scenario new_concurrent)</span>
+<a name="L694"></a><span id="L694" class="LineNr">694 </span><span class="muRecipe">def</span> f1 [
+<a name="L695"></a><span id="L695" class="LineNr">695 </span>  start-running f2
+<a name="L696"></a><span id="L696" class="LineNr">696 </span>  <span class="Constant">1</span>:&amp;:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<a name="L697"></a><span id="L697" class="LineNr">697 </span>  <span class="Comment"># wait for f2 to complete</span>
+<a name="L698"></a><span id="L698" class="LineNr">698 </span>  <span class="Delimiter">{</span>
+<a name="L699"></a><span id="L699" class="LineNr">699 </span>    loop-unless <span class="Constant">4</span>:num/<span class="Special">raw</span>
+<a name="L700"></a><span id="L700" class="LineNr">700 </span>  <span class="Delimiter">}</span>
+<a name="L701"></a><span id="L701" class="LineNr">701 </span>]
+<a name="L702"></a><span id="L702" class="LineNr">702 </span><span class="muRecipe">def</span> f2 [
+<a name="L703"></a><span id="L703" class="LineNr">703 </span>  <span class="Constant">2</span>:&amp;:num/<span class="Special">raw &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<a name="L704"></a><span id="L704" class="LineNr">704 </span>  <span class="Comment"># hack: assumes scheduler implementation</span>
+<a name="L705"></a><span id="L705" class="LineNr">705 </span>  <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal <span class="Constant">1</span>:&amp;:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:&amp;:num/<span class="Special">raw</span>
+<a name="L706"></a><span id="L706" class="LineNr">706 </span>  <span class="Comment"># signal f2 complete</span>
+<a name="L707"></a><span id="L707" class="LineNr">707 </span>  <span class="Constant">4</span>:num/<span class="Special">raw &lt;- </span>copy <span class="Constant">1</span>
+<a name="L708"></a><span id="L708" class="LineNr">708 </span>]
+<a name="L709"></a><span id="L709" class="LineNr">709 </span><span class="traceContains">+mem: storing 0 in location 3</span>
 </pre>
 </body>
 </html>

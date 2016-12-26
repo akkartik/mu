@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -14,11 +14,12 @@ pre { white-space: pre-wrap; font-family: monospace; color: #eeeeee; background-
 body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color: #080808; }
 * { font-size: 12pt; font-size: 1em; }
 .Constant { color: #00a0a0; }
-.cSpecial { color: #008000; }
+.Special { color: #c00000; }
 .muRecipe { color: #ff8700; }
+.cSpecial { color: #008000; }
 .Comment { color: #9090ff; }
 .Delimiter { color: #800080; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .traceContains { color: #008000; }
 .Normal { color: #eeeeee; background-color: #080808; padding-bottom: 1px; }
 .Identifier { color: #c0a020; }
@@ -28,93 +29,116 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment">//: So far we have local variables, and we can nest local variables of short</span>
-<span class="Comment">//: lifetimes inside longer ones. Now let's support 'global' variables that</span>
-<span class="Comment">//: last for the life of a routine. If we create multiple routines they won't</span>
-<span class="Comment">//: have access to each other's globals.</span>
-<span class="Comment">//:</span>
-<span class="Comment">//: This feature is still experimental and half-baked. You can't name global</span>
-<span class="Comment">//: variables, and they don't get checked for types (the only known hole in</span>
-<span class="Comment">//: the type system, can cause memory corruption). We might fix these issues</span>
-<span class="Comment">//: if we ever use globals. Or we might just drop the feature entirely.</span>
-<span class="Comment">//: [tag: todo]</span>
-
-<span class="Delimiter">:(scenario global_space)</span>
-<span class="muRecipe">def</span> main [
-  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
-  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
-  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
-  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
-  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
-  <span class="Constant">21</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
-  <span class="Comment"># actual start of this recipe</span>
-  global-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
-  <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
-  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
-]
-<span class="Comment"># store to default space: 10 + (skip refcount and length) 2 + (index) 1</span>
-<span class="traceContains">+mem: storing 23 in location 13</span>
-<span class="Comment"># store to chained space: (contents of location 12) 20 + (refcount and length) 2 + (index) 1</span>
-<span class="traceContains">+mem: storing 24 in location 23</span>
-
-<span class="Comment">//: to support it, create another special variable called global space</span>
-<span class="Delimiter">:(before &quot;End is_disqualified Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
-  x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End is_special_name Special-cases&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: writes to this variable go to a field in the current routine</span>
-<span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
-<span class="Normal">int</span> global_space<span class="Delimiter">;</span>
-<span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
-global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span class="Delimiter">:(after &quot;Begin Preprocess write_memory(x, data)&quot;)</span>
-<span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span> || !is_space<span class="Delimiter">(</span>x<span class="Delimiter">))</span>
-    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:array:location, but tried to write '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-    raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-  Current_routine<span class="Delimiter">-&gt;</span>global_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
-  <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
-
-<span class="Comment">//: now marking variables as /space:global looks them up inside this field</span>
-<span class="Delimiter">:(after &quot;int space_base(const reagent&amp; x)&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-    <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-    <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
-  <span class="Delimiter">}</span>
-
-<span class="Comment">//: for now let's not bother giving global variables names.</span>
-<span class="Comment">//: don't want to make them too comfortable to use.</span>
-
-<span class="Delimiter">:(scenario global_space_with_names)</span>
-<span class="muRecipe">def</span> main [
-  global-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">10</span>
-  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
-  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
-]
-<span class="Comment"># don't complain about mixing numeric addresses and names</span>
-$error: <span class="Constant">0</span>
-
-<span class="Delimiter">:(after &quot;bool is_numeric_location(const reagent&amp; x)&quot;)</span>
-  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-
-<span class="Comment">//: helpers</span>
-
-<span class="Delimiter">:(code)</span>
-<span class="Normal">bool</span> is_global<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-  string_tree* s = property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
-  <span class="Identifier">return</span> s &amp;&amp; s<span class="Delimiter">-&gt;</span>atom &amp;&amp; s<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;global&quot;</span><span class="Delimiter">;</span>
-<span class="Delimiter">}</span>
+<a name="L1"></a><span id="L1" class="LineNr"> 1 </span><span class="Comment">//: So far we have local variables, and we can nest local variables of short</span>
+<a name="L2"></a><span id="L2" class="LineNr"> 2 </span><span class="Comment">//: lifetimes inside longer ones. Now let's support 'global' variables that</span>
+<a name="L3"></a><span id="L3" class="LineNr"> 3 </span><span class="Comment">//: last for the life of a routine. If we create multiple routines they won't</span>
+<a name="L4"></a><span id="L4" class="LineNr"> 4 </span><span class="Comment">//: have access to each other's globals.</span>
+<a name="L5"></a><span id="L5" class="LineNr"> 5 </span><span class="Comment">//:</span>
+<a name="L6"></a><span id="L6" class="LineNr"> 6 </span><span class="Comment">//: This feature is still experimental and half-baked. You can't name global</span>
+<a name="L7"></a><span id="L7" class="LineNr"> 7 </span><span class="Comment">//: variables, and they don't get checked for types (the only known hole in</span>
+<a name="L8"></a><span id="L8" class="LineNr"> 8 </span><span class="Comment">//: the type system, can cause memory corruption). We might fix these issues</span>
+<a name="L9"></a><span id="L9" class="LineNr"> 9 </span><span class="Comment">//: if we ever use globals. Or we might just drop the feature entirely.</span>
+<a name="L10"></a><span id="L10" class="LineNr">10 </span><span class="Comment">//: [tag: todo]</span>
+<a name="L11"></a><span id="L11" class="LineNr">11 </span>
+<a name="L12"></a><span id="L12" class="LineNr">12 </span><span class="Delimiter">:(scenario global_space)</span>
+<a name="L13"></a><span id="L13" class="LineNr">13 </span><span class="muRecipe">def</span> main [
+<a name="L14"></a><span id="L14" class="LineNr">14 </span>  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
+<a name="L15"></a><span id="L15" class="LineNr">15 </span>  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+<a name="L16"></a><span id="L16" class="LineNr">16 </span>  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
+<a name="L17"></a><span id="L17" class="LineNr">17 </span>  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
+<a name="L18"></a><span id="L18" class="LineNr">18 </span>  <span class="Constant">20</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
+<a name="L19"></a><span id="L19" class="LineNr">19 </span>  <span class="Constant">21</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
+<a name="L20"></a><span id="L20" class="LineNr">20 </span>  <span class="Comment"># actual start of this recipe</span>
+<a name="L21"></a><span id="L21" class="LineNr">21 </span>  global-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">20</span>/unsafe
+<a name="L22"></a><span id="L22" class="LineNr">22 </span>  <span class="Normal">default</span>-space:space<span class="Special"> &lt;- </span>copy <span class="Constant">10</span>/unsafe
+<a name="L23"></a><span id="L23" class="LineNr">23 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+<a name="L24"></a><span id="L24" class="LineNr">24 </span>  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
+<a name="L25"></a><span id="L25" class="LineNr">25 </span>]
+<a name="L26"></a><span id="L26" class="LineNr">26 </span><span class="Comment"># store to default space: 10 + (skip refcount and length) 2 + (index) 1</span>
+<a name="L27"></a><span id="L27" class="LineNr">27 </span><span class="traceContains">+mem: storing 23 in location 13</span>
+<a name="L28"></a><span id="L28" class="LineNr">28 </span><span class="Comment"># store to chained space: (contents of location 12) 20 + (refcount and length) 2 + (index) 1</span>
+<a name="L29"></a><span id="L29" class="LineNr">29 </span><span class="traceContains">+mem: storing 24 in location 23</span>
+<a name="L30"></a><span id="L30" class="LineNr">30 </span>
+<a name="L31"></a><span id="L31" class="LineNr">31 </span><span class="Comment">//: to support it, create another special variable called global space</span>
+<a name="L32"></a><span id="L32" class="LineNr">32 </span><span class="Delimiter">:(before &quot;End is_disqualified Special-cases&quot;)</span>
+<a name="L33"></a><span id="L33" class="LineNr">33 </span><span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
+<a name="L34"></a><span id="L34" class="LineNr">34 </span>  x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L35"></a><span id="L35" class="LineNr">35 </span><span class="Delimiter">:(before &quot;End is_special_name Special-cases&quot;)</span>
+<a name="L36"></a><span id="L36" class="LineNr">36 </span><span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<a name="L37"></a><span id="L37" class="LineNr">37 </span>
+<a name="L38"></a><span id="L38" class="LineNr">38 </span><span class="Comment">//: writes to this variable go to a field in the current routine</span>
+<a name="L39"></a><span id="L39" class="LineNr">39 </span><span class="Delimiter">:(before &quot;End routine Fields&quot;)</span>
+<a name="L40"></a><span id="L40" class="LineNr">40 </span><span class="Normal">int</span> global_space<span class="Delimiter">;</span>
+<a name="L41"></a><span id="L41" class="LineNr">41 </span><span class="Delimiter">:(before &quot;End routine Constructor&quot;)</span>
+<a name="L42"></a><span id="L42" class="LineNr">42 </span>global_space = <span class="Constant">0</span><span class="Delimiter">;</span>
+<a name="L43"></a><span id="L43" class="LineNr">43 </span><span class="Delimiter">:(after &quot;Begin Preprocess write_memory(x, data)&quot;)</span>
+<a name="L44"></a><span id="L44" class="LineNr">44 </span><span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L45"></a><span id="L45" class="LineNr">45 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span> || !is_space<span class="Delimiter">(</span>x<span class="Delimiter">))</span>
+<a name="L46"></a><span id="L46" class="LineNr">46 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:array:location, but tried to write '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L47"></a><span id="L47" class="LineNr">47 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+<a name="L48"></a><span id="L48" class="LineNr">48 </span>    raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L49"></a><span id="L49" class="LineNr">49 </span>  Current_routine<span class="Delimiter">-&gt;</span>global_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<a name="L50"></a><span id="L50" class="LineNr">50 </span>  <span class="Identifier">return</span><span class="Delimiter">;</span>
+<a name="L51"></a><span id="L51" class="LineNr">51 </span><span class="Delimiter">}</span>
+<a name="L52"></a><span id="L52" class="LineNr">52 </span>
+<a name="L53"></a><span id="L53" class="LineNr">53 </span><span class="Comment">//: now marking variables as /space:global looks them up inside this field</span>
+<a name="L54"></a><span id="L54" class="LineNr">54 </span><span class="Delimiter">:(after &quot;int space_base(const reagent&amp; x)&quot;)</span>
+<a name="L55"></a><span id="L55" class="LineNr">55 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<a name="L56"></a><span id="L56" class="LineNr">56 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
+<a name="L57"></a><span id="L57" class="LineNr">57 </span>      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<a name="L58"></a><span id="L58" class="LineNr">58 </span>    <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
+<a name="L59"></a><span id="L59" class="LineNr">59 </span>  <span class="Delimiter">}</span>
+<a name="L60"></a><span id="L60" class="LineNr">60 </span>
+<a name="L61"></a><span id="L61" class="LineNr">61 </span><span class="Comment">//: for now let's not bother giving global variables names.</span>
+<a name="L62"></a><span id="L62" class="LineNr">62 </span><span class="Comment">//: don't want to make them too comfortable to use.</span>
+<a name="L63"></a><span id="L63" class="LineNr">63 </span>
+<a name="L64"></a><span id="L64" class="LineNr">64 </span><span class="Delimiter">:(scenario global_space_with_names)</span>
+<a name="L65"></a><span id="L65" class="LineNr">65 </span><span class="muRecipe">def</span> main [
+<a name="L66"></a><span id="L66" class="LineNr">66 </span>  global-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">10</span>
+<a name="L67"></a><span id="L67" class="LineNr">67 </span>  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
+<a name="L68"></a><span id="L68" class="LineNr">68 </span>  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
+<a name="L69"></a><span id="L69" class="LineNr">69 </span>]
+<a name="L70"></a><span id="L70" class="LineNr">70 </span><span class="Comment"># don't complain about mixing numeric addresses and names</span>
+<a name="L71"></a><span id="L71" class="LineNr">71 </span>$error: <span class="Constant">0</span>
+<a name="L72"></a><span id="L72" class="LineNr">72 </span>
+<a name="L73"></a><span id="L73" class="LineNr">73 </span><span class="Delimiter">:(after &quot;bool is_numeric_location(const reagent&amp; x)&quot;)</span>
+<a name="L74"></a><span id="L74" class="LineNr">74 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<a name="L75"></a><span id="L75" class="LineNr">75 </span>
+<a name="L76"></a><span id="L76" class="LineNr">76 </span><span class="Comment">//: helpers</span>
+<a name="L77"></a><span id="L77" class="LineNr">77 </span>
+<a name="L78"></a><span id="L78" class="LineNr">78 </span><span class="Delimiter">:(code)</span>
+<a name="L79"></a><span id="L79" class="LineNr">79 </span><span class="Normal">bool</span> is_global<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<a name="L80"></a><span id="L80" class="LineNr">80 </span>  string_tree* s = property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
+<a name="L81"></a><span id="L81" class="LineNr">81 </span>  <span class="Identifier">return</span> s &amp;&amp; s<span class="Delimiter">-&gt;</span>atom &amp;&amp; s<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;global&quot;</span><span class="Delimiter">;</span>
+<a name="L82"></a><span id="L82" class="LineNr">82 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

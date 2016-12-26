@@ -6,7 +6,7 @@
 <meta name="Generator" content="Vim/7.4">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="none">
-<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
 <meta name="colorscheme" content="minimal">
 <style type="text/css">
 <!--
@@ -15,9 +15,10 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 * { font-size: 12pt; font-size: 1em; }
 .Delimiter { color: #800080; }
 .muControl { color: #c0a020; }
+.Special { color: #c00000; }
 .Comment { color: #9090ff; }
 .Constant { color: #00a0a0; }
-.Special { color: #c00000; }
+.LineNr { color: #444444; }
 .muRecipe { color: #ff8700; }
 -->
 </style>
@@ -25,27 +26,50 @@ body { font-size: 12pt; font-family: monospace; color: #eeeeee; background-color
 <script type='text/javascript'>
 <!--
 
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
 -->
 </script>
 </head>
-<body>
+<body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<span class="Comment"># example program: reading events from keyboard or mouse</span>
-<span class="Comment">#</span>
-<span class="Comment"># Keeps printing 'a' until you press a key or click on the mouse.</span>
-
-<span class="muRecipe">def</span> main [
-  <span class="Constant">local-scope</span>
-  open-console
-  <span class="Delimiter">{</span>
-    e:event, found?:bool <span class="Special">&lt;-</span> check-for-interaction
-    <span class="muControl">break-if</span> found?
-    print-character-to-display<span class="Constant"> 97</span>, <span class="Constant">7/white</span>
-    <span class="muControl">loop</span>
-  <span class="Delimiter">}</span>
-  close-console
-  $print e, <span class="Constant">10/newline</span>
-]
+<a name="L1"></a><span id="L1" class="LineNr"> 1 </span><span class="Comment"># example program: reading events from keyboard or mouse</span>
+<a name="L2"></a><span id="L2" class="LineNr"> 2 </span><span class="Comment">#</span>
+<a name="L3"></a><span id="L3" class="LineNr"> 3 </span><span class="Comment"># Keeps printing 'a' until you press a key or click on the mouse.</span>
+<a name="L4"></a><span id="L4" class="LineNr"> 4 </span>
+<a name="L5"></a><span id="L5" class="LineNr"> 5 </span><span class="muRecipe">def</span> main [
+<a name="L6"></a><span id="L6" class="LineNr"> 6 </span>  <span class="Constant">local-scope</span>
+<a name="L7"></a><span id="L7" class="LineNr"> 7 </span>  open-console
+<a name="L8"></a><span id="L8" class="LineNr"> 8 </span>  <span class="Delimiter">{</span>
+<a name="L9"></a><span id="L9" class="LineNr"> 9 </span>    e:event, found?:bool <span class="Special">&lt;-</span> check-for-interaction
+<a name="L10"></a><span id="L10" class="LineNr">10 </span>    <span class="muControl">break-if</span> found?
+<a name="L11"></a><span id="L11" class="LineNr">11 </span>    print-character-to-display<span class="Constant"> 97</span>, <span class="Constant">7/white</span>
+<a name="L12"></a><span id="L12" class="LineNr">12 </span>    <span class="muControl">loop</span>
+<a name="L13"></a><span id="L13" class="LineNr">13 </span>  <span class="Delimiter">}</span>
+<a name="L14"></a><span id="L14" class="LineNr">14 </span>  close-console
+<a name="L15"></a><span id="L15" class="LineNr">15 </span>  $print e, <span class="Constant">10/newline</span>
+<a name="L16"></a><span id="L16" class="LineNr">16 </span>]
 </pre>
 </body>
 </html>
