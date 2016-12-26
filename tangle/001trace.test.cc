@@ -48,7 +48,7 @@ void test_trace_supports_count() {
   CHECK_EQ(trace_count("test layer 1", "foo"), 2);
 }
 
-
+//// helpers
 
 // can't check trace because trace methods call 'split'
 

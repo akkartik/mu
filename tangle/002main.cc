@@ -18,8 +18,6 @@ string flag_value(const string& flag, int argc, const char* argv[]) {
   return "";
 }
 
-
-
 //// test harness
 
 int run_tests() {

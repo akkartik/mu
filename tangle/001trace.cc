@@ -40,8 +40,6 @@ struct trace_stream {
   }
 };
 
-
-
 trace_stream* Trace_stream = NULL;
 
 // Top-level helper. IMPORTANT: can't nest.
@@ -69,8 +67,6 @@ struct lease_tracer {
 };
 
 #define START_TRACING_UNTIL_END_OF_SCOPE  lease_tracer leased_tracer;
-
-
 
 bool check_trace_contents(string FUNCTION, string FILE, int LINE, string layer, string expected) {  // empty layer == everything
   vector<string> expected_lines = split(expected, "");
@@ -126,8 +122,6 @@ bool trace_doesnt_contain(string layer, string line) {
 }
 
 #define CHECK_TRACE_DOESNT_CONTAIN(...)  CHECK(trace_doesnt_contain(__VA_ARGS__))
-
-
 
 vector<string> split(string s, string delim) {
   vector<string> result;

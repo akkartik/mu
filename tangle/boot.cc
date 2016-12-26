@@ -29,8 +29,6 @@ using std::ifstream;
 #include <locale>
 using std::isspace;  // unicode-aware
 
-
-
 #include "type_list"
 
 #include "function_list"

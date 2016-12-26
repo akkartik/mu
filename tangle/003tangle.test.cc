@@ -163,7 +163,7 @@ void test_tangle_nested_patterns2() {
 
 // todo: include line numbers in tangle errors
 
-
+//// scenarios
 
 void test_tangle_supports_scenarios() {
   istringstream in(":(scenario does_bar)\nabc def\n+layer1: pqr\n+layer2: xyz");
@@ -337,7 +337,7 @@ void test_tangle_can_handle_mu_comments_in_scenario() {
   CHECK(lines.empty());
 }
 
-
+//// helpers
 
 void test_trim() {
   CHECK_EQ(trim(""), "");

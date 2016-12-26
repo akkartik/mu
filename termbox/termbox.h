@@ -74,8 +74,6 @@ void tb_set_cursor(int cx, int cy);
  * commit your changes. */
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 
-
-
 /*** 2. Controlling keyboard events. */
 
 struct tb_event {
@@ -205,8 +203,6 @@ int tb_peek_event(struct tb_event *event, int timeout);
 int tb_poll_event(struct tb_event *event);
 
 int tb_event_ready(void);
-
-
 
 /*** 3. Utility utf8 functions. */
 #define TB_EOF -1
