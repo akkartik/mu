@@ -58,580 +58,580 @@ if ('onhashchange' in window) {
 </head>
 <body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<a name="L1"></a><span id="L1" class="LineNr">  1 </span><span class="Comment"># Chessboard program: you type in moves in algebraic notation, and it'll</span>
-<a name="L2"></a><span id="L2" class="LineNr">  2 </span><span class="Comment"># display the position after each move.</span>
-<a name="L3"></a><span id="L3" class="LineNr">  3 </span>
-<a name="L4"></a><span id="L4" class="LineNr">  4 </span><span class="muRecipe">def</span> main [
-<a name="L5"></a><span id="L5" class="LineNr">  5 </span>  <span class="Constant">local-scope</span>
-<a name="L6"></a><span id="L6" class="LineNr">  6 </span>  open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
-<a name="L7"></a><span id="L7" class="LineNr">  7 </span>
-<a name="L8"></a><span id="L8" class="LineNr">  8 </span>  <span class="Comment"># The chessboard function takes keyboard and screen objects as 'ingredients'.</span>
-<a name="L9"></a><span id="L9" class="LineNr">  9 </span>  <span class="Comment">#</span>
-<a name="L10"></a><span id="L10" class="LineNr"> 10 </span>  <span class="Comment"># In Mu it is good form (though not required) to explicitly state what</span>
-<a name="L11"></a><span id="L11" class="LineNr"> 11 </span>  <span class="Comment"># hardware a function needs.</span>
-<a name="L12"></a><span id="L12" class="LineNr"> 12 </span>  <span class="Comment">#</span>
-<a name="L13"></a><span id="L13" class="LineNr"> 13 </span>  <span class="Comment"># Here the console and screen are both 0, which usually indicates real</span>
-<a name="L14"></a><span id="L14" class="LineNr"> 14 </span>  <span class="Comment"># hardware rather than a fake for testing as you'll see below.</span>
-<a name="L15"></a><span id="L15" class="LineNr"> 15 </span>  chessboard <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>
-<a name="L16"></a><span id="L16" class="LineNr"> 16 </span>
-<a name="L17"></a><span id="L17" class="LineNr"> 17 </span>  close-console  <span class="Comment"># clean up screen, keyboard and mouse</span>
-<a name="L18"></a><span id="L18" class="LineNr"> 18 </span>]
-<a name="L19"></a><span id="L19" class="LineNr"> 19 </span>
-<a name="L20"></a><span id="L20" class="LineNr"> 20 </span><span class="SalientComment">## But enough about Mu. Here's what it looks like to run the chessboard program.</span>
-<a name="L21"></a><span id="L21" class="LineNr"> 21 </span>
-<a name="L22"></a><span id="L22" class="LineNr"> 22 </span><span class="muScenario">scenario</span> print-board-and-read-move [
-<a name="L23"></a><span id="L23" class="LineNr"> 23 </span>  <span class="Constant">local-scope</span>
-<a name="L24"></a><span id="L24" class="LineNr"> 24 </span>  trace-until <span class="Constant">100/app</span>
-<a name="L25"></a><span id="L25" class="LineNr"> 25 </span>  <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
-<a name="L26"></a><span id="L26" class="LineNr"> 26 </span>  assume-screen <span class="Constant">120/width</span>, <span class="Constant">20/height</span>
-<a name="L27"></a><span id="L27" class="LineNr"> 27 </span>  <span class="Comment"># initialize keyboard to type in a move</span>
-<a name="L28"></a><span id="L28" class="LineNr"> 28 </span>  assume-console [
-<a name="L29"></a><span id="L29" class="LineNr"> 29 </span>    type <span class="Constant">[a2-a4</span>
-<a name="L30"></a><span id="L30" class="LineNr"> 30 </span><span class="Constant">]</span>
-<a name="L31"></a><span id="L31" class="LineNr"> 31 </span>  ]
-<a name="L32"></a><span id="L32" class="LineNr"> 32 </span>  run [
-<a name="L33"></a><span id="L33" class="LineNr"> 33 </span>    screen:&amp;:screen, console:&amp;:console <span class="Special">&lt;-</span> chessboard screen:&amp;:screen, console:&amp;:console
-<a name="L34"></a><span id="L34" class="LineNr"> 34 </span>    <span class="Comment"># icon for the cursor</span>
-<a name="L35"></a><span id="L35" class="LineNr"> 35 </span>    cursor-icon:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<a name="L36"></a><span id="L36" class="LineNr"> 36 </span>    screen <span class="Special">&lt;-</span> print screen, cursor-icon
-<a name="L37"></a><span id="L37" class="LineNr"> 37 </span>  ]
-<a name="L38"></a><span id="L38" class="LineNr"> 38 </span>  screen-should-contain [
-<a name="L39"></a><span id="L39" class="LineNr"> 39 </span>  <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
-<a name="L40"></a><span id="L40" class="LineNr"> 40 </span>  <span class="Comment">#  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789</span>
-<a name="L41"></a><span id="L41" class="LineNr"> 41 </span>   <span class="Constant"> .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .</span>
-<a name="L42"></a><span id="L42" class="LineNr"> 42 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L43"></a><span id="L43" class="LineNr"> 43 </span>   <span class="Constant"> .8 | r n b q k b n r                                                                                                     .</span>
-<a name="L44"></a><span id="L44" class="LineNr"> 44 </span>   <span class="Constant"> .7 | p p p p p p p p                                                                                                     .</span>
-<a name="L45"></a><span id="L45" class="LineNr"> 45 </span>   <span class="Constant"> .6 |                                                                                                                     .</span>
-<a name="L46"></a><span id="L46" class="LineNr"> 46 </span>   <span class="Constant"> .5 |                                                                                                                     .</span>
-<a name="L47"></a><span id="L47" class="LineNr"> 47 </span>   <span class="Constant"> .4 | P                                                                                                                   .</span>
-<a name="L48"></a><span id="L48" class="LineNr"> 48 </span>   <span class="Constant"> .3 |                                                                                                                     .</span>
-<a name="L49"></a><span id="L49" class="LineNr"> 49 </span>   <span class="Constant"> .2 |   P P P P P P P                                                                                                     .</span>
-<a name="L50"></a><span id="L50" class="LineNr"> 50 </span>   <span class="Constant"> .1 | R N B Q K B N R                                                                                                     .</span>
-<a name="L51"></a><span id="L51" class="LineNr"> 51 </span>   <span class="Constant"> .  +----------------                                                                                                     .</span>
-<a name="L52"></a><span id="L52" class="LineNr"> 52 </span>   <span class="Constant"> .    a b c d e f g h                                                                                                     .</span>
-<a name="L53"></a><span id="L53" class="LineNr"> 53 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L54"></a><span id="L54" class="LineNr"> 54 </span>   <span class="Constant"> .Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.                               .</span>
-<a name="L55"></a><span id="L55" class="LineNr"> 55 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L56"></a><span id="L56" class="LineNr"> 56 </span>   <span class="Constant"> .Hit 'q' to exit.                                                                                                        .</span>
-<a name="L57"></a><span id="L57" class="LineNr"> 57 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L58"></a><span id="L58" class="LineNr"> 58 </span>   <span class="Constant"> .move: ␣                                                                                                                 .</span>
-<a name="L59"></a><span id="L59" class="LineNr"> 59 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L60"></a><span id="L60" class="LineNr"> 60 </span>   <span class="Constant"> .                                                                                                                        .</span>
-<a name="L61"></a><span id="L61" class="LineNr"> 61 </span>  ]
-<a name="L62"></a><span id="L62" class="LineNr"> 62 </span>]
-<a name="L63"></a><span id="L63" class="LineNr"> 63 </span>
-<a name="L64"></a><span id="L64" class="LineNr"> 64 </span><span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
-<a name="L65"></a><span id="L65" class="LineNr"> 65 </span>
-<a name="L66"></a><span id="L66" class="LineNr"> 66 </span><span class="muData">type</span> board = &amp;:@:&amp;:@:char  <span class="Comment"># a 2-D array of arrays of characters</span>
-<a name="L67"></a><span id="L67" class="LineNr"> 67 </span>
-<a name="L68"></a><span id="L68" class="LineNr"> 68 </span><span class="muRecipe">def</span> chessboard screen:&amp;:screen, console:&amp;:console<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console [
-<a name="L69"></a><span id="L69" class="LineNr"> 69 </span>  <span class="Constant">local-scope</span>
-<a name="L70"></a><span id="L70" class="LineNr"> 70 </span>  <span class="Constant">load-ingredients</span>
-<a name="L71"></a><span id="L71" class="LineNr"> 71 </span>  board:board <span class="Special">&lt;-</span> initial-position
-<a name="L72"></a><span id="L72" class="LineNr"> 72 </span>  <span class="Comment"># hook up stdin</span>
-<a name="L73"></a><span id="L73" class="LineNr"> 73 </span>  stdin-in:&amp;:source:char, stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
-<a name="L74"></a><span id="L74" class="LineNr"> 74 </span>  start-running send-keys-to-channel, console, stdin-out, screen
-<a name="L75"></a><span id="L75" class="LineNr"> 75 </span>  <span class="Comment"># buffer lines in stdin</span>
-<a name="L76"></a><span id="L76" class="LineNr"> 76 </span>  buffered-stdin-in:&amp;:source:char, buffered-stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
-<a name="L77"></a><span id="L77" class="LineNr"> 77 </span>  start-running buffer-lines, stdin-in, buffered-stdin-out
-<a name="L78"></a><span id="L78" class="LineNr"> 78 </span>  <span class="Delimiter">{</span>
-<a name="L79"></a><span id="L79" class="LineNr"> 79 </span>    print screen, <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
-<a name="L80"></a><span id="L80" class="LineNr"> 80 </span><span class="Constant">]</span>
-<a name="L81"></a><span id="L81" class="LineNr"> 81 </span>    cursor-to-next-line screen
-<a name="L82"></a><span id="L82" class="LineNr"> 82 </span>    print-board screen, board
-<a name="L83"></a><span id="L83" class="LineNr"> 83 </span>    cursor-to-next-line screen
-<a name="L84"></a><span id="L84" class="LineNr"> 84 </span>    print screen, <span class="Constant">[Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.</span>
-<a name="L85"></a><span id="L85" class="LineNr"> 85 </span><span class="Constant">]</span>
-<a name="L86"></a><span id="L86" class="LineNr"> 86 </span>    cursor-to-next-line screen
-<a name="L87"></a><span id="L87" class="LineNr"> 87 </span>    print screen <span class="Constant">[Hit 'q' to exit.</span>
-<a name="L88"></a><span id="L88" class="LineNr"> 88 </span><span class="Constant">]</span>
-<a name="L89"></a><span id="L89" class="LineNr"> 89 </span>    <span class="Delimiter">{</span>
-<a name="L90"></a><span id="L90" class="LineNr"> 90 </span>      cursor-to-next-line screen
-<a name="L91"></a><span id="L91" class="LineNr"> 91 </span>      screen <span class="Special">&lt;-</span> print screen, <span class="Constant">[move: ]</span>
-<a name="L92"></a><span id="L92" class="LineNr"> 92 </span>      m:&amp;:move, quit:bool, error:bool <span class="Special">&lt;-</span> read-move buffered-stdin-in, screen
-<a name="L93"></a><span id="L93" class="LineNr"> 93 </span>      <span class="muControl">break-if</span> quit, <span class="Constant">+quit</span>
-<a name="L94"></a><span id="L94" class="LineNr"> 94 </span>      buffered-stdin-in <span class="Special">&lt;-</span> clear buffered-stdin-in  <span class="Comment"># cleanup after error. todo: test this?</span>
-<a name="L95"></a><span id="L95" class="LineNr"> 95 </span>      <span class="muControl">loop-if</span> error
-<a name="L96"></a><span id="L96" class="LineNr"> 96 </span>    <span class="Delimiter">}</span>
-<a name="L97"></a><span id="L97" class="LineNr"> 97 </span>    board <span class="Special">&lt;-</span> make-move board, m
-<a name="L98"></a><span id="L98" class="LineNr"> 98 </span>    screen <span class="Special">&lt;-</span> clear-screen screen
-<a name="L99"></a><span id="L99" class="LineNr"> 99 </span>    <span class="muControl">loop</span>
-<a name="L100"></a><span id="L100" class="LineNr">100 </span>  <span class="Delimiter">}</span>
-<a name="L101"></a><span id="L101" class="LineNr">101 </span><span class="Constant">  +quit</span>
-<a name="L102"></a><span id="L102" class="LineNr">102 </span>]
-<a name="L103"></a><span id="L103" class="LineNr">103 </span>
-<a name="L104"></a><span id="L104" class="LineNr">104 </span><span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
-<a name="L105"></a><span id="L105" class="LineNr">105 </span>
-<a name="L106"></a><span id="L106" class="LineNr">106 </span><span class="muRecipe">def</span> new-board initial-position:&amp;:@:char<span class="muRecipe"> -&gt; </span>board:board [
-<a name="L107"></a><span id="L107" class="LineNr">107 </span>  <span class="Constant">local-scope</span>
-<a name="L108"></a><span id="L108" class="LineNr">108 </span>  <span class="Constant">load-ingredients</span>
-<a name="L109"></a><span id="L109" class="LineNr">109 </span>  <span class="Comment"># assert(length(initial-position) == 64)</span>
-<a name="L110"></a><span id="L110" class="LineNr">110 </span>  len:num <span class="Special">&lt;-</span> length *initial-position
-<a name="L111"></a><span id="L111" class="LineNr">111 </span>  correct-length?:bool <span class="Special">&lt;-</span> equal len,<span class="Constant"> 64</span>
-<a name="L112"></a><span id="L112" class="LineNr">112 </span>  assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
-<a name="L113"></a><span id="L113" class="LineNr">113 </span>  <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
-<a name="L114"></a><span id="L114" class="LineNr">114 </span>  board <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>,<span class="Constant"> 8</span>
-<a name="L115"></a><span id="L115" class="LineNr">115 </span>  col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L116"></a><span id="L116" class="LineNr">116 </span>  <span class="Delimiter">{</span>
-<a name="L117"></a><span id="L117" class="LineNr">117 </span>    done?:bool <span class="Special">&lt;-</span> equal col,<span class="Constant"> 8</span>
-<a name="L118"></a><span id="L118" class="LineNr">118 </span>    <span class="muControl">break-if</span> done?
-<a name="L119"></a><span id="L119" class="LineNr">119 </span>    file:&amp;:@:char <span class="Special">&lt;-</span> new-file initial-position, col
-<a name="L120"></a><span id="L120" class="LineNr">120 </span>    *board <span class="Special">&lt;-</span> put-index *board, col, file
-<a name="L121"></a><span id="L121" class="LineNr">121 </span>    col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
-<a name="L122"></a><span id="L122" class="LineNr">122 </span>    <span class="muControl">loop</span>
-<a name="L123"></a><span id="L123" class="LineNr">123 </span>  <span class="Delimiter">}</span>
-<a name="L124"></a><span id="L124" class="LineNr">124 </span>]
-<a name="L125"></a><span id="L125" class="LineNr">125 </span>
-<a name="L126"></a><span id="L126" class="LineNr">126 </span><span class="muRecipe">def</span> new-file position:&amp;:@:char, index:num<span class="muRecipe"> -&gt; </span>result:&amp;:@:char [
-<a name="L127"></a><span id="L127" class="LineNr">127 </span>  <span class="Constant">local-scope</span>
-<a name="L128"></a><span id="L128" class="LineNr">128 </span>  <span class="Constant">load-ingredients</span>
-<a name="L129"></a><span id="L129" class="LineNr">129 </span>  index <span class="Special">&lt;-</span> multiply index,<span class="Constant"> 8</span>
-<a name="L130"></a><span id="L130" class="LineNr">130 </span>  result <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>,<span class="Constant"> 8</span>
-<a name="L131"></a><span id="L131" class="LineNr">131 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L132"></a><span id="L132" class="LineNr">132 </span>  <span class="Delimiter">{</span>
-<a name="L133"></a><span id="L133" class="LineNr">133 </span>    done?:bool <span class="Special">&lt;-</span> equal row,<span class="Constant"> 8</span>
-<a name="L134"></a><span id="L134" class="LineNr">134 </span>    <span class="muControl">break-if</span> done?
-<a name="L135"></a><span id="L135" class="LineNr">135 </span>    square:char <span class="Special">&lt;-</span> index *position, index
-<a name="L136"></a><span id="L136" class="LineNr">136 </span>    *result <span class="Special">&lt;-</span> put-index *result, row, square
-<a name="L137"></a><span id="L137" class="LineNr">137 </span>    row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<a name="L138"></a><span id="L138" class="LineNr">138 </span>    index <span class="Special">&lt;-</span> add index,<span class="Constant"> 1</span>
-<a name="L139"></a><span id="L139" class="LineNr">139 </span>    <span class="muControl">loop</span>
-<a name="L140"></a><span id="L140" class="LineNr">140 </span>  <span class="Delimiter">}</span>
-<a name="L141"></a><span id="L141" class="LineNr">141 </span>]
-<a name="L142"></a><span id="L142" class="LineNr">142 </span>
-<a name="L143"></a><span id="L143" class="LineNr">143 </span><span class="muRecipe">def</span> print-board screen:&amp;:screen, board:board<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
-<a name="L144"></a><span id="L144" class="LineNr">144 </span>  <span class="Constant">local-scope</span>
-<a name="L145"></a><span id="L145" class="LineNr">145 </span>  <span class="Constant">load-ingredients</span>
-<a name="L146"></a><span id="L146" class="LineNr">146 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 7</span>  <span class="Comment"># start printing from the top of the board</span>
-<a name="L147"></a><span id="L147" class="LineNr">147 </span>  space:char <span class="Special">&lt;-</span> copy <span class="Constant">32/space</span>
-<a name="L148"></a><span id="L148" class="LineNr">148 </span>  <span class="Comment"># print each row</span>
-<a name="L149"></a><span id="L149" class="LineNr">149 </span>  <span class="Delimiter">{</span>
-<a name="L150"></a><span id="L150" class="LineNr">150 </span>    done?:bool <span class="Special">&lt;-</span> lesser-than row,<span class="Constant"> 0</span>
-<a name="L151"></a><span id="L151" class="LineNr">151 </span>    <span class="muControl">break-if</span> done?
-<a name="L152"></a><span id="L152" class="LineNr">152 </span>    <span class="Comment"># print rank number as a legend</span>
-<a name="L153"></a><span id="L153" class="LineNr">153 </span>    rank:num <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<a name="L154"></a><span id="L154" class="LineNr">154 </span>    print-integer screen, rank
-<a name="L155"></a><span id="L155" class="LineNr">155 </span>    print screen, <span class="Constant">[ | ]</span>
-<a name="L156"></a><span id="L156" class="LineNr">156 </span>    <span class="Comment"># print each square in the row</span>
-<a name="L157"></a><span id="L157" class="LineNr">157 </span>    col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L158"></a><span id="L158" class="LineNr">158 </span>    <span class="Delimiter">{</span>
-<a name="L159"></a><span id="L159" class="LineNr">159 </span>      done?:bool <span class="Special">&lt;-</span> equal col:num,<span class="Constant"> 8</span>
-<a name="L160"></a><span id="L160" class="LineNr">160 </span>      <span class="muControl">break-if</span> done?:bool
-<a name="L161"></a><span id="L161" class="LineNr">161 </span>      f:&amp;:@:char <span class="Special">&lt;-</span> index *board, col
-<a name="L162"></a><span id="L162" class="LineNr">162 </span>      c:char <span class="Special">&lt;-</span> index *f, row
-<a name="L163"></a><span id="L163" class="LineNr">163 </span>      print screen, c
-<a name="L164"></a><span id="L164" class="LineNr">164 </span>      print screen, space
-<a name="L165"></a><span id="L165" class="LineNr">165 </span>      col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
-<a name="L166"></a><span id="L166" class="LineNr">166 </span>      <span class="muControl">loop</span>
-<a name="L167"></a><span id="L167" class="LineNr">167 </span>    <span class="Delimiter">}</span>
-<a name="L168"></a><span id="L168" class="LineNr">168 </span>    row <span class="Special">&lt;-</span> subtract row,<span class="Constant"> 1</span>
-<a name="L169"></a><span id="L169" class="LineNr">169 </span>    cursor-to-next-line screen
-<a name="L170"></a><span id="L170" class="LineNr">170 </span>    <span class="muControl">loop</span>
-<a name="L171"></a><span id="L171" class="LineNr">171 </span>  <span class="Delimiter">}</span>
-<a name="L172"></a><span id="L172" class="LineNr">172 </span>  <span class="Comment"># print file letters as legend</span>
-<a name="L173"></a><span id="L173" class="LineNr">173 </span>  print screen, <span class="Constant">[  +----------------]</span>
-<a name="L174"></a><span id="L174" class="LineNr">174 </span>  cursor-to-next-line screen
-<a name="L175"></a><span id="L175" class="LineNr">175 </span>  print screen, <span class="Constant">[    a b c d e f g h]</span>
-<a name="L176"></a><span id="L176" class="LineNr">176 </span>  cursor-to-next-line screen
-<a name="L177"></a><span id="L177" class="LineNr">177 </span>]
-<a name="L178"></a><span id="L178" class="LineNr">178 </span>
-<a name="L179"></a><span id="L179" class="LineNr">179 </span><span class="muRecipe">def</span> initial-position<span class="muRecipe"> -&gt; </span>board:board [
-<a name="L180"></a><span id="L180" class="LineNr">180 </span>  <span class="Constant">local-scope</span>
-<a name="L181"></a><span id="L181" class="LineNr">181 </span>  <span class="Comment"># layout in memory (in raster order):</span>
-<a name="L182"></a><span id="L182" class="LineNr">182 </span>  <span class="Comment">#   R P _ _ _ _ p r</span>
-<a name="L183"></a><span id="L183" class="LineNr">183 </span>  <span class="Comment">#   N P _ _ _ _ p n</span>
-<a name="L184"></a><span id="L184" class="LineNr">184 </span>  <span class="Comment">#   B P _ _ _ _ p b</span>
-<a name="L185"></a><span id="L185" class="LineNr">185 </span>  <span class="Comment">#   Q P _ _ _ _ p q</span>
-<a name="L186"></a><span id="L186" class="LineNr">186 </span>  <span class="Comment">#   K P _ _ _ _ p k</span>
-<a name="L187"></a><span id="L187" class="LineNr">187 </span>  <span class="Comment">#   B P _ _ _ _ p B</span>
-<a name="L188"></a><span id="L188" class="LineNr">188 </span>  <span class="Comment">#   N P _ _ _ _ p n</span>
-<a name="L189"></a><span id="L189" class="LineNr">189 </span>  <span class="Comment">#   R P _ _ _ _ p r</span>
-<a name="L190"></a><span id="L190" class="LineNr">190 </span>  initial-position:&amp;:@:char <span class="Special">&lt;-</span> new-array <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">81/Q</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">113/q</span>, <span class="Constant">75/K</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">107/k</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>
-<a name="L191"></a><span id="L191" class="LineNr">191 </span><span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,</span>
-<a name="L192"></a><span id="L192" class="LineNr">192 </span><span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
-<a name="L193"></a><span id="L193" class="LineNr">193 </span><span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, </span>
-<a name="L194"></a><span id="L194" class="LineNr">194 </span><span class="CommentedCode">#?       81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q,</span>
-<a name="L195"></a><span id="L195" class="LineNr">195 </span><span class="CommentedCode">#?       75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k,</span>
-<a name="L196"></a><span id="L196" class="LineNr">196 </span><span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,</span>
-<a name="L197"></a><span id="L197" class="LineNr">197 </span><span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
-<a name="L198"></a><span id="L198" class="LineNr">198 </span><span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r</span>
-<a name="L199"></a><span id="L199" class="LineNr">199 </span>  board <span class="Special">&lt;-</span> new-board initial-position
-<a name="L200"></a><span id="L200" class="LineNr">200 </span>]
-<a name="L201"></a><span id="L201" class="LineNr">201 </span>
-<a name="L202"></a><span id="L202" class="LineNr">202 </span><span class="muScenario">scenario</span> printing-the-board [
-<a name="L203"></a><span id="L203" class="LineNr">203 </span>  <span class="Constant">local-scope</span>
-<a name="L204"></a><span id="L204" class="LineNr">204 </span>  board:board <span class="Special">&lt;-</span> initial-position
-<a name="L205"></a><span id="L205" class="LineNr">205 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
-<a name="L206"></a><span id="L206" class="LineNr">206 </span>  run [
-<a name="L207"></a><span id="L207" class="LineNr">207 </span>    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
-<a name="L208"></a><span id="L208" class="LineNr">208 </span>  ]
-<a name="L209"></a><span id="L209" class="LineNr">209 </span>  screen-should-contain [
-<a name="L210"></a><span id="L210" class="LineNr">210 </span>  <span class="Comment">#  012345678901234567890123456789</span>
-<a name="L211"></a><span id="L211" class="LineNr">211 </span>   <span class="Constant"> .8 | r n b q k b n r           .</span>
-<a name="L212"></a><span id="L212" class="LineNr">212 </span>   <span class="Constant"> .7 | p p p p p p p p           .</span>
-<a name="L213"></a><span id="L213" class="LineNr">213 </span>   <span class="Constant"> .6 |                           .</span>
-<a name="L214"></a><span id="L214" class="LineNr">214 </span>   <span class="Constant"> .5 |                           .</span>
-<a name="L215"></a><span id="L215" class="LineNr">215 </span>   <span class="Constant"> .4 |                           .</span>
-<a name="L216"></a><span id="L216" class="LineNr">216 </span>   <span class="Constant"> .3 |                           .</span>
-<a name="L217"></a><span id="L217" class="LineNr">217 </span>   <span class="Constant"> .2 | P P P P P P P P           .</span>
-<a name="L218"></a><span id="L218" class="LineNr">218 </span>   <span class="Constant"> .1 | R N B Q K B N R           .</span>
-<a name="L219"></a><span id="L219" class="LineNr">219 </span>   <span class="Constant"> .  +----------------           .</span>
-<a name="L220"></a><span id="L220" class="LineNr">220 </span>   <span class="Constant"> .    a b c d e f g h           .</span>
-<a name="L221"></a><span id="L221" class="LineNr">221 </span>   <span class="Constant"> .                              .</span>
-<a name="L222"></a><span id="L222" class="LineNr">222 </span>   <span class="Constant"> .                              .</span>
-<a name="L223"></a><span id="L223" class="LineNr">223 </span>  ]
-<a name="L224"></a><span id="L224" class="LineNr">224 </span>]
-<a name="L225"></a><span id="L225" class="LineNr">225 </span>
-<a name="L226"></a><span id="L226" class="LineNr">226 </span><span class="SalientComment">## data structure: move</span>
-<a name="L227"></a><span id="L227" class="LineNr">227 </span>
-<a name="L228"></a><span id="L228" class="LineNr">228 </span><span class="muData">container</span> move [
-<a name="L229"></a><span id="L229" class="LineNr">229 </span>  <span class="Comment"># valid range: 0-7</span>
-<a name="L230"></a><span id="L230" class="LineNr">230 </span>  from-file:num
-<a name="L231"></a><span id="L231" class="LineNr">231 </span>  from-rank:num
-<a name="L232"></a><span id="L232" class="LineNr">232 </span>  to-file:num
-<a name="L233"></a><span id="L233" class="LineNr">233 </span>  to-rank:num
-<a name="L234"></a><span id="L234" class="LineNr">234 </span>]
-<a name="L235"></a><span id="L235" class="LineNr">235 </span>
-<a name="L236"></a><span id="L236" class="LineNr">236 </span><span class="Comment"># prints only error messages to screen</span>
-<a name="L237"></a><span id="L237" class="LineNr">237 </span><span class="muRecipe">def</span> read-move stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:&amp;:move, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
-<a name="L238"></a><span id="L238" class="LineNr">238 </span>  <span class="Constant">local-scope</span>
-<a name="L239"></a><span id="L239" class="LineNr">239 </span>  <span class="Constant">load-ingredients</span>
-<a name="L240"></a><span id="L240" class="LineNr">240 </span>  from-file:num, quit?:bool, error?:bool <span class="Special">&lt;-</span> read-file stdin, screen
-<a name="L241"></a><span id="L241" class="LineNr">241 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
-<a name="L242"></a><span id="L242" class="LineNr">242 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
-<a name="L243"></a><span id="L243" class="LineNr">243 </span>  <span class="Comment"># construct the move object</span>
-<a name="L244"></a><span id="L244" class="LineNr">244 </span>  result:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
-<a name="L245"></a><span id="L245" class="LineNr">245 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-file:offset</span>, from-file
-<a name="L246"></a><span id="L246" class="LineNr">246 </span>  from-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
-<a name="L247"></a><span id="L247" class="LineNr">247 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
-<a name="L248"></a><span id="L248" class="LineNr">248 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
-<a name="L249"></a><span id="L249" class="LineNr">249 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-rank:offset</span>, from-rank
-<a name="L250"></a><span id="L250" class="LineNr">250 </span>  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
-<a name="L251"></a><span id="L251" class="LineNr">251 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
-<a name="L252"></a><span id="L252" class="LineNr">252 </span>  to-file:num, quit?, error? <span class="Special">&lt;-</span> read-file stdin, screen
-<a name="L253"></a><span id="L253" class="LineNr">253 </span>  <span class="muControl">return-if</span> quit?:bool, <span class="Constant">0/dummy</span>
-<a name="L254"></a><span id="L254" class="LineNr">254 </span>  <span class="muControl">return-if</span> error?:bool, <span class="Constant">0/dummy</span>
-<a name="L255"></a><span id="L255" class="LineNr">255 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-file:offset</span>, to-file
-<a name="L256"></a><span id="L256" class="LineNr">256 </span>  to-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
-<a name="L257"></a><span id="L257" class="LineNr">257 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
-<a name="L258"></a><span id="L258" class="LineNr">258 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
-<a name="L259"></a><span id="L259" class="LineNr">259 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-rank:offset</span>, to-rank
-<a name="L260"></a><span id="L260" class="LineNr">260 </span>  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
-<a name="L261"></a><span id="L261" class="LineNr">261 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
-<a name="L262"></a><span id="L262" class="LineNr">262 </span>]
-<a name="L263"></a><span id="L263" class="LineNr">263 </span>
-<a name="L264"></a><span id="L264" class="LineNr">264 </span><span class="Comment"># valid values for file: 0-7</span>
-<a name="L265"></a><span id="L265" class="LineNr">265 </span><span class="muRecipe">def</span> read-file stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>file:num, quit:bool, error:bool, stdin:&amp;:source:char, screen:&amp;:screen [
-<a name="L266"></a><span id="L266" class="LineNr">266 </span>  <span class="Constant">local-scope</span>
-<a name="L267"></a><span id="L267" class="LineNr">267 </span>  <span class="Constant">load-ingredients</span>
-<a name="L268"></a><span id="L268" class="LineNr">268 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
-<a name="L269"></a><span id="L269" class="LineNr">269 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L270"></a><span id="L270" class="LineNr">270 </span>  <span class="Delimiter">{</span>
-<a name="L271"></a><span id="L271" class="LineNr">271 </span>    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">81/Q</span>
-<a name="L272"></a><span id="L272" class="LineNr">272 </span>    <span class="muControl">break-unless</span> q-pressed?
-<a name="L273"></a><span id="L273" class="LineNr">273 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L274"></a><span id="L274" class="LineNr">274 </span>  <span class="Delimiter">}</span>
-<a name="L275"></a><span id="L275" class="LineNr">275 </span>  <span class="Delimiter">{</span>
-<a name="L276"></a><span id="L276" class="LineNr">276 </span>    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
-<a name="L277"></a><span id="L277" class="LineNr">277 </span>    <span class="muControl">break-unless</span> q-pressed?
-<a name="L278"></a><span id="L278" class="LineNr">278 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L279"></a><span id="L279" class="LineNr">279 </span>  <span class="Delimiter">}</span>
-<a name="L280"></a><span id="L280" class="LineNr">280 </span>  <span class="Delimiter">{</span>
-<a name="L281"></a><span id="L281" class="LineNr">281 </span>    empty-fake-keyboard?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">0/eof</span>
-<a name="L282"></a><span id="L282" class="LineNr">282 </span>    <span class="muControl">break-unless</span> empty-fake-keyboard?
-<a name="L283"></a><span id="L283" class="LineNr">283 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L284"></a><span id="L284" class="LineNr">284 </span>  <span class="Delimiter">}</span>
-<a name="L285"></a><span id="L285" class="LineNr">285 </span>  <span class="Delimiter">{</span>
-<a name="L286"></a><span id="L286" class="LineNr">286 </span>    newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
-<a name="L287"></a><span id="L287" class="LineNr">287 </span>    <span class="muControl">break-unless</span> newline?
-<a name="L288"></a><span id="L288" class="LineNr">288 </span>    print screen, <span class="Constant">[that's not enough]</span>
-<a name="L289"></a><span id="L289" class="LineNr">289 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L290"></a><span id="L290" class="LineNr">290 </span>  <span class="Delimiter">}</span>
-<a name="L291"></a><span id="L291" class="LineNr">291 </span>  file:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">97/a</span>
-<a name="L292"></a><span id="L292" class="LineNr">292 </span>  <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
-<a name="L293"></a><span id="L293" class="LineNr">293 </span>  <span class="Delimiter">{</span>
-<a name="L294"></a><span id="L294" class="LineNr">294 </span>    above-min:bool <span class="Special">&lt;-</span> greater-or-equal file,<span class="Constant"> 0</span>
-<a name="L295"></a><span id="L295" class="LineNr">295 </span>    <span class="muControl">break-if</span> above-min
-<a name="L296"></a><span id="L296" class="LineNr">296 </span>    print screen, <span class="Constant">[file too low: ]</span>
-<a name="L297"></a><span id="L297" class="LineNr">297 </span>    print screen, c
-<a name="L298"></a><span id="L298" class="LineNr">298 </span>    cursor-to-next-line screen
-<a name="L299"></a><span id="L299" class="LineNr">299 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L300"></a><span id="L300" class="LineNr">300 </span>  <span class="Delimiter">}</span>
-<a name="L301"></a><span id="L301" class="LineNr">301 </span>  <span class="Delimiter">{</span>
-<a name="L302"></a><span id="L302" class="LineNr">302 </span>    below-max:bool <span class="Special">&lt;-</span> lesser-than file,<span class="Constant"> 8</span>
-<a name="L303"></a><span id="L303" class="LineNr">303 </span>    <span class="muControl">break-if</span> below-max
-<a name="L304"></a><span id="L304" class="LineNr">304 </span>    print screen, <span class="Constant">[file too high: ]</span>
-<a name="L305"></a><span id="L305" class="LineNr">305 </span>    print screen, c
-<a name="L306"></a><span id="L306" class="LineNr">306 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L307"></a><span id="L307" class="LineNr">307 </span>  <span class="Delimiter">}</span>
-<a name="L308"></a><span id="L308" class="LineNr">308 </span>  <span class="muControl">return</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
-<a name="L309"></a><span id="L309" class="LineNr">309 </span>]
-<a name="L310"></a><span id="L310" class="LineNr">310 </span>
-<a name="L311"></a><span id="L311" class="LineNr">311 </span><span class="Comment"># valid values for rank: 0-7</span>
-<a name="L312"></a><span id="L312" class="LineNr">312 </span><span class="muRecipe">def</span> read-rank stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>rank:num, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
-<a name="L313"></a><span id="L313" class="LineNr">313 </span>  <span class="Constant">local-scope</span>
-<a name="L314"></a><span id="L314" class="LineNr">314 </span>  <span class="Constant">load-ingredients</span>
-<a name="L315"></a><span id="L315" class="LineNr">315 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
-<a name="L316"></a><span id="L316" class="LineNr">316 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L317"></a><span id="L317" class="LineNr">317 </span>  <span class="Delimiter">{</span>
-<a name="L318"></a><span id="L318" class="LineNr">318 </span>    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">8/Q</span>
-<a name="L319"></a><span id="L319" class="LineNr">319 </span>    <span class="muControl">break-unless</span> q-pressed?
-<a name="L320"></a><span id="L320" class="LineNr">320 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L321"></a><span id="L321" class="LineNr">321 </span>  <span class="Delimiter">}</span>
-<a name="L322"></a><span id="L322" class="LineNr">322 </span>  <span class="Delimiter">{</span>
-<a name="L323"></a><span id="L323" class="LineNr">323 </span>    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
-<a name="L324"></a><span id="L324" class="LineNr">324 </span>    <span class="muControl">break-unless</span> q-pressed?
-<a name="L325"></a><span id="L325" class="LineNr">325 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
-<a name="L326"></a><span id="L326" class="LineNr">326 </span>  <span class="Delimiter">}</span>
-<a name="L327"></a><span id="L327" class="LineNr">327 </span>  <span class="Delimiter">{</span>
-<a name="L328"></a><span id="L328" class="LineNr">328 </span>    newline?:bool <span class="Special">&lt;-</span> equal c,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
-<a name="L329"></a><span id="L329" class="LineNr">329 </span>    <span class="muControl">break-unless</span> newline?
-<a name="L330"></a><span id="L330" class="LineNr">330 </span>    print screen, <span class="Constant">[that's not enough]</span>
-<a name="L331"></a><span id="L331" class="LineNr">331 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L332"></a><span id="L332" class="LineNr">332 </span>  <span class="Delimiter">}</span>
-<a name="L333"></a><span id="L333" class="LineNr">333 </span>  rank:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">49/'1'</span>
-<a name="L334"></a><span id="L334" class="LineNr">334 </span>  <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
-<a name="L335"></a><span id="L335" class="LineNr">335 </span>  <span class="Delimiter">{</span>
-<a name="L336"></a><span id="L336" class="LineNr">336 </span>    above-min:bool <span class="Special">&lt;-</span> greater-or-equal rank,<span class="Constant"> 0</span>
-<a name="L337"></a><span id="L337" class="LineNr">337 </span>    <span class="muControl">break-if</span> above-min
-<a name="L338"></a><span id="L338" class="LineNr">338 </span>    print screen, <span class="Constant">[rank too low: ]</span>
-<a name="L339"></a><span id="L339" class="LineNr">339 </span>    print screen, c
-<a name="L340"></a><span id="L340" class="LineNr">340 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L341"></a><span id="L341" class="LineNr">341 </span>  <span class="Delimiter">}</span>
-<a name="L342"></a><span id="L342" class="LineNr">342 </span>  <span class="Delimiter">{</span>
-<a name="L343"></a><span id="L343" class="LineNr">343 </span>    below-max:bool <span class="Special">&lt;-</span> lesser-or-equal rank,<span class="Constant"> 7</span>
-<a name="L344"></a><span id="L344" class="LineNr">344 </span>    <span class="muControl">break-if</span> below-max
-<a name="L345"></a><span id="L345" class="LineNr">345 </span>    print screen, <span class="Constant">[rank too high: ]</span>
-<a name="L346"></a><span id="L346" class="LineNr">346 </span>    print screen, c
-<a name="L347"></a><span id="L347" class="LineNr">347 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
-<a name="L348"></a><span id="L348" class="LineNr">348 </span>  <span class="Delimiter">}</span>
-<a name="L349"></a><span id="L349" class="LineNr">349 </span>  <span class="muControl">return</span> rank, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
-<a name="L350"></a><span id="L350" class="LineNr">350 </span>]
-<a name="L351"></a><span id="L351" class="LineNr">351 </span>
-<a name="L352"></a><span id="L352" class="LineNr">352 </span><span class="Comment"># read a character from the given channel and check that it's what we expect</span>
-<a name="L353"></a><span id="L353" class="LineNr">353 </span><span class="Comment"># return true on error</span>
-<a name="L354"></a><span id="L354" class="LineNr">354 </span><span class="muRecipe">def</span> expect-from-channel stdin:&amp;:source:char, expected:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool, stdin:&amp;:source:char, screen:&amp;:screen [
-<a name="L355"></a><span id="L355" class="LineNr">355 </span>  <span class="Constant">local-scope</span>
-<a name="L356"></a><span id="L356" class="LineNr">356 </span>  <span class="Constant">load-ingredients</span>
-<a name="L357"></a><span id="L357" class="LineNr">357 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
-<a name="L358"></a><span id="L358" class="LineNr">358 </span>  <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
-<a name="L359"></a><span id="L359" class="LineNr">359 </span>  <span class="Delimiter">{</span>
-<a name="L360"></a><span id="L360" class="LineNr">360 </span>    match?:bool <span class="Special">&lt;-</span> equal c, expected
-<a name="L361"></a><span id="L361" class="LineNr">361 </span>    <span class="muControl">break-if</span> match?
-<a name="L362"></a><span id="L362" class="LineNr">362 </span>    print screen, <span class="Constant">[expected character not found]</span>
-<a name="L363"></a><span id="L363" class="LineNr">363 </span>  <span class="Delimiter">}</span>
-<a name="L364"></a><span id="L364" class="LineNr">364 </span>  result <span class="Special">&lt;-</span> not match?
-<a name="L365"></a><span id="L365" class="LineNr">365 </span>]
-<a name="L366"></a><span id="L366" class="LineNr">366 </span>
-<a name="L367"></a><span id="L367" class="LineNr">367 </span><span class="muScenario">scenario</span> read-move-blocking [
-<a name="L368"></a><span id="L368" class="LineNr">368 </span>  <span class="Constant">local-scope</span>
-<a name="L369"></a><span id="L369" class="LineNr">369 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-<a name="L370"></a><span id="L370" class="LineNr">370 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
-<a name="L371"></a><span id="L371" class="LineNr">371 </span>  read-move-routine:num/routine <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
-<a name="L372"></a><span id="L372" class="LineNr">372 </span>  run [
-<a name="L373"></a><span id="L373" class="LineNr">373 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
-<a name="L374"></a><span id="L374" class="LineNr">374 </span>    wait-for-routine-to-block read-move-routine
-<a name="L375"></a><span id="L375" class="LineNr">375 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L376"></a><span id="L376" class="LineNr">376 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L377"></a><span id="L377" class="LineNr">377 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L378"></a><span id="L378" class="LineNr">378 </span><span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
-<a name="L379"></a><span id="L379" class="LineNr">379 </span>    <span class="Comment"># press 'a'</span>
-<a name="L380"></a><span id="L380" class="LineNr">380 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
-<a name="L381"></a><span id="L381" class="LineNr">381 </span>    restart read-move-routine
-<a name="L382"></a><span id="L382" class="LineNr">382 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
-<a name="L383"></a><span id="L383" class="LineNr">383 </span>    wait-for-routine-to-block read-move-routine
-<a name="L384"></a><span id="L384" class="LineNr">384 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L385"></a><span id="L385" class="LineNr">385 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L386"></a><span id="L386" class="LineNr">386 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L387"></a><span id="L387" class="LineNr">387 </span><span class="Constant">F read-move-blocking: routine failed to pause after rank 'a']</span>
-<a name="L388"></a><span id="L388" class="LineNr">388 </span>    <span class="Comment"># press '2'</span>
-<a name="L389"></a><span id="L389" class="LineNr">389 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
-<a name="L390"></a><span id="L390" class="LineNr">390 </span>    restart read-move-routine
-<a name="L391"></a><span id="L391" class="LineNr">391 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
-<a name="L392"></a><span id="L392" class="LineNr">392 </span>    wait-for-routine-to-block read-move-routine
-<a name="L393"></a><span id="L393" class="LineNr">393 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L394"></a><span id="L394" class="LineNr">394 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L395"></a><span id="L395" class="LineNr">395 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L396"></a><span id="L396" class="LineNr">396 </span><span class="Constant">F read-move-blocking: routine failed to pause after file 'a2']</span>
-<a name="L397"></a><span id="L397" class="LineNr">397 </span>    <span class="Comment"># press '-'</span>
-<a name="L398"></a><span id="L398" class="LineNr">398 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">45/'-'</span>
-<a name="L399"></a><span id="L399" class="LineNr">399 </span>    restart read-move-routine
-<a name="L400"></a><span id="L400" class="LineNr">400 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
-<a name="L401"></a><span id="L401" class="LineNr">401 </span>    wait-for-routine-to-block read-move-routine
-<a name="L402"></a><span id="L402" class="LineNr">402 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L403"></a><span id="L403" class="LineNr">403 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L404"></a><span id="L404" class="LineNr">404 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L405"></a><span id="L405" class="LineNr">405 </span><span class="Constant">F read-move-blocking: routine failed to pause after hyphen 'a2-']</span>
-<a name="L406"></a><span id="L406" class="LineNr">406 </span>    <span class="Comment"># press 'a'</span>
-<a name="L407"></a><span id="L407" class="LineNr">407 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
-<a name="L408"></a><span id="L408" class="LineNr">408 </span>    restart read-move-routine
-<a name="L409"></a><span id="L409" class="LineNr">409 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
-<a name="L410"></a><span id="L410" class="LineNr">410 </span>    wait-for-routine-to-block read-move-routine
-<a name="L411"></a><span id="L411" class="LineNr">411 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L412"></a><span id="L412" class="LineNr">412 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L413"></a><span id="L413" class="LineNr">413 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L414"></a><span id="L414" class="LineNr">414 </span><span class="Constant">F read-move-blocking: routine failed to pause after rank 'a2-a']</span>
-<a name="L415"></a><span id="L415" class="LineNr">415 </span>    <span class="Comment"># press '4'</span>
-<a name="L416"></a><span id="L416" class="LineNr">416 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">52/'4'</span>
-<a name="L417"></a><span id="L417" class="LineNr">417 </span>    restart read-move-routine
-<a name="L418"></a><span id="L418" class="LineNr">418 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
-<a name="L419"></a><span id="L419" class="LineNr">419 </span>    wait-for-routine-to-block read-move-routine
-<a name="L420"></a><span id="L420" class="LineNr">420 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L421"></a><span id="L421" class="LineNr">421 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L422"></a><span id="L422" class="LineNr">422 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L423"></a><span id="L423" class="LineNr">423 </span><span class="Constant">F read-move-blocking: routine failed to pause after file 'a2-a4']</span>
-<a name="L424"></a><span id="L424" class="LineNr">424 </span>    <span class="Comment"># press 'newline'</span>
-<a name="L425"></a><span id="L425" class="LineNr">425 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
-<a name="L426"></a><span id="L426" class="LineNr">426 </span>    restart read-move-routine
-<a name="L427"></a><span id="L427" class="LineNr">427 </span>    <span class="Comment"># 'read-move' now completes</span>
-<a name="L428"></a><span id="L428" class="LineNr">428 </span>    wait-for-routine-to-block read-move-routine
-<a name="L429"></a><span id="L429" class="LineNr">429 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L430"></a><span id="L430" class="LineNr">430 </span>    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
-<a name="L431"></a><span id="L431" class="LineNr">431 </span>    assert completed?, <span class="Constant">[ </span>
-<a name="L432"></a><span id="L432" class="LineNr">432 </span><span class="Constant">F read-move-blocking: routine failed to terminate on newline]</span>
-<a name="L433"></a><span id="L433" class="LineNr">433 </span>    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
-<a name="L434"></a><span id="L434" class="LineNr">434 </span>  ]
-<a name="L435"></a><span id="L435" class="LineNr">435 </span>  trace-should-contain [
-<a name="L436"></a><span id="L436" class="LineNr">436 </span>    test: reached end
-<a name="L437"></a><span id="L437" class="LineNr">437 </span>  ]
-<a name="L438"></a><span id="L438" class="LineNr">438 </span>]
-<a name="L439"></a><span id="L439" class="LineNr">439 </span>
-<a name="L440"></a><span id="L440" class="LineNr">440 </span><span class="muScenario">scenario</span> read-move-quit [
-<a name="L441"></a><span id="L441" class="LineNr">441 </span>  <span class="Constant">local-scope</span>
-<a name="L442"></a><span id="L442" class="LineNr">442 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-<a name="L443"></a><span id="L443" class="LineNr">443 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
-<a name="L444"></a><span id="L444" class="LineNr">444 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
-<a name="L445"></a><span id="L445" class="LineNr">445 </span>  run [
-<a name="L446"></a><span id="L446" class="LineNr">446 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
-<a name="L447"></a><span id="L447" class="LineNr">447 </span>    wait-for-routine-to-block read-move-routine
-<a name="L448"></a><span id="L448" class="LineNr">448 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L449"></a><span id="L449" class="LineNr">449 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L450"></a><span id="L450" class="LineNr">450 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L451"></a><span id="L451" class="LineNr">451 </span><span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
-<a name="L452"></a><span id="L452" class="LineNr">452 </span>    <span class="Comment"># press 'q'</span>
-<a name="L453"></a><span id="L453" class="LineNr">453 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">113/q</span>
-<a name="L454"></a><span id="L454" class="LineNr">454 </span>    restart read-move-routine
-<a name="L455"></a><span id="L455" class="LineNr">455 </span>    <span class="Comment"># 'read-move' completes</span>
-<a name="L456"></a><span id="L456" class="LineNr">456 </span>    wait-for-routine-to-block read-move-routine
-<a name="L457"></a><span id="L457" class="LineNr">457 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L458"></a><span id="L458" class="LineNr">458 </span>    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
-<a name="L459"></a><span id="L459" class="LineNr">459 </span>    assert completed?, <span class="Constant">[ </span>
-<a name="L460"></a><span id="L460" class="LineNr">460 </span><span class="Constant">F read-move-quit: routine failed to terminate on 'q']</span>
-<a name="L461"></a><span id="L461" class="LineNr">461 </span>    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
-<a name="L462"></a><span id="L462" class="LineNr">462 </span>  ]
-<a name="L463"></a><span id="L463" class="LineNr">463 </span>  trace-should-contain [
-<a name="L464"></a><span id="L464" class="LineNr">464 </span>    test: reached end
-<a name="L465"></a><span id="L465" class="LineNr">465 </span>  ]
-<a name="L466"></a><span id="L466" class="LineNr">466 </span>]
-<a name="L467"></a><span id="L467" class="LineNr">467 </span>
-<a name="L468"></a><span id="L468" class="LineNr">468 </span><span class="muScenario">scenario</span> read-move-illegal-file [
-<a name="L469"></a><span id="L469" class="LineNr">469 </span>  <span class="Constant">local-scope</span>
-<a name="L470"></a><span id="L470" class="LineNr">470 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-<a name="L471"></a><span id="L471" class="LineNr">471 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
-<a name="L472"></a><span id="L472" class="LineNr">472 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
-<a name="L473"></a><span id="L473" class="LineNr">473 </span>  run [
-<a name="L474"></a><span id="L474" class="LineNr">474 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
-<a name="L475"></a><span id="L475" class="LineNr">475 </span>    wait-for-routine-to-block read-move-routine
-<a name="L476"></a><span id="L476" class="LineNr">476 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L477"></a><span id="L477" class="LineNr">477 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L478"></a><span id="L478" class="LineNr">478 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L479"></a><span id="L479" class="LineNr">479 </span><span class="Constant">F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]</span>
-<a name="L480"></a><span id="L480" class="LineNr">480 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
-<a name="L481"></a><span id="L481" class="LineNr">481 </span>    restart read-move-routine
-<a name="L482"></a><span id="L482" class="LineNr">482 </span>    wait-for-routine-to-block read-move-routine
-<a name="L483"></a><span id="L483" class="LineNr">483 </span>  ]
-<a name="L484"></a><span id="L484" class="LineNr">484 </span>  screen-should-contain [
-<a name="L485"></a><span id="L485" class="LineNr">485 </span>   <span class="Constant"> .file too low: 2     .</span>
-<a name="L486"></a><span id="L486" class="LineNr">486 </span>   <span class="Constant"> .                    .</span>
-<a name="L487"></a><span id="L487" class="LineNr">487 </span>  ]
-<a name="L488"></a><span id="L488" class="LineNr">488 </span>]
-<a name="L489"></a><span id="L489" class="LineNr">489 </span>
-<a name="L490"></a><span id="L490" class="LineNr">490 </span><span class="muScenario">scenario</span> read-move-illegal-rank [
-<a name="L491"></a><span id="L491" class="LineNr">491 </span>  <span class="Constant">local-scope</span>
-<a name="L492"></a><span id="L492" class="LineNr">492 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-<a name="L493"></a><span id="L493" class="LineNr">493 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
-<a name="L494"></a><span id="L494" class="LineNr">494 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
-<a name="L495"></a><span id="L495" class="LineNr">495 </span>  run [
-<a name="L496"></a><span id="L496" class="LineNr">496 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
-<a name="L497"></a><span id="L497" class="LineNr">497 </span>    wait-for-routine-to-block read-move-routine
-<a name="L498"></a><span id="L498" class="LineNr">498 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L499"></a><span id="L499" class="LineNr">499 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L500"></a><span id="L500" class="LineNr">500 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L501"></a><span id="L501" class="LineNr">501 </span><span class="Constant">F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]</span>
-<a name="L502"></a><span id="L502" class="LineNr">502 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
-<a name="L503"></a><span id="L503" class="LineNr">503 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
-<a name="L504"></a><span id="L504" class="LineNr">504 </span>    restart read-move-routine
-<a name="L505"></a><span id="L505" class="LineNr">505 </span>    wait-for-routine-to-block read-move-routine
-<a name="L506"></a><span id="L506" class="LineNr">506 </span>  ]
-<a name="L507"></a><span id="L507" class="LineNr">507 </span>  screen-should-contain [
-<a name="L508"></a><span id="L508" class="LineNr">508 </span>   <span class="Constant"> .rank too high: a    .</span>
-<a name="L509"></a><span id="L509" class="LineNr">509 </span>   <span class="Constant"> .                    .</span>
-<a name="L510"></a><span id="L510" class="LineNr">510 </span>  ]
-<a name="L511"></a><span id="L511" class="LineNr">511 </span>]
-<a name="L512"></a><span id="L512" class="LineNr">512 </span>
-<a name="L513"></a><span id="L513" class="LineNr">513 </span><span class="muScenario">scenario</span> read-move-empty [
-<a name="L514"></a><span id="L514" class="LineNr">514 </span>  <span class="Constant">local-scope</span>
-<a name="L515"></a><span id="L515" class="LineNr">515 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
-<a name="L516"></a><span id="L516" class="LineNr">516 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
-<a name="L517"></a><span id="L517" class="LineNr">517 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
-<a name="L518"></a><span id="L518" class="LineNr">518 </span>  run [
-<a name="L519"></a><span id="L519" class="LineNr">519 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
-<a name="L520"></a><span id="L520" class="LineNr">520 </span>    wait-for-routine-to-block read-move-routine
-<a name="L521"></a><span id="L521" class="LineNr">521 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
-<a name="L522"></a><span id="L522" class="LineNr">522 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
-<a name="L523"></a><span id="L523" class="LineNr">523 </span>    assert waiting?, <span class="Constant">[ </span>
-<a name="L524"></a><span id="L524" class="LineNr">524 </span><span class="Constant">F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]</span>
-<a name="L525"></a><span id="L525" class="LineNr">525 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">10/newline</span>
-<a name="L526"></a><span id="L526" class="LineNr">526 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
-<a name="L527"></a><span id="L527" class="LineNr">527 </span>    restart read-move-routine
-<a name="L528"></a><span id="L528" class="LineNr">528 </span>    wait-for-routine-to-block read-move-routine
-<a name="L529"></a><span id="L529" class="LineNr">529 </span>  ]
-<a name="L530"></a><span id="L530" class="LineNr">530 </span>  screen-should-contain [
-<a name="L531"></a><span id="L531" class="LineNr">531 </span>   <span class="Constant"> .that's not enough   .</span>
-<a name="L532"></a><span id="L532" class="LineNr">532 </span>   <span class="Constant"> .                    .</span>
-<a name="L533"></a><span id="L533" class="LineNr">533 </span>  ]
-<a name="L534"></a><span id="L534" class="LineNr">534 </span>]
-<a name="L535"></a><span id="L535" class="LineNr">535 </span>
-<a name="L536"></a><span id="L536" class="LineNr">536 </span><span class="muRecipe">def</span> make-move board:board, m:&amp;:move<span class="muRecipe"> -&gt; </span>board:board [
-<a name="L537"></a><span id="L537" class="LineNr">537 </span>  <span class="Constant">local-scope</span>
-<a name="L538"></a><span id="L538" class="LineNr">538 </span>  <span class="Constant">load-ingredients</span>
-<a name="L539"></a><span id="L539" class="LineNr">539 </span>  from-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-file:offset</span>
-<a name="L540"></a><span id="L540" class="LineNr">540 </span>  from-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-rank:offset</span>
-<a name="L541"></a><span id="L541" class="LineNr">541 </span>  to-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-file:offset</span>
-<a name="L542"></a><span id="L542" class="LineNr">542 </span>  to-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-rank:offset</span>
-<a name="L543"></a><span id="L543" class="LineNr">543 </span>  from-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, from-file
-<a name="L544"></a><span id="L544" class="LineNr">544 </span>  to-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, to-file
-<a name="L545"></a><span id="L545" class="LineNr">545 </span>  src:char/square <span class="Special">&lt;-</span> index *from-f, from-rank
-<a name="L546"></a><span id="L546" class="LineNr">546 </span>  *to-f <span class="Special">&lt;-</span> put-index *to-f, to-rank, src
-<a name="L547"></a><span id="L547" class="LineNr">547 </span>  *from-f <span class="Special">&lt;-</span> put-index *from-f, from-rank, <span class="Constant">32/space</span>
-<a name="L548"></a><span id="L548" class="LineNr">548 </span>]
-<a name="L549"></a><span id="L549" class="LineNr">549 </span>
-<a name="L550"></a><span id="L550" class="LineNr">550 </span><span class="muScenario">scenario</span> making-a-move [
-<a name="L551"></a><span id="L551" class="LineNr">551 </span>  <span class="Constant">local-scope</span>
-<a name="L552"></a><span id="L552" class="LineNr">552 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
-<a name="L553"></a><span id="L553" class="LineNr">553 </span>  board:board <span class="Special">&lt;-</span> initial-position
-<a name="L554"></a><span id="L554" class="LineNr">554 </span>  move:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
-<a name="L555"></a><span id="L555" class="LineNr">555 </span>  *move <span class="Special">&lt;-</span> merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
-<a name="L556"></a><span id="L556" class="LineNr">556 </span>  run [
-<a name="L557"></a><span id="L557" class="LineNr">557 </span>    board <span class="Special">&lt;-</span> make-move board, move
-<a name="L558"></a><span id="L558" class="LineNr">558 </span>    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
-<a name="L559"></a><span id="L559" class="LineNr">559 </span>  ]
-<a name="L560"></a><span id="L560" class="LineNr">560 </span>  screen-should-contain [
-<a name="L561"></a><span id="L561" class="LineNr">561 </span>  <span class="Comment">#  012345678901234567890123456789</span>
-<a name="L562"></a><span id="L562" class="LineNr">562 </span>   <span class="Constant"> .8 | r n b q k b n r           .</span>
-<a name="L563"></a><span id="L563" class="LineNr">563 </span>   <span class="Constant"> .7 | p p p p p p p p           .</span>
-<a name="L564"></a><span id="L564" class="LineNr">564 </span>   <span class="Constant"> .6 |                           .</span>
-<a name="L565"></a><span id="L565" class="LineNr">565 </span>   <span class="Constant"> .5 |                           .</span>
-<a name="L566"></a><span id="L566" class="LineNr">566 </span>   <span class="Constant"> .4 |             P             .</span>
-<a name="L567"></a><span id="L567" class="LineNr">567 </span>   <span class="Constant"> .3 |                           .</span>
-<a name="L568"></a><span id="L568" class="LineNr">568 </span>   <span class="Constant"> .2 | P P P P P P   P           .</span>
-<a name="L569"></a><span id="L569" class="LineNr">569 </span>   <span class="Constant"> .1 | R N B Q K B N R           .</span>
-<a name="L570"></a><span id="L570" class="LineNr">570 </span>   <span class="Constant"> .  +----------------           .</span>
-<a name="L571"></a><span id="L571" class="LineNr">571 </span>   <span class="Constant"> .    a b c d e f g h           .</span>
-<a name="L572"></a><span id="L572" class="LineNr">572 </span>   <span class="Constant"> .                              .</span>
-<a name="L573"></a><span id="L573" class="LineNr">573 </span>  ]
-<a name="L574"></a><span id="L574" class="LineNr">574 </span>]
+<span id="L1" class="LineNr">  1 </span><span class="Comment"># Chessboard program: you type in moves in algebraic notation, and it'll</span>
+<span id="L2" class="LineNr">  2 </span><span class="Comment"># display the position after each move.</span>
+<span id="L3" class="LineNr">  3 </span>
+<span id="L4" class="LineNr">  4 </span><span class="muRecipe">def</span> main [
+<span id="L5" class="LineNr">  5 </span>  <span class="Constant">local-scope</span>
+<span id="L6" class="LineNr">  6 </span>  open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
+<span id="L7" class="LineNr">  7 </span>
+<span id="L8" class="LineNr">  8 </span>  <span class="Comment"># The chessboard function takes keyboard and screen objects as 'ingredients'.</span>
+<span id="L9" class="LineNr">  9 </span>  <span class="Comment">#</span>
+<span id="L10" class="LineNr"> 10 </span>  <span class="Comment"># In Mu it is good form (though not required) to explicitly state what</span>
+<span id="L11" class="LineNr"> 11 </span>  <span class="Comment"># hardware a function needs.</span>
+<span id="L12" class="LineNr"> 12 </span>  <span class="Comment">#</span>
+<span id="L13" class="LineNr"> 13 </span>  <span class="Comment"># Here the console and screen are both 0, which usually indicates real</span>
+<span id="L14" class="LineNr"> 14 </span>  <span class="Comment"># hardware rather than a fake for testing as you'll see below.</span>
+<span id="L15" class="LineNr"> 15 </span>  chessboard <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>
+<span id="L16" class="LineNr"> 16 </span>
+<span id="L17" class="LineNr"> 17 </span>  close-console  <span class="Comment"># clean up screen, keyboard and mouse</span>
+<span id="L18" class="LineNr"> 18 </span>]
+<span id="L19" class="LineNr"> 19 </span>
+<span id="L20" class="LineNr"> 20 </span><span class="SalientComment">## But enough about Mu. Here's what it looks like to run the chessboard program.</span>
+<span id="L21" class="LineNr"> 21 </span>
+<span id="L22" class="LineNr"> 22 </span><span class="muScenario">scenario</span> print-board-and-read-move [
+<span id="L23" class="LineNr"> 23 </span>  <span class="Constant">local-scope</span>
+<span id="L24" class="LineNr"> 24 </span>  trace-until <span class="Constant">100/app</span>
+<span id="L25" class="LineNr"> 25 </span>  <span class="Comment"># we'll make the screen really wide because the program currently prints out a long line</span>
+<span id="L26" class="LineNr"> 26 </span>  assume-screen <span class="Constant">120/width</span>, <span class="Constant">20/height</span>
+<span id="L27" class="LineNr"> 27 </span>  <span class="Comment"># initialize keyboard to type in a move</span>
+<span id="L28" class="LineNr"> 28 </span>  assume-console [
+<span id="L29" class="LineNr"> 29 </span>    type <span class="Constant">[a2-a4</span>
+<span id="L30" class="LineNr"> 30 </span><span class="Constant">]</span>
+<span id="L31" class="LineNr"> 31 </span>  ]
+<span id="L32" class="LineNr"> 32 </span>  run [
+<span id="L33" class="LineNr"> 33 </span>    screen:&amp;:screen, console:&amp;:console <span class="Special">&lt;-</span> chessboard screen:&amp;:screen, console:&amp;:console
+<span id="L34" class="LineNr"> 34 </span>    <span class="Comment"># icon for the cursor</span>
+<span id="L35" class="LineNr"> 35 </span>    cursor-icon:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L36" class="LineNr"> 36 </span>    screen <span class="Special">&lt;-</span> print screen, cursor-icon
+<span id="L37" class="LineNr"> 37 </span>  ]
+<span id="L38" class="LineNr"> 38 </span>  screen-should-contain [
+<span id="L39" class="LineNr"> 39 </span>  <span class="Comment">#            1         2         3         4         5         6         7         8         9         10        11</span>
+<span id="L40" class="LineNr"> 40 </span>  <span class="Comment">#  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789</span>
+<span id="L41" class="LineNr"> 41 </span>   <span class="Constant"> .Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.         .</span>
+<span id="L42" class="LineNr"> 42 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L43" class="LineNr"> 43 </span>   <span class="Constant"> .8 | r n b q k b n r                                                                                                     .</span>
+<span id="L44" class="LineNr"> 44 </span>   <span class="Constant"> .7 | p p p p p p p p                                                                                                     .</span>
+<span id="L45" class="LineNr"> 45 </span>   <span class="Constant"> .6 |                                                                                                                     .</span>
+<span id="L46" class="LineNr"> 46 </span>   <span class="Constant"> .5 |                                                                                                                     .</span>
+<span id="L47" class="LineNr"> 47 </span>   <span class="Constant"> .4 | P                                                                                                                   .</span>
+<span id="L48" class="LineNr"> 48 </span>   <span class="Constant"> .3 |                                                                                                                     .</span>
+<span id="L49" class="LineNr"> 49 </span>   <span class="Constant"> .2 |   P P P P P P P                                                                                                     .</span>
+<span id="L50" class="LineNr"> 50 </span>   <span class="Constant"> .1 | R N B Q K B N R                                                                                                     .</span>
+<span id="L51" class="LineNr"> 51 </span>   <span class="Constant"> .  +----------------                                                                                                     .</span>
+<span id="L52" class="LineNr"> 52 </span>   <span class="Constant"> .    a b c d e f g h                                                                                                     .</span>
+<span id="L53" class="LineNr"> 53 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L54" class="LineNr"> 54 </span>   <span class="Constant"> .Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.                               .</span>
+<span id="L55" class="LineNr"> 55 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L56" class="LineNr"> 56 </span>   <span class="Constant"> .Hit 'q' to exit.                                                                                                        .</span>
+<span id="L57" class="LineNr"> 57 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L58" class="LineNr"> 58 </span>   <span class="Constant"> .move: ␣                                                                                                                 .</span>
+<span id="L59" class="LineNr"> 59 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L60" class="LineNr"> 60 </span>   <span class="Constant"> .                                                                                                                        .</span>
+<span id="L61" class="LineNr"> 61 </span>  ]
+<span id="L62" class="LineNr"> 62 </span>]
+<span id="L63" class="LineNr"> 63 </span>
+<span id="L64" class="LineNr"> 64 </span><span class="SalientComment">## Here's how 'chessboard' is implemented.</span>
+<span id="L65" class="LineNr"> 65 </span>
+<span id="L66" class="LineNr"> 66 </span><span class="muData">type</span> board = &amp;:@:&amp;:@:char  <span class="Comment"># a 2-D array of arrays of characters</span>
+<span id="L67" class="LineNr"> 67 </span>
+<span id="L68" class="LineNr"> 68 </span><span class="muRecipe">def</span> chessboard screen:&amp;:screen, console:&amp;:console<span class="muRecipe"> -&gt; </span>screen:&amp;:screen, console:&amp;:console [
+<span id="L69" class="LineNr"> 69 </span>  <span class="Constant">local-scope</span>
+<span id="L70" class="LineNr"> 70 </span>  <span class="Constant">load-ingredients</span>
+<span id="L71" class="LineNr"> 71 </span>  board:board <span class="Special">&lt;-</span> initial-position
+<span id="L72" class="LineNr"> 72 </span>  <span class="Comment"># hook up stdin</span>
+<span id="L73" class="LineNr"> 73 </span>  stdin-in:&amp;:source:char, stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
+<span id="L74" class="LineNr"> 74 </span>  start-running send-keys-to-channel, console, stdin-out, screen
+<span id="L75" class="LineNr"> 75 </span>  <span class="Comment"># buffer lines in stdin</span>
+<span id="L76" class="LineNr"> 76 </span>  buffered-stdin-in:&amp;:source:char, buffered-stdin-out:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
+<span id="L77" class="LineNr"> 77 </span>  start-running buffer-lines, stdin-in, buffered-stdin-out
+<span id="L78" class="LineNr"> 78 </span>  <span class="Delimiter">{</span>
+<span id="L79" class="LineNr"> 79 </span>    print screen, <span class="Constant">[Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.</span>
+<span id="L80" class="LineNr"> 80 </span><span class="Constant">]</span>
+<span id="L81" class="LineNr"> 81 </span>    cursor-to-next-line screen
+<span id="L82" class="LineNr"> 82 </span>    print-board screen, board
+<span id="L83" class="LineNr"> 83 </span>    cursor-to-next-line screen
+<span id="L84" class="LineNr"> 84 </span>    print screen, <span class="Constant">[Type in your move as &lt;from square&gt;-&lt;to square&gt;. For example: 'a2-a4'. Then press &lt;enter&gt;.</span>
+<span id="L85" class="LineNr"> 85 </span><span class="Constant">]</span>
+<span id="L86" class="LineNr"> 86 </span>    cursor-to-next-line screen
+<span id="L87" class="LineNr"> 87 </span>    print screen <span class="Constant">[Hit 'q' to exit.</span>
+<span id="L88" class="LineNr"> 88 </span><span class="Constant">]</span>
+<span id="L89" class="LineNr"> 89 </span>    <span class="Delimiter">{</span>
+<span id="L90" class="LineNr"> 90 </span>      cursor-to-next-line screen
+<span id="L91" class="LineNr"> 91 </span>      screen <span class="Special">&lt;-</span> print screen, <span class="Constant">[move: ]</span>
+<span id="L92" class="LineNr"> 92 </span>      m:&amp;:move, quit:bool, error:bool <span class="Special">&lt;-</span> read-move buffered-stdin-in, screen
+<span id="L93" class="LineNr"> 93 </span>      <span class="muControl">break-if</span> quit, <span class="Constant">+quit</span>
+<span id="L94" class="LineNr"> 94 </span>      buffered-stdin-in <span class="Special">&lt;-</span> clear buffered-stdin-in  <span class="Comment"># cleanup after error. todo: test this?</span>
+<span id="L95" class="LineNr"> 95 </span>      <span class="muControl">loop-if</span> error
+<span id="L96" class="LineNr"> 96 </span>    <span class="Delimiter">}</span>
+<span id="L97" class="LineNr"> 97 </span>    board <span class="Special">&lt;-</span> make-move board, m
+<span id="L98" class="LineNr"> 98 </span>    screen <span class="Special">&lt;-</span> clear-screen screen
+<span id="L99" class="LineNr"> 99 </span>    <span class="muControl">loop</span>
+<span id="L100" class="LineNr">100 </span>  <span class="Delimiter">}</span>
+<span id="L101" class="LineNr">101 </span><span class="Constant">  +quit</span>
+<span id="L102" class="LineNr">102 </span>]
+<span id="L103" class="LineNr">103 </span>
+<span id="L104" class="LineNr">104 </span><span class="SalientComment">## a board is an array of files, a file is an array of characters (squares)</span>
+<span id="L105" class="LineNr">105 </span>
+<span id="L106" class="LineNr">106 </span><span class="muRecipe">def</span> new-board initial-position:&amp;:@:char<span class="muRecipe"> -&gt; </span>board:board [
+<span id="L107" class="LineNr">107 </span>  <span class="Constant">local-scope</span>
+<span id="L108" class="LineNr">108 </span>  <span class="Constant">load-ingredients</span>
+<span id="L109" class="LineNr">109 </span>  <span class="Comment"># assert(length(initial-position) == 64)</span>
+<span id="L110" class="LineNr">110 </span>  len:num <span class="Special">&lt;-</span> length *initial-position
+<span id="L111" class="LineNr">111 </span>  correct-length?:bool <span class="Special">&lt;-</span> equal len,<span class="Constant"> 64</span>
+<span id="L112" class="LineNr">112 </span>  assert correct-length?, <span class="Constant">[chessboard had incorrect size]</span>
+<span id="L113" class="LineNr">113 </span>  <span class="Comment"># board is an array of pointers to files; file is an array of characters</span>
+<span id="L114" class="LineNr">114 </span>  board <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(address array character): type<span class="Delimiter">}</span>,<span class="Constant"> 8</span>
+<span id="L115" class="LineNr">115 </span>  col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L116" class="LineNr">116 </span>  <span class="Delimiter">{</span>
+<span id="L117" class="LineNr">117 </span>    done?:bool <span class="Special">&lt;-</span> equal col,<span class="Constant"> 8</span>
+<span id="L118" class="LineNr">118 </span>    <span class="muControl">break-if</span> done?
+<span id="L119" class="LineNr">119 </span>    file:&amp;:@:char <span class="Special">&lt;-</span> new-file initial-position, col
+<span id="L120" class="LineNr">120 </span>    *board <span class="Special">&lt;-</span> put-index *board, col, file
+<span id="L121" class="LineNr">121 </span>    col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
+<span id="L122" class="LineNr">122 </span>    <span class="muControl">loop</span>
+<span id="L123" class="LineNr">123 </span>  <span class="Delimiter">}</span>
+<span id="L124" class="LineNr">124 </span>]
+<span id="L125" class="LineNr">125 </span>
+<span id="L126" class="LineNr">126 </span><span class="muRecipe">def</span> new-file position:&amp;:@:char, index:num<span class="muRecipe"> -&gt; </span>result:&amp;:@:char [
+<span id="L127" class="LineNr">127 </span>  <span class="Constant">local-scope</span>
+<span id="L128" class="LineNr">128 </span>  <span class="Constant">load-ingredients</span>
+<span id="L129" class="LineNr">129 </span>  index <span class="Special">&lt;-</span> multiply index,<span class="Constant"> 8</span>
+<span id="L130" class="LineNr">130 </span>  result <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>,<span class="Constant"> 8</span>
+<span id="L131" class="LineNr">131 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L132" class="LineNr">132 </span>  <span class="Delimiter">{</span>
+<span id="L133" class="LineNr">133 </span>    done?:bool <span class="Special">&lt;-</span> equal row,<span class="Constant"> 8</span>
+<span id="L134" class="LineNr">134 </span>    <span class="muControl">break-if</span> done?
+<span id="L135" class="LineNr">135 </span>    square:char <span class="Special">&lt;-</span> index *position, index
+<span id="L136" class="LineNr">136 </span>    *result <span class="Special">&lt;-</span> put-index *result, row, square
+<span id="L137" class="LineNr">137 </span>    row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L138" class="LineNr">138 </span>    index <span class="Special">&lt;-</span> add index,<span class="Constant"> 1</span>
+<span id="L139" class="LineNr">139 </span>    <span class="muControl">loop</span>
+<span id="L140" class="LineNr">140 </span>  <span class="Delimiter">}</span>
+<span id="L141" class="LineNr">141 </span>]
+<span id="L142" class="LineNr">142 </span>
+<span id="L143" class="LineNr">143 </span><span class="muRecipe">def</span> print-board screen:&amp;:screen, board:board<span class="muRecipe"> -&gt; </span>screen:&amp;:screen [
+<span id="L144" class="LineNr">144 </span>  <span class="Constant">local-scope</span>
+<span id="L145" class="LineNr">145 </span>  <span class="Constant">load-ingredients</span>
+<span id="L146" class="LineNr">146 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 7</span>  <span class="Comment"># start printing from the top of the board</span>
+<span id="L147" class="LineNr">147 </span>  space:char <span class="Special">&lt;-</span> copy <span class="Constant">32/space</span>
+<span id="L148" class="LineNr">148 </span>  <span class="Comment"># print each row</span>
+<span id="L149" class="LineNr">149 </span>  <span class="Delimiter">{</span>
+<span id="L150" class="LineNr">150 </span>    done?:bool <span class="Special">&lt;-</span> lesser-than row,<span class="Constant"> 0</span>
+<span id="L151" class="LineNr">151 </span>    <span class="muControl">break-if</span> done?
+<span id="L152" class="LineNr">152 </span>    <span class="Comment"># print rank number as a legend</span>
+<span id="L153" class="LineNr">153 </span>    rank:num <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L154" class="LineNr">154 </span>    print-integer screen, rank
+<span id="L155" class="LineNr">155 </span>    print screen, <span class="Constant">[ | ]</span>
+<span id="L156" class="LineNr">156 </span>    <span class="Comment"># print each square in the row</span>
+<span id="L157" class="LineNr">157 </span>    col:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L158" class="LineNr">158 </span>    <span class="Delimiter">{</span>
+<span id="L159" class="LineNr">159 </span>      done?:bool <span class="Special">&lt;-</span> equal col:num,<span class="Constant"> 8</span>
+<span id="L160" class="LineNr">160 </span>      <span class="muControl">break-if</span> done?:bool
+<span id="L161" class="LineNr">161 </span>      f:&amp;:@:char <span class="Special">&lt;-</span> index *board, col
+<span id="L162" class="LineNr">162 </span>      c:char <span class="Special">&lt;-</span> index *f, row
+<span id="L163" class="LineNr">163 </span>      print screen, c
+<span id="L164" class="LineNr">164 </span>      print screen, space
+<span id="L165" class="LineNr">165 </span>      col <span class="Special">&lt;-</span> add col,<span class="Constant"> 1</span>
+<span id="L166" class="LineNr">166 </span>      <span class="muControl">loop</span>
+<span id="L167" class="LineNr">167 </span>    <span class="Delimiter">}</span>
+<span id="L168" class="LineNr">168 </span>    row <span class="Special">&lt;-</span> subtract row,<span class="Constant"> 1</span>
+<span id="L169" class="LineNr">169 </span>    cursor-to-next-line screen
+<span id="L170" class="LineNr">170 </span>    <span class="muControl">loop</span>
+<span id="L171" class="LineNr">171 </span>  <span class="Delimiter">}</span>
+<span id="L172" class="LineNr">172 </span>  <span class="Comment"># print file letters as legend</span>
+<span id="L173" class="LineNr">173 </span>  print screen, <span class="Constant">[  +----------------]</span>
+<span id="L174" class="LineNr">174 </span>  cursor-to-next-line screen
+<span id="L175" class="LineNr">175 </span>  print screen, <span class="Constant">[    a b c d e f g h]</span>
+<span id="L176" class="LineNr">176 </span>  cursor-to-next-line screen
+<span id="L177" class="LineNr">177 </span>]
+<span id="L178" class="LineNr">178 </span>
+<span id="L179" class="LineNr">179 </span><span class="muRecipe">def</span> initial-position<span class="muRecipe"> -&gt; </span>board:board [
+<span id="L180" class="LineNr">180 </span>  <span class="Constant">local-scope</span>
+<span id="L181" class="LineNr">181 </span>  <span class="Comment"># layout in memory (in raster order):</span>
+<span id="L182" class="LineNr">182 </span>  <span class="Comment">#   R P _ _ _ _ p r</span>
+<span id="L183" class="LineNr">183 </span>  <span class="Comment">#   N P _ _ _ _ p n</span>
+<span id="L184" class="LineNr">184 </span>  <span class="Comment">#   B P _ _ _ _ p b</span>
+<span id="L185" class="LineNr">185 </span>  <span class="Comment">#   Q P _ _ _ _ p q</span>
+<span id="L186" class="LineNr">186 </span>  <span class="Comment">#   K P _ _ _ _ p k</span>
+<span id="L187" class="LineNr">187 </span>  <span class="Comment">#   B P _ _ _ _ p B</span>
+<span id="L188" class="LineNr">188 </span>  <span class="Comment">#   N P _ _ _ _ p n</span>
+<span id="L189" class="LineNr">189 </span>  <span class="Comment">#   R P _ _ _ _ p r</span>
+<span id="L190" class="LineNr">190 </span>  initial-position:&amp;:@:char <span class="Special">&lt;-</span> new-array <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">81/Q</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">113/q</span>, <span class="Constant">75/K</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">107/k</span>, <span class="Constant">66/B</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">98/b</span>, <span class="Constant">78/N</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">110/n</span>, <span class="Constant">82/R</span>, <span class="Constant">80/P</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">32/blank</span>, <span class="Constant">112/p</span>, <span class="Constant">114/r</span>
+<span id="L191" class="LineNr">191 </span><span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r,</span>
+<span id="L192" class="LineNr">192 </span><span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
+<span id="L193" class="LineNr">193 </span><span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b, </span>
+<span id="L194" class="LineNr">194 </span><span class="CommentedCode">#?       81/Q, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 113/q,</span>
+<span id="L195" class="LineNr">195 </span><span class="CommentedCode">#?       75/K, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 107/k,</span>
+<span id="L196" class="LineNr">196 </span><span class="CommentedCode">#?       66/B, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 98/b,</span>
+<span id="L197" class="LineNr">197 </span><span class="CommentedCode">#?       78/N, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 110/n,</span>
+<span id="L198" class="LineNr">198 </span><span class="CommentedCode">#?       82/R, 80/P, 32/blank, 32/blank, 32/blank, 32/blank, 112/p, 114/r</span>
+<span id="L199" class="LineNr">199 </span>  board <span class="Special">&lt;-</span> new-board initial-position
+<span id="L200" class="LineNr">200 </span>]
+<span id="L201" class="LineNr">201 </span>
+<span id="L202" class="LineNr">202 </span><span class="muScenario">scenario</span> printing-the-board [
+<span id="L203" class="LineNr">203 </span>  <span class="Constant">local-scope</span>
+<span id="L204" class="LineNr">204 </span>  board:board <span class="Special">&lt;-</span> initial-position
+<span id="L205" class="LineNr">205 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
+<span id="L206" class="LineNr">206 </span>  run [
+<span id="L207" class="LineNr">207 </span>    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
+<span id="L208" class="LineNr">208 </span>  ]
+<span id="L209" class="LineNr">209 </span>  screen-should-contain [
+<span id="L210" class="LineNr">210 </span>  <span class="Comment">#  012345678901234567890123456789</span>
+<span id="L211" class="LineNr">211 </span>   <span class="Constant"> .8 | r n b q k b n r           .</span>
+<span id="L212" class="LineNr">212 </span>   <span class="Constant"> .7 | p p p p p p p p           .</span>
+<span id="L213" class="LineNr">213 </span>   <span class="Constant"> .6 |                           .</span>
+<span id="L214" class="LineNr">214 </span>   <span class="Constant"> .5 |                           .</span>
+<span id="L215" class="LineNr">215 </span>   <span class="Constant"> .4 |                           .</span>
+<span id="L216" class="LineNr">216 </span>   <span class="Constant"> .3 |                           .</span>
+<span id="L217" class="LineNr">217 </span>   <span class="Constant"> .2 | P P P P P P P P           .</span>
+<span id="L218" class="LineNr">218 </span>   <span class="Constant"> .1 | R N B Q K B N R           .</span>
+<span id="L219" class="LineNr">219 </span>   <span class="Constant"> .  +----------------           .</span>
+<span id="L220" class="LineNr">220 </span>   <span class="Constant"> .    a b c d e f g h           .</span>
+<span id="L221" class="LineNr">221 </span>   <span class="Constant"> .                              .</span>
+<span id="L222" class="LineNr">222 </span>   <span class="Constant"> .                              .</span>
+<span id="L223" class="LineNr">223 </span>  ]
+<span id="L224" class="LineNr">224 </span>]
+<span id="L225" class="LineNr">225 </span>
+<span id="L226" class="LineNr">226 </span><span class="SalientComment">## data structure: move</span>
+<span id="L227" class="LineNr">227 </span>
+<span id="L228" class="LineNr">228 </span><span class="muData">container</span> move [
+<span id="L229" class="LineNr">229 </span>  <span class="Comment"># valid range: 0-7</span>
+<span id="L230" class="LineNr">230 </span>  from-file:num
+<span id="L231" class="LineNr">231 </span>  from-rank:num
+<span id="L232" class="LineNr">232 </span>  to-file:num
+<span id="L233" class="LineNr">233 </span>  to-rank:num
+<span id="L234" class="LineNr">234 </span>]
+<span id="L235" class="LineNr">235 </span>
+<span id="L236" class="LineNr">236 </span><span class="Comment"># prints only error messages to screen</span>
+<span id="L237" class="LineNr">237 </span><span class="muRecipe">def</span> read-move stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:&amp;:move, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
+<span id="L238" class="LineNr">238 </span>  <span class="Constant">local-scope</span>
+<span id="L239" class="LineNr">239 </span>  <span class="Constant">load-ingredients</span>
+<span id="L240" class="LineNr">240 </span>  from-file:num, quit?:bool, error?:bool <span class="Special">&lt;-</span> read-file stdin, screen
+<span id="L241" class="LineNr">241 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
+<span id="L242" class="LineNr">242 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
+<span id="L243" class="LineNr">243 </span>  <span class="Comment"># construct the move object</span>
+<span id="L244" class="LineNr">244 </span>  result:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
+<span id="L245" class="LineNr">245 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-file:offset</span>, from-file
+<span id="L246" class="LineNr">246 </span>  from-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
+<span id="L247" class="LineNr">247 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
+<span id="L248" class="LineNr">248 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
+<span id="L249" class="LineNr">249 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">from-rank:offset</span>, from-rank
+<span id="L250" class="LineNr">250 </span>  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">45/dash</span>, screen
+<span id="L251" class="LineNr">251 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
+<span id="L252" class="LineNr">252 </span>  to-file:num, quit?, error? <span class="Special">&lt;-</span> read-file stdin, screen
+<span id="L253" class="LineNr">253 </span>  <span class="muControl">return-if</span> quit?:bool, <span class="Constant">0/dummy</span>
+<span id="L254" class="LineNr">254 </span>  <span class="muControl">return-if</span> error?:bool, <span class="Constant">0/dummy</span>
+<span id="L255" class="LineNr">255 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-file:offset</span>, to-file
+<span id="L256" class="LineNr">256 </span>  to-rank:num, quit?, error? <span class="Special">&lt;-</span> read-rank stdin, screen
+<span id="L257" class="LineNr">257 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
+<span id="L258" class="LineNr">258 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
+<span id="L259" class="LineNr">259 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">to-rank:offset</span>, to-rank
+<span id="L260" class="LineNr">260 </span>  error? <span class="Special">&lt;-</span> expect-from-channel stdin, <span class="Constant">10/newline</span>, screen
+<span id="L261" class="LineNr">261 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>
+<span id="L262" class="LineNr">262 </span>]
+<span id="L263" class="LineNr">263 </span>
+<span id="L264" class="LineNr">264 </span><span class="Comment"># valid values for file: 0-7</span>
+<span id="L265" class="LineNr">265 </span><span class="muRecipe">def</span> read-file stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>file:num, quit:bool, error:bool, stdin:&amp;:source:char, screen:&amp;:screen [
+<span id="L266" class="LineNr">266 </span>  <span class="Constant">local-scope</span>
+<span id="L267" class="LineNr">267 </span>  <span class="Constant">load-ingredients</span>
+<span id="L268" class="LineNr">268 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
+<span id="L269" class="LineNr">269 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L270" class="LineNr">270 </span>  <span class="Delimiter">{</span>
+<span id="L271" class="LineNr">271 </span>    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">81/Q</span>
+<span id="L272" class="LineNr">272 </span>    <span class="muControl">break-unless</span> q-pressed?
+<span id="L273" class="LineNr">273 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L274" class="LineNr">274 </span>  <span class="Delimiter">}</span>
+<span id="L275" class="LineNr">275 </span>  <span class="Delimiter">{</span>
+<span id="L276" class="LineNr">276 </span>    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
+<span id="L277" class="LineNr">277 </span>    <span class="muControl">break-unless</span> q-pressed?
+<span id="L278" class="LineNr">278 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L279" class="LineNr">279 </span>  <span class="Delimiter">}</span>
+<span id="L280" class="LineNr">280 </span>  <span class="Delimiter">{</span>
+<span id="L281" class="LineNr">281 </span>    empty-fake-keyboard?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">0/eof</span>
+<span id="L282" class="LineNr">282 </span>    <span class="muControl">break-unless</span> empty-fake-keyboard?
+<span id="L283" class="LineNr">283 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L284" class="LineNr">284 </span>  <span class="Delimiter">}</span>
+<span id="L285" class="LineNr">285 </span>  <span class="Delimiter">{</span>
+<span id="L286" class="LineNr">286 </span>    newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
+<span id="L287" class="LineNr">287 </span>    <span class="muControl">break-unless</span> newline?
+<span id="L288" class="LineNr">288 </span>    print screen, <span class="Constant">[that's not enough]</span>
+<span id="L289" class="LineNr">289 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L290" class="LineNr">290 </span>  <span class="Delimiter">}</span>
+<span id="L291" class="LineNr">291 </span>  file:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">97/a</span>
+<span id="L292" class="LineNr">292 </span>  <span class="Comment"># 'a' &lt;= file &lt;= 'h'</span>
+<span id="L293" class="LineNr">293 </span>  <span class="Delimiter">{</span>
+<span id="L294" class="LineNr">294 </span>    above-min:bool <span class="Special">&lt;-</span> greater-or-equal file,<span class="Constant"> 0</span>
+<span id="L295" class="LineNr">295 </span>    <span class="muControl">break-if</span> above-min
+<span id="L296" class="LineNr">296 </span>    print screen, <span class="Constant">[file too low: ]</span>
+<span id="L297" class="LineNr">297 </span>    print screen, c
+<span id="L298" class="LineNr">298 </span>    cursor-to-next-line screen
+<span id="L299" class="LineNr">299 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L300" class="LineNr">300 </span>  <span class="Delimiter">}</span>
+<span id="L301" class="LineNr">301 </span>  <span class="Delimiter">{</span>
+<span id="L302" class="LineNr">302 </span>    below-max:bool <span class="Special">&lt;-</span> lesser-than file,<span class="Constant"> 8</span>
+<span id="L303" class="LineNr">303 </span>    <span class="muControl">break-if</span> below-max
+<span id="L304" class="LineNr">304 </span>    print screen, <span class="Constant">[file too high: ]</span>
+<span id="L305" class="LineNr">305 </span>    print screen, c
+<span id="L306" class="LineNr">306 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L307" class="LineNr">307 </span>  <span class="Delimiter">}</span>
+<span id="L308" class="LineNr">308 </span>  <span class="muControl">return</span> file, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+<span id="L309" class="LineNr">309 </span>]
+<span id="L310" class="LineNr">310 </span>
+<span id="L311" class="LineNr">311 </span><span class="Comment"># valid values for rank: 0-7</span>
+<span id="L312" class="LineNr">312 </span><span class="muRecipe">def</span> read-rank stdin:&amp;:source:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>rank:num, quit?:bool, error?:bool, stdin:&amp;:source:char, screen:&amp;:screen [
+<span id="L313" class="LineNr">313 </span>  <span class="Constant">local-scope</span>
+<span id="L314" class="LineNr">314 </span>  <span class="Constant">load-ingredients</span>
+<span id="L315" class="LineNr">315 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
+<span id="L316" class="LineNr">316 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L317" class="LineNr">317 </span>  <span class="Delimiter">{</span>
+<span id="L318" class="LineNr">318 </span>    q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">8/Q</span>
+<span id="L319" class="LineNr">319 </span>    <span class="muControl">break-unless</span> q-pressed?
+<span id="L320" class="LineNr">320 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L321" class="LineNr">321 </span>  <span class="Delimiter">}</span>
+<span id="L322" class="LineNr">322 </span>  <span class="Delimiter">{</span>
+<span id="L323" class="LineNr">323 </span>    q-pressed? <span class="Special">&lt;-</span> equal c, <span class="Constant">113/q</span>
+<span id="L324" class="LineNr">324 </span>    <span class="muControl">break-unless</span> q-pressed?
+<span id="L325" class="LineNr">325 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
+<span id="L326" class="LineNr">326 </span>  <span class="Delimiter">}</span>
+<span id="L327" class="LineNr">327 </span>  <span class="Delimiter">{</span>
+<span id="L328" class="LineNr">328 </span>    newline?:bool <span class="Special">&lt;-</span> equal c,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
+<span id="L329" class="LineNr">329 </span>    <span class="muControl">break-unless</span> newline?
+<span id="L330" class="LineNr">330 </span>    print screen, <span class="Constant">[that's not enough]</span>
+<span id="L331" class="LineNr">331 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L332" class="LineNr">332 </span>  <span class="Delimiter">}</span>
+<span id="L333" class="LineNr">333 </span>  rank:num <span class="Special">&lt;-</span> subtract c, <span class="Constant">49/'1'</span>
+<span id="L334" class="LineNr">334 </span>  <span class="Comment"># assert'1' &lt;= rank &lt;= '8'</span>
+<span id="L335" class="LineNr">335 </span>  <span class="Delimiter">{</span>
+<span id="L336" class="LineNr">336 </span>    above-min:bool <span class="Special">&lt;-</span> greater-or-equal rank,<span class="Constant"> 0</span>
+<span id="L337" class="LineNr">337 </span>    <span class="muControl">break-if</span> above-min
+<span id="L338" class="LineNr">338 </span>    print screen, <span class="Constant">[rank too low: ]</span>
+<span id="L339" class="LineNr">339 </span>    print screen, c
+<span id="L340" class="LineNr">340 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L341" class="LineNr">341 </span>  <span class="Delimiter">}</span>
+<span id="L342" class="LineNr">342 </span>  <span class="Delimiter">{</span>
+<span id="L343" class="LineNr">343 </span>    below-max:bool <span class="Special">&lt;-</span> lesser-or-equal rank,<span class="Constant"> 7</span>
+<span id="L344" class="LineNr">344 </span>    <span class="muControl">break-if</span> below-max
+<span id="L345" class="LineNr">345 </span>    print screen, <span class="Constant">[rank too high: ]</span>
+<span id="L346" class="LineNr">346 </span>    print screen, c
+<span id="L347" class="LineNr">347 </span>    <span class="muControl">return</span> <span class="Constant">0/dummy</span>, <span class="Constant">0/quit</span>, <span class="Constant">1/error</span>
+<span id="L348" class="LineNr">348 </span>  <span class="Delimiter">}</span>
+<span id="L349" class="LineNr">349 </span>  <span class="muControl">return</span> rank, <span class="Constant">0/quit</span>, <span class="Constant">0/error</span>
+<span id="L350" class="LineNr">350 </span>]
+<span id="L351" class="LineNr">351 </span>
+<span id="L352" class="LineNr">352 </span><span class="Comment"># read a character from the given channel and check that it's what we expect</span>
+<span id="L353" class="LineNr">353 </span><span class="Comment"># return true on error</span>
+<span id="L354" class="LineNr">354 </span><span class="muRecipe">def</span> expect-from-channel stdin:&amp;:source:char, expected:char, screen:&amp;:screen<span class="muRecipe"> -&gt; </span>result:bool, stdin:&amp;:source:char, screen:&amp;:screen [
+<span id="L355" class="LineNr">355 </span>  <span class="Constant">local-scope</span>
+<span id="L356" class="LineNr">356 </span>  <span class="Constant">load-ingredients</span>
+<span id="L357" class="LineNr">357 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
+<span id="L358" class="LineNr">358 </span>  <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
+<span id="L359" class="LineNr">359 </span>  <span class="Delimiter">{</span>
+<span id="L360" class="LineNr">360 </span>    match?:bool <span class="Special">&lt;-</span> equal c, expected
+<span id="L361" class="LineNr">361 </span>    <span class="muControl">break-if</span> match?
+<span id="L362" class="LineNr">362 </span>    print screen, <span class="Constant">[expected character not found]</span>
+<span id="L363" class="LineNr">363 </span>  <span class="Delimiter">}</span>
+<span id="L364" class="LineNr">364 </span>  result <span class="Special">&lt;-</span> not match?
+<span id="L365" class="LineNr">365 </span>]
+<span id="L366" class="LineNr">366 </span>
+<span id="L367" class="LineNr">367 </span><span class="muScenario">scenario</span> read-move-blocking [
+<span id="L368" class="LineNr">368 </span>  <span class="Constant">local-scope</span>
+<span id="L369" class="LineNr">369 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+<span id="L370" class="LineNr">370 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+<span id="L371" class="LineNr">371 </span>  read-move-routine:num/routine <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
+<span id="L372" class="LineNr">372 </span>  run [
+<span id="L373" class="LineNr">373 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L374" class="LineNr">374 </span>    wait-for-routine-to-block read-move-routine
+<span id="L375" class="LineNr">375 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L376" class="LineNr">376 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L377" class="LineNr">377 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L378" class="LineNr">378 </span><span class="Constant">F read-move-blocking: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span id="L379" class="LineNr">379 </span>    <span class="Comment"># press 'a'</span>
+<span id="L380" class="LineNr">380 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L381" class="LineNr">381 </span>    restart read-move-routine
+<span id="L382" class="LineNr">382 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L383" class="LineNr">383 </span>    wait-for-routine-to-block read-move-routine
+<span id="L384" class="LineNr">384 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L385" class="LineNr">385 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L386" class="LineNr">386 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L387" class="LineNr">387 </span><span class="Constant">F read-move-blocking: routine failed to pause after rank 'a']</span>
+<span id="L388" class="LineNr">388 </span>    <span class="Comment"># press '2'</span>
+<span id="L389" class="LineNr">389 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
+<span id="L390" class="LineNr">390 </span>    restart read-move-routine
+<span id="L391" class="LineNr">391 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L392" class="LineNr">392 </span>    wait-for-routine-to-block read-move-routine
+<span id="L393" class="LineNr">393 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L394" class="LineNr">394 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L395" class="LineNr">395 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L396" class="LineNr">396 </span><span class="Constant">F read-move-blocking: routine failed to pause after file 'a2']</span>
+<span id="L397" class="LineNr">397 </span>    <span class="Comment"># press '-'</span>
+<span id="L398" class="LineNr">398 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">45/'-'</span>
+<span id="L399" class="LineNr">399 </span>    restart read-move-routine
+<span id="L400" class="LineNr">400 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L401" class="LineNr">401 </span>    wait-for-routine-to-block read-move-routine
+<span id="L402" class="LineNr">402 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L403" class="LineNr">403 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L404" class="LineNr">404 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L405" class="LineNr">405 </span><span class="Constant">F read-move-blocking: routine failed to pause after hyphen 'a2-']</span>
+<span id="L406" class="LineNr">406 </span>    <span class="Comment"># press 'a'</span>
+<span id="L407" class="LineNr">407 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L408" class="LineNr">408 </span>    restart read-move-routine
+<span id="L409" class="LineNr">409 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L410" class="LineNr">410 </span>    wait-for-routine-to-block read-move-routine
+<span id="L411" class="LineNr">411 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L412" class="LineNr">412 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L413" class="LineNr">413 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L414" class="LineNr">414 </span><span class="Constant">F read-move-blocking: routine failed to pause after rank 'a2-a']</span>
+<span id="L415" class="LineNr">415 </span>    <span class="Comment"># press '4'</span>
+<span id="L416" class="LineNr">416 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">52/'4'</span>
+<span id="L417" class="LineNr">417 </span>    restart read-move-routine
+<span id="L418" class="LineNr">418 </span>    <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L419" class="LineNr">419 </span>    wait-for-routine-to-block read-move-routine
+<span id="L420" class="LineNr">420 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L421" class="LineNr">421 </span>    waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L422" class="LineNr">422 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L423" class="LineNr">423 </span><span class="Constant">F read-move-blocking: routine failed to pause after file 'a2-a4']</span>
+<span id="L424" class="LineNr">424 </span>    <span class="Comment"># press 'newline'</span>
+<span id="L425" class="LineNr">425 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 10</span>  <span class="Comment"># newline</span>
+<span id="L426" class="LineNr">426 </span>    restart read-move-routine
+<span id="L427" class="LineNr">427 </span>    <span class="Comment"># 'read-move' now completes</span>
+<span id="L428" class="LineNr">428 </span>    wait-for-routine-to-block read-move-routine
+<span id="L429" class="LineNr">429 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L430" class="LineNr">430 </span>    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
+<span id="L431" class="LineNr">431 </span>    assert completed?, <span class="Constant">[ </span>
+<span id="L432" class="LineNr">432 </span><span class="Constant">F read-move-blocking: routine failed to terminate on newline]</span>
+<span id="L433" class="LineNr">433 </span>    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+<span id="L434" class="LineNr">434 </span>  ]
+<span id="L435" class="LineNr">435 </span>  trace-should-contain [
+<span id="L436" class="LineNr">436 </span>    test: reached end
+<span id="L437" class="LineNr">437 </span>  ]
+<span id="L438" class="LineNr">438 </span>]
+<span id="L439" class="LineNr">439 </span>
+<span id="L440" class="LineNr">440 </span><span class="muScenario">scenario</span> read-move-quit [
+<span id="L441" class="LineNr">441 </span>  <span class="Constant">local-scope</span>
+<span id="L442" class="LineNr">442 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+<span id="L443" class="LineNr">443 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+<span id="L444" class="LineNr">444 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
+<span id="L445" class="LineNr">445 </span>  run [
+<span id="L446" class="LineNr">446 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L447" class="LineNr">447 </span>    wait-for-routine-to-block read-move-routine
+<span id="L448" class="LineNr">448 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L449" class="LineNr">449 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L450" class="LineNr">450 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L451" class="LineNr">451 </span><span class="Constant">F read-move-quit: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span id="L452" class="LineNr">452 </span>    <span class="Comment"># press 'q'</span>
+<span id="L453" class="LineNr">453 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">113/q</span>
+<span id="L454" class="LineNr">454 </span>    restart read-move-routine
+<span id="L455" class="LineNr">455 </span>    <span class="Comment"># 'read-move' completes</span>
+<span id="L456" class="LineNr">456 </span>    wait-for-routine-to-block read-move-routine
+<span id="L457" class="LineNr">457 </span>    read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L458" class="LineNr">458 </span>    completed?:bool <span class="Special">&lt;-</span> equal read-move-state, <span class="Constant">1/completed</span>
+<span id="L459" class="LineNr">459 </span>    assert completed?, <span class="Constant">[ </span>
+<span id="L460" class="LineNr">460 </span><span class="Constant">F read-move-quit: routine failed to terminate on 'q']</span>
+<span id="L461" class="LineNr">461 </span>    trace<span class="Constant"> 1</span>, <span class="Constant">[test]</span>, <span class="Constant">[reached end]</span>
+<span id="L462" class="LineNr">462 </span>  ]
+<span id="L463" class="LineNr">463 </span>  trace-should-contain [
+<span id="L464" class="LineNr">464 </span>    test: reached end
+<span id="L465" class="LineNr">465 </span>  ]
+<span id="L466" class="LineNr">466 </span>]
+<span id="L467" class="LineNr">467 </span>
+<span id="L468" class="LineNr">468 </span><span class="muScenario">scenario</span> read-move-illegal-file [
+<span id="L469" class="LineNr">469 </span>  <span class="Constant">local-scope</span>
+<span id="L470" class="LineNr">470 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+<span id="L471" class="LineNr">471 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+<span id="L472" class="LineNr">472 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
+<span id="L473" class="LineNr">473 </span>  run [
+<span id="L474" class="LineNr">474 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L475" class="LineNr">475 </span>    wait-for-routine-to-block read-move-routine
+<span id="L476" class="LineNr">476 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L477" class="LineNr">477 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L478" class="LineNr">478 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L479" class="LineNr">479 </span><span class="Constant">F read-move-illegal-file: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span id="L480" class="LineNr">480 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">50/'2'</span>
+<span id="L481" class="LineNr">481 </span>    restart read-move-routine
+<span id="L482" class="LineNr">482 </span>    wait-for-routine-to-block read-move-routine
+<span id="L483" class="LineNr">483 </span>  ]
+<span id="L484" class="LineNr">484 </span>  screen-should-contain [
+<span id="L485" class="LineNr">485 </span>   <span class="Constant"> .file too low: 2     .</span>
+<span id="L486" class="LineNr">486 </span>   <span class="Constant"> .                    .</span>
+<span id="L487" class="LineNr">487 </span>  ]
+<span id="L488" class="LineNr">488 </span>]
+<span id="L489" class="LineNr">489 </span>
+<span id="L490" class="LineNr">490 </span><span class="muScenario">scenario</span> read-move-illegal-rank [
+<span id="L491" class="LineNr">491 </span>  <span class="Constant">local-scope</span>
+<span id="L492" class="LineNr">492 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+<span id="L493" class="LineNr">493 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+<span id="L494" class="LineNr">494 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
+<span id="L495" class="LineNr">495 </span>  run [
+<span id="L496" class="LineNr">496 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L497" class="LineNr">497 </span>    wait-for-routine-to-block read-move-routine
+<span id="L498" class="LineNr">498 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L499" class="LineNr">499 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L500" class="LineNr">500 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L501" class="LineNr">501 </span><span class="Constant">F read-move-illegal-rank: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span id="L502" class="LineNr">502 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L503" class="LineNr">503 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L504" class="LineNr">504 </span>    restart read-move-routine
+<span id="L505" class="LineNr">505 </span>    wait-for-routine-to-block read-move-routine
+<span id="L506" class="LineNr">506 </span>  ]
+<span id="L507" class="LineNr">507 </span>  screen-should-contain [
+<span id="L508" class="LineNr">508 </span>   <span class="Constant"> .rank too high: a    .</span>
+<span id="L509" class="LineNr">509 </span>   <span class="Constant"> .                    .</span>
+<span id="L510" class="LineNr">510 </span>  ]
+<span id="L511" class="LineNr">511 </span>]
+<span id="L512" class="LineNr">512 </span>
+<span id="L513" class="LineNr">513 </span><span class="muScenario">scenario</span> read-move-empty [
+<span id="L514" class="LineNr">514 </span>  <span class="Constant">local-scope</span>
+<span id="L515" class="LineNr">515 </span>  assume-screen <span class="Constant">20/width</span>, <span class="Constant">2/height</span>
+<span id="L516" class="LineNr">516 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">2/capacity</span>
+<span id="L517" class="LineNr">517 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running read-move, source, screen:&amp;:screen
+<span id="L518" class="LineNr">518 </span>  run [
+<span id="L519" class="LineNr">519 </span>    <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L520" class="LineNr">520 </span>    wait-for-routine-to-block read-move-routine
+<span id="L521" class="LineNr">521 </span>    read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
+<span id="L522" class="LineNr">522 </span>    waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
+<span id="L523" class="LineNr">523 </span>    assert waiting?, <span class="Constant">[ </span>
+<span id="L524" class="LineNr">524 </span><span class="Constant">F read-move-empty: routine failed to pause after coming up (before any keys were pressed)]</span>
+<span id="L525" class="LineNr">525 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">10/newline</span>
+<span id="L526" class="LineNr">526 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L527" class="LineNr">527 </span>    restart read-move-routine
+<span id="L528" class="LineNr">528 </span>    wait-for-routine-to-block read-move-routine
+<span id="L529" class="LineNr">529 </span>  ]
+<span id="L530" class="LineNr">530 </span>  screen-should-contain [
+<span id="L531" class="LineNr">531 </span>   <span class="Constant"> .that's not enough   .</span>
+<span id="L532" class="LineNr">532 </span>   <span class="Constant"> .                    .</span>
+<span id="L533" class="LineNr">533 </span>  ]
+<span id="L534" class="LineNr">534 </span>]
+<span id="L535" class="LineNr">535 </span>
+<span id="L536" class="LineNr">536 </span><span class="muRecipe">def</span> make-move board:board, m:&amp;:move<span class="muRecipe"> -&gt; </span>board:board [
+<span id="L537" class="LineNr">537 </span>  <span class="Constant">local-scope</span>
+<span id="L538" class="LineNr">538 </span>  <span class="Constant">load-ingredients</span>
+<span id="L539" class="LineNr">539 </span>  from-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-file:offset</span>
+<span id="L540" class="LineNr">540 </span>  from-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-rank:offset</span>
+<span id="L541" class="LineNr">541 </span>  to-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-file:offset</span>
+<span id="L542" class="LineNr">542 </span>  to-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-rank:offset</span>
+<span id="L543" class="LineNr">543 </span>  from-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, from-file
+<span id="L544" class="LineNr">544 </span>  to-f:&amp;:@:char <span class="Special">&lt;-</span> index *board, to-file
+<span id="L545" class="LineNr">545 </span>  src:char/square <span class="Special">&lt;-</span> index *from-f, from-rank
+<span id="L546" class="LineNr">546 </span>  *to-f <span class="Special">&lt;-</span> put-index *to-f, to-rank, src
+<span id="L547" class="LineNr">547 </span>  *from-f <span class="Special">&lt;-</span> put-index *from-f, from-rank, <span class="Constant">32/space</span>
+<span id="L548" class="LineNr">548 </span>]
+<span id="L549" class="LineNr">549 </span>
+<span id="L550" class="LineNr">550 </span><span class="muScenario">scenario</span> making-a-move [
+<span id="L551" class="LineNr">551 </span>  <span class="Constant">local-scope</span>
+<span id="L552" class="LineNr">552 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">12/height</span>
+<span id="L553" class="LineNr">553 </span>  board:board <span class="Special">&lt;-</span> initial-position
+<span id="L554" class="LineNr">554 </span>  move:&amp;:move <span class="Special">&lt;-</span> new <span class="Constant">move:type</span>
+<span id="L555" class="LineNr">555 </span>  *move <span class="Special">&lt;-</span> merge <span class="Constant">6/g</span>, <span class="Constant">1/'2'</span>, <span class="Constant">6/g</span>, <span class="Constant">3/'4'</span>
+<span id="L556" class="LineNr">556 </span>  run [
+<span id="L557" class="LineNr">557 </span>    board <span class="Special">&lt;-</span> make-move board, move
+<span id="L558" class="LineNr">558 </span>    screen:&amp;:screen <span class="Special">&lt;-</span> print-board screen:&amp;:screen, board
+<span id="L559" class="LineNr">559 </span>  ]
+<span id="L560" class="LineNr">560 </span>  screen-should-contain [
+<span id="L561" class="LineNr">561 </span>  <span class="Comment">#  012345678901234567890123456789</span>
+<span id="L562" class="LineNr">562 </span>   <span class="Constant"> .8 | r n b q k b n r           .</span>
+<span id="L563" class="LineNr">563 </span>   <span class="Constant"> .7 | p p p p p p p p           .</span>
+<span id="L564" class="LineNr">564 </span>   <span class="Constant"> .6 |                           .</span>
+<span id="L565" class="LineNr">565 </span>   <span class="Constant"> .5 |                           .</span>
+<span id="L566" class="LineNr">566 </span>   <span class="Constant"> .4 |             P             .</span>
+<span id="L567" class="LineNr">567 </span>   <span class="Constant"> .3 |                           .</span>
+<span id="L568" class="LineNr">568 </span>   <span class="Constant"> .2 | P P P P P P   P           .</span>
+<span id="L569" class="LineNr">569 </span>   <span class="Constant"> .1 | R N B Q K B N R           .</span>
+<span id="L570" class="LineNr">570 </span>   <span class="Constant"> .  +----------------           .</span>
+<span id="L571" class="LineNr">571 </span>   <span class="Constant"> .    a b c d e f g h           .</span>
+<span id="L572" class="LineNr">572 </span>   <span class="Constant"> .                              .</span>
+<span id="L573" class="LineNr">573 </span>  ]
+<span id="L574" class="LineNr">574 </span>]
 </pre>
 </body>
 </html>

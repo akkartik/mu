@@ -55,219 +55,219 @@ if ('onhashchange' in window) {
 </head>
 <body onload='JumpToLine();'>
 <pre id='vimCodeElement'>
-<a name="L1"></a><span id="L1" class="LineNr">  1 </span><span class="Comment"># Wrappers around file system primitives that take a 'resources' object and</span>
-<a name="L2"></a><span id="L2" class="LineNr">  2 </span><span class="Comment"># are thus easier to test.</span>
-<a name="L3"></a><span id="L3" class="LineNr">  3 </span><span class="Comment">#</span>
-<a name="L4"></a><span id="L4" class="LineNr">  4 </span><span class="Comment"># - start-reading - asynchronously open a file, returning a channel source for</span>
-<a name="L5"></a><span id="L5" class="LineNr">  5 </span><span class="Comment">#   receiving the results</span>
-<a name="L6"></a><span id="L6" class="LineNr">  6 </span><span class="Comment"># - start-writing - asynchronously open a file, returning a channel sink for</span>
-<a name="L7"></a><span id="L7" class="LineNr">  7 </span><span class="Comment">#   the data to write</span>
-<a name="L8"></a><span id="L8" class="LineNr">  8 </span><span class="Comment"># - slurp - synchronously read from a file</span>
-<a name="L9"></a><span id="L9" class="LineNr">  9 </span><span class="Comment"># - dump - synchronously write to a file</span>
-<a name="L10"></a><span id="L10" class="LineNr"> 10 </span>
-<a name="L11"></a><span id="L11" class="LineNr"> 11 </span><span class="muData">container</span> resources [
-<a name="L12"></a><span id="L12" class="LineNr"> 12 </span>  lock:bool
-<a name="L13"></a><span id="L13" class="LineNr"> 13 </span>  data:&amp;:@:resource
-<a name="L14"></a><span id="L14" class="LineNr"> 14 </span>]
-<a name="L15"></a><span id="L15" class="LineNr"> 15 </span>
-<a name="L16"></a><span id="L16" class="LineNr"> 16 </span><span class="muData">container</span> resource [
-<a name="L17"></a><span id="L17" class="LineNr"> 17 </span>  name:text
-<a name="L18"></a><span id="L18" class="LineNr"> 18 </span>  contents:text
-<a name="L19"></a><span id="L19" class="LineNr"> 19 </span>]
-<a name="L20"></a><span id="L20" class="LineNr"> 20 </span>
-<a name="L21"></a><span id="L21" class="LineNr"> 21 </span><span class="muRecipe">def</span> start-reading resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
-<a name="L22"></a><span id="L22" class="LineNr"> 22 </span>  <span class="Constant">local-scope</span>
-<a name="L23"></a><span id="L23" class="LineNr"> 23 </span>  <span class="Constant">load-ingredients</span>
-<a name="L24"></a><span id="L24" class="LineNr"> 24 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<a name="L25"></a><span id="L25" class="LineNr"> 25 </span>  <span class="Delimiter">{</span>
-<a name="L26"></a><span id="L26" class="LineNr"> 26 </span>    <span class="muControl">break-unless</span> resources
-<a name="L27"></a><span id="L27" class="LineNr"> 27 </span>    <span class="Comment"># fake file system</span>
-<a name="L28"></a><span id="L28" class="LineNr"> 28 </span>    contents, error? <span class="Special">&lt;-</span> start-reading-from-fake-resource resources, filename
-<a name="L29"></a><span id="L29" class="LineNr"> 29 </span>    <span class="muControl">return</span>
-<a name="L30"></a><span id="L30" class="LineNr"> 30 </span>  <span class="Delimiter">}</span>
-<a name="L31"></a><span id="L31" class="LineNr"> 31 </span>  <span class="Comment"># real file system</span>
-<a name="L32"></a><span id="L32" class="LineNr"> 32 </span>  file:num <span class="Special">&lt;-</span> $open-file-for-reading filename
-<a name="L33"></a><span id="L33" class="LineNr"> 33 </span>  <span class="muControl">return-unless</span> file, <span class="Constant">0/contents</span>, <span class="Constant">1/error?</span>
-<a name="L34"></a><span id="L34" class="LineNr"> 34 </span>  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
-<a name="L35"></a><span id="L35" class="LineNr"> 35 </span>  start-running receive-from-file file, sink
-<a name="L36"></a><span id="L36" class="LineNr"> 36 </span>]
-<a name="L37"></a><span id="L37" class="LineNr"> 37 </span>
-<a name="L38"></a><span id="L38" class="LineNr"> 38 </span><span class="muRecipe">def</span> slurp resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:text, error?:bool [
-<a name="L39"></a><span id="L39" class="LineNr"> 39 </span>  <span class="Constant">local-scope</span>
-<a name="L40"></a><span id="L40" class="LineNr"> 40 </span>  <span class="Constant">load-ingredients</span>
-<a name="L41"></a><span id="L41" class="LineNr"> 41 </span>  source:&amp;:source:char, error?:bool <span class="Special">&lt;-</span> start-reading resources, filename
-<a name="L42"></a><span id="L42" class="LineNr"> 42 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/contents</span>
-<a name="L43"></a><span id="L43" class="LineNr"> 43 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer <span class="Constant">30/capacity</span>
-<a name="L44"></a><span id="L44" class="LineNr"> 44 </span>  <span class="Delimiter">{</span>
-<a name="L45"></a><span id="L45" class="LineNr"> 45 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
-<a name="L46"></a><span id="L46" class="LineNr"> 46 </span>    <span class="muControl">break-if</span> done?
-<a name="L47"></a><span id="L47" class="LineNr"> 47 </span>    buf <span class="Special">&lt;-</span> append buf, c
-<a name="L48"></a><span id="L48" class="LineNr"> 48 </span>    <span class="muControl">loop</span>
-<a name="L49"></a><span id="L49" class="LineNr"> 49 </span>  <span class="Delimiter">}</span>
-<a name="L50"></a><span id="L50" class="LineNr"> 50 </span>  contents <span class="Special">&lt;-</span> buffer-to-array buf
-<a name="L51"></a><span id="L51" class="LineNr"> 51 </span>]
-<a name="L52"></a><span id="L52" class="LineNr"> 52 </span>
-<a name="L53"></a><span id="L53" class="LineNr"> 53 </span><span class="muRecipe">def</span> start-reading-from-fake-resource resources:&amp;:resources, resource:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
-<a name="L54"></a><span id="L54" class="LineNr"> 54 </span>  <span class="Constant">local-scope</span>
-<a name="L55"></a><span id="L55" class="LineNr"> 55 </span>  <span class="Constant">load-ingredients</span>
-<a name="L56"></a><span id="L56" class="LineNr"> 56 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/no-error</span>
-<a name="L57"></a><span id="L57" class="LineNr"> 57 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L58"></a><span id="L58" class="LineNr"> 58 </span>  data:&amp;:@:resource <span class="Special">&lt;-</span> get *resources, <span class="Constant">data:offset</span>
-<a name="L59"></a><span id="L59" class="LineNr"> 59 </span>  len:num <span class="Special">&lt;-</span> length *data
-<a name="L60"></a><span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">{</span>
-<a name="L61"></a><span id="L61" class="LineNr"> 61 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-<a name="L62"></a><span id="L62" class="LineNr"> 62 </span>    <span class="muControl">break-if</span> done?
-<a name="L63"></a><span id="L63" class="LineNr"> 63 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
-<a name="L64"></a><span id="L64" class="LineNr"> 64 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<a name="L65"></a><span id="L65" class="LineNr"> 65 </span>    curr-resource:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
-<a name="L66"></a><span id="L66" class="LineNr"> 66 </span>    found?:bool <span class="Special">&lt;-</span> equal resource, curr-resource
-<a name="L67"></a><span id="L67" class="LineNr"> 67 </span>    <span class="muControl">loop-unless</span> found?
-<a name="L68"></a><span id="L68" class="LineNr"> 68 </span>    contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
-<a name="L69"></a><span id="L69" class="LineNr"> 69 </span>    curr-contents:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">contents:offset</span>
-<a name="L70"></a><span id="L70" class="LineNr"> 70 </span>    start-running receive-from-text curr-contents, sink
-<a name="L71"></a><span id="L71" class="LineNr"> 71 </span>    <span class="muControl">return</span>
-<a name="L72"></a><span id="L72" class="LineNr"> 72 </span>  <span class="Delimiter">}</span>
-<a name="L73"></a><span id="L73" class="LineNr"> 73 </span>  <span class="muControl">return</span> <span class="Constant">0/not-found</span>, <span class="Constant">1/error</span>
-<a name="L74"></a><span id="L74" class="LineNr"> 74 </span>]
-<a name="L75"></a><span id="L75" class="LineNr"> 75 </span>
-<a name="L76"></a><span id="L76" class="LineNr"> 76 </span><span class="muRecipe">def</span> receive-from-file file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
-<a name="L77"></a><span id="L77" class="LineNr"> 77 </span>  <span class="Constant">local-scope</span>
-<a name="L78"></a><span id="L78" class="LineNr"> 78 </span>  <span class="Constant">load-ingredients</span>
-<a name="L79"></a><span id="L79" class="LineNr"> 79 </span>  <span class="Delimiter">{</span>
-<a name="L80"></a><span id="L80" class="LineNr"> 80 </span>    c:char, eof?:bool <span class="Special">&lt;-</span> $read-from-file file
-<a name="L81"></a><span id="L81" class="LineNr"> 81 </span>    <span class="muControl">break-if</span> eof?
-<a name="L82"></a><span id="L82" class="LineNr"> 82 </span>    sink <span class="Special">&lt;-</span> write sink, c
-<a name="L83"></a><span id="L83" class="LineNr"> 83 </span>    <span class="muControl">loop</span>
-<a name="L84"></a><span id="L84" class="LineNr"> 84 </span>  <span class="Delimiter">}</span>
-<a name="L85"></a><span id="L85" class="LineNr"> 85 </span>  sink <span class="Special">&lt;-</span> close sink
-<a name="L86"></a><span id="L86" class="LineNr"> 86 </span>  file <span class="Special">&lt;-</span> $close-file file
-<a name="L87"></a><span id="L87" class="LineNr"> 87 </span>]
-<a name="L88"></a><span id="L88" class="LineNr"> 88 </span>
-<a name="L89"></a><span id="L89" class="LineNr"> 89 </span><span class="muRecipe">def</span> receive-from-text contents:text, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
-<a name="L90"></a><span id="L90" class="LineNr"> 90 </span>  <span class="Constant">local-scope</span>
-<a name="L91"></a><span id="L91" class="LineNr"> 91 </span>  <span class="Constant">load-ingredients</span>
-<a name="L92"></a><span id="L92" class="LineNr"> 92 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L93"></a><span id="L93" class="LineNr"> 93 </span>  len:num <span class="Special">&lt;-</span> length *contents
-<a name="L94"></a><span id="L94" class="LineNr"> 94 </span>  <span class="Delimiter">{</span>
-<a name="L95"></a><span id="L95" class="LineNr"> 95 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-<a name="L96"></a><span id="L96" class="LineNr"> 96 </span>    <span class="muControl">break-if</span> done?
-<a name="L97"></a><span id="L97" class="LineNr"> 97 </span>    c:char <span class="Special">&lt;-</span> index *contents, i
-<a name="L98"></a><span id="L98" class="LineNr"> 98 </span>    sink <span class="Special">&lt;-</span> write sink, c
-<a name="L99"></a><span id="L99" class="LineNr"> 99 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<a name="L100"></a><span id="L100" class="LineNr">100 </span>    <span class="muControl">loop</span>
-<a name="L101"></a><span id="L101" class="LineNr">101 </span>  <span class="Delimiter">}</span>
-<a name="L102"></a><span id="L102" class="LineNr">102 </span>  sink <span class="Special">&lt;-</span> close sink
-<a name="L103"></a><span id="L103" class="LineNr">103 </span>]
-<a name="L104"></a><span id="L104" class="LineNr">104 </span>
-<a name="L105"></a><span id="L105" class="LineNr">105 </span><span class="muRecipe">def</span> start-writing resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num, error?:bool [
-<a name="L106"></a><span id="L106" class="LineNr">106 </span>  <span class="Constant">local-scope</span>
-<a name="L107"></a><span id="L107" class="LineNr">107 </span>  <span class="Constant">load-ingredients</span>
-<a name="L108"></a><span id="L108" class="LineNr">108 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<a name="L109"></a><span id="L109" class="LineNr">109 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
-<a name="L110"></a><span id="L110" class="LineNr">110 </span>  <span class="Delimiter">{</span>
-<a name="L111"></a><span id="L111" class="LineNr">111 </span>    <span class="muControl">break-unless</span> resources
-<a name="L112"></a><span id="L112" class="LineNr">112 </span>    <span class="Comment"># fake file system</span>
-<a name="L113"></a><span id="L113" class="LineNr">113 </span>    routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-resource resources, filename, source
-<a name="L114"></a><span id="L114" class="LineNr">114 </span>    <span class="muControl">return</span>
-<a name="L115"></a><span id="L115" class="LineNr">115 </span>  <span class="Delimiter">}</span>
-<a name="L116"></a><span id="L116" class="LineNr">116 </span>  <span class="Comment"># real file system</span>
-<a name="L117"></a><span id="L117" class="LineNr">117 </span>  file:num <span class="Special">&lt;-</span> $open-file-for-writing filename
-<a name="L118"></a><span id="L118" class="LineNr">118 </span>  <span class="muControl">return-unless</span> file, <span class="Constant">0/sink</span>, <span class="Constant">0/routine-id</span>, <span class="Constant">1/error?</span>
-<a name="L119"></a><span id="L119" class="LineNr">119 </span>  <span class="Delimiter">{</span>
-<a name="L120"></a><span id="L120" class="LineNr">120 </span>    <span class="muControl">break-if</span> file
-<a name="L121"></a><span id="L121" class="LineNr">121 </span>    msg:text <span class="Special">&lt;-</span> append <span class="Constant">[no such file: ]</span> filename
-<a name="L122"></a><span id="L122" class="LineNr">122 </span>    assert file, msg
-<a name="L123"></a><span id="L123" class="LineNr">123 </span>  <span class="Delimiter">}</span>
-<a name="L124"></a><span id="L124" class="LineNr">124 </span>  routine-id <span class="Special">&lt;-</span> start-running transmit-to-file file, source
-<a name="L125"></a><span id="L125" class="LineNr">125 </span>]
-<a name="L126"></a><span id="L126" class="LineNr">126 </span>
-<a name="L127"></a><span id="L127" class="LineNr">127 </span><span class="muRecipe">def</span> dump resources:&amp;:resources, filename:text, contents:text<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, error?:bool [
-<a name="L128"></a><span id="L128" class="LineNr">128 </span>  <span class="Constant">local-scope</span>
-<a name="L129"></a><span id="L129" class="LineNr">129 </span>  <span class="Constant">load-ingredients</span>
-<a name="L130"></a><span id="L130" class="LineNr">130 </span>  <span class="Comment"># todo: really create an empty file</span>
-<a name="L131"></a><span id="L131" class="LineNr">131 </span>  <span class="muControl">return-unless</span> contents, resources, <span class="Constant">0/no-error</span>
-<a name="L132"></a><span id="L132" class="LineNr">132 </span>  sink-file:&amp;:sink:char, write-routine:num, error?:bool <span class="Special">&lt;-</span> start-writing resources, filename
-<a name="L133"></a><span id="L133" class="LineNr">133 </span>  <span class="muControl">return-if</span> error?
-<a name="L134"></a><span id="L134" class="LineNr">134 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L135"></a><span id="L135" class="LineNr">135 </span>  len:num <span class="Special">&lt;-</span> length *contents
-<a name="L136"></a><span id="L136" class="LineNr">136 </span>  <span class="Delimiter">{</span>
-<a name="L137"></a><span id="L137" class="LineNr">137 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-<a name="L138"></a><span id="L138" class="LineNr">138 </span>    <span class="muControl">break-if</span> done?
-<a name="L139"></a><span id="L139" class="LineNr">139 </span>    c:char <span class="Special">&lt;-</span> index *contents, i
-<a name="L140"></a><span id="L140" class="LineNr">140 </span>    sink-file <span class="Special">&lt;-</span> write sink-file, c
-<a name="L141"></a><span id="L141" class="LineNr">141 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<a name="L142"></a><span id="L142" class="LineNr">142 </span>    <span class="muControl">loop</span>
-<a name="L143"></a><span id="L143" class="LineNr">143 </span>  <span class="Delimiter">}</span>
-<a name="L144"></a><span id="L144" class="LineNr">144 </span>  close sink-file
-<a name="L145"></a><span id="L145" class="LineNr">145 </span>  <span class="Comment"># make sure to wait for the file to be actually written to disk</span>
-<a name="L146"></a><span id="L146" class="LineNr">146 </span>  <span class="Comment"># (Mu practices structured concurrency: <a href="http://250bpm.com/blog:71)">http://250bpm.com/blog:71)</a></span>
-<a name="L147"></a><span id="L147" class="LineNr">147 </span>  wait-for-routine write-routine
-<a name="L148"></a><span id="L148" class="LineNr">148 </span>]
-<a name="L149"></a><span id="L149" class="LineNr">149 </span>
-<a name="L150"></a><span id="L150" class="LineNr">150 </span><span class="muRecipe">def</span> transmit-to-file file:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
-<a name="L151"></a><span id="L151" class="LineNr">151 </span>  <span class="Constant">local-scope</span>
-<a name="L152"></a><span id="L152" class="LineNr">152 </span>  <span class="Constant">load-ingredients</span>
-<a name="L153"></a><span id="L153" class="LineNr">153 </span>  <span class="Delimiter">{</span>
-<a name="L154"></a><span id="L154" class="LineNr">154 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
-<a name="L155"></a><span id="L155" class="LineNr">155 </span>    <span class="muControl">break-if</span> done?
-<a name="L156"></a><span id="L156" class="LineNr">156 </span>    $write-to-file file, c
-<a name="L157"></a><span id="L157" class="LineNr">157 </span>    <span class="muControl">loop</span>
-<a name="L158"></a><span id="L158" class="LineNr">158 </span>  <span class="Delimiter">}</span>
-<a name="L159"></a><span id="L159" class="LineNr">159 </span>  file <span class="Special">&lt;-</span> $close-file file
-<a name="L160"></a><span id="L160" class="LineNr">160 </span>]
-<a name="L161"></a><span id="L161" class="LineNr">161 </span>
-<a name="L162"></a><span id="L162" class="LineNr">162 </span><span class="muRecipe">def</span> transmit-to-fake-resource resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
-<a name="L163"></a><span id="L163" class="LineNr">163 </span>  <span class="Constant">local-scope</span>
-<a name="L164"></a><span id="L164" class="LineNr">164 </span>  <span class="Constant">load-ingredients</span>
-<a name="L165"></a><span id="L165" class="LineNr">165 </span>  lock:location <span class="Special">&lt;-</span> get-location *resources, <span class="Constant">lock:offset</span>
-<a name="L166"></a><span id="L166" class="LineNr">166 </span>  wait-for-reset-then-set lock
-<a name="L167"></a><span id="L167" class="LineNr">167 </span>  <span class="Comment"># compute new file contents</span>
-<a name="L168"></a><span id="L168" class="LineNr">168 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
-<a name="L169"></a><span id="L169" class="LineNr">169 </span>  <span class="Delimiter">{</span>
-<a name="L170"></a><span id="L170" class="LineNr">170 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
-<a name="L171"></a><span id="L171" class="LineNr">171 </span>    <span class="muControl">break-if</span> done?
-<a name="L172"></a><span id="L172" class="LineNr">172 </span>    buf <span class="Special">&lt;-</span> append buf, c
-<a name="L173"></a><span id="L173" class="LineNr">173 </span>    <span class="muControl">loop</span>
-<a name="L174"></a><span id="L174" class="LineNr">174 </span>  <span class="Delimiter">}</span>
-<a name="L175"></a><span id="L175" class="LineNr">175 </span>  contents:text <span class="Special">&lt;-</span> buffer-to-array buf
-<a name="L176"></a><span id="L176" class="LineNr">176 </span>  new-resource:resource <span class="Special">&lt;-</span> merge filename, contents
-<a name="L177"></a><span id="L177" class="LineNr">177 </span>  <span class="Comment"># write to resources</span>
-<a name="L178"></a><span id="L178" class="LineNr">178 </span>  curr-filename:text <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L179"></a><span id="L179" class="LineNr">179 </span>  data:&amp;:@:resource <span class="Special">&lt;-</span> get *resources, <span class="Constant">data:offset</span>
-<a name="L180"></a><span id="L180" class="LineNr">180 </span>  <span class="Comment"># replace file contents if it already exists</span>
-<a name="L181"></a><span id="L181" class="LineNr">181 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L182"></a><span id="L182" class="LineNr">182 </span>  len:num <span class="Special">&lt;-</span> length *data
-<a name="L183"></a><span id="L183" class="LineNr">183 </span>  <span class="Delimiter">{</span>
-<a name="L184"></a><span id="L184" class="LineNr">184 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-<a name="L185"></a><span id="L185" class="LineNr">185 </span>    <span class="muControl">break-if</span> done?
-<a name="L186"></a><span id="L186" class="LineNr">186 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
-<a name="L187"></a><span id="L187" class="LineNr">187 </span>    curr-filename <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
-<a name="L188"></a><span id="L188" class="LineNr">188 </span>    found?:bool <span class="Special">&lt;-</span> equal filename, curr-filename
-<a name="L189"></a><span id="L189" class="LineNr">189 </span>    <span class="Delimiter">{</span>
-<a name="L190"></a><span id="L190" class="LineNr">190 </span>      <span class="muControl">break-unless</span> found?
-<a name="L191"></a><span id="L191" class="LineNr">191 </span>      put-index *data, i, new-resource
-<a name="L192"></a><span id="L192" class="LineNr">192 </span>      <span class="muControl">jump</span> <span class="Constant">+unlock-and-exit</span>
-<a name="L193"></a><span id="L193" class="LineNr">193 </span>    <span class="Delimiter">}</span>
-<a name="L194"></a><span id="L194" class="LineNr">194 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<a name="L195"></a><span id="L195" class="LineNr">195 </span>    <span class="muControl">loop</span>
-<a name="L196"></a><span id="L196" class="LineNr">196 </span>  <span class="Delimiter">}</span>
-<a name="L197"></a><span id="L197" class="LineNr">197 </span>  <span class="Comment"># if file didn't already exist, make room for it</span>
-<a name="L198"></a><span id="L198" class="LineNr">198 </span>  new-len:num <span class="Special">&lt;-</span> add len,<span class="Constant"> 1</span>
-<a name="L199"></a><span id="L199" class="LineNr">199 </span>  new-data:&amp;:@:resource <span class="Special">&lt;-</span> new <span class="Constant">resource:type</span>, new-len
-<a name="L200"></a><span id="L200" class="LineNr">200 </span>  put *resources, <span class="Constant">data:offset</span>, new-data
-<a name="L201"></a><span id="L201" class="LineNr">201 </span>  <span class="Comment"># copy over old files</span>
-<a name="L202"></a><span id="L202" class="LineNr">202 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<a name="L203"></a><span id="L203" class="LineNr">203 </span>  <span class="Delimiter">{</span>
-<a name="L204"></a><span id="L204" class="LineNr">204 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
-<a name="L205"></a><span id="L205" class="LineNr">205 </span>    <span class="muControl">break-if</span> done?
-<a name="L206"></a><span id="L206" class="LineNr">206 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
-<a name="L207"></a><span id="L207" class="LineNr">207 </span>    put-index *new-data, i, tmp
-<a name="L208"></a><span id="L208" class="LineNr">208 </span>  <span class="Delimiter">}</span>
-<a name="L209"></a><span id="L209" class="LineNr">209 </span>  <span class="Comment"># write new file</span>
-<a name="L210"></a><span id="L210" class="LineNr">210 </span>  put-index *new-data, len, new-resource
-<a name="L211"></a><span id="L211" class="LineNr">211 </span><span class="Constant">  +unlock-and-exit</span>
-<a name="L212"></a><span id="L212" class="LineNr">212 </span>  reset lock
-<a name="L213"></a><span id="L213" class="LineNr">213 </span>]
+<span id="L1" class="LineNr">  1 </span><span class="Comment"># Wrappers around file system primitives that take a 'resources' object and</span>
+<span id="L2" class="LineNr">  2 </span><span class="Comment"># are thus easier to test.</span>
+<span id="L3" class="LineNr">  3 </span><span class="Comment">#</span>
+<span id="L4" class="LineNr">  4 </span><span class="Comment"># - start-reading - asynchronously open a file, returning a channel source for</span>
+<span id="L5" class="LineNr">  5 </span><span class="Comment">#   receiving the results</span>
+<span id="L6" class="LineNr">  6 </span><span class="Comment"># - start-writing - asynchronously open a file, returning a channel sink for</span>
+<span id="L7" class="LineNr">  7 </span><span class="Comment">#   the data to write</span>
+<span id="L8" class="LineNr">  8 </span><span class="Comment"># - slurp - synchronously read from a file</span>
+<span id="L9" class="LineNr">  9 </span><span class="Comment"># - dump - synchronously write to a file</span>
+<span id="L10" class="LineNr"> 10 </span>
+<span id="L11" class="LineNr"> 11 </span><span class="muData">container</span> resources [
+<span id="L12" class="LineNr"> 12 </span>  lock:bool
+<span id="L13" class="LineNr"> 13 </span>  data:&amp;:@:resource
+<span id="L14" class="LineNr"> 14 </span>]
+<span id="L15" class="LineNr"> 15 </span>
+<span id="L16" class="LineNr"> 16 </span><span class="muData">container</span> resource [
+<span id="L17" class="LineNr"> 17 </span>  name:text
+<span id="L18" class="LineNr"> 18 </span>  contents:text
+<span id="L19" class="LineNr"> 19 </span>]
+<span id="L20" class="LineNr"> 20 </span>
+<span id="L21" class="LineNr"> 21 </span><span class="muRecipe">def</span> start-reading resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
+<span id="L22" class="LineNr"> 22 </span>  <span class="Constant">local-scope</span>
+<span id="L23" class="LineNr"> 23 </span>  <span class="Constant">load-ingredients</span>
+<span id="L24" class="LineNr"> 24 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L25" class="LineNr"> 25 </span>  <span class="Delimiter">{</span>
+<span id="L26" class="LineNr"> 26 </span>    <span class="muControl">break-unless</span> resources
+<span id="L27" class="LineNr"> 27 </span>    <span class="Comment"># fake file system</span>
+<span id="L28" class="LineNr"> 28 </span>    contents, error? <span class="Special">&lt;-</span> start-reading-from-fake-resource resources, filename
+<span id="L29" class="LineNr"> 29 </span>    <span class="muControl">return</span>
+<span id="L30" class="LineNr"> 30 </span>  <span class="Delimiter">}</span>
+<span id="L31" class="LineNr"> 31 </span>  <span class="Comment"># real file system</span>
+<span id="L32" class="LineNr"> 32 </span>  file:num <span class="Special">&lt;-</span> $open-file-for-reading filename
+<span id="L33" class="LineNr"> 33 </span>  <span class="muControl">return-unless</span> file, <span class="Constant">0/contents</span>, <span class="Constant">1/error?</span>
+<span id="L34" class="LineNr"> 34 </span>  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+<span id="L35" class="LineNr"> 35 </span>  start-running receive-from-file file, sink
+<span id="L36" class="LineNr"> 36 </span>]
+<span id="L37" class="LineNr"> 37 </span>
+<span id="L38" class="LineNr"> 38 </span><span class="muRecipe">def</span> slurp resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>contents:text, error?:bool [
+<span id="L39" class="LineNr"> 39 </span>  <span class="Constant">local-scope</span>
+<span id="L40" class="LineNr"> 40 </span>  <span class="Constant">load-ingredients</span>
+<span id="L41" class="LineNr"> 41 </span>  source:&amp;:source:char, error?:bool <span class="Special">&lt;-</span> start-reading resources, filename
+<span id="L42" class="LineNr"> 42 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/contents</span>
+<span id="L43" class="LineNr"> 43 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer <span class="Constant">30/capacity</span>
+<span id="L44" class="LineNr"> 44 </span>  <span class="Delimiter">{</span>
+<span id="L45" class="LineNr"> 45 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L46" class="LineNr"> 46 </span>    <span class="muControl">break-if</span> done?
+<span id="L47" class="LineNr"> 47 </span>    buf <span class="Special">&lt;-</span> append buf, c
+<span id="L48" class="LineNr"> 48 </span>    <span class="muControl">loop</span>
+<span id="L49" class="LineNr"> 49 </span>  <span class="Delimiter">}</span>
+<span id="L50" class="LineNr"> 50 </span>  contents <span class="Special">&lt;-</span> buffer-to-array buf
+<span id="L51" class="LineNr"> 51 </span>]
+<span id="L52" class="LineNr"> 52 </span>
+<span id="L53" class="LineNr"> 53 </span><span class="muRecipe">def</span> start-reading-from-fake-resource resources:&amp;:resources, resource:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
+<span id="L54" class="LineNr"> 54 </span>  <span class="Constant">local-scope</span>
+<span id="L55" class="LineNr"> 55 </span>  <span class="Constant">load-ingredients</span>
+<span id="L56" class="LineNr"> 56 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/no-error</span>
+<span id="L57" class="LineNr"> 57 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L58" class="LineNr"> 58 </span>  data:&amp;:@:resource <span class="Special">&lt;-</span> get *resources, <span class="Constant">data:offset</span>
+<span id="L59" class="LineNr"> 59 </span>  len:num <span class="Special">&lt;-</span> length *data
+<span id="L60" class="LineNr"> 60 </span>  <span class="Delimiter">{</span>
+<span id="L61" class="LineNr"> 61 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+<span id="L62" class="LineNr"> 62 </span>    <span class="muControl">break-if</span> done?
+<span id="L63" class="LineNr"> 63 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
+<span id="L64" class="LineNr"> 64 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+<span id="L65" class="LineNr"> 65 </span>    curr-resource:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
+<span id="L66" class="LineNr"> 66 </span>    found?:bool <span class="Special">&lt;-</span> equal resource, curr-resource
+<span id="L67" class="LineNr"> 67 </span>    <span class="muControl">loop-unless</span> found?
+<span id="L68" class="LineNr"> 68 </span>    contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+<span id="L69" class="LineNr"> 69 </span>    curr-contents:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">contents:offset</span>
+<span id="L70" class="LineNr"> 70 </span>    start-running receive-from-text curr-contents, sink
+<span id="L71" class="LineNr"> 71 </span>    <span class="muControl">return</span>
+<span id="L72" class="LineNr"> 72 </span>  <span class="Delimiter">}</span>
+<span id="L73" class="LineNr"> 73 </span>  <span class="muControl">return</span> <span class="Constant">0/not-found</span>, <span class="Constant">1/error</span>
+<span id="L74" class="LineNr"> 74 </span>]
+<span id="L75" class="LineNr"> 75 </span>
+<span id="L76" class="LineNr"> 76 </span><span class="muRecipe">def</span> receive-from-file file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span id="L77" class="LineNr"> 77 </span>  <span class="Constant">local-scope</span>
+<span id="L78" class="LineNr"> 78 </span>  <span class="Constant">load-ingredients</span>
+<span id="L79" class="LineNr"> 79 </span>  <span class="Delimiter">{</span>
+<span id="L80" class="LineNr"> 80 </span>    c:char, eof?:bool <span class="Special">&lt;-</span> $read-from-file file
+<span id="L81" class="LineNr"> 81 </span>    <span class="muControl">break-if</span> eof?
+<span id="L82" class="LineNr"> 82 </span>    sink <span class="Special">&lt;-</span> write sink, c
+<span id="L83" class="LineNr"> 83 </span>    <span class="muControl">loop</span>
+<span id="L84" class="LineNr"> 84 </span>  <span class="Delimiter">}</span>
+<span id="L85" class="LineNr"> 85 </span>  sink <span class="Special">&lt;-</span> close sink
+<span id="L86" class="LineNr"> 86 </span>  file <span class="Special">&lt;-</span> $close-file file
+<span id="L87" class="LineNr"> 87 </span>]
+<span id="L88" class="LineNr"> 88 </span>
+<span id="L89" class="LineNr"> 89 </span><span class="muRecipe">def</span> receive-from-text contents:text, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span id="L90" class="LineNr"> 90 </span>  <span class="Constant">local-scope</span>
+<span id="L91" class="LineNr"> 91 </span>  <span class="Constant">load-ingredients</span>
+<span id="L92" class="LineNr"> 92 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L93" class="LineNr"> 93 </span>  len:num <span class="Special">&lt;-</span> length *contents
+<span id="L94" class="LineNr"> 94 </span>  <span class="Delimiter">{</span>
+<span id="L95" class="LineNr"> 95 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+<span id="L96" class="LineNr"> 96 </span>    <span class="muControl">break-if</span> done?
+<span id="L97" class="LineNr"> 97 </span>    c:char <span class="Special">&lt;-</span> index *contents, i
+<span id="L98" class="LineNr"> 98 </span>    sink <span class="Special">&lt;-</span> write sink, c
+<span id="L99" class="LineNr"> 99 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+<span id="L100" class="LineNr">100 </span>    <span class="muControl">loop</span>
+<span id="L101" class="LineNr">101 </span>  <span class="Delimiter">}</span>
+<span id="L102" class="LineNr">102 </span>  sink <span class="Special">&lt;-</span> close sink
+<span id="L103" class="LineNr">103 </span>]
+<span id="L104" class="LineNr">104 </span>
+<span id="L105" class="LineNr">105 </span><span class="muRecipe">def</span> start-writing resources:&amp;:resources, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num, error?:bool [
+<span id="L106" class="LineNr">106 </span>  <span class="Constant">local-scope</span>
+<span id="L107" class="LineNr">107 </span>  <span class="Constant">load-ingredients</span>
+<span id="L108" class="LineNr">108 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L109" class="LineNr">109 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+<span id="L110" class="LineNr">110 </span>  <span class="Delimiter">{</span>
+<span id="L111" class="LineNr">111 </span>    <span class="muControl">break-unless</span> resources
+<span id="L112" class="LineNr">112 </span>    <span class="Comment"># fake file system</span>
+<span id="L113" class="LineNr">113 </span>    routine-id <span class="Special">&lt;-</span> start-running transmit-to-fake-resource resources, filename, source
+<span id="L114" class="LineNr">114 </span>    <span class="muControl">return</span>
+<span id="L115" class="LineNr">115 </span>  <span class="Delimiter">}</span>
+<span id="L116" class="LineNr">116 </span>  <span class="Comment"># real file system</span>
+<span id="L117" class="LineNr">117 </span>  file:num <span class="Special">&lt;-</span> $open-file-for-writing filename
+<span id="L118" class="LineNr">118 </span>  <span class="muControl">return-unless</span> file, <span class="Constant">0/sink</span>, <span class="Constant">0/routine-id</span>, <span class="Constant">1/error?</span>
+<span id="L119" class="LineNr">119 </span>  <span class="Delimiter">{</span>
+<span id="L120" class="LineNr">120 </span>    <span class="muControl">break-if</span> file
+<span id="L121" class="LineNr">121 </span>    msg:text <span class="Special">&lt;-</span> append <span class="Constant">[no such file: ]</span> filename
+<span id="L122" class="LineNr">122 </span>    assert file, msg
+<span id="L123" class="LineNr">123 </span>  <span class="Delimiter">}</span>
+<span id="L124" class="LineNr">124 </span>  routine-id <span class="Special">&lt;-</span> start-running transmit-to-file file, source
+<span id="L125" class="LineNr">125 </span>]
+<span id="L126" class="LineNr">126 </span>
+<span id="L127" class="LineNr">127 </span><span class="muRecipe">def</span> dump resources:&amp;:resources, filename:text, contents:text<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, error?:bool [
+<span id="L128" class="LineNr">128 </span>  <span class="Constant">local-scope</span>
+<span id="L129" class="LineNr">129 </span>  <span class="Constant">load-ingredients</span>
+<span id="L130" class="LineNr">130 </span>  <span class="Comment"># todo: really create an empty file</span>
+<span id="L131" class="LineNr">131 </span>  <span class="muControl">return-unless</span> contents, resources, <span class="Constant">0/no-error</span>
+<span id="L132" class="LineNr">132 </span>  sink-file:&amp;:sink:char, write-routine:num, error?:bool <span class="Special">&lt;-</span> start-writing resources, filename
+<span id="L133" class="LineNr">133 </span>  <span class="muControl">return-if</span> error?
+<span id="L134" class="LineNr">134 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L135" class="LineNr">135 </span>  len:num <span class="Special">&lt;-</span> length *contents
+<span id="L136" class="LineNr">136 </span>  <span class="Delimiter">{</span>
+<span id="L137" class="LineNr">137 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+<span id="L138" class="LineNr">138 </span>    <span class="muControl">break-if</span> done?
+<span id="L139" class="LineNr">139 </span>    c:char <span class="Special">&lt;-</span> index *contents, i
+<span id="L140" class="LineNr">140 </span>    sink-file <span class="Special">&lt;-</span> write sink-file, c
+<span id="L141" class="LineNr">141 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+<span id="L142" class="LineNr">142 </span>    <span class="muControl">loop</span>
+<span id="L143" class="LineNr">143 </span>  <span class="Delimiter">}</span>
+<span id="L144" class="LineNr">144 </span>  close sink-file
+<span id="L145" class="LineNr">145 </span>  <span class="Comment"># make sure to wait for the file to be actually written to disk</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Comment"># (Mu practices structured concurrency: <a href="http://250bpm.com/blog:71)">http://250bpm.com/blog:71)</a></span>
+<span id="L147" class="LineNr">147 </span>  wait-for-routine write-routine
+<span id="L148" class="LineNr">148 </span>]
+<span id="L149" class="LineNr">149 </span>
+<span id="L150" class="LineNr">150 </span><span class="muRecipe">def</span> transmit-to-file file:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
+<span id="L151" class="LineNr">151 </span>  <span class="Constant">local-scope</span>
+<span id="L152" class="LineNr">152 </span>  <span class="Constant">load-ingredients</span>
+<span id="L153" class="LineNr">153 </span>  <span class="Delimiter">{</span>
+<span id="L154" class="LineNr">154 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L155" class="LineNr">155 </span>    <span class="muControl">break-if</span> done?
+<span id="L156" class="LineNr">156 </span>    $write-to-file file, c
+<span id="L157" class="LineNr">157 </span>    <span class="muControl">loop</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Delimiter">}</span>
+<span id="L159" class="LineNr">159 </span>  file <span class="Special">&lt;-</span> $close-file file
+<span id="L160" class="LineNr">160 </span>]
+<span id="L161" class="LineNr">161 </span>
+<span id="L162" class="LineNr">162 </span><span class="muRecipe">def</span> transmit-to-fake-resource resources:&amp;:resources, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>resources:&amp;:resources, source:&amp;:source:char [
+<span id="L163" class="LineNr">163 </span>  <span class="Constant">local-scope</span>
+<span id="L164" class="LineNr">164 </span>  <span class="Constant">load-ingredients</span>
+<span id="L165" class="LineNr">165 </span>  lock:location <span class="Special">&lt;-</span> get-location *resources, <span class="Constant">lock:offset</span>
+<span id="L166" class="LineNr">166 </span>  wait-for-reset-then-set lock
+<span id="L167" class="LineNr">167 </span>  <span class="Comment"># compute new file contents</span>
+<span id="L168" class="LineNr">168 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
+<span id="L169" class="LineNr">169 </span>  <span class="Delimiter">{</span>
+<span id="L170" class="LineNr">170 </span>    c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L171" class="LineNr">171 </span>    <span class="muControl">break-if</span> done?
+<span id="L172" class="LineNr">172 </span>    buf <span class="Special">&lt;-</span> append buf, c
+<span id="L173" class="LineNr">173 </span>    <span class="muControl">loop</span>
+<span id="L174" class="LineNr">174 </span>  <span class="Delimiter">}</span>
+<span id="L175" class="LineNr">175 </span>  contents:text <span class="Special">&lt;-</span> buffer-to-array buf
+<span id="L176" class="LineNr">176 </span>  new-resource:resource <span class="Special">&lt;-</span> merge filename, contents
+<span id="L177" class="LineNr">177 </span>  <span class="Comment"># write to resources</span>
+<span id="L178" class="LineNr">178 </span>  curr-filename:text <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L179" class="LineNr">179 </span>  data:&amp;:@:resource <span class="Special">&lt;-</span> get *resources, <span class="Constant">data:offset</span>
+<span id="L180" class="LineNr">180 </span>  <span class="Comment"># replace file contents if it already exists</span>
+<span id="L181" class="LineNr">181 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L182" class="LineNr">182 </span>  len:num <span class="Special">&lt;-</span> length *data
+<span id="L183" class="LineNr">183 </span>  <span class="Delimiter">{</span>
+<span id="L184" class="LineNr">184 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+<span id="L185" class="LineNr">185 </span>    <span class="muControl">break-if</span> done?
+<span id="L186" class="LineNr">186 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
+<span id="L187" class="LineNr">187 </span>    curr-filename <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
+<span id="L188" class="LineNr">188 </span>    found?:bool <span class="Special">&lt;-</span> equal filename, curr-filename
+<span id="L189" class="LineNr">189 </span>    <span class="Delimiter">{</span>
+<span id="L190" class="LineNr">190 </span>      <span class="muControl">break-unless</span> found?
+<span id="L191" class="LineNr">191 </span>      put-index *data, i, new-resource
+<span id="L192" class="LineNr">192 </span>      <span class="muControl">jump</span> <span class="Constant">+unlock-and-exit</span>
+<span id="L193" class="LineNr">193 </span>    <span class="Delimiter">}</span>
+<span id="L194" class="LineNr">194 </span>    i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+<span id="L195" class="LineNr">195 </span>    <span class="muControl">loop</span>
+<span id="L196" class="LineNr">196 </span>  <span class="Delimiter">}</span>
+<span id="L197" class="LineNr">197 </span>  <span class="Comment"># if file didn't already exist, make room for it</span>
+<span id="L198" class="LineNr">198 </span>  new-len:num <span class="Special">&lt;-</span> add len,<span class="Constant"> 1</span>
+<span id="L199" class="LineNr">199 </span>  new-data:&amp;:@:resource <span class="Special">&lt;-</span> new <span class="Constant">resource:type</span>, new-len
+<span id="L200" class="LineNr">200 </span>  put *resources, <span class="Constant">data:offset</span>, new-data
+<span id="L201" class="LineNr">201 </span>  <span class="Comment"># copy over old files</span>
+<span id="L202" class="LineNr">202 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L203" class="LineNr">203 </span>  <span class="Delimiter">{</span>
+<span id="L204" class="LineNr">204 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
+<span id="L205" class="LineNr">205 </span>    <span class="muControl">break-if</span> done?
+<span id="L206" class="LineNr">206 </span>    tmp:resource <span class="Special">&lt;-</span> index *data, i
+<span id="L207" class="LineNr">207 </span>    put-index *new-data, i, tmp
+<span id="L208" class="LineNr">208 </span>  <span class="Delimiter">}</span>
+<span id="L209" class="LineNr">209 </span>  <span class="Comment"># write new file</span>
+<span id="L210" class="LineNr">210 </span>  put-index *new-data, len, new-resource
+<span id="L211" class="LineNr">211 </span><span class="Constant">  +unlock-and-exit</span>
+<span id="L212" class="LineNr">212 </span>  reset lock
+<span id="L213" class="LineNr">213 </span>]
 </pre>
 </body>
 </html>
