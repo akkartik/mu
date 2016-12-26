@@ -53,7 +53,7 @@ update() {
     cat > $1
   else
     cat > $1.tmp
-    diff -q $1 $1.tmp >/dev/null && rm $1.tmp || mv $1.tmp $1
+    diff -q $1 $1.tmp >/dev/null  &&  rm $1.tmp  ||  mv $1.tmp $1
   fi
 }
 
@@ -79,18 +79,18 @@ older_than enumerate/enumerate enumerate/enumerate.cc && {
 older_than tangle/tangle tangle/*.cc && {
   noisy_cd tangle
     {
-      grep -h "^struct .* {" [0-9]*.cc |sed 's/\(struct *[^ ]*\).*/\1;/'
+      grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'
       grep -h "^typedef " [0-9]*.cc
-    } |update type_list
-    grep -h "^[^ #].*) {" [0-9]*.cc |sed 's/ {.*/;/' |update function_list
-    ls [0-9]*.cc |grep -v "\.test\.cc$" |sed 's/.*/#include "&"/' |update file_list
-    ls [0-9]*.test.cc |sed 's/.*/#include "&"/' |update test_file_list
-    grep -h "^[[:space:]]*void test_" [0-9]*.cc |sed 's/^\s*void \(.*\)() {$/\1,/' |update test_list
+    }  |update type_list
+    grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  |update function_list
+    ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  |update file_list
+    ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  |update test_file_list
+    grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  |update test_list
     $CXX $CFLAGS boot.cc -o tangle
   noisy_cd ..  # no effect; just to show us returning to the parent directory
 }
 
-LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep -v '.mu$')
+LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep -v '.mu$')
 older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
   # exception to the rules above: we combine 'older_than' and 'update' here
   # because we sometimes want to hack directly on mu.cc and not lose our
@@ -98,7 +98,7 @@ older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
 
   # shorter version but continues unnecessarily if tangle dies
   #   ./tangle/tangle $LAYERS |update mu.cc
-  ./tangle/tangle $LAYERS > mu_tmp.cc  # die if this fails
+  ./tangle/tangle $LAYERS  > mu_tmp.cc  # die if this fails
   cat mu_tmp.cc |update mu.cc
   rm mu_tmp.cc
 }
@@ -109,18 +109,18 @@ older_than cleave/cleave cleave/cleave.cc && {
 }
 
 mkdir -p .build
-grep -h "^[^[:space:]#].*) {$" mu.cc |grep -v ":.*(" |sed 's/ {.*/;/' |update .build/function_list
-grep -h "^\s*void test_" mu.cc |sed 's/^\s*void \(.*\)() {.*/\1,/' |update .build/test_list
+grep -h "^[^[:space:]#].*) {$" mu.cc  |grep -v ":.*("  |sed 's/ {.*/;/'  |update .build/function_list
+grep -h "^\s*void test_" mu.cc  |sed 's/^\s*void \(.*\)() {.*/\1,/'  |update .build/test_list
 mkdir -p .build/termbox
 update_cp termbox/termbox.h .build/termbox
 
 older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
   ./cleave/cleave mu.cc .build
   noisy_cd .build
-    grep ';' global_definitions_list |sed 's/[=(].*/;/' |sed 's/^[^\/# ]/extern &/' |sed 's/^extern extern /extern /' |update global_declarations_list
+    grep ';' global_definitions_list  |sed 's/[=(].*/;/'  |sed 's/^[^\/# ]/extern &/'  |sed 's/^extern extern /extern /'  |update global_declarations_list
     for f in mu_*.cc
     do
-      older_than `echo $f |sed 's/\.cc$/.o/'` $f header global_declarations_list function_list test_list && {
+      older_than `echo $f  |sed 's/\.cc$/.o/'` $f header global_declarations_list function_list test_list && {
         $CXX $CFLAGS -c $f
       }
     done
@@ -141,8 +141,8 @@ older_than mu_bin mu.cc *_list cleave/cleave termbox/* && {
 
 ## [0-9]*.mu -> core.mu
 
-MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER |grep '.mu$') || exit 0  # ok if no .mu files
-cat $MU_LAYERS |update core.mu
+MU_LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep '.mu$') || exit 0  # ok if no .mu files
+cat $MU_LAYERS  |update core.mu
 
 exit 0
 
