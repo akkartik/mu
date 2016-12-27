@@ -1,6 +1,8 @@
 #!/bin/bash
 # Regenerate html files.
 
+set -e
+
 process() {
   vim -c "set number" -c TOhtml -c write -c qall $1
 
@@ -53,12 +55,12 @@ then
   linkify/linkify cpp.tags html/*.cc.html
   ctags -x 0*.mu  > mu.tags
   linkify/linkify mu.tags html/*.mu.html
+  rm *.tags
   ( cd edit
     ctags -x *.mu ../0*.mu > mu.tags
     ../linkify/linkify mu.tags ../html/edit/*.mu.html
     rm mu.tags
   )
-  rm *.tags
   ( cd linkify; clean; )
   for f in html/*.html html/edit/*.html
   do
