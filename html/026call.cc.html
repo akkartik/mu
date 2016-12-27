@@ -61,7 +61,7 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr">  1 </span><span class="Comment">//: So far the recipes we define can't run each other. Let's fix that.</span>
 <span id="L2" class="LineNr">  2 </span>
 <span id="L3" class="LineNr">  3 </span><span class="Delimiter">:(scenario calling_recipe)</span>
-<span id="L4" class="LineNr">  4 </span><span class="muRecipe">def</span> main [
+<span id="L4" class="LineNr">  4 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L5" class="LineNr">  5 </span>  f
 <span id="L6" class="LineNr">  6 </span>]
 <span id="L7" class="LineNr">  7 </span><span class="muRecipe">def</span> f [
@@ -70,7 +70,7 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr"> 10 </span><span class="traceContains">+mem: storing 4 in location 3</span>
 <span id="L11" class="LineNr"> 11 </span>
 <span id="L12" class="LineNr"> 12 </span><span class="Delimiter">:(scenario return_on_fallthrough)</span>
-<span id="L13" class="LineNr"> 13 </span><span class="muRecipe">def</span> main [
+<span id="L13" class="LineNr"> 13 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L14" class="LineNr"> 14 </span>  f
 <span id="L15" class="LineNr"> 15 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
 <span id="L16" class="LineNr"> 16 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>
@@ -94,10 +94,10 @@ if ('onhashchange' in window) {
 <span id="L34" class="LineNr"> 34 </span><span class="Comment">// recipe. When that finishes, we continue this one where we left off.</span>
 <span id="L35" class="LineNr"> 35 </span><span class="Comment">// This requires maintaining a 'stack' of interrupted recipes or 'calls'.</span>
 <span id="L36" class="LineNr"> 36 </span><span class="Normal">struct</span> call <span class="Delimiter">{</span>
-<span id="L37" class="LineNr"> 37 </span>  recipe_ordinal running_recipe<span class="Delimiter">;</span>
+<span id="L37" class="LineNr"> 37 </span>  <a href='010vm.cc.html#L14'>recipe_ordinal</a> running_recipe<span class="Delimiter">;</span>
 <span id="L38" class="LineNr"> 38 </span>  <span class="Normal">int</span> running_step_index<span class="Delimiter">;</span>
 <span id="L39" class="LineNr"> 39 </span>  <span class="Comment">// End call Fields</span>
-<span id="L40" class="LineNr"> 40 </span>  call<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L40" class="LineNr"> 40 </span>  call<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L41" class="LineNr"> 41 </span>    running_recipe = r<span class="Delimiter">;</span>
 <span id="L42" class="LineNr"> 42 </span>    running_step_index = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L43" class="LineNr"> 43 </span>    <span class="Comment">// End call Constructor</span>
@@ -112,15 +112,15 @@ if ('onhashchange' in window) {
 <span id="L52" class="LineNr"> 52 </span><span class="Normal">struct</span> routine <span class="Delimiter">{</span>
 <span id="L53" class="LineNr"> 53 </span>  call_stack calls<span class="Delimiter">;</span>
 <span id="L54" class="LineNr"> 54 </span>  <span class="Comment">// End routine Fields</span>
-<span id="L55" class="LineNr"> 55 </span>  routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">);</span>
+<span id="L55" class="LineNr"> 55 </span>  routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">);</span>
 <span id="L56" class="LineNr"> 56 </span>  <span class="Normal">bool</span> completed<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
 <span id="L57" class="LineNr"> 57 </span>  <span class="Normal">const</span> vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
 <span id="L58" class="LineNr"> 58 </span><span class="Delimiter">};</span>
 <span id="L59" class="LineNr"> 59 </span><span class="Delimiter">:(code)</span>
-<span id="L60" class="LineNr"> 60 </span>routine::routine<span class="Delimiter">(</span>recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L60" class="LineNr"> 60 </span>routine::routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L61" class="LineNr"> 61 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L62" class="LineNr"> 62 </span>    ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L63" class="LineNr"> 63 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new routine; incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L63" class="LineNr"> 63 </span>    <a href='003trace.cc.html#L171'>trace</a><span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new routine; incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L64" class="LineNr"> 64 </span>    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
 <span id="L65" class="LineNr"> 65 </span>  <span class="Delimiter">}</span>
 <span id="L66" class="LineNr"> 66 </span>  calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
@@ -162,13 +162,13 @@ if ('onhashchange' in window) {
 <span id="L102" class="LineNr">102 </span><span class="Delimiter">:(after &quot;Defined Recipe Checks&quot;)</span>
 <span id="L103" class="LineNr">103 </span><span class="Comment">// not a primitive; check that it's present in the book of recipes</span>
 <span id="L104" class="LineNr">104 </span><span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L105" class="LineNr">105 </span>  raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;undefined operation in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L105" class="LineNr">105 </span>  <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;undefined operation in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L106" class="LineNr">106 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L107" class="LineNr">107 </span><span class="Delimiter">}</span>
 <span id="L108" class="LineNr">108 </span><span class="Delimiter">:(replace{} &quot;default:&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
 <span id="L109" class="LineNr">109 </span><span class="Normal">default</span>: <span class="Delimiter">{</span>
 <span id="L110" class="LineNr">110 </span>  <span class="Normal">const</span> instruction&amp; call_instruction = current_instruction<span class="Delimiter">();</span>
-<span id="L111" class="LineNr">111 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span>end<span class="Delimiter">())</span> <span class="Delimiter">{</span>  <span class="Comment">// duplicate from Checks</span>
+<span id="L111" class="LineNr">111 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Recipe<span class="Delimiter">.</span>find<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">)</span> == Recipe<span class="Delimiter">.</span><a href='003trace.cc.html#L195'>end</a><span class="Delimiter">())</span> <span class="Delimiter">{</span>  <span class="Comment">// duplicate from Checks</span>
 <span id="L112" class="LineNr">112 </span>    <span class="Comment">// stop running this instruction immediately</span>
 <span id="L113" class="LineNr">113 </span>    ++current_step_index<span class="Delimiter">();</span>
 <span id="L114" class="LineNr">114 </span>    <span class="Identifier">continue</span><span class="Delimiter">;</span>
@@ -176,7 +176,7 @@ if ('onhashchange' in window) {
 <span id="L116" class="LineNr">116 </span>  <span class="Comment">// not a primitive; look up the book of recipes</span>
 <span id="L117" class="LineNr">117 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L118" class="LineNr">118 </span>    ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L119" class="LineNr">119 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L119" class="LineNr">119 </span>    <a href='003trace.cc.html#L171'>trace</a><span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L120" class="LineNr">120 </span>    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
 <span id="L121" class="LineNr">121 </span>  <span class="Delimiter">}</span>
 <span id="L122" class="LineNr">122 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>current_instruction<span class="Delimiter">().</span>operation<span class="Delimiter">));</span>
@@ -190,17 +190,17 @@ if ('onhashchange' in window) {
 <span id="L130" class="LineNr">130 </span>
 <span id="L131" class="LineNr">131 </span><span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
 <span id="L132" class="LineNr">132 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L133" class="LineNr">133 </span><span class="muRecipe">def</span> main [
+<span id="L133" class="LineNr">133 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L134" class="LineNr">134 </span>  foo
 <span id="L135" class="LineNr">135 </span>]
-<span id="L136" class="LineNr">136 </span><span class="traceContains">+error: main: undefined operation in 'foo '</span>
+<span id="L136" class="LineNr">136 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'foo '</span>
 <span id="L137" class="LineNr">137 </span>
 <span id="L138" class="LineNr">138 </span><span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
 <span id="L139" class="LineNr">139 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L140" class="LineNr">140 </span><span class="muRecipe">def</span> main [
+<span id="L140" class="LineNr">140 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L141" class="LineNr">141 </span>  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>foo
 <span id="L142" class="LineNr">142 </span>]
-<span id="L143" class="LineNr">143 </span><span class="traceContains">+error: main: undefined operation in 'x:num &lt;- foo '</span>
+<span id="L143" class="LineNr">143 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'x:num &lt;- foo '</span>
 <span id="L144" class="LineNr">144 </span>
 <span id="L145" class="LineNr">145 </span><span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
 <span id="L146" class="LineNr">146 </span>
@@ -218,10 +218,10 @@ if ('onhashchange' in window) {
 <span id="L158" class="LineNr">158 </span><span class="Delimiter">:(before &quot;Running One Instruction&quot;)</span>
 <span id="L159" class="LineNr">159 </span><span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
 <span id="L160" class="LineNr">160 </span><span class="Comment">// it, and the one below that, and so on</span>
-<span id="L161" class="LineNr">161 </span><span class="Normal">while</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= SIZE<span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+<span id="L161" class="LineNr">161 </span><span class="Normal">while</span> <span class="Delimiter">(</span>current_step_index<span class="Delimiter">()</span> &gt;= <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
 <span id="L162" class="LineNr">162 </span>  <span class="Comment">// Falling Through End Of Recipe</span>
 <span id="L163" class="LineNr">163 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L164" class="LineNr">164 </span>    trace<span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;fall-through: exiting &quot;</span> &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; decrementing callstack depth from &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L164" class="LineNr">164 </span>    <a href='003trace.cc.html#L171'>trace</a><span class="Delimiter">(</span><span class="Constant">9999</span><span class="Delimiter">,</span> <span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;fall-through: exiting &quot;</span> &lt;&lt; current_recipe_name<span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; decrementing callstack depth from &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L165" class="LineNr">165 </span>    --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
 <span id="L166" class="LineNr">166 </span>    assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L167" class="LineNr">167 </span>  <span class="Delimiter">}</span>

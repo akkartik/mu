@@ -127,7 +127,7 @@ if ('onhashchange' in window) {
 <span id="L68" class="LineNr">  68 </span>    undo:&amp;:list:&amp;:operation <span class="Special">&lt;-</span> get *editor, <span class="Constant">undo:offset</span>
 <span id="L69" class="LineNr">  69 </span>    <span class="muControl">break-unless</span> undo
 <span id="L70" class="LineNr">  70 </span>    op:&amp;:operation <span class="Special">&lt;-</span> first undo
-<span id="L71" class="LineNr">  71 </span>    undo <span class="Special">&lt;-</span> rest undo
+<span id="L71" class="LineNr">  71 </span>    undo <span class="Special">&lt;-</span> <a href='064list.mu.html#L25'>rest</a> undo
 <span id="L72" class="LineNr">  72 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">undo:offset</span>, undo
 <span id="L73" class="LineNr">  73 </span>    redo:&amp;:list:&amp;:operation <span class="Special">&lt;-</span> get *editor, <span class="Constant">redo:offset</span>
 <span id="L74" class="LineNr">  74 </span>    redo <span class="Special">&lt;-</span> push op, redo
@@ -145,7 +145,7 @@ if ('onhashchange' in window) {
 <span id="L86" class="LineNr">  86 </span>    redo:&amp;:list:&amp;:operation <span class="Special">&lt;-</span> get *editor, <span class="Constant">redo:offset</span>
 <span id="L87" class="LineNr">  87 </span>    <span class="muControl">break-unless</span> redo
 <span id="L88" class="LineNr">  88 </span>    op:&amp;:operation <span class="Special">&lt;-</span> first redo
-<span id="L89" class="LineNr">  89 </span>    redo <span class="Special">&lt;-</span> rest redo
+<span id="L89" class="LineNr">  89 </span>    redo <span class="Special">&lt;-</span> <a href='064list.mu.html#L25'>rest</a> redo
 <span id="L90" class="LineNr">  90 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">redo:offset</span>, redo
 <span id="L91" class="LineNr">  91 </span>    undo:&amp;:list:&amp;:operation <span class="Special">&lt;-</span> get *editor, <span class="Constant">undo:offset</span>
 <span id="L92" class="LineNr">  92 </span>    undo <span class="Special">&lt;-</span> push op, undo
@@ -162,17 +162,17 @@ if ('onhashchange' in window) {
 <span id="L103" class="LineNr"> 103 </span>  <span class="Comment"># create an editor and type a character</span>
 <span id="L104" class="LineNr"> 104 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L105" class="LineNr"> 105 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L106" class="LineNr"> 106 </span>  editor-render screen, e
+<span id="L106" class="LineNr"> 106 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L107" class="LineNr"> 107 </span>  assume-console [
 <span id="L108" class="LineNr"> 108 </span>    type <span class="Constant">[0]</span>
 <span id="L109" class="LineNr"> 109 </span>  ]
-<span id="L110" class="LineNr"> 110 </span>  editor-event-loop screen, console, e
+<span id="L110" class="LineNr"> 110 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L111" class="LineNr"> 111 </span>  <span class="Comment"># undo</span>
 <span id="L112" class="LineNr"> 112 </span>  assume-console [
 <span id="L113" class="LineNr"> 113 </span>    press ctrl-z
 <span id="L114" class="LineNr"> 114 </span>  ]
 <span id="L115" class="LineNr"> 115 </span>  run [
-<span id="L116" class="LineNr"> 116 </span>    editor-event-loop screen, console, e
+<span id="L116" class="LineNr"> 116 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L117" class="LineNr"> 117 </span>  ]
 <span id="L118" class="LineNr"> 118 </span>  <span class="Comment"># character should be gone</span>
 <span id="L119" class="LineNr"> 119 </span>  screen-should-contain [
@@ -186,7 +186,7 @@ if ('onhashchange' in window) {
 <span id="L127" class="LineNr"> 127 </span>    type <span class="Constant">[1]</span>
 <span id="L128" class="LineNr"> 128 </span>  ]
 <span id="L129" class="LineNr"> 129 </span>  run [
-<span id="L130" class="LineNr"> 130 </span>    editor-event-loop screen, console, e
+<span id="L130" class="LineNr"> 130 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L131" class="LineNr"> 131 </span>  ]
 <span id="L132" class="LineNr"> 132 </span>  screen-should-contain [
 <span id="L133" class="LineNr"> 133 </span>   <span class="Constant"> .          .</span>
@@ -215,7 +215,7 @@ if ('onhashchange' in window) {
 <span id="L156" class="LineNr"> 156 </span>    previous-coalesce-tag:num <span class="Special">&lt;-</span> get typing, <span class="Constant">tag:offset</span>
 <span id="L157" class="LineNr"> 157 </span>    <span class="muControl">break-unless</span> previous-coalesce-tag
 <span id="L158" class="LineNr"> 158 </span>    before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L159" class="LineNr"> 159 </span>    insert-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L159" class="LineNr"> 159 </span>    insert-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L160" class="LineNr"> 160 </span>    typing <span class="Special">&lt;-</span> put typing, <span class="Constant">insert-until:offset</span>, insert-until
 <span id="L161" class="LineNr"> 161 </span>    typing <span class="Special">&lt;-</span> put typing, <span class="Constant">after-row:offset</span>, cursor-row
 <span id="L162" class="LineNr"> 162 </span>    typing <span class="Special">&lt;-</span> put typing, <span class="Constant">after-column:offset</span>, cursor-column
@@ -224,8 +224,8 @@ if ('onhashchange' in window) {
 <span id="L165" class="LineNr"> 165 </span>    <span class="muControl">break</span> <span class="Constant">+done-adding-insert-operation</span>
 <span id="L166" class="LineNr"> 166 </span>  <span class="Delimiter">}</span>
 <span id="L167" class="LineNr"> 167 </span>  <span class="Comment"># if not, create a new operation</span>
-<span id="L168" class="LineNr"> 168 </span>  insert-from:&amp;:duplex-list:char <span class="Special">&lt;-</span> next cursor-before
-<span id="L169" class="LineNr"> 169 </span>  insert-to:&amp;:duplex-list:char <span class="Special">&lt;-</span> next insert-from
+<span id="L168" class="LineNr"> 168 </span>  insert-from:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> cursor-before
+<span id="L169" class="LineNr"> 169 </span>  insert-to:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> insert-from
 <span id="L170" class="LineNr"> 170 </span>  op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
 <span id="L171" class="LineNr"> 171 </span>  *op <span class="Special">&lt;-</span> merge <span class="Constant">0/insert-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, <span class="Constant">1/coalesce</span>
 <span id="L172" class="LineNr"> 172 </span>  editor <span class="Special">&lt;-</span> add-operation editor, op
@@ -244,9 +244,9 @@ if ('onhashchange' in window) {
 <span id="L185" class="LineNr"> 185 </span>  cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L186" class="LineNr"> 186 </span>  cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L187" class="LineNr"> 187 </span>  <span class="Comment"># never coalesce</span>
-<span id="L188" class="LineNr"> 188 </span>  insert-from:&amp;:duplex-list:char <span class="Special">&lt;-</span> next cursor-before
+<span id="L188" class="LineNr"> 188 </span>  insert-from:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> cursor-before
 <span id="L189" class="LineNr"> 189 </span>  before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L190" class="LineNr"> 190 </span>  insert-to:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L190" class="LineNr"> 190 </span>  insert-to:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L191" class="LineNr"> 191 </span>  op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
 <span id="L192" class="LineNr"> 192 </span>  *op <span class="Special">&lt;-</span> merge <span class="Constant">0/insert-operation</span>, cursor-row-before, cursor-column-before, top-before, cursor-row/after, cursor-column/after, top-after, insert-from, insert-to, <span class="Constant">0/never-coalesce</span>
 <span id="L193" class="LineNr"> 193 </span>  editor <span class="Special">&lt;-</span> add-operation editor, op
@@ -274,9 +274,9 @@ if ('onhashchange' in window) {
 <span id="L215" class="LineNr"> 215 </span>    start:&amp;:duplex-list:char <span class="Special">&lt;-</span> get typing, <span class="Constant">insert-from:offset</span>
 <span id="L216" class="LineNr"> 216 </span>    end:&amp;:duplex-list:char <span class="Special">&lt;-</span> get typing, <span class="Constant">insert-until:offset</span>
 <span id="L217" class="LineNr"> 217 </span>    <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
-<span id="L218" class="LineNr"> 218 </span>    before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> prev start
+<span id="L218" class="LineNr"> 218 </span>    before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L36'>prev</a> start
 <span id="L219" class="LineNr"> 219 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
-<span id="L220" class="LineNr"> 220 </span>    remove-between before-cursor, end
+<span id="L220" class="LineNr"> 220 </span>    <a href='065duplex_list.mu.html#L345'>remove-between</a> before-cursor, end
 <span id="L221" class="LineNr"> 221 </span>    cursor-row <span class="Special">&lt;-</span> get typing, <span class="Constant">before-row:offset</span>
 <span id="L222" class="LineNr"> 222 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
 <span id="L223" class="LineNr"> 223 </span>    cursor-column <span class="Special">&lt;-</span> get typing, <span class="Constant">before-column:offset</span>
@@ -291,17 +291,17 @@ if ('onhashchange' in window) {
 <span id="L232" class="LineNr"> 232 </span>  <span class="Comment"># create an editor and type multiple characters</span>
 <span id="L233" class="LineNr"> 233 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L234" class="LineNr"> 234 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L235" class="LineNr"> 235 </span>  editor-render screen, e
+<span id="L235" class="LineNr"> 235 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L236" class="LineNr"> 236 </span>  assume-console [
 <span id="L237" class="LineNr"> 237 </span>    type <span class="Constant">[012]</span>
 <span id="L238" class="LineNr"> 238 </span>  ]
-<span id="L239" class="LineNr"> 239 </span>  editor-event-loop screen, console, e
+<span id="L239" class="LineNr"> 239 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L240" class="LineNr"> 240 </span>  <span class="Comment"># undo</span>
 <span id="L241" class="LineNr"> 241 </span>  assume-console [
 <span id="L242" class="LineNr"> 242 </span>    press ctrl-z
 <span id="L243" class="LineNr"> 243 </span>  ]
 <span id="L244" class="LineNr"> 244 </span>  run [
-<span id="L245" class="LineNr"> 245 </span>    editor-event-loop screen, console, e
+<span id="L245" class="LineNr"> 245 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L246" class="LineNr"> 246 </span>  ]
 <span id="L247" class="LineNr"> 247 </span>  <span class="Comment"># all characters must be gone</span>
 <span id="L248" class="LineNr"> 248 </span>  screen-should-contain [
@@ -317,12 +317,12 @@ if ('onhashchange' in window) {
 <span id="L258" class="LineNr"> 258 </span>  <span class="Comment"># create an editor with some text</span>
 <span id="L259" class="LineNr"> 259 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L260" class="LineNr"> 260 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[a]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L261" class="LineNr"> 261 </span>  editor-render screen, e
+<span id="L261" class="LineNr"> 261 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L262" class="LineNr"> 262 </span>  <span class="Comment"># type some characters</span>
 <span id="L263" class="LineNr"> 263 </span>  assume-console [
 <span id="L264" class="LineNr"> 264 </span>    type <span class="Constant">[012]</span>
 <span id="L265" class="LineNr"> 265 </span>  ]
-<span id="L266" class="LineNr"> 266 </span>  editor-event-loop screen, console, e
+<span id="L266" class="LineNr"> 266 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L267" class="LineNr"> 267 </span>  screen-should-contain [
 <span id="L268" class="LineNr"> 268 </span>   <span class="Constant"> .          .</span>
 <span id="L269" class="LineNr"> 269 </span>   <span class="Constant"> .012a      .</span>
@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L275" class="LineNr"> 275 </span>    press ctrl-z
 <span id="L276" class="LineNr"> 276 </span>  ]
 <span id="L277" class="LineNr"> 277 </span>  run [
-<span id="L278" class="LineNr"> 278 </span>    editor-event-loop screen, console, e
+<span id="L278" class="LineNr"> 278 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L279" class="LineNr"> 279 </span>  ]
 <span id="L280" class="LineNr"> 280 </span>  <span class="Comment"># back to original text</span>
 <span id="L281" class="LineNr"> 281 </span>  screen-should-contain [
@@ -348,7 +348,7 @@ if ('onhashchange' in window) {
 <span id="L289" class="LineNr"> 289 </span>    type <span class="Constant">[3]</span>
 <span id="L290" class="LineNr"> 290 </span>  ]
 <span id="L291" class="LineNr"> 291 </span>  run [
-<span id="L292" class="LineNr"> 292 </span>    editor-event-loop screen, console, e
+<span id="L292" class="LineNr"> 292 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L293" class="LineNr"> 293 </span>  ]
 <span id="L294" class="LineNr"> 294 </span>  screen-should-contain [
 <span id="L295" class="LineNr"> 295 </span>   <span class="Constant"> .          .</span>
@@ -363,13 +363,13 @@ if ('onhashchange' in window) {
 <span id="L304" class="LineNr"> 304 </span>  <span class="Comment"># create an editor with some text</span>
 <span id="L305" class="LineNr"> 305 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L306" class="LineNr"> 306 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[  abc]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L307" class="LineNr"> 307 </span>  editor-render screen, e
+<span id="L307" class="LineNr"> 307 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L308" class="LineNr"> 308 </span>  <span class="Comment"># new line</span>
 <span id="L309" class="LineNr"> 309 </span>  assume-console [
 <span id="L310" class="LineNr"> 310 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 8</span>
 <span id="L311" class="LineNr"> 311 </span>    press enter
 <span id="L312" class="LineNr"> 312 </span>  ]
-<span id="L313" class="LineNr"> 313 </span>  editor-event-loop screen, console, e
+<span id="L313" class="LineNr"> 313 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L314" class="LineNr"> 314 </span>  screen-should-contain [
 <span id="L315" class="LineNr"> 315 </span>   <span class="Constant"> .          .</span>
 <span id="L316" class="LineNr"> 316 </span>   <span class="Constant"> .  abc     .</span>
@@ -389,7 +389,7 @@ if ('onhashchange' in window) {
 <span id="L330" class="LineNr"> 330 </span>    press ctrl-z
 <span id="L331" class="LineNr"> 331 </span>  ]
 <span id="L332" class="LineNr"> 332 </span>  run [
-<span id="L333" class="LineNr"> 333 </span>    editor-event-loop screen, console, e
+<span id="L333" class="LineNr"> 333 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L334" class="LineNr"> 334 </span>  ]
 <span id="L335" class="LineNr"> 335 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L336" class="LineNr"> 336 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -409,7 +409,7 @@ if ('onhashchange' in window) {
 <span id="L350" class="LineNr"> 350 </span>    type <span class="Constant">[1]</span>
 <span id="L351" class="LineNr"> 351 </span>  ]
 <span id="L352" class="LineNr"> 352 </span>  run [
-<span id="L353" class="LineNr"> 353 </span>    editor-event-loop screen, console, e
+<span id="L353" class="LineNr"> 353 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L354" class="LineNr"> 354 </span>  ]
 <span id="L355" class="LineNr"> 355 </span>  screen-should-contain [
 <span id="L356" class="LineNr"> 356 </span>   <span class="Constant"> .          .</span>
@@ -426,12 +426,12 @@ if ('onhashchange' in window) {
 <span id="L367" class="LineNr"> 367 </span>  <span class="Comment"># create an editor, type something, undo</span>
 <span id="L368" class="LineNr"> 368 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L369" class="LineNr"> 369 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[a]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L370" class="LineNr"> 370 </span>  editor-render screen, e
+<span id="L370" class="LineNr"> 370 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L371" class="LineNr"> 371 </span>  assume-console [
 <span id="L372" class="LineNr"> 372 </span>    type <span class="Constant">[012]</span>
 <span id="L373" class="LineNr"> 373 </span>    press ctrl-z
 <span id="L374" class="LineNr"> 374 </span>  ]
-<span id="L375" class="LineNr"> 375 </span>  editor-event-loop screen, console, e
+<span id="L375" class="LineNr"> 375 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L376" class="LineNr"> 376 </span>  screen-should-contain [
 <span id="L377" class="LineNr"> 377 </span>   <span class="Constant"> .          .</span>
 <span id="L378" class="LineNr"> 378 </span>   <span class="Constant"> .a         .</span>
@@ -443,7 +443,7 @@ if ('onhashchange' in window) {
 <span id="L384" class="LineNr"> 384 </span>    press ctrl-y
 <span id="L385" class="LineNr"> 385 </span>  ]
 <span id="L386" class="LineNr"> 386 </span>  run [
-<span id="L387" class="LineNr"> 387 </span>    editor-event-loop screen, console, e
+<span id="L387" class="LineNr"> 387 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L388" class="LineNr"> 388 </span>  ]
 <span id="L389" class="LineNr"> 389 </span>  <span class="Comment"># all characters must be back</span>
 <span id="L390" class="LineNr"> 390 </span>  screen-should-contain [
@@ -457,7 +457,7 @@ if ('onhashchange' in window) {
 <span id="L398" class="LineNr"> 398 </span>    type <span class="Constant">[3]</span>
 <span id="L399" class="LineNr"> 399 </span>  ]
 <span id="L400" class="LineNr"> 400 </span>  run [
-<span id="L401" class="LineNr"> 401 </span>    editor-event-loop screen, console, e
+<span id="L401" class="LineNr"> 401 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L402" class="LineNr"> 402 </span>  ]
 <span id="L403" class="LineNr"> 403 </span>  screen-should-contain [
 <span id="L404" class="LineNr"> 404 </span>   <span class="Constant"> .          .</span>
@@ -474,7 +474,7 @@ if ('onhashchange' in window) {
 <span id="L415" class="LineNr"> 415 </span>    before-cursor <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
 <span id="L416" class="LineNr"> 416 </span>    insert-from:&amp;:duplex-list:char <span class="Special">&lt;-</span> get typing, <span class="Constant">insert-from:offset</span>  <span class="Comment"># ignore insert-to because it's already been spliced away</span>
 <span id="L417" class="LineNr"> 417 </span>    <span class="Comment"># assert insert-to matches next(before-cursor)</span>
-<span id="L418" class="LineNr"> 418 </span>    insert-range before-cursor, insert-from
+<span id="L418" class="LineNr"> 418 </span>    <a href='065duplex_list.mu.html#L485'>insert-range</a> before-cursor, insert-from
 <span id="L419" class="LineNr"> 419 </span>    <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
 <span id="L420" class="LineNr"> 420 </span>    cursor-row <span class="Special">&lt;-</span> get typing, <span class="Constant">after-row:offset</span>
 <span id="L421" class="LineNr"> 421 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
@@ -490,12 +490,12 @@ if ('onhashchange' in window) {
 <span id="L431" class="LineNr"> 431 </span>  <span class="Comment"># create an editor, type something, undo</span>
 <span id="L432" class="LineNr"> 432 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L433" class="LineNr"> 433 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L434" class="LineNr"> 434 </span>  editor-render screen, e
+<span id="L434" class="LineNr"> 434 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L435" class="LineNr"> 435 </span>  assume-console [
 <span id="L436" class="LineNr"> 436 </span>    type <span class="Constant">[012]</span>
 <span id="L437" class="LineNr"> 437 </span>    press ctrl-z
 <span id="L438" class="LineNr"> 438 </span>  ]
-<span id="L439" class="LineNr"> 439 </span>  editor-event-loop screen, console, e
+<span id="L439" class="LineNr"> 439 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L440" class="LineNr"> 440 </span>  screen-should-contain [
 <span id="L441" class="LineNr"> 441 </span>   <span class="Constant"> .          .</span>
 <span id="L442" class="LineNr"> 442 </span>   <span class="Constant"> .          .</span>
@@ -507,7 +507,7 @@ if ('onhashchange' in window) {
 <span id="L448" class="LineNr"> 448 </span>    press ctrl-y
 <span id="L449" class="LineNr"> 449 </span>  ]
 <span id="L450" class="LineNr"> 450 </span>  run [
-<span id="L451" class="LineNr"> 451 </span>    editor-event-loop screen, console, e
+<span id="L451" class="LineNr"> 451 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L452" class="LineNr"> 452 </span>  ]
 <span id="L453" class="LineNr"> 453 </span>  <span class="Comment"># all characters must be back</span>
 <span id="L454" class="LineNr"> 454 </span>  screen-should-contain [
@@ -521,7 +521,7 @@ if ('onhashchange' in window) {
 <span id="L462" class="LineNr"> 462 </span>    type <span class="Constant">[3]</span>
 <span id="L463" class="LineNr"> 463 </span>  ]
 <span id="L464" class="LineNr"> 464 </span>  run [
-<span id="L465" class="LineNr"> 465 </span>    editor-event-loop screen, console, e
+<span id="L465" class="LineNr"> 465 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L466" class="LineNr"> 466 </span>  ]
 <span id="L467" class="LineNr"> 467 </span>  screen-should-contain [
 <span id="L468" class="LineNr"> 468 </span>   <span class="Constant"> .          .</span>
@@ -539,17 +539,17 @@ if ('onhashchange' in window) {
 <span id="L480" class="LineNr"> 480 </span><span class="Constant">def</span>
 <span id="L481" class="LineNr"> 481 </span><span class="Constant">ghi]</span>
 <span id="L482" class="LineNr"> 482 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L483" class="LineNr"> 483 </span>  editor-render screen, e
+<span id="L483" class="LineNr"> 483 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L484" class="LineNr"> 484 </span>  assume-console [
 <span id="L485" class="LineNr"> 485 </span>    type <span class="Constant">[1]</span>
 <span id="L486" class="LineNr"> 486 </span>    press ctrl-z
 <span id="L487" class="LineNr"> 487 </span>  ]
-<span id="L488" class="LineNr"> 488 </span>  editor-event-loop screen, console, e
+<span id="L488" class="LineNr"> 488 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L489" class="LineNr"> 489 </span>  <span class="Comment"># do some more work</span>
 <span id="L490" class="LineNr"> 490 </span>  assume-console [
 <span id="L491" class="LineNr"> 491 </span>    type <span class="Constant">[0]</span>
 <span id="L492" class="LineNr"> 492 </span>  ]
-<span id="L493" class="LineNr"> 493 </span>  editor-event-loop screen, console, e
+<span id="L493" class="LineNr"> 493 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L494" class="LineNr"> 494 </span>  screen-should-contain [
 <span id="L495" class="LineNr"> 495 </span>   <span class="Constant"> .          .</span>
 <span id="L496" class="LineNr"> 496 </span>   <span class="Constant"> .0abc      .</span>
@@ -562,7 +562,7 @@ if ('onhashchange' in window) {
 <span id="L503" class="LineNr"> 503 </span>    press ctrl-y
 <span id="L504" class="LineNr"> 504 </span>  ]
 <span id="L505" class="LineNr"> 505 </span>  run [
-<span id="L506" class="LineNr"> 506 </span>    editor-event-loop screen, console, e
+<span id="L506" class="LineNr"> 506 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L507" class="LineNr"> 507 </span>  ]
 <span id="L508" class="LineNr"> 508 </span>  <span class="Comment"># nothing should happen</span>
 <span id="L509" class="LineNr"> 509 </span>  screen-should-contain [
@@ -579,7 +579,7 @@ if ('onhashchange' in window) {
 <span id="L520" class="LineNr"> 520 </span>  <span class="Comment"># create an editor</span>
 <span id="L521" class="LineNr"> 521 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L522" class="LineNr"> 522 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L523" class="LineNr"> 523 </span>  editor-render screen, e
+<span id="L523" class="LineNr"> 523 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L524" class="LineNr"> 524 </span>  <span class="Comment"># insert some text and tabs, hit enter, some more text and tabs</span>
 <span id="L525" class="LineNr"> 525 </span>  assume-console [
 <span id="L526" class="LineNr"> 526 </span>    press tab
@@ -590,7 +590,7 @@ if ('onhashchange' in window) {
 <span id="L531" class="LineNr"> 531 </span>    press tab
 <span id="L532" class="LineNr"> 532 </span>    type <span class="Constant">[efg]</span>
 <span id="L533" class="LineNr"> 533 </span>  ]
-<span id="L534" class="LineNr"> 534 </span>  editor-event-loop screen, console, e
+<span id="L534" class="LineNr"> 534 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L535" class="LineNr"> 535 </span>  screen-should-contain [
 <span id="L536" class="LineNr"> 536 </span>   <span class="Constant"> .          .</span>
 <span id="L537" class="LineNr"> 537 </span>   <span class="Constant"> .  ab  cd  .</span>
@@ -609,7 +609,7 @@ if ('onhashchange' in window) {
 <span id="L550" class="LineNr"> 550 </span>    press ctrl-z
 <span id="L551" class="LineNr"> 551 </span>  ]
 <span id="L552" class="LineNr"> 552 </span>  run [
-<span id="L553" class="LineNr"> 553 </span>    editor-event-loop screen, console, e
+<span id="L553" class="LineNr"> 553 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L554" class="LineNr"> 554 </span>  ]
 <span id="L555" class="LineNr"> 555 </span>  <span class="Comment"># typing in second line deleted, but not indent</span>
 <span id="L556" class="LineNr"> 556 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -630,7 +630,7 @@ if ('onhashchange' in window) {
 <span id="L571" class="LineNr"> 571 </span>    press ctrl-z
 <span id="L572" class="LineNr"> 572 </span>  ]
 <span id="L573" class="LineNr"> 573 </span>  run [
-<span id="L574" class="LineNr"> 574 </span>    editor-event-loop screen, console, e
+<span id="L574" class="LineNr"> 574 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L575" class="LineNr"> 575 </span>  ]
 <span id="L576" class="LineNr"> 576 </span>  <span class="Comment"># indent and newline deleted</span>
 <span id="L577" class="LineNr"> 577 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -650,7 +650,7 @@ if ('onhashchange' in window) {
 <span id="L591" class="LineNr"> 591 </span>    press ctrl-z
 <span id="L592" class="LineNr"> 592 </span>  ]
 <span id="L593" class="LineNr"> 593 </span>  run [
-<span id="L594" class="LineNr"> 594 </span>    editor-event-loop screen, console, e
+<span id="L594" class="LineNr"> 594 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L595" class="LineNr"> 595 </span>  ]
 <span id="L596" class="LineNr"> 596 </span>  <span class="Comment"># empty screen</span>
 <span id="L597" class="LineNr"> 597 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -670,7 +670,7 @@ if ('onhashchange' in window) {
 <span id="L611" class="LineNr"> 611 </span>    press ctrl-y
 <span id="L612" class="LineNr"> 612 </span>  ]
 <span id="L613" class="LineNr"> 613 </span>  run [
-<span id="L614" class="LineNr"> 614 </span>    editor-event-loop screen, console, e
+<span id="L614" class="LineNr"> 614 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L615" class="LineNr"> 615 </span>  ]
 <span id="L616" class="LineNr"> 616 </span>  <span class="Comment"># first line inserted</span>
 <span id="L617" class="LineNr"> 617 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -690,7 +690,7 @@ if ('onhashchange' in window) {
 <span id="L631" class="LineNr"> 631 </span>    press ctrl-y
 <span id="L632" class="LineNr"> 632 </span>  ]
 <span id="L633" class="LineNr"> 633 </span>  run [
-<span id="L634" class="LineNr"> 634 </span>    editor-event-loop screen, console, e
+<span id="L634" class="LineNr"> 634 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L635" class="LineNr"> 635 </span>  ]
 <span id="L636" class="LineNr"> 636 </span>  <span class="Comment"># newline and indent inserted</span>
 <span id="L637" class="LineNr"> 637 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -711,7 +711,7 @@ if ('onhashchange' in window) {
 <span id="L652" class="LineNr"> 652 </span>    press ctrl-y
 <span id="L653" class="LineNr"> 653 </span>  ]
 <span id="L654" class="LineNr"> 654 </span>  run [
-<span id="L655" class="LineNr"> 655 </span>    editor-event-loop screen, console, e
+<span id="L655" class="LineNr"> 655 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L656" class="LineNr"> 656 </span>  ]
 <span id="L657" class="LineNr"> 657 </span>  <span class="Comment"># indent and newline deleted</span>
 <span id="L658" class="LineNr"> 658 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -739,18 +739,18 @@ if ('onhashchange' in window) {
 <span id="L680" class="LineNr"> 680 </span><span class="Constant">def</span>
 <span id="L681" class="LineNr"> 681 </span><span class="Constant">ghi]</span>
 <span id="L682" class="LineNr"> 682 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L683" class="LineNr"> 683 </span>  editor-render screen, e
+<span id="L683" class="LineNr"> 683 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L684" class="LineNr"> 684 </span>  <span class="Comment"># move the cursor</span>
 <span id="L685" class="LineNr"> 685 </span>  assume-console [
 <span id="L686" class="LineNr"> 686 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 1</span>
 <span id="L687" class="LineNr"> 687 </span>  ]
-<span id="L688" class="LineNr"> 688 </span>  editor-event-loop screen, console, e
+<span id="L688" class="LineNr"> 688 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L689" class="LineNr"> 689 </span>  <span class="Comment"># undo</span>
 <span id="L690" class="LineNr"> 690 </span>  assume-console [
 <span id="L691" class="LineNr"> 691 </span>    press ctrl-z
 <span id="L692" class="LineNr"> 692 </span>  ]
 <span id="L693" class="LineNr"> 693 </span>  run [
-<span id="L694" class="LineNr"> 694 </span>    editor-event-loop screen, console, e
+<span id="L694" class="LineNr"> 694 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L695" class="LineNr"> 695 </span>  ]
 <span id="L696" class="LineNr"> 696 </span>  <span class="Comment"># click undone</span>
 <span id="L697" class="LineNr"> 697 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -764,7 +764,7 @@ if ('onhashchange' in window) {
 <span id="L705" class="LineNr"> 705 </span>    type <span class="Constant">[1]</span>
 <span id="L706" class="LineNr"> 706 </span>  ]
 <span id="L707" class="LineNr"> 707 </span>  run [
-<span id="L708" class="LineNr"> 708 </span>    editor-event-loop screen, console, e
+<span id="L708" class="LineNr"> 708 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L709" class="LineNr"> 709 </span>  ]
 <span id="L710" class="LineNr"> 710 </span>  screen-should-contain [
 <span id="L711" class="LineNr"> 711 </span>   <span class="Constant"> .          .</span>
@@ -836,7 +836,7 @@ if ('onhashchange' in window) {
 <span id="L777" class="LineNr"> 777 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 3</span>
 <span id="L778" class="LineNr"> 778 </span>    press right-arrow
 <span id="L779" class="LineNr"> 779 </span>  ]
-<span id="L780" class="LineNr"> 780 </span>  editor-event-loop screen, console, e
+<span id="L780" class="LineNr"> 780 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L781" class="LineNr"> 781 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L782" class="LineNr"> 782 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L783" class="LineNr"> 783 </span>  <span class="Comment"># screen scrolls</span>
@@ -855,7 +855,7 @@ if ('onhashchange' in window) {
 <span id="L796" class="LineNr"> 796 </span>    press ctrl-z
 <span id="L797" class="LineNr"> 797 </span>  ]
 <span id="L798" class="LineNr"> 798 </span>  run [
-<span id="L799" class="LineNr"> 799 </span>    editor-event-loop screen, console, e
+<span id="L799" class="LineNr"> 799 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L800" class="LineNr"> 800 </span>  ]
 <span id="L801" class="LineNr"> 801 </span>  <span class="Comment"># cursor moved back</span>
 <span id="L802" class="LineNr"> 802 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -876,7 +876,7 @@ if ('onhashchange' in window) {
 <span id="L817" class="LineNr"> 817 </span>    type <span class="Constant">[1]</span>
 <span id="L818" class="LineNr"> 818 </span>  ]
 <span id="L819" class="LineNr"> 819 </span>  run [
-<span id="L820" class="LineNr"> 820 </span>    editor-event-loop screen, console, e
+<span id="L820" class="LineNr"> 820 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L821" class="LineNr"> 821 </span>  ]
 <span id="L822" class="LineNr"> 822 </span>  screen-should-contain [
 <span id="L823" class="LineNr"> 823 </span>   <span class="Constant"> .     .</span>
@@ -894,19 +894,19 @@ if ('onhashchange' in window) {
 <span id="L835" class="LineNr"> 835 </span><span class="Constant">def</span>
 <span id="L836" class="LineNr"> 836 </span><span class="Constant">ghi]</span>
 <span id="L837" class="LineNr"> 837 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L838" class="LineNr"> 838 </span>  editor-render screen, e
+<span id="L838" class="LineNr"> 838 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L839" class="LineNr"> 839 </span>  <span class="Comment"># move the cursor</span>
 <span id="L840" class="LineNr"> 840 </span>  assume-console [
 <span id="L841" class="LineNr"> 841 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 1</span>
 <span id="L842" class="LineNr"> 842 </span>    press left-arrow
 <span id="L843" class="LineNr"> 843 </span>  ]
-<span id="L844" class="LineNr"> 844 </span>  editor-event-loop screen, console, e
+<span id="L844" class="LineNr"> 844 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L845" class="LineNr"> 845 </span>  <span class="Comment"># undo</span>
 <span id="L846" class="LineNr"> 846 </span>  assume-console [
 <span id="L847" class="LineNr"> 847 </span>    press ctrl-z
 <span id="L848" class="LineNr"> 848 </span>  ]
 <span id="L849" class="LineNr"> 849 </span>  run [
-<span id="L850" class="LineNr"> 850 </span>    editor-event-loop screen, console, e
+<span id="L850" class="LineNr"> 850 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L851" class="LineNr"> 851 </span>  ]
 <span id="L852" class="LineNr"> 852 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L853" class="LineNr"> 853 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -920,7 +920,7 @@ if ('onhashchange' in window) {
 <span id="L861" class="LineNr"> 861 </span>    type <span class="Constant">[1]</span>
 <span id="L862" class="LineNr"> 862 </span>  ]
 <span id="L863" class="LineNr"> 863 </span>  run [
-<span id="L864" class="LineNr"> 864 </span>    editor-event-loop screen, console, e
+<span id="L864" class="LineNr"> 864 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L865" class="LineNr"> 865 </span>  ]
 <span id="L866" class="LineNr"> 866 </span>  screen-should-contain [
 <span id="L867" class="LineNr"> 867 </span>   <span class="Constant"> .          .</span>
@@ -939,13 +939,13 @@ if ('onhashchange' in window) {
 <span id="L880" class="LineNr"> 880 </span><span class="Constant">def</span>
 <span id="L881" class="LineNr"> 881 </span><span class="Constant">ghi]</span>
 <span id="L882" class="LineNr"> 882 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L883" class="LineNr"> 883 </span>  editor-render screen, e
+<span id="L883" class="LineNr"> 883 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L884" class="LineNr"> 884 </span>  <span class="Comment"># move the cursor</span>
 <span id="L885" class="LineNr"> 885 </span>  assume-console [
 <span id="L886" class="LineNr"> 886 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 1</span>
 <span id="L887" class="LineNr"> 887 </span>    press up-arrow
 <span id="L888" class="LineNr"> 888 </span>  ]
-<span id="L889" class="LineNr"> 889 </span>  editor-event-loop screen, console, e
+<span id="L889" class="LineNr"> 889 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L890" class="LineNr"> 890 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L891" class="LineNr"> 891 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L892" class="LineNr"> 892 </span>  memory-should-contain [
@@ -957,7 +957,7 @@ if ('onhashchange' in window) {
 <span id="L898" class="LineNr"> 898 </span>    press ctrl-z
 <span id="L899" class="LineNr"> 899 </span>  ]
 <span id="L900" class="LineNr"> 900 </span>  run [
-<span id="L901" class="LineNr"> 901 </span>    editor-event-loop screen, console, e
+<span id="L901" class="LineNr"> 901 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L902" class="LineNr"> 902 </span>  ]
 <span id="L903" class="LineNr"> 903 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L904" class="LineNr"> 904 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -971,7 +971,7 @@ if ('onhashchange' in window) {
 <span id="L912" class="LineNr"> 912 </span>    type <span class="Constant">[1]</span>
 <span id="L913" class="LineNr"> 913 </span>  ]
 <span id="L914" class="LineNr"> 914 </span>  run [
-<span id="L915" class="LineNr"> 915 </span>    editor-event-loop screen, console, e
+<span id="L915" class="LineNr"> 915 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L916" class="LineNr"> 916 </span>  ]
 <span id="L917" class="LineNr"> 917 </span>  screen-should-contain [
 <span id="L918" class="LineNr"> 918 </span>   <span class="Constant"> .          .</span>
@@ -990,19 +990,19 @@ if ('onhashchange' in window) {
 <span id="L931" class="LineNr"> 931 </span><span class="Constant">def</span>
 <span id="L932" class="LineNr"> 932 </span><span class="Constant">ghi]</span>
 <span id="L933" class="LineNr"> 933 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L934" class="LineNr"> 934 </span>  editor-render screen, e
+<span id="L934" class="LineNr"> 934 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L935" class="LineNr"> 935 </span>  <span class="Comment"># move the cursor</span>
 <span id="L936" class="LineNr"> 936 </span>  assume-console [
 <span id="L937" class="LineNr"> 937 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
 <span id="L938" class="LineNr"> 938 </span>    press down-arrow
 <span id="L939" class="LineNr"> 939 </span>  ]
-<span id="L940" class="LineNr"> 940 </span>  editor-event-loop screen, console, e
+<span id="L940" class="LineNr"> 940 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L941" class="LineNr"> 941 </span>  <span class="Comment"># undo</span>
 <span id="L942" class="LineNr"> 942 </span>  assume-console [
 <span id="L943" class="LineNr"> 943 </span>    press ctrl-z
 <span id="L944" class="LineNr"> 944 </span>  ]
 <span id="L945" class="LineNr"> 945 </span>  run [
-<span id="L946" class="LineNr"> 946 </span>    editor-event-loop screen, console, e
+<span id="L946" class="LineNr"> 946 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L947" class="LineNr"> 947 </span>  ]
 <span id="L948" class="LineNr"> 948 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L949" class="LineNr"> 949 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1016,7 +1016,7 @@ if ('onhashchange' in window) {
 <span id="L957" class="LineNr"> 957 </span>    type <span class="Constant">[1]</span>
 <span id="L958" class="LineNr"> 958 </span>  ]
 <span id="L959" class="LineNr"> 959 </span>  run [
-<span id="L960" class="LineNr"> 960 </span>    editor-event-loop screen, console, e
+<span id="L960" class="LineNr"> 960 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L961" class="LineNr"> 961 </span>  ]
 <span id="L962" class="LineNr"> 962 </span>  screen-should-contain [
 <span id="L963" class="LineNr"> 963 </span>   <span class="Constant"> .          .</span>
@@ -1038,18 +1038,18 @@ if ('onhashchange' in window) {
 <span id="L979" class="LineNr"> 979 </span><span class="Constant">e</span>
 <span id="L980" class="LineNr"> 980 </span><span class="Constant">f]</span>
 <span id="L981" class="LineNr"> 981 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L982" class="LineNr"> 982 </span>  editor-render screen, e
+<span id="L982" class="LineNr"> 982 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L983" class="LineNr"> 983 </span>  <span class="Comment"># scroll the page</span>
 <span id="L984" class="LineNr"> 984 </span>  assume-console [
 <span id="L985" class="LineNr"> 985 </span>    press ctrl-f
 <span id="L986" class="LineNr"> 986 </span>  ]
-<span id="L987" class="LineNr"> 987 </span>  editor-event-loop screen, console, e
+<span id="L987" class="LineNr"> 987 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L988" class="LineNr"> 988 </span>  <span class="Comment"># undo</span>
 <span id="L989" class="LineNr"> 989 </span>  assume-console [
 <span id="L990" class="LineNr"> 990 </span>    press ctrl-z
 <span id="L991" class="LineNr"> 991 </span>  ]
 <span id="L992" class="LineNr"> 992 </span>  run [
-<span id="L993" class="LineNr"> 993 </span>    editor-event-loop screen, console, e
+<span id="L993" class="LineNr"> 993 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L994" class="LineNr"> 994 </span>  ]
 <span id="L995" class="LineNr"> 995 </span>  <span class="Comment"># screen should again show page 1</span>
 <span id="L996" class="LineNr"> 996 </span>  screen-should-contain [
@@ -1072,18 +1072,18 @@ if ('onhashchange' in window) {
 <span id="L1013" class="LineNr">1013 </span><span class="Constant">e</span>
 <span id="L1014" class="LineNr">1014 </span><span class="Constant">f]</span>
 <span id="L1015" class="LineNr">1015 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1016" class="LineNr">1016 </span>  editor-render screen, e
+<span id="L1016" class="LineNr">1016 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1017" class="LineNr">1017 </span>  <span class="Comment"># scroll the page</span>
 <span id="L1018" class="LineNr">1018 </span>  assume-console [
 <span id="L1019" class="LineNr">1019 </span>    press page-down
 <span id="L1020" class="LineNr">1020 </span>  ]
-<span id="L1021" class="LineNr">1021 </span>  editor-event-loop screen, console, e
+<span id="L1021" class="LineNr">1021 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1022" class="LineNr">1022 </span>  <span class="Comment"># undo</span>
 <span id="L1023" class="LineNr">1023 </span>  assume-console [
 <span id="L1024" class="LineNr">1024 </span>    press ctrl-z
 <span id="L1025" class="LineNr">1025 </span>  ]
 <span id="L1026" class="LineNr">1026 </span>  run [
-<span id="L1027" class="LineNr">1027 </span>    editor-event-loop screen, console, e
+<span id="L1027" class="LineNr">1027 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1028" class="LineNr">1028 </span>  ]
 <span id="L1029" class="LineNr">1029 </span>  <span class="Comment"># screen should again show page 1</span>
 <span id="L1030" class="LineNr">1030 </span>  screen-should-contain [
@@ -1106,19 +1106,19 @@ if ('onhashchange' in window) {
 <span id="L1047" class="LineNr">1047 </span><span class="Constant">e</span>
 <span id="L1048" class="LineNr">1048 </span><span class="Constant">f]</span>
 <span id="L1049" class="LineNr">1049 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1050" class="LineNr">1050 </span>  editor-render screen, e
+<span id="L1050" class="LineNr">1050 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1051" class="LineNr">1051 </span>  <span class="Comment"># scroll the page down and up</span>
 <span id="L1052" class="LineNr">1052 </span>  assume-console [
 <span id="L1053" class="LineNr">1053 </span>    press page-down
 <span id="L1054" class="LineNr">1054 </span>    press ctrl-b
 <span id="L1055" class="LineNr">1055 </span>  ]
-<span id="L1056" class="LineNr">1056 </span>  editor-event-loop screen, console, e
+<span id="L1056" class="LineNr">1056 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1057" class="LineNr">1057 </span>  <span class="Comment"># undo</span>
 <span id="L1058" class="LineNr">1058 </span>  assume-console [
 <span id="L1059" class="LineNr">1059 </span>    press ctrl-z
 <span id="L1060" class="LineNr">1060 </span>  ]
 <span id="L1061" class="LineNr">1061 </span>  run [
-<span id="L1062" class="LineNr">1062 </span>    editor-event-loop screen, console, e
+<span id="L1062" class="LineNr">1062 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1063" class="LineNr">1063 </span>  ]
 <span id="L1064" class="LineNr">1064 </span>  <span class="Comment"># screen should again show page 2</span>
 <span id="L1065" class="LineNr">1065 </span>  screen-should-contain [
@@ -1141,19 +1141,19 @@ if ('onhashchange' in window) {
 <span id="L1082" class="LineNr">1082 </span><span class="Constant">e</span>
 <span id="L1083" class="LineNr">1083 </span><span class="Constant">f]</span>
 <span id="L1084" class="LineNr">1084 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1085" class="LineNr">1085 </span>  editor-render screen, e
+<span id="L1085" class="LineNr">1085 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1086" class="LineNr">1086 </span>  <span class="Comment"># scroll the page down and up</span>
 <span id="L1087" class="LineNr">1087 </span>  assume-console [
 <span id="L1088" class="LineNr">1088 </span>    press page-down
 <span id="L1089" class="LineNr">1089 </span>    press page-up
 <span id="L1090" class="LineNr">1090 </span>  ]
-<span id="L1091" class="LineNr">1091 </span>  editor-event-loop screen, console, e
+<span id="L1091" class="LineNr">1091 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1092" class="LineNr">1092 </span>  <span class="Comment"># undo</span>
 <span id="L1093" class="LineNr">1093 </span>  assume-console [
 <span id="L1094" class="LineNr">1094 </span>    press ctrl-z
 <span id="L1095" class="LineNr">1095 </span>  ]
 <span id="L1096" class="LineNr">1096 </span>  run [
-<span id="L1097" class="LineNr">1097 </span>    editor-event-loop screen, console, e
+<span id="L1097" class="LineNr">1097 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1098" class="LineNr">1098 </span>  ]
 <span id="L1099" class="LineNr">1099 </span>  <span class="Comment"># screen should again show page 2</span>
 <span id="L1100" class="LineNr">1100 </span>  screen-should-contain [
@@ -1173,19 +1173,19 @@ if ('onhashchange' in window) {
 <span id="L1114" class="LineNr">1114 </span><span class="Constant">def</span>
 <span id="L1115" class="LineNr">1115 </span><span class="Constant">ghi]</span>
 <span id="L1116" class="LineNr">1116 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1117" class="LineNr">1117 </span>  editor-render screen, e
+<span id="L1117" class="LineNr">1117 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1118" class="LineNr">1118 </span>  <span class="Comment"># move the cursor, then to start of line</span>
 <span id="L1119" class="LineNr">1119 </span>  assume-console [
 <span id="L1120" class="LineNr">1120 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
 <span id="L1121" class="LineNr">1121 </span>    press ctrl-a
 <span id="L1122" class="LineNr">1122 </span>  ]
-<span id="L1123" class="LineNr">1123 </span>  editor-event-loop screen, console, e
+<span id="L1123" class="LineNr">1123 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1124" class="LineNr">1124 </span>  <span class="Comment"># undo</span>
 <span id="L1125" class="LineNr">1125 </span>  assume-console [
 <span id="L1126" class="LineNr">1126 </span>    press ctrl-z
 <span id="L1127" class="LineNr">1127 </span>  ]
 <span id="L1128" class="LineNr">1128 </span>  run [
-<span id="L1129" class="LineNr">1129 </span>    editor-event-loop screen, console, e
+<span id="L1129" class="LineNr">1129 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1130" class="LineNr">1130 </span>  ]
 <span id="L1131" class="LineNr">1131 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L1132" class="LineNr">1132 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1199,7 +1199,7 @@ if ('onhashchange' in window) {
 <span id="L1140" class="LineNr">1140 </span>    type <span class="Constant">[1]</span>
 <span id="L1141" class="LineNr">1141 </span>  ]
 <span id="L1142" class="LineNr">1142 </span>  run [
-<span id="L1143" class="LineNr">1143 </span>    editor-event-loop screen, console, e
+<span id="L1143" class="LineNr">1143 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1144" class="LineNr">1144 </span>  ]
 <span id="L1145" class="LineNr">1145 </span>  screen-should-contain [
 <span id="L1146" class="LineNr">1146 </span>   <span class="Constant"> .          .</span>
@@ -1218,19 +1218,19 @@ if ('onhashchange' in window) {
 <span id="L1159" class="LineNr">1159 </span><span class="Constant">def</span>
 <span id="L1160" class="LineNr">1160 </span><span class="Constant">ghi]</span>
 <span id="L1161" class="LineNr">1161 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1162" class="LineNr">1162 </span>  editor-render screen, e
+<span id="L1162" class="LineNr">1162 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1163" class="LineNr">1163 </span>  <span class="Comment"># move the cursor, then to start of line</span>
 <span id="L1164" class="LineNr">1164 </span>  assume-console [
 <span id="L1165" class="LineNr">1165 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
 <span id="L1166" class="LineNr">1166 </span>    press home
 <span id="L1167" class="LineNr">1167 </span>  ]
-<span id="L1168" class="LineNr">1168 </span>  editor-event-loop screen, console, e
+<span id="L1168" class="LineNr">1168 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1169" class="LineNr">1169 </span>  <span class="Comment"># undo</span>
 <span id="L1170" class="LineNr">1170 </span>  assume-console [
 <span id="L1171" class="LineNr">1171 </span>    press ctrl-z
 <span id="L1172" class="LineNr">1172 </span>  ]
 <span id="L1173" class="LineNr">1173 </span>  run [
-<span id="L1174" class="LineNr">1174 </span>    editor-event-loop screen, console, e
+<span id="L1174" class="LineNr">1174 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1175" class="LineNr">1175 </span>  ]
 <span id="L1176" class="LineNr">1176 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L1177" class="LineNr">1177 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1244,7 +1244,7 @@ if ('onhashchange' in window) {
 <span id="L1185" class="LineNr">1185 </span>    type <span class="Constant">[1]</span>
 <span id="L1186" class="LineNr">1186 </span>  ]
 <span id="L1187" class="LineNr">1187 </span>  run [
-<span id="L1188" class="LineNr">1188 </span>    editor-event-loop screen, console, e
+<span id="L1188" class="LineNr">1188 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1189" class="LineNr">1189 </span>  ]
 <span id="L1190" class="LineNr">1190 </span>  screen-should-contain [
 <span id="L1191" class="LineNr">1191 </span>   <span class="Constant"> .          .</span>
@@ -1263,19 +1263,19 @@ if ('onhashchange' in window) {
 <span id="L1204" class="LineNr">1204 </span><span class="Constant">def</span>
 <span id="L1205" class="LineNr">1205 </span><span class="Constant">ghi]</span>
 <span id="L1206" class="LineNr">1206 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1207" class="LineNr">1207 </span>  editor-render screen, e
+<span id="L1207" class="LineNr">1207 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1208" class="LineNr">1208 </span>  <span class="Comment"># move the cursor, then to start of line</span>
 <span id="L1209" class="LineNr">1209 </span>  assume-console [
 <span id="L1210" class="LineNr">1210 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
 <span id="L1211" class="LineNr">1211 </span>    press ctrl-e
 <span id="L1212" class="LineNr">1212 </span>  ]
-<span id="L1213" class="LineNr">1213 </span>  editor-event-loop screen, console, e
+<span id="L1213" class="LineNr">1213 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1214" class="LineNr">1214 </span>  <span class="Comment"># undo</span>
 <span id="L1215" class="LineNr">1215 </span>  assume-console [
 <span id="L1216" class="LineNr">1216 </span>    press ctrl-z
 <span id="L1217" class="LineNr">1217 </span>  ]
 <span id="L1218" class="LineNr">1218 </span>  run [
-<span id="L1219" class="LineNr">1219 </span>    editor-event-loop screen, console, e
+<span id="L1219" class="LineNr">1219 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1220" class="LineNr">1220 </span>  ]
 <span id="L1221" class="LineNr">1221 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L1222" class="LineNr">1222 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1289,7 +1289,7 @@ if ('onhashchange' in window) {
 <span id="L1230" class="LineNr">1230 </span>    type <span class="Constant">[1]</span>
 <span id="L1231" class="LineNr">1231 </span>  ]
 <span id="L1232" class="LineNr">1232 </span>  run [
-<span id="L1233" class="LineNr">1233 </span>    editor-event-loop screen, console, e
+<span id="L1233" class="LineNr">1233 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1234" class="LineNr">1234 </span>  ]
 <span id="L1235" class="LineNr">1235 </span>  screen-should-contain [
 <span id="L1236" class="LineNr">1236 </span>   <span class="Constant"> .          .</span>
@@ -1308,19 +1308,19 @@ if ('onhashchange' in window) {
 <span id="L1249" class="LineNr">1249 </span><span class="Constant">def</span>
 <span id="L1250" class="LineNr">1250 </span><span class="Constant">ghi]</span>
 <span id="L1251" class="LineNr">1251 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1252" class="LineNr">1252 </span>  editor-render screen, e
+<span id="L1252" class="LineNr">1252 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1253" class="LineNr">1253 </span>  <span class="Comment"># move the cursor, then to start of line</span>
 <span id="L1254" class="LineNr">1254 </span>  assume-console [
 <span id="L1255" class="LineNr">1255 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
 <span id="L1256" class="LineNr">1256 </span>    press end
 <span id="L1257" class="LineNr">1257 </span>  ]
-<span id="L1258" class="LineNr">1258 </span>  editor-event-loop screen, console, e
+<span id="L1258" class="LineNr">1258 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1259" class="LineNr">1259 </span>  <span class="Comment"># undo</span>
 <span id="L1260" class="LineNr">1260 </span>  assume-console [
 <span id="L1261" class="LineNr">1261 </span>    press ctrl-z
 <span id="L1262" class="LineNr">1262 </span>  ]
 <span id="L1263" class="LineNr">1263 </span>  run [
-<span id="L1264" class="LineNr">1264 </span>    editor-event-loop screen, console, e
+<span id="L1264" class="LineNr">1264 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1265" class="LineNr">1265 </span>  ]
 <span id="L1266" class="LineNr">1266 </span>  <span class="Comment"># cursor moves back</span>
 <span id="L1267" class="LineNr">1267 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1334,7 +1334,7 @@ if ('onhashchange' in window) {
 <span id="L1275" class="LineNr">1275 </span>    type <span class="Constant">[1]</span>
 <span id="L1276" class="LineNr">1276 </span>  ]
 <span id="L1277" class="LineNr">1277 </span>  run [
-<span id="L1278" class="LineNr">1278 </span>    editor-event-loop screen, console, e
+<span id="L1278" class="LineNr">1278 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1279" class="LineNr">1279 </span>  ]
 <span id="L1280" class="LineNr">1280 </span>  screen-should-contain [
 <span id="L1281" class="LineNr">1281 </span>   <span class="Constant"> .          .</span>
@@ -1353,7 +1353,7 @@ if ('onhashchange' in window) {
 <span id="L1294" class="LineNr">1294 </span><span class="Constant">def</span>
 <span id="L1295" class="LineNr">1295 </span><span class="Constant">ghi]</span>
 <span id="L1296" class="LineNr">1296 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1297" class="LineNr">1297 </span>  editor-render screen, e
+<span id="L1297" class="LineNr">1297 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1298" class="LineNr">1298 </span>  <span class="Comment"># move the cursor</span>
 <span id="L1299" class="LineNr">1299 </span>  assume-console [
 <span id="L1300" class="LineNr">1300 </span>    left-click<span class="Constant"> 2</span>,<span class="Constant"> 1</span>
@@ -1361,7 +1361,7 @@ if ('onhashchange' in window) {
 <span id="L1302" class="LineNr">1302 </span>    press right-arrow
 <span id="L1303" class="LineNr">1303 </span>    press up-arrow
 <span id="L1304" class="LineNr">1304 </span>  ]
-<span id="L1305" class="LineNr">1305 </span>  editor-event-loop screen, console, e
+<span id="L1305" class="LineNr">1305 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1306" class="LineNr">1306 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1307" class="LineNr">1307 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1308" class="LineNr">1308 </span>  memory-should-contain [
@@ -1373,7 +1373,7 @@ if ('onhashchange' in window) {
 <span id="L1314" class="LineNr">1314 </span>    press ctrl-z
 <span id="L1315" class="LineNr">1315 </span>  ]
 <span id="L1316" class="LineNr">1316 </span>  run [
-<span id="L1317" class="LineNr">1317 </span>    editor-event-loop screen, console, e
+<span id="L1317" class="LineNr">1317 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1318" class="LineNr">1318 </span>  ]
 <span id="L1319" class="LineNr">1319 </span>  <span class="Comment"># up-arrow is undone</span>
 <span id="L1320" class="LineNr">1320 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1387,7 +1387,7 @@ if ('onhashchange' in window) {
 <span id="L1328" class="LineNr">1328 </span>    press ctrl-z
 <span id="L1329" class="LineNr">1329 </span>  ]
 <span id="L1330" class="LineNr">1330 </span>  run [
-<span id="L1331" class="LineNr">1331 </span>    editor-event-loop screen, console, e
+<span id="L1331" class="LineNr">1331 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1332" class="LineNr">1332 </span>  ]
 <span id="L1333" class="LineNr">1333 </span>  <span class="Comment"># both right-arrows are undone</span>
 <span id="L1334" class="LineNr">1334 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1408,18 +1408,18 @@ if ('onhashchange' in window) {
 <span id="L1349" class="LineNr">1349 </span><span class="Constant">def</span>
 <span id="L1350" class="LineNr">1350 </span><span class="Constant">ghi]</span>
 <span id="L1351" class="LineNr">1351 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1352" class="LineNr">1352 </span>  editor-render screen, e
+<span id="L1352" class="LineNr">1352 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1353" class="LineNr">1353 </span>  assume-console [
 <span id="L1354" class="LineNr">1354 </span>    left-click<span class="Constant"> 3</span>,<span class="Constant"> 1</span>
 <span id="L1355" class="LineNr">1355 </span>    press ctrl-z
 <span id="L1356" class="LineNr">1356 </span>  ]
-<span id="L1357" class="LineNr">1357 </span>  editor-event-loop screen, console, e
+<span id="L1357" class="LineNr">1357 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1358" class="LineNr">1358 </span>  <span class="Comment"># redo</span>
 <span id="L1359" class="LineNr">1359 </span>  assume-console [
 <span id="L1360" class="LineNr">1360 </span>    press ctrl-y
 <span id="L1361" class="LineNr">1361 </span>  ]
 <span id="L1362" class="LineNr">1362 </span>  run [
-<span id="L1363" class="LineNr">1363 </span>    editor-event-loop screen, console, e
+<span id="L1363" class="LineNr">1363 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1364" class="LineNr">1364 </span>  ]
 <span id="L1365" class="LineNr">1365 </span>  <span class="Comment"># cursor moves to left-click</span>
 <span id="L1366" class="LineNr">1366 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1433,7 +1433,7 @@ if ('onhashchange' in window) {
 <span id="L1374" class="LineNr">1374 </span>    type <span class="Constant">[1]</span>
 <span id="L1375" class="LineNr">1375 </span>  ]
 <span id="L1376" class="LineNr">1376 </span>  run [
-<span id="L1377" class="LineNr">1377 </span>    editor-event-loop screen, console, e
+<span id="L1377" class="LineNr">1377 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1378" class="LineNr">1378 </span>  ]
 <span id="L1379" class="LineNr">1379 </span>  screen-should-contain [
 <span id="L1380" class="LineNr">1380 </span>   <span class="Constant"> .          .</span>
@@ -1463,13 +1463,13 @@ if ('onhashchange' in window) {
 <span id="L1404" class="LineNr">1404 </span>  <span class="Comment"># create an editor, type some text, move the cursor, type some more text</span>
 <span id="L1405" class="LineNr">1405 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L1406" class="LineNr">1406 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1407" class="LineNr">1407 </span>  editor-render screen, e
+<span id="L1407" class="LineNr">1407 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1408" class="LineNr">1408 </span>  assume-console [
 <span id="L1409" class="LineNr">1409 </span>    type <span class="Constant">[abc]</span>
 <span id="L1410" class="LineNr">1410 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
 <span id="L1411" class="LineNr">1411 </span>    type <span class="Constant">[d]</span>
 <span id="L1412" class="LineNr">1412 </span>  ]
-<span id="L1413" class="LineNr">1413 </span>  editor-event-loop screen, console, e
+<span id="L1413" class="LineNr">1413 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1414" class="LineNr">1414 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1415" class="LineNr">1415 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1416" class="LineNr">1416 </span>  screen-should-contain [
@@ -1487,7 +1487,7 @@ if ('onhashchange' in window) {
 <span id="L1428" class="LineNr">1428 </span>    press ctrl-z
 <span id="L1429" class="LineNr">1429 </span>  ]
 <span id="L1430" class="LineNr">1430 </span>  run [
-<span id="L1431" class="LineNr">1431 </span>    editor-event-loop screen, console, e
+<span id="L1431" class="LineNr">1431 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1432" class="LineNr">1432 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1433" class="LineNr">1433 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1434" class="LineNr">1434 </span>  ]
@@ -1507,7 +1507,7 @@ if ('onhashchange' in window) {
 <span id="L1448" class="LineNr">1448 </span>    press ctrl-z
 <span id="L1449" class="LineNr">1449 </span>  ]
 <span id="L1450" class="LineNr">1450 </span>  run [
-<span id="L1451" class="LineNr">1451 </span>    editor-event-loop screen, console, e
+<span id="L1451" class="LineNr">1451 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1452" class="LineNr">1452 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1453" class="LineNr">1453 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1454" class="LineNr">1454 </span>  ]
@@ -1527,7 +1527,7 @@ if ('onhashchange' in window) {
 <span id="L1468" class="LineNr">1468 </span>    press ctrl-z
 <span id="L1469" class="LineNr">1469 </span>  ]
 <span id="L1470" class="LineNr">1470 </span>  run [
-<span id="L1471" class="LineNr">1471 </span>    editor-event-loop screen, console, e
+<span id="L1471" class="LineNr">1471 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1472" class="LineNr">1472 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1473" class="LineNr">1473 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1474" class="LineNr">1474 </span>  ]
@@ -1547,7 +1547,7 @@ if ('onhashchange' in window) {
 <span id="L1488" class="LineNr">1488 </span>    press ctrl-y
 <span id="L1489" class="LineNr">1489 </span>  ]
 <span id="L1490" class="LineNr">1490 </span>  run [
-<span id="L1491" class="LineNr">1491 </span>    editor-event-loop screen, console, e
+<span id="L1491" class="LineNr">1491 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1492" class="LineNr">1492 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1493" class="LineNr">1493 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1494" class="LineNr">1494 </span>  ]
@@ -1567,7 +1567,7 @@ if ('onhashchange' in window) {
 <span id="L1508" class="LineNr">1508 </span>    press ctrl-y
 <span id="L1509" class="LineNr">1509 </span>  ]
 <span id="L1510" class="LineNr">1510 </span>  run [
-<span id="L1511" class="LineNr">1511 </span>    editor-event-loop screen, console, e
+<span id="L1511" class="LineNr">1511 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1512" class="LineNr">1512 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1513" class="LineNr">1513 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1514" class="LineNr">1514 </span>  ]
@@ -1588,7 +1588,7 @@ if ('onhashchange' in window) {
 <span id="L1529" class="LineNr">1529 </span>    press ctrl-y
 <span id="L1530" class="LineNr">1530 </span>  ]
 <span id="L1531" class="LineNr">1531 </span>  run [
-<span id="L1532" class="LineNr">1532 </span>    editor-event-loop screen, console, e
+<span id="L1532" class="LineNr">1532 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1533" class="LineNr">1533 </span>    3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1534" class="LineNr">1534 </span>    4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
 <span id="L1535" class="LineNr">1535 </span>  ]
@@ -1612,14 +1612,14 @@ if ('onhashchange' in window) {
 <span id="L1553" class="LineNr">1553 </span>  <span class="Comment"># create an editor</span>
 <span id="L1554" class="LineNr">1554 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L1555" class="LineNr">1555 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1556" class="LineNr">1556 </span>  editor-render screen, e
+<span id="L1556" class="LineNr">1556 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1557" class="LineNr">1557 </span>  <span class="Comment"># insert some text and hit backspace</span>
 <span id="L1558" class="LineNr">1558 </span>  assume-console [
 <span id="L1559" class="LineNr">1559 </span>    type <span class="Constant">[abc]</span>
 <span id="L1560" class="LineNr">1560 </span>    press backspace
 <span id="L1561" class="LineNr">1561 </span>    press backspace
 <span id="L1562" class="LineNr">1562 </span>  ]
-<span id="L1563" class="LineNr">1563 </span>  editor-event-loop screen, console, e
+<span id="L1563" class="LineNr">1563 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1564" class="LineNr">1564 </span>  screen-should-contain [
 <span id="L1565" class="LineNr">1565 </span>   <span class="Constant"> .          .</span>
 <span id="L1566" class="LineNr">1566 </span>   <span class="Constant"> .a         .</span>
@@ -1637,7 +1637,7 @@ if ('onhashchange' in window) {
 <span id="L1578" class="LineNr">1578 </span>    press ctrl-z
 <span id="L1579" class="LineNr">1579 </span>  ]
 <span id="L1580" class="LineNr">1580 </span>  run [
-<span id="L1581" class="LineNr">1581 </span>    editor-event-loop screen, console, e
+<span id="L1581" class="LineNr">1581 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1582" class="LineNr">1582 </span>  ]
 <span id="L1583" class="LineNr">1583 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1584" class="LineNr">1584 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -1656,7 +1656,7 @@ if ('onhashchange' in window) {
 <span id="L1597" class="LineNr">1597 </span>    press ctrl-y
 <span id="L1598" class="LineNr">1598 </span>  ]
 <span id="L1599" class="LineNr">1599 </span>  run [
-<span id="L1600" class="LineNr">1600 </span>    editor-event-loop screen, console, e
+<span id="L1600" class="LineNr">1600 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1601" class="LineNr">1601 </span>  ]
 <span id="L1602" class="LineNr">1602 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1603" class="LineNr">1603 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -1695,7 +1695,7 @@ if ('onhashchange' in window) {
 <span id="L1636" class="LineNr">1636 </span>      <span class="muControl">break-unless</span> coalesce?
 <span id="L1637" class="LineNr">1637 </span>      deletion <span class="Special">&lt;-</span> put deletion, <span class="Constant">delete-from:offset</span>, before-cursor
 <span id="L1638" class="LineNr">1638 </span>      backspaced-so-far:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">deleted-text:offset</span>
-<span id="L1639" class="LineNr">1639 </span>      insert-range backspaced-cell, backspaced-so-far
+<span id="L1639" class="LineNr">1639 </span>      <a href='065duplex_list.mu.html#L485'>insert-range</a> backspaced-cell, backspaced-so-far
 <span id="L1640" class="LineNr">1640 </span>      deletion <span class="Special">&lt;-</span> put deletion, <span class="Constant">deleted-text:offset</span>, backspaced-cell
 <span id="L1641" class="LineNr">1641 </span>      deletion <span class="Special">&lt;-</span> put deletion, <span class="Constant">after-row:offset</span>, cursor-row
 <span id="L1642" class="LineNr">1642 </span>      deletion <span class="Special">&lt;-</span> put deletion, <span class="Constant">after-column:offset</span>, cursor-column
@@ -1705,7 +1705,7 @@ if ('onhashchange' in window) {
 <span id="L1646" class="LineNr">1646 </span>    <span class="Delimiter">}</span>
 <span id="L1647" class="LineNr">1647 </span>    <span class="Comment"># if not, create a new operation</span>
 <span id="L1648" class="LineNr">1648 </span>    op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
-<span id="L1649" class="LineNr">1649 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L1649" class="LineNr">1649 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L1650" class="LineNr">1650 </span>    *op <span class="Special">&lt;-</span> merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, backspaced-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">1/coalesce-backspace</span>
 <span id="L1651" class="LineNr">1651 </span>    editor <span class="Special">&lt;-</span> add-operation editor, op
 <span id="L1652" class="LineNr">1652 </span><span class="Constant">    +done-adding-backspace-operation</span>
@@ -1719,8 +1719,8 @@ if ('onhashchange' in window) {
 <span id="L1660" class="LineNr">1660 </span>    anchor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">delete-from:offset</span>
 <span id="L1661" class="LineNr">1661 </span>    <span class="muControl">break-unless</span> anchor
 <span id="L1662" class="LineNr">1662 </span>    deleted:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">deleted-text:offset</span>
-<span id="L1663" class="LineNr">1663 </span>    old-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> last deleted
-<span id="L1664" class="LineNr">1664 </span>    insert-range anchor, deleted
+<span id="L1663" class="LineNr">1663 </span>    old-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L516'>last</a> deleted
+<span id="L1664" class="LineNr">1664 </span>    <a href='065duplex_list.mu.html#L485'>insert-range</a> anchor, deleted
 <span id="L1665" class="LineNr">1665 </span>    <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
 <span id="L1666" class="LineNr">1666 </span>    before-cursor <span class="Special">&lt;-</span> copy old-cursor
 <span id="L1667" class="LineNr">1667 </span>    cursor-row <span class="Special">&lt;-</span> get deletion, <span class="Constant">before-row:offset</span>
@@ -1739,7 +1739,7 @@ if ('onhashchange' in window) {
 <span id="L1680" class="LineNr">1680 </span>    start:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">delete-from:offset</span>
 <span id="L1681" class="LineNr">1681 </span>    end:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">delete-until:offset</span>
 <span id="L1682" class="LineNr">1682 </span>    data:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
-<span id="L1683" class="LineNr">1683 </span>    remove-between start, end
+<span id="L1683" class="LineNr">1683 </span>    <a href='065duplex_list.mu.html#L345'>remove-between</a> start, end
 <span id="L1684" class="LineNr">1684 </span>    <span class="Comment"># assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen</span>
 <span id="L1685" class="LineNr">1685 </span>    cursor-row <span class="Special">&lt;-</span> get deletion, <span class="Constant">after-row:offset</span>
 <span id="L1686" class="LineNr">1686 </span>    *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
@@ -1757,7 +1757,7 @@ if ('onhashchange' in window) {
 <span id="L1698" class="LineNr">1698 </span>  <span class="Comment"># create an editor</span>
 <span id="L1699" class="LineNr">1699 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L1700" class="LineNr">1700 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1701" class="LineNr">1701 </span>  editor-render screen, e
+<span id="L1701" class="LineNr">1701 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1702" class="LineNr">1702 </span>  <span class="Comment"># insert some text and hit delete and backspace a few times</span>
 <span id="L1703" class="LineNr">1703 </span>  assume-console [
 <span id="L1704" class="LineNr">1704 </span>    type <span class="Constant">[abcdef]</span>
@@ -1767,7 +1767,7 @@ if ('onhashchange' in window) {
 <span id="L1708" class="LineNr">1708 </span>    press delete
 <span id="L1709" class="LineNr">1709 </span>    press delete
 <span id="L1710" class="LineNr">1710 </span>  ]
-<span id="L1711" class="LineNr">1711 </span>  editor-event-loop screen, console, e
+<span id="L1711" class="LineNr">1711 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1712" class="LineNr">1712 </span>  screen-should-contain [
 <span id="L1713" class="LineNr">1713 </span>   <span class="Constant"> .          .</span>
 <span id="L1714" class="LineNr">1714 </span>   <span class="Constant"> .af        .</span>
@@ -1785,7 +1785,7 @@ if ('onhashchange' in window) {
 <span id="L1726" class="LineNr">1726 </span>    press ctrl-z
 <span id="L1727" class="LineNr">1727 </span>  ]
 <span id="L1728" class="LineNr">1728 </span>  run [
-<span id="L1729" class="LineNr">1729 </span>    editor-event-loop screen, console, e
+<span id="L1729" class="LineNr">1729 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1730" class="LineNr">1730 </span>  ]
 <span id="L1731" class="LineNr">1731 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1732" class="LineNr">1732 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -1804,7 +1804,7 @@ if ('onhashchange' in window) {
 <span id="L1745" class="LineNr">1745 </span>    press ctrl-z
 <span id="L1746" class="LineNr">1746 </span>  ]
 <span id="L1747" class="LineNr">1747 </span>  run [
-<span id="L1748" class="LineNr">1748 </span>    editor-event-loop screen, console, e
+<span id="L1748" class="LineNr">1748 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1749" class="LineNr">1749 </span>  ]
 <span id="L1750" class="LineNr">1750 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1751" class="LineNr">1751 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -1823,7 +1823,7 @@ if ('onhashchange' in window) {
 <span id="L1764" class="LineNr">1764 </span>    press ctrl-z
 <span id="L1765" class="LineNr">1765 </span>  ]
 <span id="L1766" class="LineNr">1766 </span>  run [
-<span id="L1767" class="LineNr">1767 </span>    editor-event-loop screen, console, e
+<span id="L1767" class="LineNr">1767 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1768" class="LineNr">1768 </span>  ]
 <span id="L1769" class="LineNr">1769 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
 <span id="L1770" class="LineNr">1770 </span>  4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
@@ -1842,7 +1842,7 @@ if ('onhashchange' in window) {
 <span id="L1783" class="LineNr">1783 </span>    press ctrl-y
 <span id="L1784" class="LineNr">1784 </span>  ]
 <span id="L1785" class="LineNr">1785 </span>  run [
-<span id="L1786" class="LineNr">1786 </span>    editor-event-loop screen, console, e
+<span id="L1786" class="LineNr">1786 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1787" class="LineNr">1787 </span>  ]
 <span id="L1788" class="LineNr">1788 </span>  <span class="Comment"># first line inserted</span>
 <span id="L1789" class="LineNr">1789 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1862,7 +1862,7 @@ if ('onhashchange' in window) {
 <span id="L1803" class="LineNr">1803 </span>    press ctrl-y
 <span id="L1804" class="LineNr">1804 </span>  ]
 <span id="L1805" class="LineNr">1805 </span>  run [
-<span id="L1806" class="LineNr">1806 </span>    editor-event-loop screen, console, e
+<span id="L1806" class="LineNr">1806 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1807" class="LineNr">1807 </span>  ]
 <span id="L1808" class="LineNr">1808 </span>  <span class="Comment"># first line inserted</span>
 <span id="L1809" class="LineNr">1809 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1882,7 +1882,7 @@ if ('onhashchange' in window) {
 <span id="L1823" class="LineNr">1823 </span>    press ctrl-y
 <span id="L1824" class="LineNr">1824 </span>  ]
 <span id="L1825" class="LineNr">1825 </span>  run [
-<span id="L1826" class="LineNr">1826 </span>    editor-event-loop screen, console, e
+<span id="L1826" class="LineNr">1826 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1827" class="LineNr">1827 </span>  ]
 <span id="L1828" class="LineNr">1828 </span>  <span class="Comment"># first line inserted</span>
 <span id="L1829" class="LineNr">1829 </span>  3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
@@ -1919,7 +1919,7 @@ if ('onhashchange' in window) {
 <span id="L1860" class="LineNr">1860 </span>      previous-coalesce-tag:num <span class="Special">&lt;-</span> get deletion, <span class="Constant">tag:offset</span>
 <span id="L1861" class="LineNr">1861 </span>      coalesce?:bool <span class="Special">&lt;-</span> equal previous-coalesce-tag, <span class="Constant">2/coalesce-delete</span>
 <span id="L1862" class="LineNr">1862 </span>      <span class="muControl">break-unless</span> coalesce?
-<span id="L1863" class="LineNr">1863 </span>      delete-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L1863" class="LineNr">1863 </span>      delete-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L1864" class="LineNr">1864 </span>      deletion <span class="Special">&lt;-</span> put deletion, <span class="Constant">delete-until:offset</span>, delete-until
 <span id="L1865" class="LineNr">1865 </span>      deleted-so-far:&amp;:duplex-list:char <span class="Special">&lt;-</span> get deletion, <span class="Constant">deleted-text:offset</span>
 <span id="L1866" class="LineNr">1866 </span>      deleted-so-far <span class="Special">&lt;-</span> append deleted-so-far, deleted-cell
@@ -1932,7 +1932,7 @@ if ('onhashchange' in window) {
 <span id="L1873" class="LineNr">1873 </span>    <span class="Delimiter">}</span>
 <span id="L1874" class="LineNr">1874 </span>    <span class="Comment"># if not, create a new operation</span>
 <span id="L1875" class="LineNr">1875 </span>    op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
-<span id="L1876" class="LineNr">1876 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L1876" class="LineNr">1876 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L1877" class="LineNr">1877 </span>    *op <span class="Special">&lt;-</span> merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cell/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">2/coalesce-delete</span>
 <span id="L1878" class="LineNr">1878 </span>    editor <span class="Special">&lt;-</span> add-operation editor, op
 <span id="L1879" class="LineNr">1879 </span><span class="Constant">    +done-adding-delete-operation</span>
@@ -1948,13 +1948,13 @@ if ('onhashchange' in window) {
 <span id="L1889" class="LineNr">1889 </span>  contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span id="L1890" class="LineNr">1890 </span><span class="Constant">def]</span>
 <span id="L1891" class="LineNr">1891 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1892" class="LineNr">1892 </span>  editor-render screen, e
+<span id="L1892" class="LineNr">1892 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1893" class="LineNr">1893 </span>  <span class="Comment"># insert some text and hit delete and backspace a few times</span>
 <span id="L1894" class="LineNr">1894 </span>  assume-console [
 <span id="L1895" class="LineNr">1895 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
 <span id="L1896" class="LineNr">1896 </span>    press ctrl-k
 <span id="L1897" class="LineNr">1897 </span>  ]
-<span id="L1898" class="LineNr">1898 </span>  editor-event-loop screen, console, e
+<span id="L1898" class="LineNr">1898 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1899" class="LineNr">1899 </span>  screen-should-contain [
 <span id="L1900" class="LineNr">1900 </span>   <span class="Constant"> .          .</span>
 <span id="L1901" class="LineNr">1901 </span>   <span class="Constant"> .a         .</span>
@@ -1973,7 +1973,7 @@ if ('onhashchange' in window) {
 <span id="L1914" class="LineNr">1914 </span>    press ctrl-z
 <span id="L1915" class="LineNr">1915 </span>  ]
 <span id="L1916" class="LineNr">1916 </span>  run [
-<span id="L1917" class="LineNr">1917 </span>    editor-event-loop screen, console, e
+<span id="L1917" class="LineNr">1917 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1918" class="LineNr">1918 </span>  ]
 <span id="L1919" class="LineNr">1919 </span>  screen-should-contain [
 <span id="L1920" class="LineNr">1920 </span>   <span class="Constant"> .          .</span>
@@ -1993,7 +1993,7 @@ if ('onhashchange' in window) {
 <span id="L1934" class="LineNr">1934 </span>    press ctrl-y
 <span id="L1935" class="LineNr">1935 </span>  ]
 <span id="L1936" class="LineNr">1936 </span>  run [
-<span id="L1937" class="LineNr">1937 </span>    editor-event-loop screen, console, e
+<span id="L1937" class="LineNr">1937 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1938" class="LineNr">1938 </span>  ]
 <span id="L1939" class="LineNr">1939 </span>  <span class="Comment"># first line inserted</span>
 <span id="L1940" class="LineNr">1940 </span>  screen-should-contain [
@@ -2014,7 +2014,7 @@ if ('onhashchange' in window) {
 <span id="L1955" class="LineNr">1955 </span>    type <span class="Constant">[1]</span>
 <span id="L1956" class="LineNr">1956 </span>  ]
 <span id="L1957" class="LineNr">1957 </span>  run [
-<span id="L1958" class="LineNr">1958 </span>    editor-event-loop screen, console, e
+<span id="L1958" class="LineNr">1958 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L1959" class="LineNr">1959 </span>  ]
 <span id="L1960" class="LineNr">1960 </span>  screen-should-contain [
 <span id="L1961" class="LineNr">1961 </span>   <span class="Constant"> .          .</span>
@@ -2034,7 +2034,7 @@ if ('onhashchange' in window) {
 <span id="L1975" class="LineNr">1975 </span>    top-after:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
 <span id="L1976" class="LineNr">1976 </span>    cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L1977" class="LineNr">1977 </span>    cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
-<span id="L1978" class="LineNr">1978 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L1978" class="LineNr">1978 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L1979" class="LineNr">1979 </span>    op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
 <span id="L1980" class="LineNr">1980 </span>    *op <span class="Special">&lt;-</span> merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
 <span id="L1981" class="LineNr">1981 </span>    editor <span class="Special">&lt;-</span> add-operation editor, op
@@ -2051,13 +2051,13 @@ if ('onhashchange' in window) {
 <span id="L1992" class="LineNr">1992 </span>  contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
 <span id="L1993" class="LineNr">1993 </span><span class="Constant">def]</span>
 <span id="L1994" class="LineNr">1994 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor contents, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1995" class="LineNr">1995 </span>  editor-render screen, e
+<span id="L1995" class="LineNr">1995 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L1996" class="LineNr">1996 </span>  <span class="Comment"># insert some text and hit delete and backspace a few times</span>
 <span id="L1997" class="LineNr">1997 </span>  assume-console [
 <span id="L1998" class="LineNr">1998 </span>    left-click<span class="Constant"> 1</span>,<span class="Constant"> 2</span>
 <span id="L1999" class="LineNr">1999 </span>    press ctrl-u
 <span id="L2000" class="LineNr">2000 </span>  ]
-<span id="L2001" class="LineNr">2001 </span>  editor-event-loop screen, console, e
+<span id="L2001" class="LineNr">2001 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L2002" class="LineNr">2002 </span>  screen-should-contain [
 <span id="L2003" class="LineNr">2003 </span>   <span class="Constant"> .          .</span>
 <span id="L2004" class="LineNr">2004 </span>   <span class="Constant"> .c         .</span>
@@ -2076,7 +2076,7 @@ if ('onhashchange' in window) {
 <span id="L2017" class="LineNr">2017 </span>    press ctrl-z
 <span id="L2018" class="LineNr">2018 </span>  ]
 <span id="L2019" class="LineNr">2019 </span>  run [
-<span id="L2020" class="LineNr">2020 </span>    editor-event-loop screen, console, e
+<span id="L2020" class="LineNr">2020 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L2021" class="LineNr">2021 </span>  ]
 <span id="L2022" class="LineNr">2022 </span>  screen-should-contain [
 <span id="L2023" class="LineNr">2023 </span>   <span class="Constant"> .          .</span>
@@ -2096,7 +2096,7 @@ if ('onhashchange' in window) {
 <span id="L2037" class="LineNr">2037 </span>    press ctrl-y
 <span id="L2038" class="LineNr">2038 </span>  ]
 <span id="L2039" class="LineNr">2039 </span>  run [
-<span id="L2040" class="LineNr">2040 </span>    editor-event-loop screen, console, e
+<span id="L2040" class="LineNr">2040 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L2041" class="LineNr">2041 </span>  ]
 <span id="L2042" class="LineNr">2042 </span>  <span class="Comment"># first line inserted</span>
 <span id="L2043" class="LineNr">2043 </span>  screen-should-contain [
@@ -2117,7 +2117,7 @@ if ('onhashchange' in window) {
 <span id="L2058" class="LineNr">2058 </span>    type <span class="Constant">[1]</span>
 <span id="L2059" class="LineNr">2059 </span>  ]
 <span id="L2060" class="LineNr">2060 </span>  run [
-<span id="L2061" class="LineNr">2061 </span>    editor-event-loop screen, console, e
+<span id="L2061" class="LineNr">2061 </span>    editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L2062" class="LineNr">2062 </span>  ]
 <span id="L2063" class="LineNr">2063 </span>  screen-should-contain [
 <span id="L2064" class="LineNr">2064 </span>   <span class="Constant"> .          .</span>
@@ -2137,7 +2137,7 @@ if ('onhashchange' in window) {
 <span id="L2078" class="LineNr">2078 </span>    top-after:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
 <span id="L2079" class="LineNr">2079 </span>    op:&amp;:operation <span class="Special">&lt;-</span> new <span class="Constant">operation:type</span>
 <span id="L2080" class="LineNr">2080 </span>    before-cursor:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L2081" class="LineNr">2081 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> next before-cursor
+<span id="L2081" class="LineNr">2081 </span>    deleted-until:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> before-cursor
 <span id="L2082" class="LineNr">2082 </span>    cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L2083" class="LineNr">2083 </span>    cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
 <span id="L2084" class="LineNr">2084 </span>    *op <span class="Special">&lt;-</span> merge <span class="Constant">2/delete-operation</span>, save-row/before, save-column/before, top-before, cursor-row/after, cursor-column/after, top-after, deleted-cells/deleted, before-cursor/delete-from, deleted-until, <span class="Constant">0/never-coalesce</span>
@@ -2151,14 +2151,14 @@ if ('onhashchange' in window) {
 <span id="L2092" class="LineNr">2092 </span>  <span class="Comment"># create an editor</span>
 <span id="L2093" class="LineNr">2093 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
 <span id="L2094" class="LineNr">2094 </span>  e:&amp;:editor <span class="Special">&lt;-</span> new-editor <span class="Constant">[]</span>, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L2095" class="LineNr">2095 </span>  editor-render screen, e
+<span id="L2095" class="LineNr">2095 </span>  editor-render <a href='081print.mu.html#L4'>screen</a>, e
 <span id="L2096" class="LineNr">2096 </span>  <span class="Comment"># insert some text and hit delete and backspace a few times</span>
 <span id="L2097" class="LineNr">2097 </span>  assume-console [
 <span id="L2098" class="LineNr">2098 </span>    type <span class="Constant">[abc]</span>
 <span id="L2099" class="LineNr">2099 </span>    press ctrl-u
 <span id="L2100" class="LineNr">2100 </span>    press ctrl-z
 <span id="L2101" class="LineNr">2101 </span>  ]
-<span id="L2102" class="LineNr">2102 </span>  editor-event-loop screen, console, e
+<span id="L2102" class="LineNr">2102 </span>  editor-event-loop <a href='081print.mu.html#L4'>screen</a>, <a href='084console.mu.html#L23'>console</a>, e
 <span id="L2103" class="LineNr">2103 </span>  screen-should-contain [
 <span id="L2104" class="LineNr">2104 </span>   <span class="Constant"> .          .</span>
 <span id="L2105" class="LineNr">2105 </span>   <span class="Constant"> .abc       .</span>

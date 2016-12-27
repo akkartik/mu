@@ -69,7 +69,7 @@ if ('onhashchange' in window) {
 <span id="L10" class="LineNr">10 </span><span class="Comment">//: [tag: todo]</span>
 <span id="L11" class="LineNr">11 </span>
 <span id="L12" class="LineNr">12 </span><span class="Delimiter">:(scenario global_space)</span>
-<span id="L13" class="LineNr">13 </span><span class="muRecipe">def</span> main [
+<span id="L13" class="LineNr">13 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L14" class="LineNr">14 </span>  <span class="Comment"># pretend address:array:location; in practice we'll use new</span>
 <span id="L15" class="LineNr">15 </span>  <span class="Constant">10</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">0</span>  <span class="Comment"># refcount</span>
 <span id="L16" class="LineNr">16 </span>  <span class="Constant">11</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">5</span>  <span class="Comment"># length</span>
@@ -88,10 +88,10 @@ if ('onhashchange' in window) {
 <span id="L29" class="LineNr">29 </span><span class="traceContains">+mem: storing 24 in location 23</span>
 <span id="L30" class="LineNr">30 </span>
 <span id="L31" class="LineNr">31 </span><span class="Comment">//: to support it, create another special variable called global space</span>
-<span id="L32" class="LineNr">32 </span><span class="Delimiter">:(before &quot;End is_disqualified Special-cases&quot;)</span>
+<span id="L32" class="LineNr">32 </span><span class="Delimiter">:(before &quot;End <a href='042name.cc.html#L99'>is_disqualified</a> Special-cases&quot;)</span>
 <span id="L33" class="LineNr">33 </span><span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span>
 <span id="L34" class="LineNr">34 </span>  x<span class="Delimiter">.</span>initialized = <span class="Constant">true</span><span class="Delimiter">;</span>
-<span id="L35" class="LineNr">35 </span><span class="Delimiter">:(before &quot;End is_special_name Special-cases&quot;)</span>
+<span id="L35" class="LineNr">35 </span><span class="Delimiter">:(before &quot;End <a href='042name.cc.html#L156'>is_special_name</a> Special-cases&quot;)</span>
 <span id="L36" class="LineNr">36 </span><span class="Normal">if</span> <span class="Delimiter">(</span>s == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L37" class="LineNr">37 </span>
 <span id="L38" class="LineNr">38 </span><span class="Comment">//: writes to this variable go to a field in the current routine</span>
@@ -102,18 +102,18 @@ if ('onhashchange' in window) {
 <span id="L43" class="LineNr">43 </span><span class="Delimiter">:(after &quot;Begin Preprocess write_memory(x, data)&quot;)</span>
 <span id="L44" class="LineNr">44 </span><span class="Normal">if</span> <span class="Delimiter">(</span>x<span class="Delimiter">.</span>name == <span class="Constant">&quot;global-space&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L45" class="LineNr">45 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!scalar<span class="Delimiter">(</span>data<span class="Delimiter">)</span> || !is_space<span class="Delimiter">(</span>x<span class="Delimiter">))</span>
-<span id="L46" class="LineNr">46 </span>    raise &lt;&lt; maybe<span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type address:array:location, but tried to write '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L46" class="LineNr">46 </span>    <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>current_recipe_name<span class="Delimiter">())</span> &lt;&lt; <span class="Constant">&quot;'global-space' should be of type <a href='043space.cc.html#L76'>address</a>:array:location, but tried to write '&quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>x<span class="Delimiter">.</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L47" class="LineNr">47 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-<span id="L48" class="LineNr">48 </span>    raise &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L48" class="LineNr">48 </span>    <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <span class="Constant">&quot;routine already has a global-space; you can't over-write your globals&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
 <span id="L49" class="LineNr">49 </span>  Current_routine<span class="Delimiter">-&gt;</span>global_space = data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">);</span>
 <span id="L50" class="LineNr">50 </span>  <span class="Identifier">return</span><span class="Delimiter">;</span>
 <span id="L51" class="LineNr">51 </span><span class="Delimiter">}</span>
 <span id="L52" class="LineNr">52 </span>
 <span id="L53" class="LineNr">53 </span><span class="Comment">//: now marking variables as /space:global looks them up inside this field</span>
 <span id="L54" class="LineNr">54 </span><span class="Delimiter">:(after &quot;int space_base(const reagent&amp; x)&quot;)</span>
-<span id="L55" class="LineNr">55 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L55" class="LineNr">55 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='046global.cc.html#L79'>is_global</a><span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L56" class="LineNr">56 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!Current_routine<span class="Delimiter">-&gt;</span>global_space<span class="Delimiter">)</span>
-<span id="L57" class="LineNr">57 </span>      raise &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L57" class="LineNr">57 </span>      <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <span class="Constant">&quot;routine has no global space</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L58" class="LineNr">58 </span>    <span class="Identifier">return</span> Current_routine<span class="Delimiter">-&gt;</span>global_space + <span class="Comment">/*</span><span class="Comment">skip refcount</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L59" class="LineNr">59 </span>  <span class="Delimiter">}</span>
 <span id="L60" class="LineNr">60 </span>
@@ -121,7 +121,7 @@ if ('onhashchange' in window) {
 <span id="L62" class="LineNr">62 </span><span class="Comment">//: don't want to make them too comfortable to use.</span>
 <span id="L63" class="LineNr">63 </span>
 <span id="L64" class="LineNr">64 </span><span class="Delimiter">:(scenario global_space_with_names)</span>
-<span id="L65" class="LineNr">65 </span><span class="muRecipe">def</span> main [
+<span id="L65" class="LineNr">65 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L66" class="LineNr">66 </span>  global-space:space<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">location:type</span><span class="Delimiter">,</span> <span class="Constant">10</span>
 <span id="L67" class="LineNr">67 </span>  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">23</span>
 <span id="L68" class="LineNr">68 </span>  <span class="Special">1:num/space:global</span><span class="Special"> &lt;- </span>copy <span class="Constant">24</span>
@@ -130,12 +130,12 @@ if ('onhashchange' in window) {
 <span id="L71" class="LineNr">71 </span>$error: <span class="Constant">0</span>
 <span id="L72" class="LineNr">72 </span>
 <span id="L73" class="LineNr">73 </span><span class="Delimiter">:(after &quot;bool is_numeric_location(const reagent&amp; x)&quot;)</span>
-<span id="L74" class="LineNr">74 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_global<span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span id="L74" class="LineNr">74 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='046global.cc.html#L79'>is_global</a><span class="Delimiter">(</span>x<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L75" class="LineNr">75 </span>
 <span id="L76" class="LineNr">76 </span><span class="Comment">//: helpers</span>
 <span id="L77" class="LineNr">77 </span>
 <span id="L78" class="LineNr">78 </span><span class="Delimiter">:(code)</span>
-<span id="L79" class="LineNr">79 </span><span class="Normal">bool</span> is_global<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L79" class="LineNr">79 </span><span class="Normal">bool</span> <a href='046global.cc.html#L79'>is_global</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L80" class="LineNr">80 </span>  string_tree* s = property<span class="Delimiter">(</span>x<span class="Delimiter">,</span> <span class="Constant">&quot;space&quot;</span><span class="Delimiter">);</span>
 <span id="L81" class="LineNr">81 </span>  <span class="Identifier">return</span> s &amp;&amp; s<span class="Delimiter">-&gt;</span>atom &amp;&amp; s<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;global&quot;</span><span class="Delimiter">;</span>
 <span id="L82" class="LineNr">82 </span><span class="Delimiter">}</span>

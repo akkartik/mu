@@ -43,3 +43,18 @@ for f in *.cc *.mu edit/*.mu
 do
   process $f
 done
+
+if which ctags >&/dev/null
+then
+  ( cd linkify; build; )
+  ctags -x *.cc  |grep -v "^operator \| member \| variable "  > cpp.tags
+  linkify/linkify cpp.tags html/*.cc.html
+  ctags -x 0*.mu  > mu.tags
+  linkify/linkify mu.tags html/*.mu.html html/edit/*.mu.html
+  rm *.tags
+  ( cd linkify; clean; )
+  for f in html/*.html html/edit/*.html
+  do
+    mv $f.out $f
+  done
+fi

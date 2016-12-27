@@ -182,27 +182,27 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr"> 124 </span>
 <span id="L125" class="LineNr"> 125 </span><span class="Comment"># A new type to help incrementally construct texts.</span>
 <span id="L126" class="LineNr"> 126 </span><span class="Comment"># todo: make this shape-shifting.</span>
-<span id="L127" class="LineNr"> 127 </span><span class="muData">container</span> buffer [
+<span id="L127" class="LineNr"> 127 </span><span class="muData">container</span> <a href='061text.mu.html#L127'>buffer</a> [
 <span id="L128" class="LineNr"> 128 </span>  length:num
 <span id="L129" class="LineNr"> 129 </span>  data:text
 <span id="L130" class="LineNr"> 130 </span>]
 <span id="L131" class="LineNr"> 131 </span>
-<span id="L132" class="LineNr"> 132 </span><span class="muRecipe">def</span> new-buffer capacity:num<span class="muRecipe"> -&gt; </span>result:&amp;:buffer [
+<span id="L132" class="LineNr"> 132 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L132'>new-buffer</a> <a href='075channel.mu.html#L379'>capacity</a>:num<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='061text.mu.html#L127'>buffer</a> [
 <span id="L133" class="LineNr"> 133 </span>  <span class="Constant">local-scope</span>
 <span id="L134" class="LineNr"> 134 </span>  <span class="Constant">load-ingredients</span>
-<span id="L135" class="LineNr"> 135 </span>  result <span class="Special">&lt;-</span> new <span class="Constant">buffer:type</span>
+<span id="L135" class="LineNr"> 135 </span>  result <span class="Special">&lt;-</span> new <span class="Constant"><a href='061text.mu.html#L127'>buffer</a>:type</span>
 <span id="L136" class="LineNr"> 136 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">length:offset</span>,<span class="Constant"> 0</span>
 <span id="L137" class="LineNr"> 137 </span>  <span class="Delimiter">{</span>
-<span id="L138" class="LineNr"> 138 </span>    <span class="muControl">break-if</span> capacity
+<span id="L138" class="LineNr"> 138 </span>    <span class="muControl">break-if</span> <a href='075channel.mu.html#L379'>capacity</a>
 <span id="L139" class="LineNr"> 139 </span>    <span class="Comment"># capacity not provided</span>
-<span id="L140" class="LineNr"> 140 </span>    capacity <span class="Special">&lt;-</span> copy<span class="Constant"> 10</span>
+<span id="L140" class="LineNr"> 140 </span>    <a href='075channel.mu.html#L379'>capacity</a> <span class="Special">&lt;-</span> copy<span class="Constant"> 10</span>
 <span id="L141" class="LineNr"> 141 </span>  <span class="Delimiter">}</span>
-<span id="L142" class="LineNr"> 142 </span>  data:text <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>, capacity
+<span id="L142" class="LineNr"> 142 </span>  data:text <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>, <a href='075channel.mu.html#L379'>capacity</a>
 <span id="L143" class="LineNr"> 143 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">data:offset</span>, data
 <span id="L144" class="LineNr"> 144 </span>  <span class="muControl">return</span> result
 <span id="L145" class="LineNr"> 145 </span>]
 <span id="L146" class="LineNr"> 146 </span>
-<span id="L147" class="LineNr"> 147 </span><span class="muRecipe">def</span> grow-buffer buf:&amp;:buffer<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
+<span id="L147" class="LineNr"> 147 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L147'>grow-buffer</a> buf:&amp;:<a href='061text.mu.html#L127'>buffer</a><span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> [
 <span id="L148" class="LineNr"> 148 </span>  <span class="Constant">local-scope</span>
 <span id="L149" class="LineNr"> 149 </span>  <span class="Constant">load-ingredients</span>
 <span id="L150" class="LineNr"> 150 </span>  <span class="Comment"># double buffer size</span>
@@ -223,17 +223,17 @@ if ('onhashchange' in window) {
 <span id="L165" class="LineNr"> 165 </span>  <span class="Delimiter">}</span>
 <span id="L166" class="LineNr"> 166 </span>]
 <span id="L167" class="LineNr"> 167 </span>
-<span id="L168" class="LineNr"> 168 </span><span class="muRecipe">def</span> buffer-full? in:&amp;:buffer<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L168" class="LineNr"> 168 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L168'>buffer-full?</a> in:&amp;:<a href='061text.mu.html#L127'>buffer</a><span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L169" class="LineNr"> 169 </span>  <span class="Constant">local-scope</span>
 <span id="L170" class="LineNr"> 170 </span>  <span class="Constant">load-ingredients</span>
 <span id="L171" class="LineNr"> 171 </span>  len:num <span class="Special">&lt;-</span> get *in, <span class="Constant">length:offset</span>
 <span id="L172" class="LineNr"> 172 </span>  s:text <span class="Special">&lt;-</span> get *in, <span class="Constant">data:offset</span>
-<span id="L173" class="LineNr"> 173 </span>  capacity:num <span class="Special">&lt;-</span> length *s
-<span id="L174" class="LineNr"> 174 </span>  result <span class="Special">&lt;-</span> greater-or-equal len, capacity
+<span id="L173" class="LineNr"> 173 </span>  <a href='075channel.mu.html#L379'>capacity</a>:num <span class="Special">&lt;-</span> length *s
+<span id="L174" class="LineNr"> 174 </span>  result <span class="Special">&lt;-</span> greater-or-equal len, <a href='075channel.mu.html#L379'>capacity</a>
 <span id="L175" class="LineNr"> 175 </span>]
 <span id="L176" class="LineNr"> 176 </span>
 <span id="L177" class="LineNr"> 177 </span><span class="Comment"># most broadly applicable definition of append to a buffer: just call to-text</span>
-<span id="L178" class="LineNr"> 178 </span><span class="muRecipe">def</span> append buf:&amp;:buffer, x:_elem<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
+<span id="L178" class="LineNr"> 178 </span><span class="muRecipe">def</span> append buf:&amp;:<a href='061text.mu.html#L127'>buffer</a>, x:_elem<span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> [
 <span id="L179" class="LineNr"> 179 </span>  <span class="Constant">local-scope</span>
 <span id="L180" class="LineNr"> 180 </span>  <span class="Constant">load-ingredients</span>
 <span id="L181" class="LineNr"> 181 </span>  text:text <span class="Special">&lt;-</span> to-text x
@@ -249,7 +249,7 @@ if ('onhashchange' in window) {
 <span id="L191" class="LineNr"> 191 </span>  <span class="Delimiter">}</span>
 <span id="L192" class="LineNr"> 192 </span>]
 <span id="L193" class="LineNr"> 193 </span>
-<span id="L194" class="LineNr"> 194 </span><span class="muRecipe">def</span> append buf:&amp;:buffer, c:char<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
+<span id="L194" class="LineNr"> 194 </span><span class="muRecipe">def</span> append buf:&amp;:<a href='061text.mu.html#L127'>buffer</a>, c:char<span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> [
 <span id="L195" class="LineNr"> 195 </span>  <span class="Constant">local-scope</span>
 <span id="L196" class="LineNr"> 196 </span>  <span class="Constant">load-ingredients</span>
 <span id="L197" class="LineNr"> 197 </span>  len:num <span class="Special">&lt;-</span> get *buf, <span class="Constant">length:offset</span>
@@ -265,9 +265,9 @@ if ('onhashchange' in window) {
 <span id="L207" class="LineNr"> 207 </span>  <span class="Delimiter">}</span>
 <span id="L208" class="LineNr"> 208 </span>  <span class="Delimiter">{</span>
 <span id="L209" class="LineNr"> 209 </span>    <span class="Comment"># grow buffer if necessary</span>
-<span id="L210" class="LineNr"> 210 </span>    full?:bool <span class="Special">&lt;-</span> buffer-full? buf
+<span id="L210" class="LineNr"> 210 </span>    full?:bool <span class="Special">&lt;-</span> <a href='061text.mu.html#L168'>buffer-full?</a> buf
 <span id="L211" class="LineNr"> 211 </span>    <span class="muControl">break-unless</span> full?
-<span id="L212" class="LineNr"> 212 </span>    buf <span class="Special">&lt;-</span> grow-buffer buf
+<span id="L212" class="LineNr"> 212 </span>    buf <span class="Special">&lt;-</span> <a href='061text.mu.html#L147'>grow-buffer</a> buf
 <span id="L213" class="LineNr"> 213 </span>  <span class="Delimiter">}</span>
 <span id="L214" class="LineNr"> 214 </span>  s:text <span class="Special">&lt;-</span> get *buf, <span class="Constant">data:offset</span>
 <span id="L215" class="LineNr"> 215 </span>  *s <span class="Special">&lt;-</span> put-index *s, len, c
@@ -275,7 +275,7 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr"> 217 </span>  *buf <span class="Special">&lt;-</span> put *buf, <span class="Constant">length:offset</span>, len
 <span id="L218" class="LineNr"> 218 </span>]
 <span id="L219" class="LineNr"> 219 </span>
-<span id="L220" class="LineNr"> 220 </span><span class="muRecipe">def</span> append buf:&amp;:buffer, t:text<span class="muRecipe"> -&gt; </span>buf:&amp;:buffer [
+<span id="L220" class="LineNr"> 220 </span><span class="muRecipe">def</span> append buf:&amp;:<a href='061text.mu.html#L127'>buffer</a>, t:text<span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> [
 <span id="L221" class="LineNr"> 221 </span>  <span class="Constant">local-scope</span>
 <span id="L222" class="LineNr"> 222 </span>  <span class="Constant">load-ingredients</span>
 <span id="L223" class="LineNr"> 223 </span>  len:num <span class="Special">&lt;-</span> length *t
@@ -292,7 +292,7 @@ if ('onhashchange' in window) {
 <span id="L234" class="LineNr"> 234 </span>
 <span id="L235" class="LineNr"> 235 </span><span class="muScenario">scenario</span> append-to-empty-buffer [
 <span id="L236" class="LineNr"> 236 </span>  <span class="Constant">local-scope</span>
-<span id="L237" class="LineNr"> 237 </span>  x:&amp;:buffer <span class="Special">&lt;-</span> new-buffer
+<span id="L237" class="LineNr"> 237 </span>  x:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a>
 <span id="L238" class="LineNr"> 238 </span>  run [
 <span id="L239" class="LineNr"> 239 </span>    c:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L240" class="LineNr"> 240 </span>    x <span class="Special">&lt;-</span> append x, c
@@ -310,7 +310,7 @@ if ('onhashchange' in window) {
 <span id="L252" class="LineNr"> 252 </span>
 <span id="L253" class="LineNr"> 253 </span><span class="muScenario">scenario</span> append-to-buffer [
 <span id="L254" class="LineNr"> 254 </span>  <span class="Constant">local-scope</span>
-<span id="L255" class="LineNr"> 255 </span>  x:&amp;:buffer <span class="Special">&lt;-</span> new-buffer
+<span id="L255" class="LineNr"> 255 </span>  x:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a>
 <span id="L256" class="LineNr"> 256 </span>  c:char <span class="Special">&lt;-</span> copy <span class="Constant">97/a</span>
 <span id="L257" class="LineNr"> 257 </span>  x <span class="Special">&lt;-</span> append x, c
 <span id="L258" class="LineNr"> 258 </span>  run [
@@ -332,7 +332,7 @@ if ('onhashchange' in window) {
 <span id="L274" class="LineNr"> 274 </span>
 <span id="L275" class="LineNr"> 275 </span><span class="muScenario">scenario</span> append-grows-buffer [
 <span id="L276" class="LineNr"> 276 </span>  <span class="Constant">local-scope</span>
-<span id="L277" class="LineNr"> 277 </span>  x:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 3</span>
+<span id="L277" class="LineNr"> 277 </span>  x:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a><span class="Constant"> 3</span>
 <span id="L278" class="LineNr"> 278 </span>  s1:text <span class="Special">&lt;-</span> get *x, <span class="Constant">data:offset</span>
 <span id="L279" class="LineNr"> 279 </span>  x <span class="Special">&lt;-</span> append x, <span class="Constant">[abc]</span>  <span class="Comment"># buffer is now full</span>
 <span id="L280" class="LineNr"> 280 </span>  s2:text <span class="Special">&lt;-</span> get *x, <span class="Constant">data:offset</span>
@@ -369,12 +369,12 @@ if ('onhashchange' in window) {
 <span id="L311" class="LineNr"> 311 </span>
 <span id="L312" class="LineNr"> 312 </span><span class="muScenario">scenario</span> buffer-append-handles-backspace [
 <span id="L313" class="LineNr"> 313 </span>  <span class="Constant">local-scope</span>
-<span id="L314" class="LineNr"> 314 </span>  x:&amp;:buffer <span class="Special">&lt;-</span> new-buffer
+<span id="L314" class="LineNr"> 314 </span>  x:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a>
 <span id="L315" class="LineNr"> 315 </span>  x <span class="Special">&lt;-</span> append x, <span class="Constant">[ab]</span>
 <span id="L316" class="LineNr"> 316 </span>  run [
 <span id="L317" class="LineNr"> 317 </span>    c:char <span class="Special">&lt;-</span> copy <span class="Constant">8/backspace</span>
 <span id="L318" class="LineNr"> 318 </span>    x <span class="Special">&lt;-</span> append x, c
-<span id="L319" class="LineNr"> 319 </span>    s:text <span class="Special">&lt;-</span> buffer-to-array x
+<span id="L319" class="LineNr"> 319 </span>    s:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L329'>buffer-to-array</a> x
 <span id="L320" class="LineNr"> 320 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *s
 <span id="L321" class="LineNr"> 321 </span>  ]
 <span id="L322" class="LineNr"> 322 </span>  memory-should-contain [
@@ -384,7 +384,7 @@ if ('onhashchange' in window) {
 <span id="L326" class="LineNr"> 326 </span>  ]
 <span id="L327" class="LineNr"> 327 </span>]
 <span id="L328" class="LineNr"> 328 </span>
-<span id="L329" class="LineNr"> 329 </span><span class="muRecipe">def</span> buffer-to-array in:&amp;:buffer<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L329" class="LineNr"> 329 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L329'>buffer-to-array</a> in:&amp;:<a href='061text.mu.html#L127'>buffer</a><span class="muRecipe"> -&gt; </span>result:text [
 <span id="L330" class="LineNr"> 330 </span>  <span class="Constant">local-scope</span>
 <span id="L331" class="LineNr"> 331 </span>  <span class="Constant">load-ingredients</span>
 <span id="L332" class="LineNr"> 332 </span>  <span class="Delimiter">{</span>
@@ -418,7 +418,7 @@ if ('onhashchange' in window) {
 <span id="L360" class="LineNr"> 360 </span><span class="muRecipe">def</span> append first:text<span class="muRecipe"> -&gt; </span>result:text [
 <span id="L361" class="LineNr"> 361 </span>  <span class="Constant">local-scope</span>
 <span id="L362" class="LineNr"> 362 </span>  <span class="Constant">load-ingredients</span>
-<span id="L363" class="LineNr"> 363 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
+<span id="L363" class="LineNr"> 363 </span>  buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a><span class="Constant"> 30</span>
 <span id="L364" class="LineNr"> 364 </span>  <span class="Comment"># append first ingredient</span>
 <span id="L365" class="LineNr"> 365 </span>  <span class="Delimiter">{</span>
 <span id="L366" class="LineNr"> 366 </span>    <span class="muControl">break-unless</span> first
@@ -432,7 +432,7 @@ if ('onhashchange' in window) {
 <span id="L374" class="LineNr"> 374 </span>    buf <span class="Special">&lt;-</span> append buf, arg
 <span id="L375" class="LineNr"> 375 </span>    <span class="muControl">loop</span>
 <span id="L376" class="LineNr"> 376 </span>  <span class="Delimiter">}</span>
-<span id="L377" class="LineNr"> 377 </span>  result <span class="Special">&lt;-</span> buffer-to-array buf
+<span id="L377" class="LineNr"> 377 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L329'>buffer-to-array</a> buf
 <span id="L378" class="LineNr"> 378 </span>]
 <span id="L379" class="LineNr"> 379 </span>
 <span id="L380" class="LineNr"> 380 </span><span class="muScenario">scenario</span> text-append-1 [
@@ -492,7 +492,7 @@ if ('onhashchange' in window) {
 <span id="L434" class="LineNr"> 434 </span>  <span class="Constant">local-scope</span>
 <span id="L435" class="LineNr"> 435 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L436" class="LineNr"> 436 </span>  run [
-<span id="L437" class="LineNr"> 437 </span>    x <span class="Special">&lt;-</span> replace x, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
+<span id="L437" class="LineNr"> 437 </span>    x <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> x, <span class="Constant">98/b</span>, <span class="Constant">122/z</span>
 <span id="L438" class="LineNr"> 438 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
 <span id="L439" class="LineNr"> 439 </span>  ]
 <span id="L440" class="LineNr"> 440 </span>  memory-should-contain [
@@ -500,7 +500,7 @@ if ('onhashchange' in window) {
 <span id="L442" class="LineNr"> 442 </span>  ]
 <span id="L443" class="LineNr"> 443 </span>]
 <span id="L444" class="LineNr"> 444 </span>
-<span id="L445" class="LineNr"> 445 </span><span class="muRecipe">def</span> replace s:text, oldc:char, newc:char, from:num/optional<span class="muRecipe"> -&gt; </span>s:text [
+<span id="L445" class="LineNr"> 445 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L445'>replace</a> s:text, oldc:char, newc:char, from:num/optional<span class="muRecipe"> -&gt; </span>s:text [
 <span id="L446" class="LineNr"> 446 </span>  <span class="Constant">local-scope</span>
 <span id="L447" class="LineNr"> 447 </span>  <span class="Constant">load-ingredients</span>
 <span id="L448" class="LineNr"> 448 </span>  len:num <span class="Special">&lt;-</span> length *s
@@ -509,14 +509,14 @@ if ('onhashchange' in window) {
 <span id="L451" class="LineNr"> 451 </span>  <span class="muControl">return-if</span> done?
 <span id="L452" class="LineNr"> 452 </span>  *s <span class="Special">&lt;-</span> put-index *s, i, newc
 <span id="L453" class="LineNr"> 453 </span>  i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<span id="L454" class="LineNr"> 454 </span>  s <span class="Special">&lt;-</span> replace s, oldc, newc, i
+<span id="L454" class="LineNr"> 454 </span>  s <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> s, oldc, newc, i
 <span id="L455" class="LineNr"> 455 </span>]
 <span id="L456" class="LineNr"> 456 </span>
 <span id="L457" class="LineNr"> 457 </span><span class="muScenario">scenario</span> replace-character-at-start [
 <span id="L458" class="LineNr"> 458 </span>  <span class="Constant">local-scope</span>
 <span id="L459" class="LineNr"> 459 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L460" class="LineNr"> 460 </span>  run [
-<span id="L461" class="LineNr"> 461 </span>    x <span class="Special">&lt;-</span> replace x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+<span id="L461" class="LineNr"> 461 </span>    x <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
 <span id="L462" class="LineNr"> 462 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
 <span id="L463" class="LineNr"> 463 </span>  ]
 <span id="L464" class="LineNr"> 464 </span>  memory-should-contain [
@@ -528,7 +528,7 @@ if ('onhashchange' in window) {
 <span id="L470" class="LineNr"> 470 </span>  <span class="Constant">local-scope</span>
 <span id="L471" class="LineNr"> 471 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L472" class="LineNr"> 472 </span>  run [
-<span id="L473" class="LineNr"> 473 </span>    x <span class="Special">&lt;-</span> replace x, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
+<span id="L473" class="LineNr"> 473 </span>    x <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> x, <span class="Constant">99/c</span>, <span class="Constant">122/z</span>
 <span id="L474" class="LineNr"> 474 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
 <span id="L475" class="LineNr"> 475 </span>  ]
 <span id="L476" class="LineNr"> 476 </span>  memory-should-contain [
@@ -540,7 +540,7 @@ if ('onhashchange' in window) {
 <span id="L482" class="LineNr"> 482 </span>  <span class="Constant">local-scope</span>
 <span id="L483" class="LineNr"> 483 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L484" class="LineNr"> 484 </span>  run [
-<span id="L485" class="LineNr"> 485 </span>    x <span class="Special">&lt;-</span> replace x, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
+<span id="L485" class="LineNr"> 485 </span>    x <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> x, <span class="Constant">100/d</span>, <span class="Constant">122/z</span>
 <span id="L486" class="LineNr"> 486 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
 <span id="L487" class="LineNr"> 487 </span>  ]
 <span id="L488" class="LineNr"> 488 </span>  memory-should-contain [
@@ -552,7 +552,7 @@ if ('onhashchange' in window) {
 <span id="L494" class="LineNr"> 494 </span>  <span class="Constant">local-scope</span>
 <span id="L495" class="LineNr"> 495 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[banana]</span>
 <span id="L496" class="LineNr"> 496 </span>  run [
-<span id="L497" class="LineNr"> 497 </span>    x <span class="Special">&lt;-</span> replace x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
+<span id="L497" class="LineNr"> 497 </span>    x <span class="Special">&lt;-</span> <a href='061text.mu.html#L445'>replace</a> x, <span class="Constant">97/a</span>, <span class="Constant">122/z</span>
 <span id="L498" class="LineNr"> 498 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *x
 <span id="L499" class="LineNr"> 499 </span>  ]
 <span id="L500" class="LineNr"> 500 </span>  memory-should-contain [
@@ -561,7 +561,7 @@ if ('onhashchange' in window) {
 <span id="L503" class="LineNr"> 503 </span>]
 <span id="L504" class="LineNr"> 504 </span>
 <span id="L505" class="LineNr"> 505 </span><span class="Comment"># replace underscores in first with remaining args</span>
-<span id="L506" class="LineNr"> 506 </span><span class="muRecipe">def</span> interpolate template:text<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L506" class="LineNr"> 506 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L506'>interpolate</a> template:text<span class="muRecipe"> -&gt; </span>result:text [
 <span id="L507" class="LineNr"> 507 </span>  <span class="Constant">local-scope</span>
 <span id="L508" class="LineNr"> 508 </span>  <span class="Constant">load-ingredients</span>  <span class="Comment"># consume just the template</span>
 <span id="L509" class="LineNr"> 509 </span>  <span class="Comment"># compute result-len, space to allocate for result</span>
@@ -639,7 +639,7 @@ if ('onhashchange' in window) {
 <span id="L581" class="LineNr"> 581 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc_ghi]</span>
 <span id="L582" class="LineNr"> 582 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[def]</span>
 <span id="L583" class="LineNr"> 583 </span>  run [
-<span id="L584" class="LineNr"> 584 </span>    z:text <span class="Special">&lt;-</span> interpolate x, y
+<span id="L584" class="LineNr"> 584 </span>    z:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L506'>interpolate</a> x, y
 <span id="L585" class="LineNr"> 585 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *z
 <span id="L586" class="LineNr"> 586 </span>  ]
 <span id="L587" class="LineNr"> 587 </span>  memory-should-contain [
@@ -652,7 +652,7 @@ if ('onhashchange' in window) {
 <span id="L594" class="LineNr"> 594 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[_, hello!]</span>
 <span id="L595" class="LineNr"> 595 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L596" class="LineNr"> 596 </span>  run [
-<span id="L597" class="LineNr"> 597 </span>    z:text <span class="Special">&lt;-</span> interpolate x, y
+<span id="L597" class="LineNr"> 597 </span>    z:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L506'>interpolate</a> x, y
 <span id="L598" class="LineNr"> 598 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *z
 <span id="L599" class="LineNr"> 599 </span>  ]
 <span id="L600" class="LineNr"> 600 </span>  memory-should-contain [
@@ -666,7 +666,7 @@ if ('onhashchange' in window) {
 <span id="L608" class="LineNr"> 608 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[hello, _]</span>
 <span id="L609" class="LineNr"> 609 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L610" class="LineNr"> 610 </span>  run [
-<span id="L611" class="LineNr"> 611 </span>    z:text <span class="Special">&lt;-</span> interpolate x, y
+<span id="L611" class="LineNr"> 611 </span>    z:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L506'>interpolate</a> x, y
 <span id="L612" class="LineNr"> 612 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *z
 <span id="L613" class="LineNr"> 613 </span>  ]
 <span id="L614" class="LineNr"> 614 </span>  memory-should-contain [
@@ -675,7 +675,7 @@ if ('onhashchange' in window) {
 <span id="L617" class="LineNr"> 617 </span>]
 <span id="L618" class="LineNr"> 618 </span>
 <span id="L619" class="LineNr"> 619 </span><span class="Comment"># result:bool &lt;- space? c:char</span>
-<span id="L620" class="LineNr"> 620 </span><span class="muRecipe">def</span> space? c:char<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L620" class="LineNr"> 620 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L620'>space?</a> c:char<span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L621" class="LineNr"> 621 </span>  <span class="Constant">local-scope</span>
 <span id="L622" class="LineNr"> 622 </span>  <span class="Constant">load-ingredients</span>
 <span id="L623" class="LineNr"> 623 </span>  <span class="Comment"># most common case first</span>
@@ -736,7 +736,7 @@ if ('onhashchange' in window) {
 <span id="L678" class="LineNr"> 678 </span>  result <span class="Special">&lt;-</span> equal c, <span class="Constant">12288/ideographic-space</span>
 <span id="L679" class="LineNr"> 679 </span>]
 <span id="L680" class="LineNr"> 680 </span>
-<span id="L681" class="LineNr"> 681 </span><span class="muRecipe">def</span> trim s:text<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L681" class="LineNr"> 681 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L681'>trim</a> s:text<span class="muRecipe"> -&gt; </span>result:text [
 <span id="L682" class="LineNr"> 682 </span>  <span class="Constant">local-scope</span>
 <span id="L683" class="LineNr"> 683 </span>  <span class="Constant">load-ingredients</span>
 <span id="L684" class="LineNr"> 684 </span>  len:num <span class="Special">&lt;-</span> length *s
@@ -750,7 +750,7 @@ if ('onhashchange' in window) {
 <span id="L692" class="LineNr"> 692 </span>      <span class="muControl">return</span>
 <span id="L693" class="LineNr"> 693 </span>    <span class="Delimiter">}</span>
 <span id="L694" class="LineNr"> 694 </span>    curr:char <span class="Special">&lt;-</span> index *s, start
-<span id="L695" class="LineNr"> 695 </span>    whitespace?:bool <span class="Special">&lt;-</span> space? curr
+<span id="L695" class="LineNr"> 695 </span>    whitespace?:bool <span class="Special">&lt;-</span> <a href='061text.mu.html#L620'>space?</a> curr
 <span id="L696" class="LineNr"> 696 </span>    <span class="muControl">break-unless</span> whitespace?
 <span id="L697" class="LineNr"> 697 </span>    start <span class="Special">&lt;-</span> add start,<span class="Constant"> 1</span>
 <span id="L698" class="LineNr"> 698 </span>    <span class="muControl">loop</span>
@@ -761,7 +761,7 @@ if ('onhashchange' in window) {
 <span id="L703" class="LineNr"> 703 </span>    not-at-start?:bool <span class="Special">&lt;-</span> greater-than end, start
 <span id="L704" class="LineNr"> 704 </span>    assert not-at-start?, <span class="Constant">[end ran up against start]</span>
 <span id="L705" class="LineNr"> 705 </span>    curr:char <span class="Special">&lt;-</span> index *s, end
-<span id="L706" class="LineNr"> 706 </span>    whitespace?:bool <span class="Special">&lt;-</span> space? curr
+<span id="L706" class="LineNr"> 706 </span>    whitespace?:bool <span class="Special">&lt;-</span> <a href='061text.mu.html#L620'>space?</a> curr
 <span id="L707" class="LineNr"> 707 </span>    <span class="muControl">break-unless</span> whitespace?
 <span id="L708" class="LineNr"> 708 </span>    end <span class="Special">&lt;-</span> subtract end,<span class="Constant"> 1</span>
 <span id="L709" class="LineNr"> 709 </span>    <span class="muControl">loop</span>
@@ -789,7 +789,7 @@ if ('onhashchange' in window) {
 <span id="L731" class="LineNr"> 731 </span>  <span class="Constant">local-scope</span>
 <span id="L732" class="LineNr"> 732 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L733" class="LineNr"> 733 </span>  run [
-<span id="L734" class="LineNr"> 734 </span>    y:text <span class="Special">&lt;-</span> trim x
+<span id="L734" class="LineNr"> 734 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L681'>trim</a> x
 <span id="L735" class="LineNr"> 735 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L736" class="LineNr"> 736 </span>  ]
 <span id="L737" class="LineNr"> 737 </span>  memory-should-contain [
@@ -801,7 +801,7 @@ if ('onhashchange' in window) {
 <span id="L743" class="LineNr"> 743 </span>  <span class="Constant">local-scope</span>
 <span id="L744" class="LineNr"> 744 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[  abc]</span>
 <span id="L745" class="LineNr"> 745 </span>  run [
-<span id="L746" class="LineNr"> 746 </span>    y:text <span class="Special">&lt;-</span> trim x
+<span id="L746" class="LineNr"> 746 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L681'>trim</a> x
 <span id="L747" class="LineNr"> 747 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L748" class="LineNr"> 748 </span>  ]
 <span id="L749" class="LineNr"> 749 </span>  memory-should-contain [
@@ -813,7 +813,7 @@ if ('onhashchange' in window) {
 <span id="L755" class="LineNr"> 755 </span>  <span class="Constant">local-scope</span>
 <span id="L756" class="LineNr"> 756 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc  ]</span>
 <span id="L757" class="LineNr"> 757 </span>  run [
-<span id="L758" class="LineNr"> 758 </span>    y:text <span class="Special">&lt;-</span> trim x
+<span id="L758" class="LineNr"> 758 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L681'>trim</a> x
 <span id="L759" class="LineNr"> 759 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L760" class="LineNr"> 760 </span>  ]
 <span id="L761" class="LineNr"> 761 </span>  memory-should-contain [
@@ -825,7 +825,7 @@ if ('onhashchange' in window) {
 <span id="L767" class="LineNr"> 767 </span>  <span class="Constant">local-scope</span>
 <span id="L768" class="LineNr"> 768 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[  abc   ]</span>
 <span id="L769" class="LineNr"> 769 </span>  run [
-<span id="L770" class="LineNr"> 770 </span>    y:text <span class="Special">&lt;-</span> trim x
+<span id="L770" class="LineNr"> 770 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L681'>trim</a> x
 <span id="L771" class="LineNr"> 771 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L772" class="LineNr"> 772 </span>  ]
 <span id="L773" class="LineNr"> 773 </span>  memory-should-contain [
@@ -838,7 +838,7 @@ if ('onhashchange' in window) {
 <span id="L780" class="LineNr"> 780 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[ abc</span>
 <span id="L781" class="LineNr"> 781 </span><span class="Constant">]</span>
 <span id="L782" class="LineNr"> 782 </span>  run [
-<span id="L783" class="LineNr"> 783 </span>    y:text <span class="Special">&lt;-</span> trim x
+<span id="L783" class="LineNr"> 783 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L681'>trim</a> x
 <span id="L784" class="LineNr"> 784 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L785" class="LineNr"> 785 </span>  ]
 <span id="L786" class="LineNr"> 786 </span>  memory-should-contain [
@@ -962,7 +962,7 @@ if ('onhashchange' in window) {
 <span id="L904" class="LineNr"> 904 </span>    <span class="Comment"># does some unnecessary work checking even when there isn't enough of text left</span>
 <span id="L905" class="LineNr"> 905 </span>    done?:bool <span class="Special">&lt;-</span> greater-or-equal idx, len
 <span id="L906" class="LineNr"> 906 </span>    <span class="muControl">break-if</span> done?
-<span id="L907" class="LineNr"> 907 </span>    found?:bool <span class="Special">&lt;-</span> match-at text, pattern, idx
+<span id="L907" class="LineNr"> 907 </span>    found?:bool <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> text, pattern, idx
 <span id="L908" class="LineNr"> 908 </span>    <span class="muControl">break-if</span> found?
 <span id="L909" class="LineNr"> 909 </span>    idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
 <span id="L910" class="LineNr"> 910 </span>    <span class="Comment"># optimization: skip past indices that definitely won't match</span>
@@ -1033,7 +1033,7 @@ if ('onhashchange' in window) {
 <span id="L975" class="LineNr"> 975 </span>]
 <span id="L976" class="LineNr"> 976 </span>
 <span id="L977" class="LineNr"> 977 </span><span class="Comment"># checks if pattern matches at index 'idx'</span>
-<span id="L978" class="LineNr"> 978 </span><span class="muRecipe">def</span> match-at text:text, pattern:text, idx:num<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L978" class="LineNr"> 978 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L978'>match-at</a> text:text, pattern:text, idx:num<span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L979" class="LineNr"> 979 </span>  <span class="Constant">local-scope</span>
 <span id="L980" class="LineNr"> 980 </span>  <span class="Constant">load-ingredients</span>
 <span id="L981" class="LineNr"> 981 </span>  pattern-len:num <span class="Special">&lt;-</span> length *pattern
@@ -1069,7 +1069,7 @@ if ('onhashchange' in window) {
 <span id="L1011" class="LineNr">1011 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1012" class="LineNr">1012 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[ab]</span>
 <span id="L1013" class="LineNr">1013 </span>  run [
-<span id="L1014" class="LineNr">1014 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 0</span>
+<span id="L1014" class="LineNr">1014 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 0</span>
 <span id="L1015" class="LineNr">1015 </span>  ]
 <span id="L1016" class="LineNr">1016 </span>  memory-should-contain [
 <span id="L1017" class="LineNr">1017 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># match found</span>
@@ -1080,7 +1080,7 @@ if ('onhashchange' in window) {
 <span id="L1022" class="LineNr">1022 </span>  <span class="Constant">local-scope</span>
 <span id="L1023" class="LineNr">1023 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1024" class="LineNr">1024 </span>  run [
-<span id="L1025" class="LineNr">1025 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, x,<span class="Constant"> 0</span>
+<span id="L1025" class="LineNr">1025 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, x,<span class="Constant"> 0</span>
 <span id="L1026" class="LineNr">1026 </span>  ]
 <span id="L1027" class="LineNr">1027 </span>  memory-should-contain [
 <span id="L1028" class="LineNr">1028 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># match found</span>
@@ -1092,7 +1092,7 @@ if ('onhashchange' in window) {
 <span id="L1034" class="LineNr">1034 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1035" class="LineNr">1035 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[a]</span>
 <span id="L1036" class="LineNr">1036 </span>  run [
-<span id="L1037" class="LineNr">1037 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 4</span>
+<span id="L1037" class="LineNr">1037 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 4</span>
 <span id="L1038" class="LineNr">1038 </span>  ]
 <span id="L1039" class="LineNr">1039 </span>  memory-should-contain [
 <span id="L1040" class="LineNr">1040 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># never matches</span>
@@ -1104,7 +1104,7 @@ if ('onhashchange' in window) {
 <span id="L1046" class="LineNr">1046 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1047" class="LineNr">1047 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
 <span id="L1048" class="LineNr">1048 </span>  run [
-<span id="L1049" class="LineNr">1049 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 0</span>
+<span id="L1049" class="LineNr">1049 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 0</span>
 <span id="L1050" class="LineNr">1050 </span>  ]
 <span id="L1051" class="LineNr">1051 </span>  memory-should-contain [
 <span id="L1052" class="LineNr">1052 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># always matches empty pattern given a valid index</span>
@@ -1116,7 +1116,7 @@ if ('onhashchange' in window) {
 <span id="L1058" class="LineNr">1058 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1059" class="LineNr">1059 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
 <span id="L1060" class="LineNr">1060 </span>  run [
-<span id="L1061" class="LineNr">1061 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 4</span>
+<span id="L1061" class="LineNr">1061 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 4</span>
 <span id="L1062" class="LineNr">1062 </span>  ]
 <span id="L1063" class="LineNr">1063 </span>  memory-should-contain [
 <span id="L1064" class="LineNr">1064 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no match</span>
@@ -1128,7 +1128,7 @@ if ('onhashchange' in window) {
 <span id="L1070" class="LineNr">1070 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
 <span id="L1071" class="LineNr">1071 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1072" class="LineNr">1072 </span>  run [
-<span id="L1073" class="LineNr">1073 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 0</span>
+<span id="L1073" class="LineNr">1073 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 0</span>
 <span id="L1074" class="LineNr">1074 </span>  ]
 <span id="L1075" class="LineNr">1075 </span>  memory-should-contain [
 <span id="L1076" class="LineNr">1076 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no match</span>
@@ -1139,7 +1139,7 @@ if ('onhashchange' in window) {
 <span id="L1081" class="LineNr">1081 </span>  <span class="Constant">local-scope</span>
 <span id="L1082" class="LineNr">1082 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
 <span id="L1083" class="LineNr">1083 </span>  run [
-<span id="L1084" class="LineNr">1084 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, x,<span class="Constant"> 0</span>
+<span id="L1084" class="LineNr">1084 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, x,<span class="Constant"> 0</span>
 <span id="L1085" class="LineNr">1085 </span>  ]
 <span id="L1086" class="LineNr">1086 </span>  memory-should-contain [
 <span id="L1087" class="LineNr">1087 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># matches because pattern is also empty</span>
@@ -1151,7 +1151,7 @@ if ('onhashchange' in window) {
 <span id="L1093" class="LineNr">1093 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1094" class="LineNr">1094 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[bc]</span>
 <span id="L1095" class="LineNr">1095 </span>  run [
-<span id="L1096" class="LineNr">1096 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 1</span>
+<span id="L1096" class="LineNr">1096 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 1</span>
 <span id="L1097" class="LineNr">1097 </span>  ]
 <span id="L1098" class="LineNr">1098 </span>  memory-should-contain [
 <span id="L1099" class="LineNr">1099 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># match</span>
@@ -1163,14 +1163,14 @@ if ('onhashchange' in window) {
 <span id="L1105" class="LineNr">1105 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1106" class="LineNr">1106 </span>  y:text <span class="Special">&lt;-</span> new <span class="Constant">[bc]</span>
 <span id="L1107" class="LineNr">1107 </span>  run [
-<span id="L1108" class="LineNr">1108 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> match-at x, y,<span class="Constant"> 0</span>
+<span id="L1108" class="LineNr">1108 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L978'>match-at</a> x, y,<span class="Constant"> 0</span>
 <span id="L1109" class="LineNr">1109 </span>  ]
 <span id="L1110" class="LineNr">1110 </span>  memory-should-contain [
 <span id="L1111" class="LineNr">1111 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># no match</span>
 <span id="L1112" class="LineNr">1112 </span>  ]
 <span id="L1113" class="LineNr">1113 </span>]
 <span id="L1114" class="LineNr">1114 </span>
-<span id="L1115" class="LineNr">1115 </span><span class="muRecipe">def</span> split s:text, delim:char<span class="muRecipe"> -&gt; </span>result:&amp;:@:text [
+<span id="L1115" class="LineNr">1115 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L1115'>split</a> s:text, delim:char<span class="muRecipe"> -&gt; </span>result:&amp;:@:text [
 <span id="L1116" class="LineNr">1116 </span>  <span class="Constant">local-scope</span>
 <span id="L1117" class="LineNr">1117 </span>  <span class="Constant">load-ingredients</span>
 <span id="L1118" class="LineNr">1118 </span>  <span class="Comment"># empty text? return empty array</span>
@@ -1203,7 +1203,7 @@ if ('onhashchange' in window) {
 <span id="L1145" class="LineNr">1145 </span>    <span class="muControl">break-if</span> done?
 <span id="L1146" class="LineNr">1146 </span>    end:num <span class="Special">&lt;-</span> find-next s, delim, start
 <span id="L1147" class="LineNr">1147 </span>    <span class="Comment"># copy start..end into result[curr-result]</span>
-<span id="L1148" class="LineNr">1148 </span>    dest:text <span class="Special">&lt;-</span> copy-range s, start, end
+<span id="L1148" class="LineNr">1148 </span>    dest:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> s, start, end
 <span id="L1149" class="LineNr">1149 </span>    *result <span class="Special">&lt;-</span> put-index *result, curr-result, dest
 <span id="L1150" class="LineNr">1150 </span>    <span class="Comment"># slide over to next slice</span>
 <span id="L1151" class="LineNr">1151 </span>    start <span class="Special">&lt;-</span> add end,<span class="Constant"> 1</span>
@@ -1216,7 +1216,7 @@ if ('onhashchange' in window) {
 <span id="L1158" class="LineNr">1158 </span>  <span class="Constant">local-scope</span>
 <span id="L1159" class="LineNr">1159 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[a/b]</span>
 <span id="L1160" class="LineNr">1160 </span>  run [
-<span id="L1161" class="LineNr">1161 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> split x, <span class="Constant">47/slash</span>
+<span id="L1161" class="LineNr">1161 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1115'>split</a> x, <span class="Constant">47/slash</span>
 <span id="L1162" class="LineNr">1162 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> length *y
 <span id="L1163" class="LineNr">1163 </span>    a:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 0</span>
 <span id="L1164" class="LineNr">1164 </span>    b:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 1</span>
@@ -1234,7 +1234,7 @@ if ('onhashchange' in window) {
 <span id="L1176" class="LineNr">1176 </span>  <span class="Constant">local-scope</span>
 <span id="L1177" class="LineNr">1177 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[a/b/c]</span>
 <span id="L1178" class="LineNr">1178 </span>  run [
-<span id="L1179" class="LineNr">1179 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> split x, <span class="Constant">47/slash</span>
+<span id="L1179" class="LineNr">1179 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1115'>split</a> x, <span class="Constant">47/slash</span>
 <span id="L1180" class="LineNr">1180 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> length *y
 <span id="L1181" class="LineNr">1181 </span>    a:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 0</span>
 <span id="L1182" class="LineNr">1182 </span>    b:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 1</span>
@@ -1255,7 +1255,7 @@ if ('onhashchange' in window) {
 <span id="L1197" class="LineNr">1197 </span>  <span class="Constant">local-scope</span>
 <span id="L1198" class="LineNr">1198 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1199" class="LineNr">1199 </span>  run [
-<span id="L1200" class="LineNr">1200 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> split x, <span class="Constant">47/slash</span>
+<span id="L1200" class="LineNr">1200 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1115'>split</a> x, <span class="Constant">47/slash</span>
 <span id="L1201" class="LineNr">1201 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> length *y
 <span id="L1202" class="LineNr">1202 </span>    a:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 0</span>
 <span id="L1203" class="LineNr">1203 </span>    20:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *a
@@ -1270,7 +1270,7 @@ if ('onhashchange' in window) {
 <span id="L1212" class="LineNr">1212 </span>  <span class="Constant">local-scope</span>
 <span id="L1213" class="LineNr">1213 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[]</span>
 <span id="L1214" class="LineNr">1214 </span>  run [
-<span id="L1215" class="LineNr">1215 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> split x, <span class="Constant">47/slash</span>
+<span id="L1215" class="LineNr">1215 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1115'>split</a> x, <span class="Constant">47/slash</span>
 <span id="L1216" class="LineNr">1216 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> length *y
 <span id="L1217" class="LineNr">1217 </span>  ]
 <span id="L1218" class="LineNr">1218 </span>  memory-should-contain [
@@ -1282,7 +1282,7 @@ if ('onhashchange' in window) {
 <span id="L1224" class="LineNr">1224 </span>  <span class="Constant">local-scope</span>
 <span id="L1225" class="LineNr">1225 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[a/b//c]</span>
 <span id="L1226" class="LineNr">1226 </span>  run [
-<span id="L1227" class="LineNr">1227 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> split x:text, <span class="Constant">47/slash</span>
+<span id="L1227" class="LineNr">1227 </span>    y:&amp;:@:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1115'>split</a> x:text, <span class="Constant">47/slash</span>
 <span id="L1228" class="LineNr">1228 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> length *y
 <span id="L1229" class="LineNr">1229 </span>    a:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 0</span>
 <span id="L1230" class="LineNr">1230 </span>    b:text <span class="Special">&lt;-</span> index *y,<span class="Constant"> 1</span>
@@ -1302,7 +1302,7 @@ if ('onhashchange' in window) {
 <span id="L1244" class="LineNr">1244 </span>  ]
 <span id="L1245" class="LineNr">1245 </span>]
 <span id="L1246" class="LineNr">1246 </span>
-<span id="L1247" class="LineNr">1247 </span><span class="muRecipe">def</span> split-first text:text, delim:char<span class="muRecipe"> -&gt; </span>x:text, y:text [
+<span id="L1247" class="LineNr">1247 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L1247'>split-first</a> text:text, delim:char<span class="muRecipe"> -&gt; </span>x:text, y:text [
 <span id="L1248" class="LineNr">1248 </span>  <span class="Constant">local-scope</span>
 <span id="L1249" class="LineNr">1249 </span>  <span class="Constant">load-ingredients</span>
 <span id="L1250" class="LineNr">1250 </span>  <span class="Comment"># empty text? return empty texts</span>
@@ -1315,16 +1315,16 @@ if ('onhashchange' in window) {
 <span id="L1257" class="LineNr">1257 </span>    <span class="muControl">return</span>
 <span id="L1258" class="LineNr">1258 </span>  <span class="Delimiter">}</span>
 <span id="L1259" class="LineNr">1259 </span>  idx:num <span class="Special">&lt;-</span> find-next text, delim,<span class="Constant"> 0</span>
-<span id="L1260" class="LineNr">1260 </span>  x:text <span class="Special">&lt;-</span> copy-range text,<span class="Constant"> 0</span>, idx
+<span id="L1260" class="LineNr">1260 </span>  x:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> text,<span class="Constant"> 0</span>, idx
 <span id="L1261" class="LineNr">1261 </span>  idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
-<span id="L1262" class="LineNr">1262 </span>  y:text <span class="Special">&lt;-</span> copy-range text, idx, len
+<span id="L1262" class="LineNr">1262 </span>  y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> text, idx, len
 <span id="L1263" class="LineNr">1263 </span>]
 <span id="L1264" class="LineNr">1264 </span>
 <span id="L1265" class="LineNr">1265 </span><span class="muScenario">scenario</span> text-split-first [
 <span id="L1266" class="LineNr">1266 </span>  <span class="Constant">local-scope</span>
 <span id="L1267" class="LineNr">1267 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[a/b]</span>
 <span id="L1268" class="LineNr">1268 </span>  run [
-<span id="L1269" class="LineNr">1269 </span>    y:text, z:text <span class="Special">&lt;-</span> split-first x, <span class="Constant">47/slash</span>
+<span id="L1269" class="LineNr">1269 </span>    y:text, z:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1247'>split-first</a> x, <span class="Constant">47/slash</span>
 <span id="L1270" class="LineNr">1270 </span>    10:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L1271" class="LineNr">1271 </span>    20:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *z
 <span id="L1272" class="LineNr">1272 </span>  ]
@@ -1334,7 +1334,7 @@ if ('onhashchange' in window) {
 <span id="L1276" class="LineNr">1276 </span>  ]
 <span id="L1277" class="LineNr">1277 </span>]
 <span id="L1278" class="LineNr">1278 </span>
-<span id="L1279" class="LineNr">1279 </span><span class="muRecipe">def</span> copy-range buf:text, start:num, end:num<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L1279" class="LineNr">1279 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L1279'>copy-range</a> buf:text, start:num, end:num<span class="muRecipe"> -&gt; </span>result:text [
 <span id="L1280" class="LineNr">1280 </span>  <span class="Constant">local-scope</span>
 <span id="L1281" class="LineNr">1281 </span>  <span class="Constant">load-ingredients</span>
 <span id="L1282" class="LineNr">1282 </span>  <span class="Comment"># if end is out of bounds, trim it</span>
@@ -1361,7 +1361,7 @@ if ('onhashchange' in window) {
 <span id="L1303" class="LineNr">1303 </span>  <span class="Constant">local-scope</span>
 <span id="L1304" class="LineNr">1304 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1305" class="LineNr">1305 </span>  run [
-<span id="L1306" class="LineNr">1306 </span>    y:text <span class="Special">&lt;-</span> copy-range x,<span class="Constant"> 1</span>,<span class="Constant"> 3</span>
+<span id="L1306" class="LineNr">1306 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> x,<span class="Constant"> 1</span>,<span class="Constant"> 3</span>
 <span id="L1307" class="LineNr">1307 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L1308" class="LineNr">1308 </span>  ]
 <span id="L1309" class="LineNr">1309 </span>  memory-should-contain [
@@ -1373,7 +1373,7 @@ if ('onhashchange' in window) {
 <span id="L1315" class="LineNr">1315 </span>  <span class="Constant">local-scope</span>
 <span id="L1316" class="LineNr">1316 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1317" class="LineNr">1317 </span>  run [
-<span id="L1318" class="LineNr">1318 </span>    y:text <span class="Special">&lt;-</span> copy-range x,<span class="Constant"> 2</span>,<span class="Constant"> 4</span>
+<span id="L1318" class="LineNr">1318 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> x,<span class="Constant"> 2</span>,<span class="Constant"> 4</span>
 <span id="L1319" class="LineNr">1319 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L1320" class="LineNr">1320 </span>  ]
 <span id="L1321" class="LineNr">1321 </span>  memory-should-contain [
@@ -1385,7 +1385,7 @@ if ('onhashchange' in window) {
 <span id="L1327" class="LineNr">1327 </span>  <span class="Constant">local-scope</span>
 <span id="L1328" class="LineNr">1328 </span>  x:text <span class="Special">&lt;-</span> new <span class="Constant">[abc]</span>
 <span id="L1329" class="LineNr">1329 </span>  run [
-<span id="L1330" class="LineNr">1330 </span>    y:text <span class="Special">&lt;-</span> copy-range x,<span class="Constant"> 3</span>,<span class="Constant"> 3</span>
+<span id="L1330" class="LineNr">1330 </span>    y:text <span class="Special">&lt;-</span> <a href='061text.mu.html#L1279'>copy-range</a> x,<span class="Constant"> 3</span>,<span class="Constant"> 3</span>
 <span id="L1331" class="LineNr">1331 </span>    1:@:char/<span class="Special">raw</span> <span class="Special">&lt;-</span> copy *y
 <span id="L1332" class="LineNr">1332 </span>  ]
 <span id="L1333" class="LineNr">1333 </span>  memory-should-contain [
@@ -1393,7 +1393,7 @@ if ('onhashchange' in window) {
 <span id="L1335" class="LineNr">1335 </span>  ]
 <span id="L1336" class="LineNr">1336 </span>]
 <span id="L1337" class="LineNr">1337 </span>
-<span id="L1338" class="LineNr">1338 </span><span class="muRecipe">def</span> parse-whole-number in:text<span class="muRecipe"> -&gt; </span>out:num, error?:bool [
+<span id="L1338" class="LineNr">1338 </span><span class="muRecipe">def</span> <a href='061text.mu.html#L1338'>parse-whole-number</a> in:text<span class="muRecipe"> -&gt; </span>out:num, error?:bool [
 <span id="L1339" class="LineNr">1339 </span>  <span class="Constant">local-scope</span>
 <span id="L1340" class="LineNr">1340 </span>  <span class="Constant">load-ingredients</span>
 <span id="L1341" class="LineNr">1341 </span>  out <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
@@ -1405,7 +1405,7 @@ if ('onhashchange' in window) {
 <span id="L1347" class="LineNr">1347 </span>    <span class="muControl">break-if</span> done?
 <span id="L1348" class="LineNr">1348 </span>    c:char <span class="Special">&lt;-</span> index *in, i
 <span id="L1349" class="LineNr">1349 </span>    x:num <span class="Special">&lt;-</span> character-to-code c
-<span id="L1350" class="LineNr">1350 </span>    digit:num, error?:bool <span class="Special">&lt;-</span> character-code-to-digit x
+<span id="L1350" class="LineNr">1350 </span>    digit:num, error?:bool <span class="Special">&lt;-</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> x
 <span id="L1351" class="LineNr">1351 </span>    <span class="muControl">reply-if</span> error?
 <span id="L1352" class="LineNr">1352 </span>    result <span class="Special">&lt;-</span> multiply result,<span class="Constant"> 10</span>
 <span id="L1353" class="LineNr">1353 </span>    result <span class="Special">&lt;-</span> add result, digit
@@ -1417,7 +1417,7 @@ if ('onhashchange' in window) {
 <span id="L1359" class="LineNr">1359 </span>]
 <span id="L1360" class="LineNr">1360 </span>
 <span id="L1361" class="LineNr">1361 </span><span class="Comment"># (contributed by Ella Couch)</span>
-<span id="L1362" class="LineNr">1362 </span><span class="muRecipe">recipe</span> character-code-to-digit character-code:number<span class="muRecipe"> -&gt; </span>result:number, error?:boolean [
+<span id="L1362" class="LineNr">1362 </span><span class="muRecipe">recipe</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> character-code:number<span class="muRecipe"> -&gt; </span>result:number, error?:boolean [
 <span id="L1363" class="LineNr">1363 </span>  <span class="Constant">local-scope</span>
 <span id="L1364" class="LineNr">1364 </span>  <span class="Constant">load-ingredients</span>
 <span id="L1365" class="LineNr">1365 </span>  result <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
@@ -1432,7 +1432,7 @@ if ('onhashchange' in window) {
 <span id="L1374" class="LineNr">1374 </span>  <span class="Constant">local-scope</span>
 <span id="L1375" class="LineNr">1375 </span>  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 48</span>  <span class="Comment"># character code for '0'</span>
 <span id="L1376" class="LineNr">1376 </span>  run [
-<span id="L1377" class="LineNr">1377 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+<span id="L1377" class="LineNr">1377 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> a
 <span id="L1378" class="LineNr">1378 </span>  ]
 <span id="L1379" class="LineNr">1379 </span>  memory-should-contain [
 <span id="L1380" class="LineNr">1380 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
@@ -1444,7 +1444,7 @@ if ('onhashchange' in window) {
 <span id="L1386" class="LineNr">1386 </span>  <span class="Constant">local-scope</span>
 <span id="L1387" class="LineNr">1387 </span>  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 57</span>  <span class="Comment"># character code for '9'</span>
 <span id="L1388" class="LineNr">1388 </span>  run [
-<span id="L1389" class="LineNr">1389 </span>    1:number/<span class="Special">raw</span>, 2:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+<span id="L1389" class="LineNr">1389 </span>    1:number/<span class="Special">raw</span>, 2:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> a
 <span id="L1390" class="LineNr">1390 </span>  ]
 <span id="L1391" class="LineNr">1391 </span>  memory-should-contain [
 <span id="L1392" class="LineNr">1392 </span>   <span class="Constant"> 1</span> <span class="Special">&lt;-</span><span class="Constant"> 9</span>
@@ -1456,7 +1456,7 @@ if ('onhashchange' in window) {
 <span id="L1398" class="LineNr">1398 </span>  <span class="Constant">local-scope</span>
 <span id="L1399" class="LineNr">1399 </span>  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 47</span>
 <span id="L1400" class="LineNr">1400 </span>  run [
-<span id="L1401" class="LineNr">1401 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+<span id="L1401" class="LineNr">1401 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> a
 <span id="L1402" class="LineNr">1402 </span>  ]
 <span id="L1403" class="LineNr">1403 </span>  memory-should-contain [
 <span id="L1404" class="LineNr">1404 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
@@ -1468,7 +1468,7 @@ if ('onhashchange' in window) {
 <span id="L1410" class="LineNr">1410 </span>  <span class="Constant">local-scope</span>
 <span id="L1411" class="LineNr">1411 </span>  a:number <span class="Special">&lt;-</span> copy<span class="Constant"> 58</span>
 <span id="L1412" class="LineNr">1412 </span>  run [
-<span id="L1413" class="LineNr">1413 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> character-code-to-digit a
+<span id="L1413" class="LineNr">1413 </span>    10:number/<span class="Special">raw</span>, 11:boolean/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='061text.mu.html#L1362'>character-code-to-digit</a> a
 <span id="L1414" class="LineNr">1414 </span>  ]
 <span id="L1415" class="LineNr">1415 </span>  memory-should-contain [
 <span id="L1416" class="LineNr">1416 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>

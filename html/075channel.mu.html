@@ -77,8 +77,8 @@ if ('onhashchange' in window) {
 <span id="L17" class="LineNr"> 17 </span><span class="muScenario">scenario</span> channel [
 <span id="L18" class="LineNr"> 18 </span>  run [
 <span id="L19" class="LineNr"> 19 </span>    <span class="Constant">local-scope</span>
-<span id="L20" class="LineNr"> 20 </span>    source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
-<span id="L21" class="LineNr"> 21 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L20" class="LineNr"> 20 </span>    source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
+<span id="L21" class="LineNr"> 21 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L22" class="LineNr"> 22 </span>    10:num/<span class="Special">raw</span>, 11:bool/<span class="Special">raw</span>, source <span class="Special">&lt;-</span> read source
 <span id="L23" class="LineNr"> 23 </span>  ]
 <span id="L24" class="LineNr"> 24 </span>  memory-should-contain [
@@ -108,14 +108,14 @@ if ('onhashchange' in window) {
 <span id="L48" class="LineNr"> 48 </span>  chan:&amp;:channel:_elem
 <span id="L49" class="LineNr"> 49 </span>]
 <span id="L50" class="LineNr"> 50 </span>
-<span id="L51" class="LineNr"> 51 </span><span class="muRecipe">def</span> new-channel capacity:num<span class="muRecipe"> -&gt; </span>in:&amp;:source:_elem, out:&amp;:sink:_elem [
+<span id="L51" class="LineNr"> 51 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L51'>new-channel</a> <a href='075channel.mu.html#L379'>capacity</a>:num<span class="muRecipe"> -&gt; </span>in:&amp;:source:_elem, out:&amp;:sink:_elem [
 <span id="L52" class="LineNr"> 52 </span>  <span class="Constant">local-scope</span>
 <span id="L53" class="LineNr"> 53 </span>  <span class="Constant">load-ingredients</span>
 <span id="L54" class="LineNr"> 54 </span>  result:&amp;:channel:_elem <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(channel _elem): type<span class="Delimiter">}</span>
 <span id="L55" class="LineNr"> 55 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">first-full:offset</span>,<span class="Constant"> 0</span>
 <span id="L56" class="LineNr"> 56 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">first-free:offset</span>,<span class="Constant"> 0</span>
-<span id="L57" class="LineNr"> 57 </span>  capacity <span class="Special">&lt;-</span> add capacity,<span class="Constant"> 1</span>  <span class="Comment"># unused slot for 'full?' below</span>
-<span id="L58" class="LineNr"> 58 </span>  data:&amp;:@:_elem <span class="Special">&lt;-</span> new <span class="Constant">_elem:type</span>, capacity
+<span id="L57" class="LineNr"> 57 </span>  <a href='075channel.mu.html#L379'>capacity</a> <span class="Special">&lt;-</span> add <a href='075channel.mu.html#L379'>capacity</a>,<span class="Constant"> 1</span>  <span class="Comment"># unused slot for 'full?' below</span>
+<span id="L58" class="LineNr"> 58 </span>  data:&amp;:@:_elem <span class="Special">&lt;-</span> new <span class="Constant">_elem:type</span>, <a href='075channel.mu.html#L379'>capacity</a>
 <span id="L59" class="LineNr"> 59 </span>  *result <span class="Special">&lt;-</span> put *result, <span class="Constant">data:offset</span>, data
 <span id="L60" class="LineNr"> 60 </span>  in <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(source _elem): type<span class="Delimiter">}</span>
 <span id="L61" class="LineNr"> 61 </span>  *in <span class="Special">&lt;-</span> put *in, <span class="Constant">chan:offset</span>, result
@@ -123,7 +123,7 @@ if ('onhashchange' in window) {
 <span id="L63" class="LineNr"> 63 </span>  *out <span class="Special">&lt;-</span> put *out, <span class="Constant">chan:offset</span>, result
 <span id="L64" class="LineNr"> 64 </span>]
 <span id="L65" class="LineNr"> 65 </span>
-<span id="L66" class="LineNr"> 66 </span><span class="muRecipe">def</span> write out:&amp;:sink:_elem, val:_elem<span class="muRecipe"> -&gt; </span>out:&amp;:sink:_elem [
+<span id="L66" class="LineNr"> 66 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L66'>write</a> out:&amp;:sink:_elem, val:_elem<span class="muRecipe"> -&gt; </span>out:&amp;:sink:_elem [
 <span id="L67" class="LineNr"> 67 </span>  <span class="Constant">local-scope</span>
 <span id="L68" class="LineNr"> 68 </span>  <span class="Constant">load-ingredients</span>
 <span id="L69" class="LineNr"> 69 </span>  assert out, <span class="Constant">[write to null channel]</span>
@@ -136,7 +136,7 @@ if ('onhashchange' in window) {
 <span id="L76" class="LineNr"> 76 </span><span class="CommentedCode">#?     $print [trying to acquire lock for writing], 10/newline</span>
 <span id="L77" class="LineNr"> 77 </span>    wait-for-reset-then-set lock
 <span id="L78" class="LineNr"> 78 </span><span class="CommentedCode">#?     $print [lock acquired for writing], 10/newline</span>
-<span id="L79" class="LineNr"> 79 </span>    full?:bool <span class="Special">&lt;-</span> channel-full? chan
+<span id="L79" class="LineNr"> 79 </span>    full?:bool <span class="Special">&lt;-</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan
 <span id="L80" class="LineNr"> 80 </span>    <span class="muControl">break-unless</span> full?
 <span id="L81" class="LineNr"> 81 </span><span class="CommentedCode">#?     $print [but channel is full; relinquishing lock], 10/newline</span>
 <span id="L82" class="LineNr"> 82 </span>    <span class="Comment"># channel is full; relinquish lock and give a reader the opportunity to</span>
@@ -181,7 +181,7 @@ if ('onhashchange' in window) {
 <span id="L121" class="LineNr">121 </span><span class="CommentedCode">#?     $print [trying to acquire lock for reading], 10/newline</span>
 <span id="L122" class="LineNr">122 </span>    wait-for-reset-then-set lock
 <span id="L123" class="LineNr">123 </span><span class="CommentedCode">#?     $print [lock acquired for reading], 10/newline</span>
-<span id="L124" class="LineNr">124 </span>    empty?:bool <span class="Special">&lt;-</span> channel-empty? chan
+<span id="L124" class="LineNr">124 </span>    empty?:bool <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
 <span id="L125" class="LineNr">125 </span>    <span class="muControl">break-unless</span> empty?
 <span id="L126" class="LineNr">126 </span><span class="CommentedCode">#?     $print [but channel is empty; relinquishing lock], 10/newline</span>
 <span id="L127" class="LineNr">127 </span>    <span class="Comment"># channel is empty; relinquish lock and give a writer the opportunity to</span>
@@ -218,12 +218,12 @@ if ('onhashchange' in window) {
 <span id="L158" class="LineNr">158 </span><span class="Comment"># todo: create a notion of iterator and iterable so we can read/write whole</span>
 <span id="L159" class="LineNr">159 </span><span class="Comment"># aggregates (arrays, lists, ..) of _elems at once.</span>
 <span id="L160" class="LineNr">160 </span>
-<span id="L161" class="LineNr">161 </span><span class="muRecipe">def</span> clear in:&amp;:source:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:source:_elem [
+<span id="L161" class="LineNr">161 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L161'>clear</a> in:&amp;:source:_elem<span class="muRecipe"> -&gt; </span>in:&amp;:source:_elem [
 <span id="L162" class="LineNr">162 </span>  <span class="Constant">local-scope</span>
 <span id="L163" class="LineNr">163 </span>  <span class="Constant">load-ingredients</span>
 <span id="L164" class="LineNr">164 </span>  chan:&amp;:channel:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">chan:offset</span>
 <span id="L165" class="LineNr">165 </span>  <span class="Delimiter">{</span>
-<span id="L166" class="LineNr">166 </span>    empty?:bool <span class="Special">&lt;-</span> channel-empty? chan
+<span id="L166" class="LineNr">166 </span>    empty?:bool <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
 <span id="L167" class="LineNr">167 </span>    <span class="muControl">break-if</span> empty?
 <span id="L168" class="LineNr">168 </span>    _, _, in <span class="Special">&lt;-</span> read in
 <span id="L169" class="LineNr">169 </span>  <span class="Delimiter">}</span>
@@ -232,7 +232,7 @@ if ('onhashchange' in window) {
 <span id="L172" class="LineNr">172 </span><span class="muScenario">scenario</span> channel-initialization [
 <span id="L173" class="LineNr">173 </span>  run [
 <span id="L174" class="LineNr">174 </span>    <span class="Constant">local-scope</span>
-<span id="L175" class="LineNr">175 </span>    source:&amp;:source:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
+<span id="L175" class="LineNr">175 </span>    source:&amp;:source:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
 <span id="L176" class="LineNr">176 </span>    chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
 <span id="L177" class="LineNr">177 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-full:offset</span>
 <span id="L178" class="LineNr">178 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-free:offset</span>
@@ -245,9 +245,9 @@ if ('onhashchange' in window) {
 <span id="L185" class="LineNr">185 </span>
 <span id="L186" class="LineNr">186 </span><span class="muScenario">scenario</span> channel-write-increments-free [
 <span id="L187" class="LineNr">187 </span>  <span class="Constant">local-scope</span>
-<span id="L188" class="LineNr">188 </span>  _, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
+<span id="L188" class="LineNr">188 </span>  _, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
 <span id="L189" class="LineNr">189 </span>  run [
-<span id="L190" class="LineNr">190 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L190" class="LineNr">190 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L191" class="LineNr">191 </span>    chan:&amp;:channel:num <span class="Special">&lt;-</span> get *sink, <span class="Constant">chan:offset</span>
 <span id="L192" class="LineNr">192 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-full:offset</span>
 <span id="L193" class="LineNr">193 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-free:offset</span>
@@ -260,8 +260,8 @@ if ('onhashchange' in window) {
 <span id="L200" class="LineNr">200 </span>
 <span id="L201" class="LineNr">201 </span><span class="muScenario">scenario</span> channel-read-increments-full [
 <span id="L202" class="LineNr">202 </span>  <span class="Constant">local-scope</span>
-<span id="L203" class="LineNr">203 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
-<span id="L204" class="LineNr">204 </span>  sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L203" class="LineNr">203 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
+<span id="L204" class="LineNr">204 </span>  sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L205" class="LineNr">205 </span>  run [
 <span id="L206" class="LineNr">206 </span>    _, _, source <span class="Special">&lt;-</span> read source
 <span id="L207" class="LineNr">207 </span>    chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
@@ -277,17 +277,17 @@ if ('onhashchange' in window) {
 <span id="L217" class="LineNr">217 </span><span class="muScenario">scenario</span> channel-wrap [
 <span id="L218" class="LineNr">218 </span>  <span class="Constant">local-scope</span>
 <span id="L219" class="LineNr">219 </span>  <span class="Comment"># channel with just 1 slot</span>
-<span id="L220" class="LineNr">220 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">1/capacity</span>
+<span id="L220" class="LineNr">220 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">1/capacity</span>
 <span id="L221" class="LineNr">221 </span>  chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
 <span id="L222" class="LineNr">222 </span>  <span class="Comment"># write and read a value</span>
-<span id="L223" class="LineNr">223 </span>  sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L223" class="LineNr">223 </span>  sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L224" class="LineNr">224 </span>  _, _, source <span class="Special">&lt;-</span> read source
 <span id="L225" class="LineNr">225 </span>  run [
 <span id="L226" class="LineNr">226 </span>    <span class="Comment"># first-free will now be 1</span>
 <span id="L227" class="LineNr">227 </span>    10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-free:offset</span>
 <span id="L228" class="LineNr">228 </span>    11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-free:offset</span>
 <span id="L229" class="LineNr">229 </span>    <span class="Comment"># write second value, verify that first-free wraps</span>
-<span id="L230" class="LineNr">230 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L230" class="LineNr">230 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L231" class="LineNr">231 </span>    20:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *chan, <span class="Constant">first-free:offset</span>
 <span id="L232" class="LineNr">232 </span>    <span class="Comment"># read second value, verify that first-full wraps</span>
 <span id="L233" class="LineNr">233 </span>    _, _, source <span class="Special">&lt;-</span> read source
@@ -304,10 +304,10 @@ if ('onhashchange' in window) {
 <span id="L244" class="LineNr">244 </span><span class="muScenario">scenario</span> channel-new-empty-not-full [
 <span id="L245" class="LineNr">245 </span>  run [
 <span id="L246" class="LineNr">246 </span>    <span class="Constant">local-scope</span>
-<span id="L247" class="LineNr">247 </span>    source:&amp;:source:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
+<span id="L247" class="LineNr">247 </span>    source:&amp;:source:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
 <span id="L248" class="LineNr">248 </span>    chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
-<span id="L249" class="LineNr">249 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-empty? chan
-<span id="L250" class="LineNr">250 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-full? chan
+<span id="L249" class="LineNr">249 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
+<span id="L250" class="LineNr">250 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan
 <span id="L251" class="LineNr">251 </span>  ]
 <span id="L252" class="LineNr">252 </span>  memory-should-contain [
 <span id="L253" class="LineNr">253 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># empty?</span>
@@ -317,12 +317,12 @@ if ('onhashchange' in window) {
 <span id="L257" class="LineNr">257 </span>
 <span id="L258" class="LineNr">258 </span><span class="muScenario">scenario</span> channel-write-not-empty [
 <span id="L259" class="LineNr">259 </span>  <span class="Constant">local-scope</span>
-<span id="L260" class="LineNr">260 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">3/capacity</span>
+<span id="L260" class="LineNr">260 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">3/capacity</span>
 <span id="L261" class="LineNr">261 </span>  chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
 <span id="L262" class="LineNr">262 </span>  run [
-<span id="L263" class="LineNr">263 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
-<span id="L264" class="LineNr">264 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-empty? chan
-<span id="L265" class="LineNr">265 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-full? chan
+<span id="L263" class="LineNr">263 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
+<span id="L264" class="LineNr">264 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
+<span id="L265" class="LineNr">265 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan
 <span id="L266" class="LineNr">266 </span>  ]
 <span id="L267" class="LineNr">267 </span>  memory-should-contain [
 <span id="L268" class="LineNr">268 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># empty?</span>
@@ -332,12 +332,12 @@ if ('onhashchange' in window) {
 <span id="L272" class="LineNr">272 </span>
 <span id="L273" class="LineNr">273 </span><span class="muScenario">scenario</span> channel-write-full [
 <span id="L274" class="LineNr">274 </span>  <span class="Constant">local-scope</span>
-<span id="L275" class="LineNr">275 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">1/capacity</span>
+<span id="L275" class="LineNr">275 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">1/capacity</span>
 <span id="L276" class="LineNr">276 </span>  chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
 <span id="L277" class="LineNr">277 </span>  run [
-<span id="L278" class="LineNr">278 </span>    sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
-<span id="L279" class="LineNr">279 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-empty? chan
-<span id="L280" class="LineNr">280 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-full? chan
+<span id="L278" class="LineNr">278 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
+<span id="L279" class="LineNr">279 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
+<span id="L280" class="LineNr">280 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan
 <span id="L281" class="LineNr">281 </span>  ]
 <span id="L282" class="LineNr">282 </span>  memory-should-contain [
 <span id="L283" class="LineNr">283 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># empty?</span>
@@ -347,13 +347,13 @@ if ('onhashchange' in window) {
 <span id="L287" class="LineNr">287 </span>
 <span id="L288" class="LineNr">288 </span><span class="muScenario">scenario</span> channel-read-not-full [
 <span id="L289" class="LineNr">289 </span>  <span class="Constant">local-scope</span>
-<span id="L290" class="LineNr">290 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> new-channel <span class="Constant">1/capacity</span>
+<span id="L290" class="LineNr">290 </span>  source:&amp;:source:num, sink:&amp;:sink:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">1/capacity</span>
 <span id="L291" class="LineNr">291 </span>  chan:&amp;:channel:num <span class="Special">&lt;-</span> get *source, <span class="Constant">chan:offset</span>
-<span id="L292" class="LineNr">292 </span>  sink <span class="Special">&lt;-</span> write sink,<span class="Constant"> 34</span>
+<span id="L292" class="LineNr">292 </span>  sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink,<span class="Constant"> 34</span>
 <span id="L293" class="LineNr">293 </span>  run [
 <span id="L294" class="LineNr">294 </span>    _, _, source <span class="Special">&lt;-</span> read source
-<span id="L295" class="LineNr">295 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-empty? chan
-<span id="L296" class="LineNr">296 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> channel-full? chan
+<span id="L295" class="LineNr">295 </span>    10:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan
+<span id="L296" class="LineNr">296 </span>    11:bool/<span class="Special">raw</span> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan
 <span id="L297" class="LineNr">297 </span>  ]
 <span id="L298" class="LineNr">298 </span>  memory-should-contain [
 <span id="L299" class="LineNr">299 </span>   <span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>  <span class="Comment"># empty?</span>
@@ -407,7 +407,7 @@ if ('onhashchange' in window) {
 <span id="L347" class="LineNr">347 </span><span class="SalientComment">## helpers</span>
 <span id="L348" class="LineNr">348 </span>
 <span id="L349" class="LineNr">349 </span><span class="Comment"># An empty channel has first-empty and first-full both at the same value.</span>
-<span id="L350" class="LineNr">350 </span><span class="muRecipe">def</span> channel-empty? chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L350" class="LineNr">350 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L350'>channel-empty?</a> chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L351" class="LineNr">351 </span>  <span class="Constant">local-scope</span>
 <span id="L352" class="LineNr">352 </span>  <span class="Constant">load-ingredients</span>
 <span id="L353" class="LineNr">353 </span>  <span class="Comment"># return chan.first-full == chan.first-free</span>
@@ -418,7 +418,7 @@ if ('onhashchange' in window) {
 <span id="L358" class="LineNr">358 </span>
 <span id="L359" class="LineNr">359 </span><span class="Comment"># A full channel has first-empty just before first-full, wasting one slot.</span>
 <span id="L360" class="LineNr">360 </span><span class="Comment"># (Other alternatives: <a href="https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)">https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)</a></span>
-<span id="L361" class="LineNr">361 </span><span class="muRecipe">def</span> channel-full? chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L361" class="LineNr">361 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L361'>channel-full?</a> chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:bool [
 <span id="L362" class="LineNr">362 </span>  <span class="Constant">local-scope</span>
 <span id="L363" class="LineNr">363 </span>  <span class="Constant">load-ingredients</span>
 <span id="L364" class="LineNr">364 </span>  <span class="Comment"># tmp = chan.first-free + 1</span>
@@ -426,7 +426,7 @@ if ('onhashchange' in window) {
 <span id="L366" class="LineNr">366 </span>  tmp <span class="Special">&lt;-</span> add tmp,<span class="Constant"> 1</span>
 <span id="L367" class="LineNr">367 </span>  <span class="Delimiter">{</span>
 <span id="L368" class="LineNr">368 </span>    <span class="Comment"># if tmp == chan.capacity, tmp = 0</span>
-<span id="L369" class="LineNr">369 </span>    len:num <span class="Special">&lt;-</span> capacity chan
+<span id="L369" class="LineNr">369 </span>    len:num <span class="Special">&lt;-</span> <a href='075channel.mu.html#L379'>capacity</a> chan
 <span id="L370" class="LineNr">370 </span>    at-end?:bool <span class="Special">&lt;-</span> greater-or-equal tmp, len
 <span id="L371" class="LineNr">371 </span>    <span class="muControl">break-unless</span> at-end?
 <span id="L372" class="LineNr">372 </span>    tmp <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
@@ -436,7 +436,7 @@ if ('onhashchange' in window) {
 <span id="L376" class="LineNr">376 </span>  result <span class="Special">&lt;-</span> equal full, tmp
 <span id="L377" class="LineNr">377 </span>]
 <span id="L378" class="LineNr">378 </span>
-<span id="L379" class="LineNr">379 </span><span class="muRecipe">def</span> capacity chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:num [
+<span id="L379" class="LineNr">379 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L379'>capacity</a> chan:&amp;:channel:_elem<span class="muRecipe"> -&gt; </span>result:num [
 <span id="L380" class="LineNr">380 </span>  <span class="Constant">local-scope</span>
 <span id="L381" class="LineNr">381 </span>  <span class="Constant">load-ingredients</span>
 <span id="L382" class="LineNr">382 </span>  q:&amp;:@:_elem <span class="Special">&lt;-</span> get *chan, <span class="Constant">data:offset</span>
@@ -445,13 +445,13 @@ if ('onhashchange' in window) {
 <span id="L385" class="LineNr">385 </span>
 <span id="L386" class="LineNr">386 </span><span class="SalientComment">## helpers for channels of characters in particular</span>
 <span id="L387" class="LineNr">387 </span>
-<span id="L388" class="LineNr">388 </span><span class="muRecipe">def</span> buffer-lines in:&amp;:source:char, buffered-out:&amp;:sink:char<span class="muRecipe"> -&gt; </span>buffered-out:&amp;:sink:char, in:&amp;:source:char [
+<span id="L388" class="LineNr">388 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L388'>buffer-lines</a> in:&amp;:source:char, buffered-out:&amp;:sink:char<span class="muRecipe"> -&gt; </span>buffered-out:&amp;:sink:char, in:&amp;:source:char [
 <span id="L389" class="LineNr">389 </span>  <span class="Constant">local-scope</span>
 <span id="L390" class="LineNr">390 </span>  <span class="Constant">load-ingredients</span>
 <span id="L391" class="LineNr">391 </span>  <span class="Comment"># repeat forever</span>
 <span id="L392" class="LineNr">392 </span>  eof?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
 <span id="L393" class="LineNr">393 </span>  <span class="Delimiter">{</span>
-<span id="L394" class="LineNr">394 </span>    line:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
+<span id="L394" class="LineNr">394 </span>    line:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a><span class="Constant"> 30</span>
 <span id="L395" class="LineNr">395 </span>    <span class="Comment"># read characters from 'in' until newline, copy into line</span>
 <span id="L396" class="LineNr">396 </span>    <span class="Delimiter">{</span>
 <span id="L397" class="LineNr">397 </span><span class="Constant">      +next-character</span>
@@ -487,7 +487,7 @@ if ('onhashchange' in window) {
 <span id="L427" class="LineNr">427 </span>      done?:bool <span class="Special">&lt;-</span> greater-or-equal i, max
 <span id="L428" class="LineNr">428 </span>      <span class="muControl">break-if</span> done?
 <span id="L429" class="LineNr">429 </span>      c:char <span class="Special">&lt;-</span> index *line-contents, i
-<span id="L430" class="LineNr">430 </span>      buffered-out <span class="Special">&lt;-</span> write buffered-out, c
+<span id="L430" class="LineNr">430 </span>      buffered-out <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> buffered-out, c
 <span id="L431" class="LineNr">431 </span>      i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L432" class="LineNr">432 </span>      <span class="muControl">loop</span>
 <span id="L433" class="LineNr">433 </span>    <span class="Delimiter">}</span>
@@ -503,37 +503,37 @@ if ('onhashchange' in window) {
 <span id="L443" class="LineNr">443 </span><span class="muScenario">scenario</span> buffer-lines-blocks-until-newline [
 <span id="L444" class="LineNr">444 </span>  run [
 <span id="L445" class="LineNr">445 </span>    <span class="Constant">local-scope</span>
-<span id="L446" class="LineNr">446 </span>    source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
-<span id="L447" class="LineNr">447 </span>    _, buffered-stdin:&amp;:sink:char/buffered-stdin <span class="Special">&lt;-</span> new-channel <span class="Constant">10/capacity</span>
+<span id="L446" class="LineNr">446 </span>    source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">10/capacity</span>
+<span id="L447" class="LineNr">447 </span>    _, buffered-stdin:&amp;:sink:char/buffered-stdin <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">10/capacity</span>
 <span id="L448" class="LineNr">448 </span>    buffered-chan:&amp;:channel:char <span class="Special">&lt;-</span> get *buffered-stdin, <span class="Constant">chan:offset</span>
-<span id="L449" class="LineNr">449 </span>    empty?:bool <span class="Special">&lt;-</span> channel-empty? buffered-chan
+<span id="L449" class="LineNr">449 </span>    empty?:bool <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> buffered-chan
 <span id="L450" class="LineNr">450 </span>    assert empty?, <span class="Constant">[ </span>
 <span id="L451" class="LineNr">451 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after init]</span>
 <span id="L452" class="LineNr">452 </span>    <span class="Comment"># buffer stdin into buffered-stdin, try to read from buffered-stdin</span>
-<span id="L453" class="LineNr">453 </span>    buffer-routine:num <span class="Special">&lt;-</span> start-running buffer-lines, source, buffered-stdin
+<span id="L453" class="LineNr">453 </span>    buffer-routine:num <span class="Special">&lt;-</span> start-running <a href='075channel.mu.html#L388'>buffer-lines</a>, source, buffered-stdin
 <span id="L454" class="LineNr">454 </span>    wait-for-routine-to-block buffer-routine
-<span id="L455" class="LineNr">455 </span>    empty? <span class="Special">&lt;-</span> channel-empty? buffered-chan
+<span id="L455" class="LineNr">455 </span>    empty? <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> buffered-chan
 <span id="L456" class="LineNr">456 </span>    assert empty?:bool, <span class="Constant">[ </span>
-<span id="L457" class="LineNr">457 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after buffer-lines bring-up]</span>
+<span id="L457" class="LineNr">457 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after <a href='075channel.mu.html#L388'>buffer-lines</a> bring-up]</span>
 <span id="L458" class="LineNr">458 </span>    <span class="Comment"># write 'a'</span>
-<span id="L459" class="LineNr">459 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">97/a</span>
+<span id="L459" class="LineNr">459 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink, <span class="Constant">97/a</span>
 <span id="L460" class="LineNr">460 </span>    restart buffer-routine
 <span id="L461" class="LineNr">461 </span>    wait-for-routine-to-block buffer-routine
-<span id="L462" class="LineNr">462 </span>    empty? <span class="Special">&lt;-</span> channel-empty? buffered-chan
+<span id="L462" class="LineNr">462 </span>    empty? <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> buffered-chan
 <span id="L463" class="LineNr">463 </span>    assert empty?:bool, <span class="Constant">[ </span>
 <span id="L464" class="LineNr">464 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after writing 'a']</span>
 <span id="L465" class="LineNr">465 </span>    <span class="Comment"># write 'b'</span>
-<span id="L466" class="LineNr">466 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">98/b</span>
+<span id="L466" class="LineNr">466 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink, <span class="Constant">98/b</span>
 <span id="L467" class="LineNr">467 </span>    restart buffer-routine
 <span id="L468" class="LineNr">468 </span>    wait-for-routine-to-block buffer-routine
-<span id="L469" class="LineNr">469 </span>    empty? <span class="Special">&lt;-</span> channel-empty? buffered-chan
+<span id="L469" class="LineNr">469 </span>    empty? <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> buffered-chan
 <span id="L470" class="LineNr">470 </span>    assert empty?:bool, <span class="Constant">[ </span>
 <span id="L471" class="LineNr">471 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should be empty after writing 'b']</span>
 <span id="L472" class="LineNr">472 </span>    <span class="Comment"># write newline</span>
-<span id="L473" class="LineNr">473 </span>    sink <span class="Special">&lt;-</span> write sink, <span class="Constant">10/newline</span>
+<span id="L473" class="LineNr">473 </span>    sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink, <span class="Constant">10/newline</span>
 <span id="L474" class="LineNr">474 </span>    restart buffer-routine
 <span id="L475" class="LineNr">475 </span>    wait-for-routine-to-block buffer-routine
-<span id="L476" class="LineNr">476 </span>    empty? <span class="Special">&lt;-</span> channel-empty? buffered-chan
+<span id="L476" class="LineNr">476 </span>    empty? <span class="Special">&lt;-</span> <a href='075channel.mu.html#L350'>channel-empty?</a> buffered-chan
 <span id="L477" class="LineNr">477 </span>    data-emitted?:bool <span class="Special">&lt;-</span> not empty?
 <span id="L478" class="LineNr">478 </span>    assert data-emitted?, <span class="Constant">[ </span>
 <span id="L479" class="LineNr">479 </span><span class="Constant">F buffer-lines-blocks-until-newline: channel should contain data after writing newline]</span>
@@ -544,17 +544,17 @@ if ('onhashchange' in window) {
 <span id="L484" class="LineNr">484 </span>  ]
 <span id="L485" class="LineNr">485 </span>]
 <span id="L486" class="LineNr">486 </span>
-<span id="L487" class="LineNr">487 </span><span class="muRecipe">def</span> drain source:&amp;:source:char<span class="muRecipe"> -&gt; </span>result:text, source:&amp;:source:char [
+<span id="L487" class="LineNr">487 </span><span class="muRecipe">def</span> <a href='075channel.mu.html#L487'>drain</a> source:&amp;:source:char<span class="muRecipe"> -&gt; </span>result:text, source:&amp;:source:char [
 <span id="L488" class="LineNr">488 </span>  <span class="Constant">local-scope</span>
 <span id="L489" class="LineNr">489 </span>  <span class="Constant">load-ingredients</span>
-<span id="L490" class="LineNr">490 </span>  buf:&amp;:buffer <span class="Special">&lt;-</span> new-buffer<span class="Constant"> 30</span>
+<span id="L490" class="LineNr">490 </span>  buf:&amp;:<a href='061text.mu.html#L127'>buffer</a> <span class="Special">&lt;-</span> <a href='061text.mu.html#L132'>new-buffer</a><span class="Constant"> 30</span>
 <span id="L491" class="LineNr">491 </span>  <span class="Delimiter">{</span>
 <span id="L492" class="LineNr">492 </span>    c:char, done?:bool <span class="Special">&lt;-</span> read source
 <span id="L493" class="LineNr">493 </span>    <span class="muControl">break-if</span> done?
 <span id="L494" class="LineNr">494 </span>    buf <span class="Special">&lt;-</span> append buf, c
 <span id="L495" class="LineNr">495 </span>    <span class="muControl">loop</span>
 <span id="L496" class="LineNr">496 </span>  <span class="Delimiter">}</span>
-<span id="L497" class="LineNr">497 </span>  result <span class="Special">&lt;-</span> buffer-to-array buf
+<span id="L497" class="LineNr">497 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L329'>buffer-to-array</a> buf
 <span id="L498" class="LineNr">498 </span>]
 </pre>
 </body>

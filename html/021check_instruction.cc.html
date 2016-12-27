@@ -68,25 +68,25 @@ if ('onhashchange' in window) {
 <span id="L9" class="LineNr">  9 </span><span class="Comment">//: transform it in a separate layer or set of layers.</span>
 <span id="L10" class="LineNr"> 10 </span>
 <span id="L11" class="LineNr"> 11 </span><span class="Delimiter">:(before &quot;End Checks&quot;)</span>
-<span id="L12" class="LineNr"> 12 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_instruction<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L12" class="LineNr"> 12 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span><a href='021check_instruction.cc.html#L15'>check_instruction</a><span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
 <span id="L13" class="LineNr"> 13 </span>
 <span id="L14" class="LineNr"> 14 </span><span class="Delimiter">:(code)</span>
-<span id="L15" class="LineNr"> 15 </span><span class="Normal">void</span> check_instruction<span class="Delimiter">(</span><span class="Normal">const</span> recipe_ordinal r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L16" class="LineNr"> 16 </span>  trace<span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- perform checks for recipe &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L15" class="LineNr"> 15 </span><span class="Normal">void</span> <a href='021check_instruction.cc.html#L15'>check_instruction</a><span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L16" class="LineNr"> 16 </span>  <a href='003trace.cc.html#L171'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- perform checks for <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L17" class="LineNr"> 17 </span>  map&lt;string<span class="Delimiter">,</span> vector&lt;type_ordinal&gt; &gt; metadata<span class="Delimiter">;</span>
-<span id="L18" class="LineNr"> 18 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L18" class="LineNr"> 18 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L19" class="LineNr"> 19 </span>    instruction&amp; inst = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
 <span id="L20" class="LineNr"> 20 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>is_label<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
 <span id="L21" class="LineNr"> 21 </span>    <span class="Normal">switch</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>operation<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L22" class="LineNr"> 22 </span>      <span class="Comment">// Primitive Recipe Checks</span>
-<span id="L23" class="LineNr"> 23 </span>      <span class="Normal">case</span> COPY: <span class="Delimiter">{</span>
-<span id="L24" class="LineNr"> 24 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span>SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L25" class="LineNr"> 25 </span>          raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredients and products should match in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L23" class="LineNr"> 23 </span>      <span class="Normal">case</span> <a href='010vm.cc.html#L190'>COPY</a>: <span class="Delimiter">{</span>
+<span id="L24" class="LineNr"> 24 </span>        <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">)</span> != <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L25" class="LineNr"> 25 </span>          <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredients and products should match in '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>original_string &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L26" class="LineNr"> 26 </span>          <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L27" class="LineNr"> 27 </span>        <span class="Delimiter">}</span>
-<span id="L28" class="LineNr"> 28 </span>        <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; SIZE<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L28" class="LineNr"> 28 </span>        <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L29" class="LineNr"> 29 </span>          <span class="Normal">if</span> <span class="Delimiter">(</span>!types_coercible<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L30" class="LineNr"> 30 </span>            raise &lt;&lt; maybe<span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't copy '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' to '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'; types don't match</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L30" class="LineNr"> 30 </span>            <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;can't copy '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;' to '&quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>original_string &lt;&lt; <span class="Constant">&quot;'; types don't match</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L31" class="LineNr"> 31 </span>            <span class="Identifier">goto</span> finish_checking_instruction<span class="Delimiter">;</span>
 <span id="L32" class="LineNr"> 32 </span>          <span class="Delimiter">}</span>
 <span id="L33" class="LineNr"> 33 </span>        <span class="Delimiter">}</span>
@@ -104,42 +104,42 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>
 <span id="L46" class="LineNr"> 46 </span><span class="Delimiter">:(scenario copy_checks_reagent_count)</span>
 <span id="L47" class="LineNr"> 47 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L48" class="LineNr"> 48 </span><span class="muRecipe">def</span> main [
+<span id="L48" class="LineNr"> 48 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L49" class="LineNr"> 49 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 <span id="L50" class="LineNr"> 50 </span>]
-<span id="L51" class="LineNr"> 51 </span><span class="traceContains">+error: main: ingredients and products should match in '1:num &lt;- copy 34, 35'</span>
+<span id="L51" class="LineNr"> 51 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: ingredients and products should match in '1:num &lt;- copy 34, 35'</span>
 <span id="L52" class="LineNr"> 52 </span>
 <span id="L53" class="LineNr"> 53 </span><span class="Delimiter">:(scenario write_scalar_to_array_disallowed)</span>
 <span id="L54" class="LineNr"> 54 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L55" class="LineNr"> 55 </span><span class="muRecipe">def</span> main [
+<span id="L55" class="LineNr"> 55 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L56" class="LineNr"> 56 </span>  <span class="Constant">1</span>:array:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 <span id="L57" class="LineNr"> 57 </span>]
-<span id="L58" class="LineNr"> 58 </span><span class="traceContains">+error: main: can't copy '34' to '1:array:num'; types don't match</span>
+<span id="L58" class="LineNr"> 58 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: can't copy '34' to '1:array:num'; types don't match</span>
 <span id="L59" class="LineNr"> 59 </span>
 <span id="L60" class="LineNr"> 60 </span><span class="Delimiter">:(scenario write_scalar_to_array_disallowed_2)</span>
 <span id="L61" class="LineNr"> 61 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L62" class="LineNr"> 62 </span><span class="muRecipe">def</span> main [
+<span id="L62" class="LineNr"> 62 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L63" class="LineNr"> 63 </span>  <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:array:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span><span class="Delimiter">,</span> <span class="Constant">35</span>
 <span id="L64" class="LineNr"> 64 </span>]
-<span id="L65" class="LineNr"> 65 </span><span class="traceContains">+error: main: can't copy '35' to '2:array:num'; types don't match</span>
+<span id="L65" class="LineNr"> 65 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: can't copy '35' to '2:array:num'; types don't match</span>
 <span id="L66" class="LineNr"> 66 </span>
 <span id="L67" class="LineNr"> 67 </span><span class="Delimiter">:(scenario write_scalar_to_address_disallowed)</span>
 <span id="L68" class="LineNr"> 68 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L69" class="LineNr"> 69 </span><span class="muRecipe">def</span> main [
-<span id="L70" class="LineNr"> 70 </span>  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<span id="L69" class="LineNr"> 69 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L70" class="LineNr"> 70 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L76'>address</a>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 <span id="L71" class="LineNr"> 71 </span>]
-<span id="L72" class="LineNr"> 72 </span><span class="traceContains">+error: main: can't copy '34' to '1:address:num'; types don't match</span>
+<span id="L72" class="LineNr"> 72 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: can't copy '34' to '1:<a href='043space.cc.html#L76'>address</a>:num'; types don't match</span>
 <span id="L73" class="LineNr"> 73 </span>
 <span id="L74" class="LineNr"> 74 </span><span class="Delimiter">:(scenario write_address_to_number_allowed)</span>
-<span id="L75" class="LineNr"> 75 </span><span class="muRecipe">def</span> main [
-<span id="L76" class="LineNr"> 76 </span>  <span class="Constant">1</span>:address:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>/unsafe
-<span id="L77" class="LineNr"> 77 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:address:num
+<span id="L75" class="LineNr"> 75 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L76" class="LineNr"> 76 </span>  <span class="Constant">1</span>:<a href='043space.cc.html#L76'>address</a>:num<span class="Special"> &lt;- </span>copy <span class="Constant">12</span>/unsafe
+<span id="L77" class="LineNr"> 77 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:<a href='043space.cc.html#L76'>address</a>:num
 <span id="L78" class="LineNr"> 78 </span>]
 <span id="L79" class="LineNr"> 79 </span><span class="traceContains">+mem: storing 12 in location 2</span>
 <span id="L80" class="LineNr"> 80 </span>$error: <span class="Constant">0</span>
 <span id="L81" class="LineNr"> 81 </span>
 <span id="L82" class="LineNr"> 82 </span><span class="Delimiter">:(scenario write_boolean_to_number_allowed)</span>
-<span id="L83" class="LineNr"> 83 </span><span class="muRecipe">def</span> main [
+<span id="L83" class="LineNr"> 83 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L84" class="LineNr"> 84 </span>  <span class="Constant">1</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">1</span>/<span class="Constant">true</span>
 <span id="L85" class="LineNr"> 85 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:<span class="Normal">bool</span>
 <span id="L86" class="LineNr"> 86 </span>]
@@ -147,7 +147,7 @@ if ('onhashchange' in window) {
 <span id="L88" class="LineNr"> 88 </span>$error: <span class="Constant">0</span>
 <span id="L89" class="LineNr"> 89 </span>
 <span id="L90" class="LineNr"> 90 </span><span class="Delimiter">:(scenario write_number_to_boolean_allowed)</span>
-<span id="L91" class="LineNr"> 91 </span><span class="muRecipe">def</span> main [
+<span id="L91" class="LineNr"> 91 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
 <span id="L92" class="LineNr"> 92 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
 <span id="L93" class="LineNr"> 93 </span>  <span class="Constant">2</span>:<span class="Normal">bool</span><span class="Special"> &lt;- </span>copy <span class="Constant">1</span>:num
 <span id="L94" class="LineNr"> 94 </span>]
@@ -156,19 +156,19 @@ if ('onhashchange' in window) {
 <span id="L97" class="LineNr"> 97 </span>
 <span id="L98" class="LineNr"> 98 </span><span class="Delimiter">:(code)</span>
 <span id="L99" class="LineNr"> 99 </span><span class="Comment">// types_match with some leniency</span>
-<span id="L100" class="LineNr">100 </span><span class="Normal">bool</span> types_coercible<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L101" class="LineNr">101 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>types_match<span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-<span id="L102" class="LineNr">102 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; is_mu_number<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-<span id="L103" class="LineNr">103 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_boolean<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; is_mu_number<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
-<span id="L104" class="LineNr">104 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_number<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; is_mu_boolean<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L100" class="LineNr">100 </span><span class="Normal">bool</span> <a href='021check_instruction.cc.html#L100'>types_coercible</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L101" class="LineNr">101 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='021check_instruction.cc.html#L109'>types_match</a><span class="Delimiter">(</span>to<span class="Delimiter">,</span> from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L102" class="LineNr">102 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; <a href='021check_instruction.cc.html#L207'>is_mu_number</a><span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L103" class="LineNr">103 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='021check_instruction.cc.html#L199'>is_mu_boolean</a><span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; <a href='021check_instruction.cc.html#L207'>is_mu_number</a><span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L104" class="LineNr">104 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='021check_instruction.cc.html#L207'>is_mu_number</a><span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; <a href='021check_instruction.cc.html#L199'>is_mu_boolean</a><span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L105" class="LineNr">105 </span>  <span class="Comment">// End types_coercible Special-cases</span>
 <span id="L106" class="LineNr">106 </span>  <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L107" class="LineNr">107 </span><span class="Delimiter">}</span>
 <span id="L108" class="LineNr">108 </span>
-<span id="L109" class="LineNr">109 </span><span class="Normal">bool</span> types_match<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L109" class="LineNr">109 </span><span class="Normal">bool</span> <a href='021check_instruction.cc.html#L109'>types_match</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; to<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; from<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L110" class="LineNr">110 </span>  <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
 <span id="L111" class="LineNr">111 </span>  <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
-<span id="L112" class="LineNr">112 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_unsafe<span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L112" class="LineNr">112 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='021check_instruction.cc.html#L165'>is_unsafe</a><span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L113" class="LineNr">113 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L114" class="LineNr">114 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>is_mu_array<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L115" class="LineNr">115 </span>    <span class="Comment">// End Matching Types For Literal(to)</span>
@@ -188,7 +188,7 @@ if ('onhashchange' in window) {
 <span id="L129" class="LineNr">129 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>from<span class="Delimiter">)</span> &amp;&amp; to<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;number&quot;</span><span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L130" class="LineNr">130 </span>  <span class="Comment">// to sidestep type-checking, use /unsafe in the source.</span>
 <span id="L131" class="LineNr">131 </span>  <span class="Comment">// this will be highlighted in red inside vim. just for setting up some tests.</span>
-<span id="L132" class="LineNr">132 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_unsafe<span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
+<span id="L132" class="LineNr">132 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='021check_instruction.cc.html#L165'>is_unsafe</a><span class="Delimiter">(</span>from<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L133" class="LineNr">133 </span>  <span class="Comment">// '_' never raises type error</span>
 <span id="L134" class="LineNr">134 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_dummy<span class="Delimiter">(</span>to<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">true</span><span class="Delimiter">;</span>
 <span id="L135" class="LineNr">135 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!to<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> !from<span class="Delimiter">.</span>type<span class="Delimiter">;</span>
@@ -207,21 +207,21 @@ if ('onhashchange' in window) {
 <span id="L148" class="LineNr">148 </span>  <span class="Identifier">return</span> types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>left<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>left<span class="Delimiter">)</span> &amp;&amp; types_strictly_match<span class="Delimiter">(</span>to<span class="Delimiter">-&gt;</span>right<span class="Delimiter">,</span> from<span class="Delimiter">-&gt;</span>right<span class="Delimiter">);</span>
 <span id="L149" class="LineNr">149 </span><span class="Delimiter">}</span>
 <span id="L150" class="LineNr">150 </span>
-<span id="L151" class="LineNr">151 </span><span class="Normal">void</span> test_unknown_type_does_not_match_unknown_type<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L151" class="LineNr">151 </span><span class="Normal">void</span> <a href='021check_instruction.cc.html#L151'>test_unknown_type_does_not_match_unknown_type</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
 <span id="L152" class="LineNr">152 </span>  reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:foo&quot;</span><span class="Delimiter">);</span>
 <span id="L153" class="LineNr">153 </span>  reagent b<span class="Delimiter">(</span><span class="Constant">&quot;b:bar&quot;</span><span class="Delimiter">);</span>
-<span id="L154" class="LineNr">154 </span>  CHECK<span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
+<span id="L154" class="LineNr">154 </span>  <a href='002test.cc.html#L25'>CHECK</a><span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
 <span id="L155" class="LineNr">155 </span><span class="Delimiter">}</span>
 <span id="L156" class="LineNr">156 </span>
-<span id="L157" class="LineNr">157 </span><span class="Normal">void</span> test_unknown_type_matches_itself<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L157" class="LineNr">157 </span><span class="Normal">void</span> <a href='021check_instruction.cc.html#L157'>test_unknown_type_matches_itself</a><span class="Delimiter">()</span> <span class="Delimiter">{</span>
 <span id="L158" class="LineNr">158 </span>  reagent a<span class="Delimiter">(</span><span class="Constant">&quot;a:foo&quot;</span><span class="Delimiter">);</span>
 <span id="L159" class="LineNr">159 </span>  reagent b<span class="Delimiter">(</span><span class="Constant">&quot;b:foo&quot;</span><span class="Delimiter">);</span>
-<span id="L160" class="LineNr">160 </span>  CHECK<span class="Delimiter">(</span>types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
+<span id="L160" class="LineNr">160 </span>  <a href='002test.cc.html#L25'>CHECK</a><span class="Delimiter">(</span>types_strictly_match<span class="Delimiter">(</span>a<span class="Delimiter">,</span> b<span class="Delimiter">));</span>
 <span id="L161" class="LineNr">161 </span><span class="Delimiter">}</span>
 <span id="L162" class="LineNr">162 </span>
 <span id="L163" class="LineNr">163 </span><span class="Comment">//: helpers</span>
 <span id="L164" class="LineNr">164 </span>
-<span id="L165" class="LineNr">165 </span><span class="Normal">bool</span> is_unsafe<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L165" class="LineNr">165 </span><span class="Normal">bool</span> <a href='021check_instruction.cc.html#L165'>is_unsafe</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L166" class="LineNr">166 </span>  <span class="Identifier">return</span> has_property<span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">&quot;unsafe&quot;</span><span class="Delimiter">);</span>
 <span id="L167" class="LineNr">167 </span><span class="Delimiter">}</span>
 <span id="L168" class="LineNr">168 </span>
@@ -234,7 +234,7 @@ if ('onhashchange' in window) {
 <span id="L175" class="LineNr">175 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L176" class="LineNr">176 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L177" class="LineNr">177 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L178" class="LineNr">178 </span>    raise &lt;&lt; <span class="Constant">&quot;invalid type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L178" class="LineNr">178 </span>    <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <span class="Constant">&quot;invalid type &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L179" class="LineNr">179 </span>    <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L180" class="LineNr">180 </span>  <span class="Delimiter">}</span>
 <span id="L181" class="LineNr">181 </span>  <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;array&quot;</span><span class="Delimiter">);</span>
@@ -249,13 +249,13 @@ if ('onhashchange' in window) {
 <span id="L190" class="LineNr">190 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>type<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L191" class="LineNr">191 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L192" class="LineNr">192 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L193" class="LineNr">193 </span>    raise &lt;&lt; <span class="Constant">&quot;invalid type &quot;</span> &lt;&lt; to_string<span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L193" class="LineNr">193 </span>    <a href='003trace.cc.html#L178'>raise</a> &lt;&lt; <span class="Constant">&quot;invalid type &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>type<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span> &lt;&lt; <a href='003trace.cc.html#L195'>end</a><span class="Delimiter">();</span>
 <span id="L194" class="LineNr">194 </span>    <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L195" class="LineNr">195 </span>  <span class="Delimiter">}</span>
 <span id="L196" class="LineNr">196 </span>  <span class="Identifier">return</span> type<span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;address&quot;</span><span class="Delimiter">);</span>
 <span id="L197" class="LineNr">197 </span><span class="Delimiter">}</span>
 <span id="L198" class="LineNr">198 </span>
-<span id="L199" class="LineNr">199 </span><span class="Normal">bool</span> is_mu_boolean<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L199" class="LineNr">199 </span><span class="Normal">bool</span> <a href='021check_instruction.cc.html#L199'>is_mu_boolean</a><span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L200" class="LineNr">200 </span>  <span class="Comment">// End Preprocess is_mu_boolean(reagent r)</span>
 <span id="L201" class="LineNr">201 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L202" class="LineNr">202 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_literal<span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
@@ -263,7 +263,7 @@ if ('onhashchange' in window) {
 <span id="L204" class="LineNr">204 </span>  <span class="Identifier">return</span> r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>value == get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;boolean&quot;</span><span class="Delimiter">);</span>
 <span id="L205" class="LineNr">205 </span><span class="Delimiter">}</span>
 <span id="L206" class="LineNr">206 </span>
-<span id="L207" class="LineNr">207 </span><span class="Normal">bool</span> is_mu_number<span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L207" class="LineNr">207 </span><span class="Normal">bool</span> <a href='021check_instruction.cc.html#L207'>is_mu_number</a><span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L208" class="LineNr">208 </span>  <span class="Comment">// End Preprocess is_mu_number(reagent r)</span>
 <span id="L209" class="LineNr">209 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L210" class="LineNr">210 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!r<span class="Delimiter">.</span>type<span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
