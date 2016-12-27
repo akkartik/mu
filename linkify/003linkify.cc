@@ -56,12 +56,12 @@ void encode_some_html_entities(string& s) {
 
 void read_tags(const string& filename, map<string, syminfo>& info) {
   ifstream in(filename);
-//&   cerr << "reading " << filename << '\n';
+//?   cerr << "reading " << filename << '\n';
   string dummy;
   while (has_data(in)) {
     string symbol;  in >> symbol;
     encode_some_html_entities(symbol);
-//&     cerr << symbol << '\n';
+//?     cerr << symbol << '\n';
     if (info.find(symbol) != info.end()) {
       info[symbol].line_num = -1;
       info[symbol].filename.clear();
@@ -72,13 +72,13 @@ void read_tags(const string& filename, map<string, syminfo>& info) {
       in >> info[symbol].filename;
     }
     getline(in, dummy);  // skip rest of line
-//&     cerr << symbol << ": " << info[symbol].filename << ':' << info[symbol].line_num << '\n';
+//?     cerr << symbol << ": " << info[symbol].filename << ':' << info[symbol].line_num << '\n';
   }
   in.close();
 }
 
 void replace_tags_in_file(const string& filename, const map<string, syminfo>& info) {
-//&   cerr << info.size() << " symbols\n";
+//?   cerr << info.size() << " symbols\n";
   ifstream in(filename);
   ofstream out(filename+".out");
   while (has_data(in)) {
@@ -96,26 +96,26 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
       in2 >> std::noskipws;
       while (has_data(in2)) {
         if (isspace(in2.peek())) {
-//&           cerr << "space\n";
+//?           cerr << "space\n";
           char c;  in2 >> c;
           out << c;
         }
         // within a line, send straight through all characters inside '<..>'
         else if (in2.peek() == '<') {
-//&           cerr << "tag\n";
+//?           cerr << "tag\n";
           char c = '\0';
           while (in2 >> c) {
-//&             cerr << "span: " << c << '\n';
+//?             cerr << "span: " << c << '\n';
             out << c;
             if (c == '>') break;
           }
-//&           cerr << "end tag\n";
+//?           cerr << "end tag\n";
         }
         else {
           // send straight through all characters inside strings (handling escapes)
           char c = in2.get();
           if (c == '"') {
-//&             cerr << "string\n";
+//?             cerr << "string\n";
             out << c;
             while (in2 >> c) {
               out << c;
@@ -128,7 +128,7 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
             }
           }
           else if (c == '\'') {
-//&             cerr << "character\n";
+//?             cerr << "character\n";
             out << c;
             while (in2 >> c) {
               out << c;
@@ -142,18 +142,18 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
           }
           // send straight through any characters after '//' (comments)
           else if (c == '#') {
-//&             cerr << "comment\n";
+//?             cerr << "comment\n";
             out << c;
             while (in2 >> c) out << c;
           }
           // send straight through any characters after '//' (comments)
           else if (c == '/' && in2.peek() == '/') {
-//&             cerr << "comment\n";
+//?             cerr << "comment\n";
             out << c;
             while (in2 >> c) out << c;
           }
           else {
-//&             cerr << "rest\n";
+//?             cerr << "rest\n";
             if (c == ',' || c == ':') {
               out << c;
               continue;
@@ -169,21 +169,21 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
             }
             string symbol = out2.str();
             if (symbol == "equal" || symbol == "index" || symbol == "put-index" || symbol == "length") {
-//&               cerr << "  blacklisted\n";
+//?               cerr << "  blacklisted\n";
               out << symbol;
             }
             else if (info.find(symbol) == info.end()) {
-//&               cerr << "  no info\n";
+//?               cerr << "  no info\n";
               out << symbol;
             }
             else {
               const syminfo& s = info.find(symbol)->second;
               if (s.filename.empty()) {
-//&                 cerr << "  empty info\n";
+//?                 cerr << "  empty info\n";
                 out << symbol;
               }
               else {
-//&                 cerr << "  link\n";
+//?                 cerr << "  link\n";
                 out << "<a href='" << s.filename << ".html#L" << s.line_num << "'>" << symbol << "</a>";
               }
             }
