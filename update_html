@@ -3,13 +3,15 @@
 
 process() {
   vim -c "set number" -c TOhtml -c write -c qall $1
-  # per-line anchors
-  sed -i 's/^\.LineNr .*/.LineNr { color: #444444; }/' $1.html
 
   sed -i 's,<title>\~/mu/,<title>Mu - ,' $1.html
   sed -i 's,\.html</title>,</title>,' $1.html
   sed -i 's/^\* { \(.*\) }/* { font-size: 12pt; \1 }/g' $1.html
   sed -i 's/^body { \(.*\) }/body { font-size: 12pt; \1 }/g' $1.html
+  sed -i 's/^\.LineNr .*/.LineNr { color: #444444; }/' $1.html  # line numbers
+  # make links less salient since we may have a lot of cross-links
+  sed -i '/^body {/ a  a:hover { text-decoration: underline; }' $1.html
+  sed -i '/^body {/ a  a { text-decoration: none; }' $1.html
   # tweak contrast
   sed -i 's/^\.Constant .*/.Constant { color: #00a0a0; }/' $1.html
   sed -i 's/^\.muControl .*/.muControl { color: #c0a020; }/' $1.html
