@@ -17,6 +17,8 @@
 //   - but even that's not perfect, because sometimes the tags file has a
 //     single definition but there's still multiple overloads (say I defined
 //     'clear()' on some type, and it's already defined on STL classes)
+// - ctags misses some symbols in layered code
+// - Mu's before/after blocks should point to the location of their labels
 
 struct syminfo {
   string filename;
