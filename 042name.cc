@@ -251,14 +251,19 @@ if (inst.name == "get" || inst.name == "get-location" || inst.name == "put") {
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be a container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
-    if (base_type == -1)
-      break;  // error raised elsewhere
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "element " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " is at offset " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }
 }
+
+:(scenario missing_type_in_get)
+% Hide_errors = true;
+def main [
+  get a, x:offset
+]
++error: main: missing type for 'a' in 'get a, x:offset'
 
 //: this test is actually illegal so can't call run
 :(scenarios transform)
@@ -296,11 +301,16 @@ if (inst.name == "maybe-convert") {
   if (inst.ingredients.at(1).name.find_first_not_of("0123456789") != string::npos) {
     // since first non-address in base type must be an exclusive container, we don't have to canonize
     type_ordinal base_type = skip_addresses(inst.ingredients.at(0).type);
-    if (base_type == -1)
-      raise << maybe(get(Recipe, r).name) << "expected an exclusive-container in '" << inst.original_string << "'\n" << end();
     if (contains_key(Type, base_type)) {  // otherwise we'll raise an error elsewhere
       inst.ingredients.at(1).set_value(find_element_name(base_type, inst.ingredients.at(1).name, get(Recipe, r).name));
       trace(9993, "name") << "variant " << inst.ingredients.at(1).name << " of type " << get(Type, base_type).name << " has tag " << no_scientific(inst.ingredients.at(1).value) << end();
     }
   }
 }
+
+:(scenario missing_type_in_maybe_convert)
+% Hide_errors = true;
+def main [
+  maybe-convert a, x:variant
+]
++error: main: missing type for 'a' in 'maybe-convert a, x:variant'
