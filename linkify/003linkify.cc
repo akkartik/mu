@@ -18,7 +18,6 @@
 //     single definition but there's still multiple overloads (say I defined
 //     'clear()' on some type, and it's already defined on STL classes)
 // - ctags misses some symbols in layered code
-// - Mu's before/after blocks should point to the location of their labels
 
 struct syminfo {
   string filename;
@@ -40,12 +39,28 @@ bool starts_with(const string& s, const string& pat) {
   return b == pat.end();
 }
 
+void encode_some_html_entities(string& s) {
+  std::string::size_type pos = 0;
+  while (true) {
+    pos = s.find_first_of("<>", pos);
+    if (pos == std::string::npos) break;
+    std::string replacement;
+    switch (s.at(pos)) {
+      case '<': replacement = "&lt;"; break;
+      case '>': replacement = "&gt;"; break;
+    }
+    s.replace(pos, 1, replacement);
+    pos += replacement.size();
+  };
+}
+
 void read_tags(const string& filename, map<string, syminfo>& info) {
   ifstream in(filename);
 //&   cerr << "reading " << filename << '\n';
   string dummy;
   while (has_data(in)) {
     string symbol;  in >> symbol;
+    encode_some_html_entities(symbol);
 //&     cerr << symbol << '\n';
     if (info.find(symbol) != info.end()) {
       info[symbol].line_num = -1;
