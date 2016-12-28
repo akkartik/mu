@@ -53,11 +53,17 @@ then
   ( cd linkify; build; )
   ctags -x *.cc  |grep -v "^operator \| member \| variable "  > cpp.tags
   linkify/linkify cpp.tags html/*.cc.html
-  ctags -x 0*.mu  > mu.tags
-  linkify/linkify mu.tags html/*.mu.html
-  rm *.tags
+  rm cpp.tags
+  ctags -x [0-9]*.mu  > mu.tags
+  linkify/linkify mu.tags html/[0-9]*.mu.html
+  for f in [a-zA-Z]*.mu
+  do
+    ctags -x [0-9]*.mu $f  > mu.tags
+    linkify/linkify mu.tags html/$f.html
+  done
+  rm mu.tags
   ( cd edit
-    ctags -x *.mu ../0*.mu > mu.tags
+    ctags -x ../[0-9]*.mu *.mu  > mu.tags
     ../linkify/linkify mu.tags ../html/edit/*.mu.html
     rm mu.tags
   )

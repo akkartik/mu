@@ -57,28 +57,28 @@ if ('onhashchange' in window) {
 <span id="L1" class="LineNr"> 1 </span><span class="Comment"># example program: maintain multiple counters with isolated lexical scopes</span>
 <span id="L2" class="LineNr"> 2 </span><span class="Comment"># (spaces)</span>
 <span id="L3" class="LineNr"> 3 </span>
-<span id="L4" class="LineNr"> 4 </span><span class="muRecipe">def</span> new-counter n:num<span class="muRecipe"> -&gt; </span><span class="Constant">default-space</span>:space [
+<span id="L4" class="LineNr"> 4 </span><span class="muRecipe">def</span> <a href='counters.mu.html#L4'>new-counter</a> n:num<span class="muRecipe"> -&gt; </span><span class="Constant">default-space</span>:space [
 <span id="L5" class="LineNr"> 5 </span>  <span class="Constant">default-space</span> <span class="Special">&lt;-</span> new <span class="Constant">location:type</span>,<span class="Constant"> 30</span>
 <span id="L6" class="LineNr"> 6 </span>  <span class="Constant">load-ingredients</span>
 <span id="L7" class="LineNr"> 7 </span>]
 <span id="L8" class="LineNr"> 8 </span>
-<span id="L9" class="LineNr"> 9 </span><span class="muRecipe">def</span> increment-counter outer:space/names:new-counter, x:num<span class="muRecipe"> -&gt; </span>n:num/space:1 [
+<span id="L9" class="LineNr"> 9 </span><span class="muRecipe">def</span> <a href='counters.mu.html#L9'>increment-counter</a> outer:space/names:<a href='counters.mu.html#L4'>new-counter</a>, x:num<span class="muRecipe"> -&gt; </span>n:num/space:1 [
 <span id="L10" class="LineNr">10 </span>  <span class="Constant">local-scope</span>
 <span id="L11" class="LineNr">11 </span>  <span class="Constant">load-ingredients</span>
-<span id="L12" class="LineNr">12 </span>  0:space/names:new-counter <span class="Special">&lt;-</span> copy outer  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
+<span id="L12" class="LineNr">12 </span>  0:space/names:<a href='counters.mu.html#L4'>new-counter</a> <span class="Special">&lt;-</span> copy outer  <span class="Comment"># setup outer space; it *must* come from 'new-counter'</span>
 <span id="L13" class="LineNr">13 </span>  n/space:1 <span class="Special">&lt;-</span> add n/space:1, x
 <span id="L14" class="LineNr">14 </span>]
 <span id="L15" class="LineNr">15 </span>
-<span id="L16" class="LineNr">16 </span><span class="muRecipe">def</span> main [
+<span id="L16" class="LineNr">16 </span><span class="muRecipe">def</span> <a href='counters.mu.html#L16'>main</a> [
 <span id="L17" class="LineNr">17 </span>  <span class="Constant">local-scope</span>
 <span id="L18" class="LineNr">18 </span>  <span class="Comment"># counter A</span>
-<span id="L19" class="LineNr">19 </span>  a:space <span class="Special">&lt;-</span> new-counter<span class="Constant"> 34</span>
+<span id="L19" class="LineNr">19 </span>  a:space <span class="Special">&lt;-</span> <a href='counters.mu.html#L4'>new-counter</a><span class="Constant"> 34</span>
 <span id="L20" class="LineNr">20 </span>  <span class="Comment"># counter B</span>
-<span id="L21" class="LineNr">21 </span>  b:space <span class="Special">&lt;-</span> new-counter<span class="Constant"> 23</span>
+<span id="L21" class="LineNr">21 </span>  b:space <span class="Special">&lt;-</span> <a href='counters.mu.html#L4'>new-counter</a><span class="Constant"> 23</span>
 <span id="L22" class="LineNr">22 </span>  <span class="Comment"># increment both by 2 but in different ways</span>
-<span id="L23" class="LineNr">23 </span>  increment-counter a,<span class="Constant"> 1</span>
-<span id="L24" class="LineNr">24 </span>  b-value:num <span class="Special">&lt;-</span> increment-counter b,<span class="Constant"> 2</span>
-<span id="L25" class="LineNr">25 </span>  a-value:num <span class="Special">&lt;-</span> increment-counter a,<span class="Constant"> 1</span>
+<span id="L23" class="LineNr">23 </span>  <a href='counters.mu.html#L9'>increment-counter</a> a,<span class="Constant"> 1</span>
+<span id="L24" class="LineNr">24 </span>  b-value:num <span class="Special">&lt;-</span> <a href='counters.mu.html#L9'>increment-counter</a> b,<span class="Constant"> 2</span>
+<span id="L25" class="LineNr">25 </span>  a-value:num <span class="Special">&lt;-</span> <a href='counters.mu.html#L9'>increment-counter</a> a,<span class="Constant"> 1</span>
 <span id="L26" class="LineNr">26 </span>  <span class="Comment"># check results</span>
 <span id="L27" class="LineNr">27 </span>  $print <span class="Constant">[Contents of counters]</span>, <span class="Constant">10/newline</span>
 <span id="L28" class="LineNr">28 </span>  $print <span class="Constant">[a: ]</span>, a-value, <span class="Constant">[ b: ]</span>, b-value,  <span class="Constant">10/newline</span>
