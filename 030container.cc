@@ -382,11 +382,10 @@ case GET: {
     break;
   }
   int offset_value = 0;
-  //: later layers will permit non-integer offsets
-  if (is_integer(offset.name))
+  if (is_integer(offset.name)) {
     offset_value = to_integer(offset.name);
-  else
-    offset_value = offset.value;
+  }
+  // End update GET offset_value in Check
   if (offset_value < 0 || offset_value >= SIZE(get(Type, base_type->value).elements)) {
     raise << maybe(get(Recipe, r).name) << "invalid offset '" << offset_value << "' for '" << get(Type, base_type->value).name << "'\n" << end();
     break;

@@ -229,6 +229,15 @@ $error: 0
 //:: Support element names for containers in 'get' and 'get-location' and 'put'.
 //: (get-location is implemented later)
 
+:(before "End update GET offset_value in Check")
+else {
+  if (!offset.initialized) {
+    raise << maybe(get(Recipe, r).name) << "uninitialized offset '" << offset.name << "' in '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  offset_value = offset.value;
+}
+
 :(scenario transform_names_transforms_container_elements)
 def main [
   p:&:point <- copy 0
