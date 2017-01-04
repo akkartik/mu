@@ -19,6 +19,30 @@
 //     'clear()' on some type, and it's already defined on STL classes)
 // - ctags misses some symbols in layered code
 
+#include<assert.h>
+
+#include<map>
+using std::map;
+
+#include<string>
+using std::string;
+
+#include<iostream>
+using std::istream;
+using std::cout;
+using std::cerr;
+
+#include<sstream>
+using std::istringstream;
+using std::ostringstream;
+
+#include<fstream>
+using std::ifstream;
+using std::ofstream;
+
+#include <locale>
+using std::isspace;  // unicode-aware
+
 struct syminfo {
   string filename;
   int line_num;
@@ -196,7 +220,7 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
   in.close();  out.close();
 }
 
-int linkify(int argc, const char* argv[]) {
+int main(int argc, const char* argv[]) {
   map<string, syminfo> info;
   read_tags(argv[1], info);
   for (int i = 2;  i < argc;  ++i) {

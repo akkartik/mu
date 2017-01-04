@@ -1,9 +1,3 @@
 #!/bin/sh
 
-grep -h "^struct .* {" [0-9]*.cc  |sed 's/\(struct *[^ ]*\).*/\1;/'  > type_list
-grep -h "^typedef " [0-9]*.cc  >> type_list
-grep -h "^[^ #].*) {" [0-9]*.cc  |sed 's/ {.*/;/'  > function_list
-ls [0-9]*.cc  |grep -v "\.test\.cc$"  |sed 's/.*/#include "&"/'  > file_list
-ls [0-9]*.test.cc  |sed 's/.*/#include "&"/'  > test_file_list
-grep -h "^[[:space:]]*void test_" [0-9]*.cc  |sed 's/^\s*void \(.*\)() {$/\1,/'  > test_list
-c++ -g -O3 boot.cc -o linkify
+c++ -g linkify.cc -o linkify
