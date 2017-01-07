@@ -135,6 +135,8 @@ map<type_ordinal, type_info> Type_snapshot_stash;
 map<recipe_ordinal, map<string, int> > Name_snapshot_stash;
 map<string, vector<recipe_ordinal> > Recipe_variants_snapshot_stash;
 map<string, type_tree*> Type_abbreviations_snapshot_stash;
+vector<scenario> Scenarios_snapshot_stash;
+set<string> Scenario_names_snapshot_stash;
 
 :(code)
 void run_code_begin(bool should_stash_snapshots) {
@@ -179,6 +181,10 @@ void stash_snapshots() {
   Recipe_variants_snapshot_stash = Recipe_variants_snapshot;
   assert(Type_abbreviations_snapshot_stash.empty());
   Type_abbreviations_snapshot_stash = Type_abbreviations_snapshot;
+  assert(Scenarios_snapshot_stash.empty());
+  Scenarios_snapshot_stash = Scenarios_snapshot;
+  assert(Scenario_names_snapshot_stash.empty());
+  Scenario_names_snapshot_stash = Scenario_names_snapshot;
   save_snapshots();
 }
 void unstash_snapshots() {
@@ -190,6 +196,8 @@ void unstash_snapshots() {
   Name_snapshot = Name_snapshot_stash;  Name_snapshot_stash.clear();
   Recipe_variants_snapshot = Recipe_variants_snapshot_stash;  Recipe_variants_snapshot_stash.clear();
   Type_abbreviations_snapshot = Type_abbreviations_snapshot_stash;  Type_abbreviations_snapshot_stash.clear();
+  Scenarios_snapshot = Scenarios_snapshot_stash;  Scenarios_snapshot_stash.clear();
+  Scenario_names_snapshot = Scenario_names_snapshot_stash;  Scenario_names_snapshot_stash.clear();
 }
 
 :(before "End Load Recipes")
