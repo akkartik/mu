@@ -7,7 +7,8 @@ def! main text:text [
   load-ingredients
   open-console
   hide-screen 0/screen
-  new-editor text, 0/left, 5/right
+  e:&:editor <- new-editor text, 0/left, 5/right
+  render 0/screen, e
   show-screen 0/screen
   wait-for-event 0/console
   close-console
