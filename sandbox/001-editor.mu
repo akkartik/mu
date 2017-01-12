@@ -2,7 +2,7 @@
 
 # temporary main for this layer: just render the given text at the given
 # screen dimensions, then stop
-def! main text:text [
+def main text:text [
   local-scope
   load-ingredients
   open-console
