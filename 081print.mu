@@ -684,7 +684,7 @@ scenario print-text-stops-at-right-margin [
   ]
 ]
 
-def print-integer screen:&:screen, n:num -> screen:&:screen [
+def print screen:&:screen, n:num -> screen:&:screen [
   local-scope
   load-ingredients
   color:num, color-found?:bool <- next-ingredient
@@ -704,25 +704,6 @@ def print-integer screen:&:screen, n:num -> screen:&:screen [
   screen <- print screen, s, color, bg-color
 ]
 
-# for now, we can only print integers
-def print screen:&:screen, n:num -> screen:&:screen [
-  local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
-  {
-    # default color to white
-    break-if color-found?
-    color <- copy 7/white
-  }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
-  {
-    # default bg-color to black
-    break-if bg-color-found?
-    bg-color <- copy 0/black
-  }
-  screen <- print-integer screen, n, color, bg-color
-]
-
 # addresses
 def print screen:&:screen, n:&:_elem -> screen:&:screen [
   local-scope
@@ -740,5 +721,5 @@ def print screen:&:screen, n:&:_elem -> screen:&:screen [
     bg-color <- copy 0/black
   }
   n2:num <- copy n
-  screen <- print-integer screen, n2, color, bg-color
+  screen <- print screen, n2, color, bg-color
 ]

@@ -151,7 +151,7 @@ def print-board screen:&:screen, board:board -> screen:&:screen [
     break-if done?
     # print rank number as a legend
     rank:num <- add row, 1
-    print-integer screen, rank
+    print screen, rank
     print screen, [ | ]
     # print each square in the row
     col:num <- copy 0
