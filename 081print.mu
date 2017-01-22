@@ -704,7 +704,25 @@ def print screen:&:screen, n:num -> screen:&:screen [
   screen <- print screen, s, color, bg-color
 ]
 
-# addresses
+def print screen:&:screen, n:bool -> screen:&:screen [
+  local-scope
+  load-ingredients
+  color:num, color-found?:bool <- next-ingredient
+  {
+    # default color to white
+    break-if color-found?
+    color <- copy 7/white
+  }
+  bg-color:num, bg-color-found?:bool <- next-ingredient
+  {
+    # default bg-color to black
+    break-if bg-color-found?
+    bg-color <- copy 0/black
+  }
+  n2:num <- copy n
+  screen <- print screen, n2, color, bg-color
+]
+
 def print screen:&:screen, n:&:_elem -> screen:&:screen [
   local-scope
   load-ingredients
