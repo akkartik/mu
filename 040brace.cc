@@ -67,28 +67,29 @@ void transform_braces(const recipe_ordinal r) {
       continue;
     }
     if (inst.is_label) continue;
-    if (inst.old_name != "loop"
-         && inst.old_name != "loop-if"
-         && inst.old_name != "loop-unless"
-         && inst.old_name != "break"
-         && inst.old_name != "break-if"
-         && inst.old_name != "break-unless") {
-      trace(9992, "transform") << inst.old_name << " ..." << end();
+    if (inst.name != "loop"
+         && inst.name != "loop-if"
+         && inst.name != "loop-unless"
+         && inst.name != "break"
+         && inst.name != "break-if"
+         && inst.name != "break-unless") {
+      trace(9992, "transform") << inst.name << " ..." << end();
       continue;
     }
     // check for errors
-    if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
+    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       if (inst.ingredients.empty()) {
-        raise << "'" << inst.old_name << "' expects 1 or 2 ingredients, but got none\n" << end();
+        raise << "'" << inst.name << "' expects 1 or 2 ingredients, but got none\n" << end();
         continue;
       }
     }
     // update instruction operation
-    if (inst.old_name.find("-if") != string::npos) {
+    string old_name = inst.name;  // save a copy
+    if (inst.name.find("-if") != string::npos) {
       inst.name = "jump-if";
       inst.operation = JUMP_IF;
     }
-    else if (inst.old_name.find("-unless") != string::npos) {
+    else if (inst.name.find("-unless") != string::npos) {
       inst.name = "jump-unless";
       inst.operation = JUMP_UNLESS;
     }
@@ -97,7 +98,7 @@ void transform_braces(const recipe_ordinal r) {
       inst.operation = JUMP;
     }
     // check for explicitly provided targets
-    if (inst.old_name.find("-if") != string::npos || inst.old_name.find("-unless") != string::npos) {
+    if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       // conditional branches check arg 1
       if (SIZE(inst.ingredients) > 1 && is_literal(inst.ingredients.at(1))) {
         trace(9992, "transform") << inst.name << ' ' << inst.ingredients.at(1).name << ":offset" << end();
@@ -116,8 +117,8 @@ void transform_braces(const recipe_ordinal r) {
     target.type = new type_tree("offset");
     target.set_value(0);
     if (open_braces.empty())
-      raise << "'" << inst.old_name << "' needs a '{' before\n" << end();
-    else if (inst.old_name.find("loop") != string::npos)
+      raise << "'" << old_name << "' needs a '{' before\n" << end();
+    else if (old_name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
       target.set_value(matching_brace(open_braces.top(), braces, r) - index - 1);
@@ -430,7 +431,7 @@ void emit_return_block(recipe& out, const string& break_command, const instructi
   // <break command> <condition>
   instruction break_inst;
   break_inst.operation = get(Recipe_ordinal, break_command);
-  break_inst.name = break_inst.old_name = break_command;
+  break_inst.name = break_command;
   break_inst.ingredients.push_back(condition);
   out.steps.push_back(break_inst);
 

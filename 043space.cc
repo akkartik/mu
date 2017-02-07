@@ -258,6 +258,15 @@ void try_reclaim_locals() {
           /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
+//: Reclaiming local variables above requires remembering what name an
+//: instruction had before any rewrites or transforms.
+:(before "End instruction Fields")
+string old_name;
+:(before "End instruction Clear")
+old_name.clear();
+:(before "End next_instruction(curr)")
+curr->old_name = curr->name;  // before rewrite rules modify it
+
 :(code)
 // is this reagent one of the values returned by the current (return) instruction?
 // is the corresponding ingredient saved in the caller?

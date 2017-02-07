@@ -33,7 +33,6 @@ struct instruction {
   bool is_label;
   string label;  // only if is_label
   string name;  // only if !is_label
-  string old_name;  // before our automatic rewrite rules
   string original_string;  // for error messages
   recipe_ordinal operation;  // get(Recipe_ordinal, name)
   vector<reagent> ingredients;  // only if !is_label
@@ -266,7 +265,6 @@ void instruction::clear() {
   is_label=false;
   label.clear();
   name.clear();
-  old_name.clear();
   operation=IDLE;
   ingredients.clear();
   products.clear();

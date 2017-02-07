@@ -143,7 +143,7 @@ bool next_instruction(istream& in, instruction* curr) {
     raise << "instruction prematurely ended with '<-'\n" << end();
     return false;
   }
-  curr->old_name = curr->name = *p;  ++p;
+  curr->name = *p;  ++p;
   // curr->operation will be set at transform time
 
   for (;  p != words.end();  ++p)
@@ -159,6 +159,7 @@ bool next_instruction(istream& in, instruction* curr) {
     raise << "9: unbalanced '[' for recipe\n" << end();
     return false;
   }
+  // End next_instruction(curr)
   return true;
 }
 
