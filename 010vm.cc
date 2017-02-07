@@ -366,10 +366,9 @@ reagent::reagent(const reagent& other) {
   value = other.value;
   initialized = other.initialized;
   for (int i = 0;  i < SIZE(other.properties);  ++i) {
-    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first,
-                                                    other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
+    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first, copy(other.properties.at(i).second)));
   }
-  type = other.type ? new type_tree(*other.type) : NULL;
+  type = copy(other.type);
   // End reagent Copy Constructor
 }
 
@@ -377,8 +376,8 @@ type_tree::type_tree(const type_tree& original) {
   atom = original.atom;
   name = original.name;
   value = original.value;
-  left = original.left ? new type_tree(*original.left) : NULL;
-  right = original.right ? new type_tree(*original.right) : NULL;
+  left = copy(original.left);
+  right = copy(original.right);
 }
 
 type_tree& type_tree::operator=(const type_tree& original) {
@@ -386,9 +385,9 @@ type_tree& type_tree::operator=(const type_tree& original) {
   name = original.name;
   value = original.value;
   if (left) delete left;
-  left = original.left ? new type_tree(*original.left) : NULL;
+  left = copy(original.left);
   if (right) delete right;
-  right = original.right ? new type_tree(*original.right) : NULL;
+  right = copy(original.right);
   return *this;
 }
 
@@ -471,8 +470,8 @@ void test_compare_list_with_smaller_left_but_larger_right_identical_types() {
 string_tree::string_tree(const string_tree& original) {
   atom = original.atom;
   value = original.value;
-  left = original.left ? new string_tree(*original.left) : NULL;
-  right = original.right ? new string_tree(*original.right) : NULL;
+  left = copy(original.left);
+  right = copy(original.right);
 }
 
 reagent& reagent::operator=(const reagent& other) {
@@ -481,13 +480,12 @@ reagent& reagent::operator=(const reagent& other) {
     if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
   for (int i = 0;  i < SIZE(other.properties);  ++i)
-    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first,
-                                                    other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
+    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first, copy(other.properties.at(i).second)));
   name = other.name;
   value = other.value;
   initialized = other.initialized;
   if (type) delete type;
-  type = other.type ? new type_tree(*other.type) : NULL;
+  type = copy(other.type);
   // End reagent Copy Operator
   return *this;
 }
@@ -561,6 +559,16 @@ string_tree* property(const reagent& r, const string& name) {
       return r.properties.at(p).second;
   }
   return NULL;
+}
+
+string_tree* copy(const string_tree* x) {
+  if (x == NULL) return NULL;
+  return new string_tree(*x);
+}
+
+type_tree* copy(const type_tree* x) {
+  if (x == NULL) return NULL;
+  return new type_tree(*x);
 }
 
 :(before "End Globals")

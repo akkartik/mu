@@ -211,32 +211,38 @@ def main [
 +run: {3: "foo"} <- copy {2: ("address" "foo"), "lookup": ()}
 +mem: incrementing refcount of 1000: 2 -> 3
 
-:(after "End type_tree Definition")
+:(before "End type_tree Definition")
 struct address_element_info {
   int offset;  // where inside a container type (after flattening nested containers!) the address lies
   const type_tree* payload_type;  // all the information we need to compute sizes of items inside an address inside a container. Doesn't need to be a full-scale reagent, since an address inside a container can never be an array, and arrays are the only type that need to know their location to compute their size.
-  address_element_info(int o, const type_tree* p) {
-    offset = o;
-    payload_type = p;
-  }
-  address_element_info(const address_element_info& other) {
-    offset = other.offset;
-    payload_type = other.payload_type ? new type_tree(*other.payload_type) : NULL;
-  }
-  ~address_element_info() {
-    if (payload_type) {
-      delete payload_type;
-      payload_type = NULL;
-    }
-  }
-  address_element_info& operator=(const address_element_info& other) {
-    offset = other.offset;
-    if (payload_type) delete payload_type;
-    payload_type = other.payload_type ? new type_tree(*other.payload_type) : NULL;
-    return *this;
-  }
+  address_element_info(int o, const type_tree* p);
+  address_element_info(const address_element_info& other);
+  ~address_element_info();
+  address_element_info& operator=(const address_element_info& other);
 };
+:(code)
+address_element_info::address_element_info(int o, const type_tree* p) {
+  offset = o;
+  payload_type = p;
+}
+address_element_info::address_element_info(const address_element_info& other) {
+  offset = other.offset;
+  payload_type = copy(other.payload_type);
+}
+address_element_info::~address_element_info() {
+  if (payload_type) {
+    delete payload_type;
+    payload_type = NULL;
+  }
+}
+address_element_info& address_element_info::operator=(const address_element_info& other) {
+  offset = other.offset;
+  if (payload_type) delete payload_type;
+  payload_type = copy(other.payload_type);
+  return *this;
+}
 
+:(before "End type_tree Definition")
 // For exclusive containers we might sometimes have an address at some offset
 // if some other offset has a specific tag. This struct encapsulates such
 // guards.
