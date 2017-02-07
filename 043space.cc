@@ -266,6 +266,10 @@ string old_name;
 old_name.clear();
 :(before "End next_instruction(curr)")
 curr->old_name = curr->name;  // before rewrite rules modify it
+:(before "End instruction Methods")
+void initialize_name(const string& n) {
+  name = old_name = n;
+}
 
 :(code)
 // is this reagent one of the values returned by the current (return) instruction?

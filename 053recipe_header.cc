@@ -481,7 +481,7 @@ void fill_in_return_ingredients(const recipe_ordinal r) {
   const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
   if (final_instruction.name != "reply" && final_instruction.name != "return") {
     instruction inst;
-    inst.name = "return";
+    inst.initialize_name("return");
     add_header_products(inst, caller_recipe);
     caller_recipe.steps.push_back(inst);
   }

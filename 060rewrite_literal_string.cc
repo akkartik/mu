@@ -46,7 +46,7 @@ void rewrite_literal_string_to_text(const recipe_ordinal r) {
         instruction def;
         ostringstream ingredient_name;
         ingredient_name << inst.name << '_' << i << '_' << j << ":text";
-        def.name = "new";
+        def.initialize_name("new");
         def.ingredients.push_back(inst.ingredients.at(j));
         def.products.push_back(reagent(ingredient_name.str()));
         new_instructions.push_back(def);
