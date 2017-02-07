@@ -481,7 +481,8 @@ reagent& reagent::operator=(const reagent& other) {
     if (properties.at(i).second) delete properties.at(i).second;
   properties.clear();
   for (int i = 0;  i < SIZE(other.properties);  ++i)
-    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first, other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
+    properties.push_back(pair<string, string_tree*>(other.properties.at(i).first,
+                                                    other.properties.at(i).second ? new string_tree(*other.properties.at(i).second) : NULL));
   name = other.name;
   value = other.value;
   initialized = other.initialized;
