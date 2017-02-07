@@ -86,7 +86,7 @@ void convert_ingredients_to_text(recipe& caller) {
         convert_ingredient_to_text(inst.ingredients.at(j), new_instructions, ingredient_name.str());
       }
     }
-    else if (inst.old_name == "append") {
+    else if (inst.name_before_rewrite == "append") {
       // override only variants that try to append to a string
       // Beware: this hack restricts how much 'append' can be overridden. Any
       // new variants that match:

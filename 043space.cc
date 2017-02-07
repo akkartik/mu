@@ -235,7 +235,7 @@ void try_reclaim_locals() {
   const recipe& exiting_recipe = get(Recipe, r);
   if (exiting_recipe.steps.empty()) return;
   const instruction& inst = exiting_recipe.steps.at(0);
-  if (inst.old_name != "local-scope") return;
+  if (inst.name_before_rewrite != "local-scope") return;
   // reclaim any local variables unless they're being returned
   vector<double> zeros;
   for (int i = /*leave default space for last*/1;  i < SIZE(exiting_recipe.steps);  ++i) {
@@ -261,11 +261,11 @@ void try_reclaim_locals() {
 //: Reclaiming local variables above requires remembering what name an
 //: instruction had before any rewrites or transforms.
 :(before "End instruction Fields")
-string old_name;
+string name_before_rewrite;
 :(before "End instruction Clear")
-old_name.clear();
+name_before_rewrite.clear();
 :(before "End next_instruction(curr)")
-curr->old_name = curr->name;  // before rewrite rules modify it
+curr->name_before_rewrite = curr->name;
 
 :(code)
 // is this reagent one of the values returned by the current (return) instruction?
@@ -298,7 +298,7 @@ bool should_update_refcounts_in_write_memory() {
   if (!contains_key(Recipe, inst.operation)) return true;
   const recipe& callee = get(Recipe, inst.operation);
   if (callee.steps.empty()) return true;
-  return callee.steps.at(0).old_name != "local-scope";  // callees that call local-scope are already dealt with before return
+  return callee.steps.at(0).name_before_rewrite != "local-scope";  // callees that call local-scope are already dealt with before return
 }
 
 bool caller_uses_product(int product_index) {
