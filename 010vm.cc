@@ -262,7 +262,17 @@ recipe::recipe() {
 instruction::instruction() :is_label(false), operation(IDLE) {
   // End instruction Constructor
 }
-void instruction::clear() { is_label=false;  label.clear();  name.clear();  old_name.clear();  operation=IDLE;  ingredients.clear();  products.clear();  original_string.clear(); }
+void instruction::clear() {
+  is_label=false;
+  label.clear();
+  name.clear();
+  old_name.clear();
+  operation=IDLE;
+  ingredients.clear();
+  products.clear();
+  original_string.clear();
+  // End instruction Clear
+}
 bool instruction::is_empty() { return !is_label && name.empty(); }
 
 // Reagents have the form <name>:<type>:<type>:.../<property>/<property>/...
