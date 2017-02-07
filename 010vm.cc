@@ -41,7 +41,6 @@ struct instruction {
   instruction();
   void clear();
   bool is_empty();
-  // End instruction Methods
 };
 
 :(before "struct instruction")

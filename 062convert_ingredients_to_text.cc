@@ -115,13 +115,13 @@ void convert_ingredient_to_text(reagent& r, vector<instruction>& out, const stri
   if (is_static_array(r)) return;
   instruction def;
   if (is_lookup_of_address_of_array(r)) {
-    def.initialize_name("array-to-text-line");
+    def.name = "array-to-text-line";
     reagent/*copy*/ tmp = r;
     drop_one_lookup(tmp);
     def.ingredients.push_back(tmp);
   }
   else {
-    def.initialize_name("to-text-line");
+    def.name = "to-text-line";
     def.ingredients.push_back(r);
   }
   def.products.push_back(reagent(tmp_var));
