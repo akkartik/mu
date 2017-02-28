@@ -186,7 +186,7 @@ def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> 
 ]
 
 # replaced in a later layer
-def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
+def update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
   load-ingredients
   data:text <- get *sandbox, data:offset
