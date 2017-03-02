@@ -13,36 +13,28 @@
 //: longer valid. In both cases you end up having to reorganize code as well as
 //: tests, an error-prone activity.
 //:
-//: This file tries to fix this problem by supporting domain-driven testing.
-//: We try to focus on the domain of inputs the program should work on. All
-//: tests invoke the program in a single way: by calling run() with different
-//: inputs. The program operates on the input and logs _facts_ it deduces to a
-//: trace:
+//: In response, this layer introduces the notion of *domain-driven* testing.
+//: We focus on the domain of inputs the whole program needs to handle rather
+//: than the correctness of individual functions. All tests invoke the program
+//: in a single way: by calling run() with some input. As the program operates
+//: on the input, it traces out a list of _facts_ deduced about the domain:
 //:   trace("label") << "fact 1: " << val;
 //:
-//: The tests check for facts:
+//: Tests can now check these facts:
 //:   :(scenario foo)
 //:   34  # call run() with this input
-//:   +label: fact 1: 34  # trace should have logged this at the end
-//:   -label: fact 1: 35  # trace should never contain such a line
+//:   +label: fact 1: 34  # 'run' should have deduced this fact
+//:   -label: fact 1: 35  # the trace should not contain such a fact
 //:
 //: Since we never call anything but the run() function directly, we never have
 //: to rewrite the tests when we reorganize the internals of the program. We
 //: just have to make sure our rewrite deduces the same facts about the domain,
 //: and that's something we're going to have to do anyway.
 //:
-//: To avoid the combinatorial explosion of integration tests, each layer logs
-//: facts to the trace with a common label. Tests in that layer focus on the
-//: same label. In essence, validating the facts logged with a specific label
-//: is identical to calling some internal subsystem directly.
-//:
-//: Traces interact salubriously with layers. Thanks to our ordering
-//: directives, each layer can contain its own tests. They may rely on other
-//: layers, but when a test fails it's usually due to breakage in the same
-//: layer. When multiple tests fail, it's usually useful to debug the very
-//: first test to fail. This is in contrast with the traditional organization
-//: of code, where changes can cause breakages in faraway subsystems, and
-//: picking the right test to debug can be an important skill to pick up.
+//: To avoid the combinatorial explosion of integration tests, each layer
+//: mainly logs facts to the trace with a common *label*. All tests in a layer
+//: tend to check facts with this label. Validating the facts logged with a
+//: specific label is like calling functions of that layer directly.
 //:
 //: To build robust tests, trace facts about your domain rather than details of
 //: how you computed them.
