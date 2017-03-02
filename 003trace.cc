@@ -1,11 +1,10 @@
-//: The goal of this skeleton is to make programs more easy to understand and
-//: more malleable, easy to rewrite in radical ways without accidentally
-//: breaking some corner case. Tests further both goals. They help
-//: understandability by letting one make small changes and get feedback. What
-//: if I wrote this line like so? What if I removed this function call, is it
-//: really necessary? Just try it, see if the tests pass. Want to explore
-//: rewriting this bit in this way? Tests put many refactorings on a firmer
-//: footing.
+//: The goal of layers is to make programs more easy to understand and more
+//: malleable, easy to rewrite in radical ways without accidentally breaking
+//: some corner case. Tests further both goals. They help understandability by
+//: letting one make small changes and get feedback. What if I wrote this line
+//: like so? What if I removed this function call, is it really necessary?
+//: Just try it, see if the tests pass. Want to explore rewriting this bit in
+//: this way? Tests put many refactorings on a firmer footing.
 //:
 //: But the usual way we write tests seems incomplete. Refactorings tend to
 //: work in the small, but don't help with changes to function boundaries. If
@@ -14,7 +13,7 @@
 //: longer valid. In both cases you end up having to reorganize code as well as
 //: tests, an error-prone activity.
 //:
-//: This file tries to fix this problem by supporting domain-driven testing
+//: This file tries to fix this problem by supporting domain-driven testing.
 //: We try to focus on the domain of inputs the program should work on. All
 //: tests invoke the program in a single way: by calling run() with different
 //: inputs. The program operates on the input and logs _facts_ it deduces to a
@@ -32,19 +31,18 @@
 //: just have to make sure our rewrite deduces the same facts about the domain,
 //: and that's something we're going to have to do anyway.
 //:
-//: To avoid the combinatorial explosion of integration tests, we organize the
-//: program into different layers, and each fact is logged to the trace with a
-//: specific label. Individual tests can focus on specific labels. In essence,
-//: validating the facts logged with a specific label is identical to calling
-//: some internal subsystem.
+//: To avoid the combinatorial explosion of integration tests, each layer logs
+//: facts to the trace with a common label. Tests in that layer focus on the
+//: same label. In essence, validating the facts logged with a specific label
+//: is identical to calling some internal subsystem directly.
 //:
 //: Traces interact salubriously with layers. Thanks to our ordering
 //: directives, each layer can contain its own tests. They may rely on other
-//: layers, but when a test fails its usually due to breakage in the same
+//: layers, but when a test fails it's usually due to breakage in the same
 //: layer. When multiple tests fail, it's usually useful to debug the very
-//: first test to fail. This is in contrast with the traditional approach,
-//: where changes can cause breakages in faraway subsystems, and picking the
-//: right test to debug can be an important skill to pick up.
+//: first test to fail. This is in contrast with the traditional organization
+//: of code, where changes can cause breakages in faraway subsystems, and
+//: picking the right test to debug can be an important skill to pick up.
 //:
 //: To build robust tests, trace facts about your domain rather than details of
 //: how you computed them.
@@ -55,9 +53,9 @@
 //:
 //: Between layers and domain-driven testing, programming starts to look like a
 //: fundamentally different activity. Instead of a) superficial, b) local rules
-//: on c) code [like http://blog.bbv.ch/2013/06/05/clean-code-cheat-sheet],
+//: on c) code [like say http://blog.bbv.ch/2013/06/05/clean-code-cheat-sheet],
 //: we allow programmers to engage with the a) deep, b) global structure of the
-//: c) domain. If you can systematically track discontinuities in the domain
+//: c) domain. If you can systematically track discontinuities in the domain,
 //: you don't care if the code used gotos as long as it passed the tests. If
 //: tests become more robust to run it becomes easier to try out radically
 //: different implementations for the same program. If code is super-easy to
@@ -69,8 +67,8 @@
 //: map of the environment the program must operate under. Whether a program is
 //: 'correct' at a given point in time is a red herring; what matters is
 //: avoiding regression by monotonically nailing down the more 'eventful' parts
-//: of the terrain. It helps readers new and old and rewards curiosity to
-//: organize large programs in self-similar hiearchies of example scenarios
+//: of the terrain. It helps readers new and old, and rewards curiosity, to
+//: organize large programs in self-similar hierarchies of example scenarios
 //: colocated with the code that makes them work.
 //:
 //:   "Programming properly should be regarded as an activity by which

@@ -1,4 +1,4 @@
-//: A simple test harness. To create new tests define functions starting with
+//: A simple test harness. To create new tests, define functions starting with
 //: 'test_'. To run all tests so defined, run:
 //:   $ ./mu test
 //:
