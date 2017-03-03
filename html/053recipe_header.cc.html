@@ -429,255 +429,273 @@ if ('onhashchange' in window) {
 <span id="L365" class="LineNr">365 </span>
 <span id="L366" class="LineNr">366 </span><span class="Delimiter">:(scenario recipe_headers_check_for_duplicate_names)</span>
 <span id="L367" class="LineNr">367 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L368" class="LineNr">368 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> x:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L368" class="LineNr">368 </span><span class="muRecipe">def</span> foo x:num<span class="Delimiter">,</span> x:num<span class="muRecipe"> -&gt; </span>z:num [
 <span id="L369" class="LineNr">369 </span>  local-scope
 <span id="L370" class="LineNr">370 </span>  load-ingredients
 <span id="L371" class="LineNr">371 </span>  <span class="Identifier">return</span> z
 <span id="L372" class="LineNr">372 </span>]
-<span id="L373" class="LineNr">373 </span><span class="traceContains">+error: add2: 'x' can't repeat in the ingredients</span>
+<span id="L373" class="LineNr">373 </span><span class="traceContains">+error: foo: 'x' can't repeat in the ingredients</span>
 <span id="L374" class="LineNr">374 </span>
-<span id="L375" class="LineNr">375 </span><span class="Delimiter">:(before &quot;End <a href='010vm.cc.html#L19'>recipe</a> Fields&quot;)</span>
-<span id="L376" class="LineNr">376 </span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; ingredient_index<span class="Delimiter">;</span>
-<span id="L377" class="LineNr">377 </span>
-<span id="L378" class="LineNr">378 </span><span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)</span>
-<span id="L379" class="LineNr">379 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_header_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
-<span id="L380" class="LineNr">380 </span>
-<span id="L381" class="LineNr">381 </span><span class="Delimiter">:(code)</span>
-<span id="L382" class="LineNr">382 </span><span class="Normal">void</span> check_header_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L383" class="LineNr">383 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-<span id="L384" class="LineNr">384 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L385" class="LineNr">385 </span>  caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
-<span id="L386" class="LineNr">386 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking return instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L387" class="LineNr">387 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L388" class="LineNr">388 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span>
-<span id="L389" class="LineNr">389 </span>      <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' can't repeat in the ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
-<span id="L390" class="LineNr">390 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
-<span id="L391" class="LineNr">391 </span>  <span class="Delimiter">}</span>
-<span id="L392" class="LineNr">392 </span><span class="Delimiter">}</span>
-<span id="L393" class="LineNr">393 </span>
-<span id="L394" class="LineNr">394 </span><span class="Comment">//: Deduce types from the header if possible.</span>
-<span id="L395" class="LineNr">395 </span>
-<span id="L396" class="LineNr">396 </span><span class="Delimiter">:(scenarios run)</span>
-<span id="L397" class="LineNr">397 </span><span class="Delimiter">:(scenario deduce_instruction_types_from_recipe_header)</span>
-<span id="L398" class="LineNr">398 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L399" class="LineNr">399 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L400" class="LineNr">400 </span>]
-<span id="L401" class="LineNr">401 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
-<span id="L402" class="LineNr">402 </span>  local-scope
-<span id="L403" class="LineNr">403 </span>  load-ingredients
-<span id="L404" class="LineNr">404 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
-<span id="L405" class="LineNr">405 </span>  <span class="Identifier">return</span> z
-<span id="L406" class="LineNr">406 </span>]
-<span id="L407" class="LineNr">407 </span><span class="traceContains">+mem: storing 8 in location 1</span>
-<span id="L408" class="LineNr">408 </span>
-<span id="L409" class="LineNr">409 </span><span class="Delimiter">:(after &quot;Begin Type Modifying Transforms&quot;)</span>
-<span id="L410" class="LineNr">410 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deduce_types_from_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L375" class="LineNr">375 </span><span class="Delimiter">:(scenario recipe_headers_check_for_duplicate_names_2)</span>
+<span id="L376" class="LineNr">376 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L377" class="LineNr">377 </span><span class="muRecipe">def</span> foo x:num<span class="Delimiter">,</span> x:num [  <span class="Comment"># no result</span>
+<span id="L378" class="LineNr">378 </span>  local-scope
+<span id="L379" class="LineNr">379 </span>  load-ingredients
+<span id="L380" class="LineNr">380 </span>]
+<span id="L381" class="LineNr">381 </span><span class="traceContains">+error: foo: 'x' can't repeat in the ingredients</span>
+<span id="L382" class="LineNr">382 </span>
+<span id="L383" class="LineNr">383 </span><span class="Delimiter">:(scenario recipe_headers_check_for_missing_types)</span>
+<span id="L384" class="LineNr">384 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L385" class="LineNr">385 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L386" class="LineNr">386 </span>  foo <span class="Constant">0</span>
+<span id="L387" class="LineNr">387 </span>]
+<span id="L388" class="LineNr">388 </span><span class="muRecipe">def</span> foo a [  <span class="Comment"># no type for 'a'</span>
+<span id="L389" class="LineNr">389 </span>]
+<span id="L390" class="LineNr">390 </span><span class="traceContains">+error: foo: ingredient 'a' has no type</span>
+<span id="L391" class="LineNr">391 </span>
+<span id="L392" class="LineNr">392 </span><span class="Delimiter">:(before &quot;End <a href='010vm.cc.html#L19'>recipe</a> Fields&quot;)</span>
+<span id="L393" class="LineNr">393 </span>map&lt;string<span class="Delimiter">,</span> <span class="Normal">int</span>&gt; ingredient_index<span class="Delimiter">;</span>
+<span id="L394" class="LineNr">394 </span>
+<span id="L395" class="LineNr">395 </span><span class="Delimiter">:(after &quot;Begin Instruction Modifying Transforms&quot;)</span>
+<span id="L396" class="LineNr">396 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_header_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L397" class="LineNr">397 </span>
+<span id="L398" class="LineNr">398 </span><span class="Delimiter">:(code)</span>
+<span id="L399" class="LineNr">399 </span><span class="Normal">void</span> check_header_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L400" class="LineNr">400 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span id="L401" class="LineNr">401 </span>  caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">.</span><a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">();</span>
+<span id="L402" class="LineNr">402 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- checking return instructions against header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L403" class="LineNr">403 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L404" class="LineNr">404 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
+<span id="L405" class="LineNr">405 </span>      <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ingredient '&quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' has no type</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L406" class="LineNr">406 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span>
+<span id="L407" class="LineNr">407 </span>      <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'&quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;' can't repeat in the ingredients</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L408" class="LineNr">408 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> i<span class="Delimiter">);</span>
+<span id="L409" class="LineNr">409 </span>  <span class="Delimiter">}</span>
+<span id="L410" class="LineNr">410 </span><span class="Delimiter">}</span>
 <span id="L411" class="LineNr">411 </span>
-<span id="L412" class="LineNr">412 </span><span class="Delimiter">:(code)</span>
-<span id="L413" class="LineNr">413 </span><span class="Normal">void</span> deduce_types_from_header<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L414" class="LineNr">414 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-<span id="L415" class="LineNr">415 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L416" class="LineNr">416 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- deduce types from header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L417" class="LineNr">417 </span>  map&lt;string<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree*&gt; header_type<span class="Delimiter">;</span>
-<span id="L418" class="LineNr">418 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L419" class="LineNr">419 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-<span id="L420" class="LineNr">420 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
-<span id="L421" class="LineNr">421 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L422" class="LineNr">422 </span>  <span class="Delimiter">}</span>
-<span id="L423" class="LineNr">423 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L424" class="LineNr">424 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-<span id="L425" class="LineNr">425 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
-<span id="L426" class="LineNr">426 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L427" class="LineNr">427 </span>  <span class="Delimiter">}</span>
-<span id="L428" class="LineNr">428 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L429" class="LineNr">429 </span>    instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L430" class="LineNr">430 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L431" class="LineNr">431 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L432" class="LineNr">432 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L433" class="LineNr">433 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>header_type<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> == header_type<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">())</span>
-<span id="L434" class="LineNr">434 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L435" class="LineNr">435 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-<span id="L436" class="LineNr">436 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*get<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-<span id="L437" class="LineNr">437 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L438" class="LineNr">438 </span>    <span class="Delimiter">}</span>
-<span id="L439" class="LineNr">439 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L440" class="LineNr">440 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L441" class="LineNr">441 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L442" class="LineNr">442 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>header_type<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> == header_type<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">())</span>
-<span id="L443" class="LineNr">443 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L444" class="LineNr">444 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
-<span id="L445" class="LineNr">445 </span>      inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*get<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
-<span id="L446" class="LineNr">446 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L447" class="LineNr">447 </span>    <span class="Delimiter">}</span>
-<span id="L448" class="LineNr">448 </span>  <span class="Delimiter">}</span>
-<span id="L449" class="LineNr">449 </span><span class="Delimiter">}</span>
-<span id="L450" class="LineNr">450 </span>
-<span id="L451" class="LineNr">451 </span><span class="Comment">//: One final convenience: no need to say what to return if the information is</span>
-<span id="L452" class="LineNr">452 </span><span class="Comment">//: in the header.</span>
-<span id="L453" class="LineNr">453 </span>
-<span id="L454" class="LineNr">454 </span><span class="Delimiter">:(scenario return_based_on_header)</span>
-<span id="L455" class="LineNr">455 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L456" class="LineNr">456 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L457" class="LineNr">457 </span>]
-<span id="L458" class="LineNr">458 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
-<span id="L459" class="LineNr">459 </span>  local-scope
-<span id="L460" class="LineNr">460 </span>  load-ingredients
-<span id="L461" class="LineNr">461 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
-<span id="L462" class="LineNr">462 </span>  <span class="Identifier">return</span>
-<span id="L463" class="LineNr">463 </span>]
-<span id="L464" class="LineNr">464 </span><span class="traceContains">+mem: storing 8 in location 1</span>
-<span id="L465" class="LineNr">465 </span>
-<span id="L466" class="LineNr">466 </span><span class="Delimiter">:(after &quot;Transform.push_back(check_header_ingredients)&quot;)</span>
-<span id="L467" class="LineNr">467 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_return_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L412" class="LineNr">412 </span><span class="Comment">//: Deduce types from the header if possible.</span>
+<span id="L413" class="LineNr">413 </span>
+<span id="L414" class="LineNr">414 </span><span class="Delimiter">:(scenarios run)</span>
+<span id="L415" class="LineNr">415 </span><span class="Delimiter">:(scenario deduce_instruction_types_from_recipe_header)</span>
+<span id="L416" class="LineNr">416 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L417" class="LineNr">417 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L418" class="LineNr">418 </span>]
+<span id="L419" class="LineNr">419 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L420" class="LineNr">420 </span>  local-scope
+<span id="L421" class="LineNr">421 </span>  load-ingredients
+<span id="L422" class="LineNr">422 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
+<span id="L423" class="LineNr">423 </span>  <span class="Identifier">return</span> z
+<span id="L424" class="LineNr">424 </span>]
+<span id="L425" class="LineNr">425 </span><span class="traceContains">+mem: storing 8 in location 1</span>
+<span id="L426" class="LineNr">426 </span>
+<span id="L427" class="LineNr">427 </span><span class="Delimiter">:(after &quot;Begin Type Modifying Transforms&quot;)</span>
+<span id="L428" class="LineNr">428 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deduce_types_from_header<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L429" class="LineNr">429 </span>
+<span id="L430" class="LineNr">430 </span><span class="Delimiter">:(code)</span>
+<span id="L431" class="LineNr">431 </span><span class="Normal">void</span> deduce_types_from_header<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L432" class="LineNr">432 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span id="L433" class="LineNr">433 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L434" class="LineNr">434 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- deduce types from header for &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L435" class="LineNr">435 </span>  map&lt;string<span class="Delimiter">,</span> <span class="Normal">const</span> type_tree*&gt; header_type<span class="Delimiter">;</span>
+<span id="L436" class="LineNr">436 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L437" class="LineNr">437 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
+<span id="L438" class="LineNr">438 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+<span id="L439" class="LineNr">439 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L440" class="LineNr">440 </span>  <span class="Delimiter">}</span>
+<span id="L441" class="LineNr">441 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L442" class="LineNr">442 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
+<span id="L443" class="LineNr">443 </span>    <a href='001help.cc.html#L218'>put</a><span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">);</span>
+<span id="L444" class="LineNr">444 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L445" class="LineNr">445 </span>  <span class="Delimiter">}</span>
+<span id="L446" class="LineNr">446 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L447" class="LineNr">447 </span>    instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L448" class="LineNr">448 </span>    <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9992</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;instruction: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L449" class="LineNr">449 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L450" class="LineNr">450 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L451" class="LineNr">451 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>header_type<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> == header_type<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">())</span>
+<span id="L452" class="LineNr">452 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L453" class="LineNr">453 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
+<span id="L454" class="LineNr">454 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*get<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<span id="L455" class="LineNr">455 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L456" class="LineNr">456 </span>    <span class="Delimiter">}</span>
+<span id="L457" class="LineNr">457 </span>    <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L458" class="LineNr">458 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;  product: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L459" class="LineNr">459 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L460" class="LineNr">460 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>header_type<span class="Delimiter">.</span>find<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> == header_type<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">())</span>
+<span id="L461" class="LineNr">461 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L462" class="LineNr">462 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>  <span class="Comment">// error handled elsewhere</span>
+<span id="L463" class="LineNr">463 </span>      inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*get<span class="Delimiter">(</span>header_type<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">));</span>
+<span id="L464" class="LineNr">464 </span>      <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9993</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;type of &quot;</span> &lt;&lt; inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot; is &quot;</span> &lt;&lt; names_to_string<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>type<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L465" class="LineNr">465 </span>    <span class="Delimiter">}</span>
+<span id="L466" class="LineNr">466 </span>  <span class="Delimiter">}</span>
+<span id="L467" class="LineNr">467 </span><span class="Delimiter">}</span>
 <span id="L468" class="LineNr">468 </span>
-<span id="L469" class="LineNr">469 </span><span class="Delimiter">:(code)</span>
-<span id="L470" class="LineNr">470 </span><span class="Normal">void</span> fill_in_return_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L471" class="LineNr">471 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-<span id="L472" class="LineNr">472 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L473" class="LineNr">473 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- fill in return ingredients from header for <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L474" class="LineNr">474 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L475" class="LineNr">475 </span>    instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
-<span id="L476" class="LineNr">476 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span>
-<span id="L477" class="LineNr">477 </span>      add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
-<span id="L478" class="LineNr">478 </span>  <span class="Delimiter">}</span>
-<span id="L479" class="LineNr">479 </span>  <span class="Comment">// fall through return</span>
-<span id="L480" class="LineNr">480 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error will be raised elsewhere if there's a product in the header; just give up</span>
-<span id="L481" class="LineNr">481 </span>  <span class="Normal">const</span> instruction&amp; final_instruction = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L482" class="LineNr">482 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;reply&quot;</span> &amp;&amp; final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L483" class="LineNr">483 </span>    <a href='010vm.cc.html#L32'>instruction</a> inst<span class="Delimiter">;</span>
-<span id="L484" class="LineNr">484 </span>    inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;return&quot;</span><span class="Delimiter">;</span>
-<span id="L485" class="LineNr">485 </span>    add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
-<span id="L486" class="LineNr">486 </span>    caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
-<span id="L487" class="LineNr">487 </span>  <span class="Delimiter">}</span>
-<span id="L488" class="LineNr">488 </span><span class="Delimiter">}</span>
-<span id="L489" class="LineNr">489 </span>
-<span id="L490" class="LineNr">490 </span><span class="Normal">void</span> add_header_products<span class="Delimiter">(</span>instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L491" class="LineNr">491 </span>  assert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;return&quot;</span><span class="Delimiter">);</span>
-<span id="L492" class="LineNr">492 </span>  <span class="Comment">// collect any products with the same names as ingredients</span>
-<span id="L493" class="LineNr">493 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L494" class="LineNr">494 </span>    <span class="Comment">// if the ingredient is missing, add it from the header</span>
-<span id="L495" class="LineNr">495 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> == i<span class="Delimiter">)</span>
-<span id="L496" class="LineNr">496 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
-<span id="L497" class="LineNr">497 </span>    <span class="Comment">// if it's missing /same_as_ingredient, try to fill it in</span>
-<span id="L498" class="LineNr">498 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &amp;&amp; !has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same_as_ingredient&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L499" class="LineNr">499 </span>      ostringstream same_as_ingredient<span class="Delimiter">;</span>
-<span id="L500" class="LineNr">500 </span>      same_as_ingredient &lt;&lt; get<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
-<span id="L501" class="LineNr">501 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">,</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>same_as_ingredient<span class="Delimiter">.</span>str<span class="Delimiter">())));</span>
-<span id="L502" class="LineNr">502 </span>    <span class="Delimiter">}</span>
-<span id="L503" class="LineNr">503 </span>  <span class="Delimiter">}</span>
-<span id="L504" class="LineNr">504 </span><span class="Delimiter">}</span>
-<span id="L505" class="LineNr">505 </span>
-<span id="L506" class="LineNr">506 </span><span class="Delimiter">:(scenario explicit_return_ignores_header)</span>
-<span id="L507" class="LineNr">507 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L508" class="LineNr">508 </span>  <span class="Constant">1</span>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L509" class="LineNr">509 </span>]
-<span id="L510" class="LineNr">510 </span><span class="muRecipe">def</span> add2 a:num<span class="Delimiter">,</span> b:num<span class="muRecipe"> -&gt; </span>y:num<span class="Delimiter">,</span> z:num [
-<span id="L511" class="LineNr">511 </span>  local-scope
-<span id="L512" class="LineNr">512 </span>  load-ingredients
-<span id="L513" class="LineNr">513 </span>  y<span class="Special"> &lt;- </span>add a<span class="Delimiter">,</span> b
-<span id="L514" class="LineNr">514 </span>  z<span class="Special"> &lt;- </span>subtract a<span class="Delimiter">,</span> b
-<span id="L515" class="LineNr">515 </span>  <span class="Identifier">return</span> a<span class="Delimiter">,</span> z
-<span id="L516" class="LineNr">516 </span>]
-<span id="L517" class="LineNr">517 </span><span class="traceContains">+mem: storing 3 in location 1</span>
-<span id="L518" class="LineNr">518 </span><span class="traceContains">+mem: storing -2 in location 2</span>
-<span id="L519" class="LineNr">519 </span>
-<span id="L520" class="LineNr">520 </span><span class="Delimiter">:(scenario return_on_fallthrough_based_on_header)</span>
-<span id="L521" class="LineNr">521 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L522" class="LineNr">522 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L523" class="LineNr">523 </span>]
-<span id="L524" class="LineNr">524 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
-<span id="L525" class="LineNr">525 </span>  local-scope
-<span id="L526" class="LineNr">526 </span>  load-ingredients
-<span id="L527" class="LineNr">527 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
-<span id="L528" class="LineNr">528 </span>]
-<span id="L529" class="LineNr">529 </span><span class="traceContains">+transform: <a href='010vm.cc.html#L32'>instruction</a>: return {z: &quot;number&quot;}</span>
-<span id="L530" class="LineNr">530 </span><span class="traceContains">+mem: storing 8 in location 1</span>
-<span id="L531" class="LineNr">531 </span>
-<span id="L532" class="LineNr">532 </span><span class="Delimiter">:(scenario return_on_fallthrough_already_exists)</span>
-<span id="L533" class="LineNr">533 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L534" class="LineNr">534 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L535" class="LineNr">535 </span>]
-<span id="L536" class="LineNr">536 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
-<span id="L537" class="LineNr">537 </span>  local-scope
-<span id="L538" class="LineNr">538 </span>  load-ingredients
-<span id="L539" class="LineNr">539 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
-<span id="L540" class="LineNr">540 </span>  <span class="Identifier">return</span> z
+<span id="L469" class="LineNr">469 </span><span class="Comment">//: One final convenience: no need to say what to return if the information is</span>
+<span id="L470" class="LineNr">470 </span><span class="Comment">//: in the header.</span>
+<span id="L471" class="LineNr">471 </span>
+<span id="L472" class="LineNr">472 </span><span class="Delimiter">:(scenario return_based_on_header)</span>
+<span id="L473" class="LineNr">473 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L474" class="LineNr">474 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L475" class="LineNr">475 </span>]
+<span id="L476" class="LineNr">476 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L477" class="LineNr">477 </span>  local-scope
+<span id="L478" class="LineNr">478 </span>  load-ingredients
+<span id="L479" class="LineNr">479 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
+<span id="L480" class="LineNr">480 </span>  <span class="Identifier">return</span>
+<span id="L481" class="LineNr">481 </span>]
+<span id="L482" class="LineNr">482 </span><span class="traceContains">+mem: storing 8 in location 1</span>
+<span id="L483" class="LineNr">483 </span>
+<span id="L484" class="LineNr">484 </span><span class="Delimiter">:(after &quot;Transform.push_back(check_header_ingredients)&quot;)</span>
+<span id="L485" class="LineNr">485 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>fill_in_return_ingredients<span class="Delimiter">);</span>  <span class="Comment">// idempotent</span>
+<span id="L486" class="LineNr">486 </span>
+<span id="L487" class="LineNr">487 </span><span class="Delimiter">:(code)</span>
+<span id="L488" class="LineNr">488 </span><span class="Normal">void</span> fill_in_return_ingredients<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L489" class="LineNr">489 </span>  recipe&amp; caller_recipe = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span id="L490" class="LineNr">490 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller_recipe<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L491" class="LineNr">491 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;transform&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;--- fill in return ingredients from header for <a href='010vm.cc.html#L19'>recipe</a> &quot;</span> &lt;&lt; caller_recipe<span class="Delimiter">.</span>name &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L492" class="LineNr">492 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L493" class="LineNr">493 </span>    instruction&amp; inst = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">);</span>
+<span id="L494" class="LineNr">494 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span>
+<span id="L495" class="LineNr">495 </span>      add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
+<span id="L496" class="LineNr">496 </span>  <span class="Delimiter">}</span>
+<span id="L497" class="LineNr">497 </span>  <span class="Comment">// fall through return</span>
+<span id="L498" class="LineNr">498 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span><span class="Delimiter">;</span>  <span class="Comment">// error will be raised elsewhere if there's a product in the header; just give up</span>
+<span id="L499" class="LineNr">499 </span>  <span class="Normal">const</span> instruction&amp; final_instruction = caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span><a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">)</span>-<span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L500" class="LineNr">500 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;reply&quot;</span> &amp;&amp; final_instruction<span class="Delimiter">.</span>name != <span class="Constant">&quot;return&quot;</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L501" class="LineNr">501 </span>    <a href='010vm.cc.html#L32'>instruction</a> inst<span class="Delimiter">;</span>
+<span id="L502" class="LineNr">502 </span>    inst<span class="Delimiter">.</span>name = <span class="Constant">&quot;return&quot;</span><span class="Delimiter">;</span>
+<span id="L503" class="LineNr">503 </span>    add_header_products<span class="Delimiter">(</span>inst<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">);</span>
+<span id="L504" class="LineNr">504 </span>    caller_recipe<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>inst<span class="Delimiter">);</span>
+<span id="L505" class="LineNr">505 </span>  <span class="Delimiter">}</span>
+<span id="L506" class="LineNr">506 </span><span class="Delimiter">}</span>
+<span id="L507" class="LineNr">507 </span>
+<span id="L508" class="LineNr">508 </span><span class="Normal">void</span> add_header_products<span class="Delimiter">(</span>instruction&amp; inst<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; caller_recipe<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L509" class="LineNr">509 </span>  assert<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;reply&quot;</span> || inst<span class="Delimiter">.</span>name == <span class="Constant">&quot;return&quot;</span><span class="Delimiter">);</span>
+<span id="L510" class="LineNr">510 </span>  <span class="Comment">// collect any products with the same names as ingredients</span>
+<span id="L511" class="LineNr">511 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L512" class="LineNr">512 </span>    <span class="Comment">// if the ingredient is missing, add it from the header</span>
+<span id="L513" class="LineNr">513 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">)</span> == i<span class="Delimiter">)</span>
+<span id="L514" class="LineNr">514 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">));</span>
+<span id="L515" class="LineNr">515 </span>    <span class="Comment">// if it's missing /same_as_ingredient, try to fill it in</span>
+<span id="L516" class="LineNr">516 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &amp;&amp; !has_property<span class="Delimiter">(</span>inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">),</span> <span class="Constant">&quot;same_as_ingredient&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L517" class="LineNr">517 </span>      ostringstream same_as_ingredient<span class="Delimiter">;</span>
+<span id="L518" class="LineNr">518 </span>      same_as_ingredient &lt;&lt; get<span class="Delimiter">(</span>caller_recipe<span class="Delimiter">.</span>ingredient_index<span class="Delimiter">,</span> caller_recipe<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>name<span class="Delimiter">);</span>
+<span id="L519" class="LineNr">519 </span>      inst<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;same-as-ingredient&quot;</span><span class="Delimiter">,</span> <span class="Normal">new</span> string_tree<span class="Delimiter">(</span>same_as_ingredient<span class="Delimiter">.</span>str<span class="Delimiter">())));</span>
+<span id="L520" class="LineNr">520 </span>    <span class="Delimiter">}</span>
+<span id="L521" class="LineNr">521 </span>  <span class="Delimiter">}</span>
+<span id="L522" class="LineNr">522 </span><span class="Delimiter">}</span>
+<span id="L523" class="LineNr">523 </span>
+<span id="L524" class="LineNr">524 </span><span class="Delimiter">:(scenario explicit_return_ignores_header)</span>
+<span id="L525" class="LineNr">525 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L526" class="LineNr">526 </span>  <span class="Constant">1</span>:num/<span class="Special">raw</span><span class="Delimiter">,</span> <span class="Constant">2</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L527" class="LineNr">527 </span>]
+<span id="L528" class="LineNr">528 </span><span class="muRecipe">def</span> add2 a:num<span class="Delimiter">,</span> b:num<span class="muRecipe"> -&gt; </span>y:num<span class="Delimiter">,</span> z:num [
+<span id="L529" class="LineNr">529 </span>  local-scope
+<span id="L530" class="LineNr">530 </span>  load-ingredients
+<span id="L531" class="LineNr">531 </span>  y<span class="Special"> &lt;- </span>add a<span class="Delimiter">,</span> b
+<span id="L532" class="LineNr">532 </span>  z<span class="Special"> &lt;- </span>subtract a<span class="Delimiter">,</span> b
+<span id="L533" class="LineNr">533 </span>  <span class="Identifier">return</span> a<span class="Delimiter">,</span> z
+<span id="L534" class="LineNr">534 </span>]
+<span id="L535" class="LineNr">535 </span><span class="traceContains">+mem: storing 3 in location 1</span>
+<span id="L536" class="LineNr">536 </span><span class="traceContains">+mem: storing -2 in location 2</span>
+<span id="L537" class="LineNr">537 </span>
+<span id="L538" class="LineNr">538 </span><span class="Delimiter">:(scenario return_on_fallthrough_based_on_header)</span>
+<span id="L539" class="LineNr">539 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L540" class="LineNr">540 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
 <span id="L541" class="LineNr">541 </span>]
-<span id="L542" class="LineNr">542 </span><span class="traceContains">+transform: <a href='010vm.cc.html#L32'>instruction</a>: return {z: ()}</span>
-<span id="L543" class="LineNr">543 </span><span class="traceAbsent">-transform: <a href='010vm.cc.html#L32'>instruction</a>: return z:num</span>
-<span id="L544" class="LineNr">544 </span><span class="traceContains">+mem: storing 8 in location 1</span>
-<span id="L545" class="LineNr">545 </span>
-<span id="L546" class="LineNr">546 </span><span class="Delimiter">:(scenario return_after_conditional_return_based_on_header)</span>
-<span id="L547" class="LineNr">547 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L548" class="LineNr">548 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
-<span id="L549" class="LineNr">549 </span>]
-<span id="L550" class="LineNr">550 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
-<span id="L551" class="LineNr">551 </span>  local-scope
-<span id="L552" class="LineNr">552 </span>  load-ingredients
-<span id="L553" class="LineNr">553 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
-<span id="L554" class="LineNr">554 </span>  <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">0</span>/<span class="Constant">false</span><span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L555" class="LineNr">555 </span>]
-<span id="L556" class="LineNr">556 </span><span class="traceContains">+mem: storing 8 in location 1</span>
-<span id="L557" class="LineNr">557 </span>
-<span id="L558" class="LineNr">558 </span><span class="Delimiter">:(scenario recipe_headers_perform_same_ingredient_check)</span>
-<span id="L559" class="LineNr">559 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L560" class="LineNr">560 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L561" class="LineNr">561 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-<span id="L562" class="LineNr">562 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-<span id="L563" class="LineNr">563 </span>  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>add2 <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
-<span id="L564" class="LineNr">564 </span>]
-<span id="L565" class="LineNr">565 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>x:num [
-<span id="L566" class="LineNr">566 </span>  local-scope
-<span id="L567" class="LineNr">567 </span>  load-ingredients
-<span id="L568" class="LineNr">568 </span>]
-<span id="L569" class="LineNr">569 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: '3:num &lt;- add2 1:num, 2:num' should write to '1:num' rather than '3:num'</span>
-<span id="L570" class="LineNr">570 </span>
-<span id="L571" class="LineNr">571 </span><span class="Comment">//: One special-case is recipe 'main'. Make sure it's only ever taking in text</span>
-<span id="L572" class="LineNr">572 </span><span class="Comment">//: ingredients, and returning a single number.</span>
-<span id="L573" class="LineNr">573 </span>
-<span id="L574" class="LineNr">574 </span><span class="Delimiter">:(scenario recipe_header_ingredients_constrained_for_main)</span>
-<span id="L575" class="LineNr">575 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L576" class="LineNr">576 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> x:num [
-<span id="L577" class="LineNr">577 </span>]
-<span id="L578" class="LineNr">578 </span><span class="traceContains">+error: ingredients of <a href='010vm.cc.html#L19'>recipe</a> 'main' must all be text (address:array:character)</span>
-<span id="L579" class="LineNr">579 </span>
-<span id="L580" class="LineNr">580 </span><span class="Delimiter">:(scenario recipe_header_products_constrained_for_main)</span>
-<span id="L581" class="LineNr">581 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L582" class="LineNr">582 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a><span class="muRecipe"> -&gt; </span>x:text [
-<span id="L583" class="LineNr">583 </span>]
-<span id="L584" class="LineNr">584 </span><span class="traceContains">+error: <a href='010vm.cc.html#L19'>recipe</a> 'main' must return at most a single product, a number</span>
-<span id="L585" class="LineNr">585 </span>
-<span id="L586" class="LineNr">586 </span><span class="Delimiter">:(scenario recipe_header_products_constrained_for_main_2)</span>
-<span id="L587" class="LineNr">587 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L588" class="LineNr">588 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a><span class="muRecipe"> -&gt; </span>x:num<span class="Delimiter">,</span> y:num [
-<span id="L589" class="LineNr">589 </span>]
-<span id="L590" class="LineNr">590 </span><span class="traceContains">+error: <a href='010vm.cc.html#L19'>recipe</a> 'main' must return at most a single product, a number</span>
+<span id="L542" class="LineNr">542 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L543" class="LineNr">543 </span>  local-scope
+<span id="L544" class="LineNr">544 </span>  load-ingredients
+<span id="L545" class="LineNr">545 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y
+<span id="L546" class="LineNr">546 </span>]
+<span id="L547" class="LineNr">547 </span><span class="traceContains">+transform: <a href='010vm.cc.html#L32'>instruction</a>: return {z: &quot;number&quot;}</span>
+<span id="L548" class="LineNr">548 </span><span class="traceContains">+mem: storing 8 in location 1</span>
+<span id="L549" class="LineNr">549 </span>
+<span id="L550" class="LineNr">550 </span><span class="Delimiter">:(scenario return_on_fallthrough_already_exists)</span>
+<span id="L551" class="LineNr">551 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L552" class="LineNr">552 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L553" class="LineNr">553 </span>]
+<span id="L554" class="LineNr">554 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L555" class="LineNr">555 </span>  local-scope
+<span id="L556" class="LineNr">556 </span>  load-ingredients
+<span id="L557" class="LineNr">557 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
+<span id="L558" class="LineNr">558 </span>  <span class="Identifier">return</span> z
+<span id="L559" class="LineNr">559 </span>]
+<span id="L560" class="LineNr">560 </span><span class="traceContains">+transform: <a href='010vm.cc.html#L32'>instruction</a>: return {z: ()}</span>
+<span id="L561" class="LineNr">561 </span><span class="traceAbsent">-transform: <a href='010vm.cc.html#L32'>instruction</a>: return z:num</span>
+<span id="L562" class="LineNr">562 </span><span class="traceContains">+mem: storing 8 in location 1</span>
+<span id="L563" class="LineNr">563 </span>
+<span id="L564" class="LineNr">564 </span><span class="Delimiter">:(scenario return_after_conditional_return_based_on_header)</span>
+<span id="L565" class="LineNr">565 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L566" class="LineNr">566 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>add2 <span class="Constant">3</span><span class="Delimiter">,</span> <span class="Constant">5</span>
+<span id="L567" class="LineNr">567 </span>]
+<span id="L568" class="LineNr">568 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>z:num [
+<span id="L569" class="LineNr">569 </span>  local-scope
+<span id="L570" class="LineNr">570 </span>  load-ingredients
+<span id="L571" class="LineNr">571 </span>  z<span class="Special"> &lt;- </span>add x<span class="Delimiter">,</span> y  <span class="Comment"># no type for z</span>
+<span id="L572" class="LineNr">572 </span>  <span class="Identifier">return</span>-<span class="Normal">if</span> <span class="Constant">0</span>/<span class="Constant">false</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+<span id="L573" class="LineNr">573 </span>]
+<span id="L574" class="LineNr">574 </span><span class="traceContains">+mem: storing 8 in location 1</span>
+<span id="L575" class="LineNr">575 </span>
+<span id="L576" class="LineNr">576 </span><span class="Delimiter">:(scenario recipe_headers_perform_same_ingredient_check)</span>
+<span id="L577" class="LineNr">577 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L578" class="LineNr">578 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L579" class="LineNr">579 </span>  <span class="Constant">1</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<span id="L580" class="LineNr">580 </span>  <span class="Constant">2</span>:num<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<span id="L581" class="LineNr">581 </span>  <span class="Constant">3</span>:num<span class="Special"> &lt;- </span>add2 <span class="Constant">1</span>:num<span class="Delimiter">,</span> <span class="Constant">2</span>:num
+<span id="L582" class="LineNr">582 </span>]
+<span id="L583" class="LineNr">583 </span><span class="muRecipe">def</span> add2 x:num<span class="Delimiter">,</span> y:num<span class="muRecipe"> -&gt; </span>x:num [
+<span id="L584" class="LineNr">584 </span>  local-scope
+<span id="L585" class="LineNr">585 </span>  load-ingredients
+<span id="L586" class="LineNr">586 </span>]
+<span id="L587" class="LineNr">587 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: '3:num &lt;- add2 1:num, 2:num' should write to '1:num' rather than '3:num'</span>
+<span id="L588" class="LineNr">588 </span>
+<span id="L589" class="LineNr">589 </span><span class="Comment">//: One special-case is recipe 'main'. Make sure it's only ever taking in text</span>
+<span id="L590" class="LineNr">590 </span><span class="Comment">//: ingredients, and returning a single number.</span>
 <span id="L591" class="LineNr">591 </span>
-<span id="L592" class="LineNr">592 </span><span class="Delimiter">:(after &quot;Transform.push_back(expand_type_abbreviations)&quot;)</span>
-<span id="L593" class="LineNr">593 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_recipe_header_constraints<span class="Delimiter">);</span>
-<span id="L594" class="LineNr">594 </span><span class="Delimiter">:(code)</span>
-<span id="L595" class="LineNr">595 </span><span class="Normal">void</span> check_recipe_header_constraints<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L596" class="LineNr">596 </span>  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
-<span id="L597" class="LineNr">597 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name != <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L598" class="LineNr">598 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L599" class="LineNr">599 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_ingredient<span class="Delimiter">(</span><span class="Constant">&quot;x:<a href='043space.cc.html#L76'>address</a>:array:character&quot;</span><span class="Delimiter">);</span>
-<span id="L600" class="LineNr">600 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L601" class="LineNr">601 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
-<span id="L602" class="LineNr">602 </span>      <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <span class="Constant">&quot;ingredients of <a href='010vm.cc.html#L19'>recipe</a> 'main' must all be text (address:array:character)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L603" class="LineNr">603 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L604" class="LineNr">604 </span>    <span class="Delimiter">}</span>
-<span id="L605" class="LineNr">605 </span>  <span class="Delimiter">}</span>
-<span id="L606" class="LineNr">606 </span>  <span class="Normal">int</span> nprod = <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span>
-<span id="L607" class="LineNr">607 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:number&quot;</span><span class="Delimiter">);</span>
-<span id="L608" class="LineNr">608 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>nprod &gt; <span class="Constant">1</span>
-<span id="L609" class="LineNr">609 </span>      || <span class="Delimiter">(</span>nprod == <span class="Constant">1</span> &amp;&amp; !types_strictly_match<span class="Delimiter">(</span>expected_product<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))))</span> <span class="Delimiter">{</span>
-<span id="L610" class="LineNr">610 </span>    <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <span class="Constant">&quot;recipe 'main' must return at most a single product, a number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
-<span id="L611" class="LineNr">611 </span>  <span class="Delimiter">}</span>
-<span id="L612" class="LineNr">612 </span><span class="Delimiter">}</span>
-<span id="L613" class="LineNr">613 </span>
-<span id="L614" class="LineNr">614 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L615" class="LineNr">615 </span><span class="Normal">using</span> std::min<span class="Delimiter">;</span>
-<span id="L616" class="LineNr">616 </span><span class="Normal">using</span> std::max<span class="Delimiter">;</span>
+<span id="L592" class="LineNr">592 </span><span class="Delimiter">:(scenario recipe_header_ingredients_constrained_for_main)</span>
+<span id="L593" class="LineNr">593 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L594" class="LineNr">594 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> x:num [
+<span id="L595" class="LineNr">595 </span>]
+<span id="L596" class="LineNr">596 </span><span class="traceContains">+error: ingredients of <a href='010vm.cc.html#L19'>recipe</a> 'main' must all be text (address:array:character)</span>
+<span id="L597" class="LineNr">597 </span>
+<span id="L598" class="LineNr">598 </span><span class="Delimiter">:(scenario recipe_header_products_constrained_for_main)</span>
+<span id="L599" class="LineNr">599 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L600" class="LineNr">600 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a><span class="muRecipe"> -&gt; </span>x:text [
+<span id="L601" class="LineNr">601 </span>]
+<span id="L602" class="LineNr">602 </span><span class="traceContains">+error: <a href='010vm.cc.html#L19'>recipe</a> 'main' must return at most a single product, a number</span>
+<span id="L603" class="LineNr">603 </span>
+<span id="L604" class="LineNr">604 </span><span class="Delimiter">:(scenario recipe_header_products_constrained_for_main_2)</span>
+<span id="L605" class="LineNr">605 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L606" class="LineNr">606 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a><span class="muRecipe"> -&gt; </span>x:num<span class="Delimiter">,</span> y:num [
+<span id="L607" class="LineNr">607 </span>]
+<span id="L608" class="LineNr">608 </span><span class="traceContains">+error: <a href='010vm.cc.html#L19'>recipe</a> 'main' must return at most a single product, a number</span>
+<span id="L609" class="LineNr">609 </span>
+<span id="L610" class="LineNr">610 </span><span class="Delimiter">:(after &quot;Transform.push_back(expand_type_abbreviations)&quot;)</span>
+<span id="L611" class="LineNr">611 </span>Transform<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>check_recipe_header_constraints<span class="Delimiter">);</span>
+<span id="L612" class="LineNr">612 </span><span class="Delimiter">:(code)</span>
+<span id="L613" class="LineNr">613 </span><span class="Normal">void</span> check_recipe_header_constraints<span class="Delimiter">(</span><span class="Normal">const</span> <a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L614" class="LineNr">614 </span>  <span class="Normal">const</span> recipe&amp; caller = get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">);</span>
+<span id="L615" class="LineNr">615 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>caller<span class="Delimiter">.</span>name != <span class="Constant">&quot;main&quot;</span><span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L616" class="LineNr">616 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!caller<span class="Delimiter">.</span>has_header<span class="Delimiter">)</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L617" class="LineNr">617 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_ingredient<span class="Delimiter">(</span><span class="Constant">&quot;x:<a href='043space.cc.html#L76'>address</a>:array:character&quot;</span><span class="Delimiter">);</span>
+<span id="L618" class="LineNr">618 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span> i &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">);</span> ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L619" class="LineNr">619 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>!types_strictly_match<span class="Delimiter">(</span>expected_ingredient<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<span id="L620" class="LineNr">620 </span>      <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <span class="Constant">&quot;ingredients of <a href='010vm.cc.html#L19'>recipe</a> 'main' must all be text (address:array:character)</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L621" class="LineNr">621 </span>      <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L622" class="LineNr">622 </span>    <span class="Delimiter">}</span>
+<span id="L623" class="LineNr">623 </span>  <span class="Delimiter">}</span>
+<span id="L624" class="LineNr">624 </span>  <span class="Normal">int</span> nprod = <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>caller<span class="Delimiter">.</span>products<span class="Delimiter">);</span>
+<span id="L625" class="LineNr">625 </span>  reagent<span class="Comment">/*</span><span class="Comment">local</span><span class="Comment">*/</span> expected_product<span class="Delimiter">(</span><span class="Constant">&quot;x:number&quot;</span><span class="Delimiter">);</span>
+<span id="L626" class="LineNr">626 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>nprod &gt; <span class="Constant">1</span>
+<span id="L627" class="LineNr">627 </span>      || <span class="Delimiter">(</span>nprod == <span class="Constant">1</span> &amp;&amp; !types_strictly_match<span class="Delimiter">(</span>expected_product<span class="Delimiter">,</span> caller<span class="Delimiter">.</span>products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">))))</span> <span class="Delimiter">{</span>
+<span id="L628" class="LineNr">628 </span>    <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <span class="Constant">&quot;recipe 'main' must return at most a single product, a number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L185'>end</a><span class="Delimiter">();</span>
+<span id="L629" class="LineNr">629 </span>  <span class="Delimiter">}</span>
+<span id="L630" class="LineNr">630 </span><span class="Delimiter">}</span>
+<span id="L631" class="LineNr">631 </span>
+<span id="L632" class="LineNr">632 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L633" class="LineNr">633 </span><span class="Normal">using</span> std::min<span class="Delimiter">;</span>
+<span id="L634" class="LineNr">634 </span><span class="Normal">using</span> std::max<span class="Delimiter">;</span>
 </pre>
 </body>
 </html>

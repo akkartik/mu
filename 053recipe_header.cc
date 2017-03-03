@@ -365,12 +365,29 @@ def foo -> x:num [
 
 :(scenario recipe_headers_check_for_duplicate_names)
 % Hide_errors = true;
-def add2 x:num, x:num -> z:num [
+def foo x:num, x:num -> z:num [
   local-scope
   load-ingredients
   return z
 ]
-+error: add2: 'x' can't repeat in the ingredients
++error: foo: 'x' can't repeat in the ingredients
+
+:(scenario recipe_headers_check_for_duplicate_names_2)
+% Hide_errors = true;
+def foo x:num, x:num [  # no result
+  local-scope
+  load-ingredients
+]
++error: foo: 'x' can't repeat in the ingredients
+
+:(scenario recipe_headers_check_for_missing_types)
+% Hide_errors = true;
+def main [
+  foo 0
+]
+def foo a [  # no type for 'a'
+]
++error: foo: ingredient 'a' has no type
 
 :(before "End recipe Fields")
 map<string, int> ingredient_index;
@@ -381,10 +398,11 @@ Transform.push_back(check_header_ingredients);  // idempotent
 :(code)
 void check_header_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
-  if (caller_recipe.products.empty()) return;
   caller_recipe.ingredient_index.clear();
   trace(9991, "transform") << "--- checking return instructions against header for " << caller_recipe.name << end();
   for (int i = 0;  i < SIZE(caller_recipe.ingredients);  ++i) {
+    if (caller_recipe.ingredients.at(i).type == NULL)
+      raise << maybe(caller_recipe.name) << "ingredient '" << caller_recipe.ingredients.at(i).name << "' has no type\n" << end();
     if (contains_key(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name))
       raise << maybe(caller_recipe.name) << "'" << caller_recipe.ingredients.at(i).name << "' can't repeat in the ingredients\n" << end();
     put(caller_recipe.ingredient_index, caller_recipe.ingredients.at(i).name, i);

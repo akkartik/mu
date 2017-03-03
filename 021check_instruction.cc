@@ -126,6 +126,7 @@ bool types_match(const reagent& to, const reagent& from) {
 //: copy arguments for later layers
 bool types_strictly_match(reagent/*copy*/ to, reagent/*copy*/ from) {
   // End Preprocess types_strictly_match(reagent to, reagent from)
+  if (to.type == NULL) return false;  // error
   if (is_literal(from) && to.type->value == get(Type_ordinal, "number")) return true;
   // to sidestep type-checking, use /unsafe in the source.
   // this will be highlighted in red inside vim. just for setting up some tests.
