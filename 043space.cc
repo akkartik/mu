@@ -406,7 +406,7 @@ void check_default_space(const recipe_ordinal r) {
   if (caller.steps.empty()) return;
   if (caller.steps.at(0).products.empty()
       || caller.steps.at(0).products.at(0).name != "default-space") {
-    raise << caller.name << " does not seem to start with default-space or local-scope\n" << end();
+    raise << caller.name << " does not seem to start with 'local-scope' or 'default-space'\n" << end();
   }
 }
 :(after "Load Mu Prelude")
