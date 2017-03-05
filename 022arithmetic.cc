@@ -762,6 +762,29 @@ def main [
 +mem: storing -12 in location 1
 
 :(before "End Primitive Recipe Declarations")
+SQUARE_ROOT,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "square-root", SQUARE_ROOT);
+:(before "End Primitive Recipe Checks")
+case SQUARE_ROOT: {
+  if (SIZE(inst.ingredients) != 1) {
+    raise << maybe(get(Recipe, r).name) << "'square-root' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'square-root' should be a number, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SQUARE_ROOT: {
+  products.resize(1);
+  products.at(0).push_back(sqrt(ingredients.at(0).at(0)));
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
 CHARACTER_TO_CODE,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "character-to-code", CHARACTER_TO_CODE);
