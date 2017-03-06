@@ -237,6 +237,7 @@ void dump_profile() {
 :(code)
 void cleanup_main() {
   if (Save_trace && Trace_stream) {
+    cerr << "writing trace to 'last_run'\n";
     ofstream fout("last_run");
     fout << Trace_stream->readable_contents("");
     fout.close();
