@@ -19,25 +19,25 @@
 //:
 //: The UI provides the following hotkeys:
 //:
-//:   'q': Quit.
+//:   `q` or `ctrl-c`: Quit.
 //:
-//:   'Enter': 'Zoom into' this line. Expand some or all of the hidden lines
+//:   `Enter`: 'Zoom into' this line. Expand some or all of the hidden lines
 //:   at the next higher level, updating parenthetical counts of hidden lines.
 //:
-//:   'Backspace': 'Zoom out' on a line after zooming in, collapsing expanded
+//:   `Backspace`: 'Zoom out' on a line after zooming in, collapsing expanded
 //:   lines below by some series of <Enter> commands.
 //:
-//:   'j': Move cursor down one line.
-//:   'k': Move cursor up one line.
-//:   'J': Move cursor down one page.
-//:   'K': Move cursor up one page.
-//:   (arrow and pgUp/pgDn keys should also work)
+//:   `j` or `down-arrow`: Move cursor down one line.
+//:   `k` or `up-arrow`: Move cursor up one line.
+//:   `J` or `ctrl-f` or `page-down`: Move cursor down one page.
+//:   `K` or `ctrl-b` or `page-up`: Move cursor up one page.
 //:
-//:   'G': Move cursor to end of trace.
+//:   `g` or `home`: Move cursor to start of trace.
+//:   `G` or `end`: Move cursor to end of trace.
 //:
-//:   'H': Move cursor to top line on screen.
-//:   'M': Move cursor to center line on screen.
-//:   'L': Move cursor to bottom line on screen.
+//:   `H`: Move cursor to top line on screen.
+//:   `M`: Move cursor to center line on screen.
+//:   `L`: Move cursor to bottom line on screen.
 
 //: browse the trace we just created
 :(before "End Primitive Recipe Declarations")
@@ -94,7 +94,7 @@ void start_trace_browser() {
       tb_poll_event(&event);
     } while (event.type != TB_EVENT_KEY);
     int key = event.key ? event.key : event.ch;
-    if (key == 'q' || key == 'Q') break;
+    if (key == 'q' || key == 'Q' || key == TB_KEY_CTRL_C) break;
     if (key == 'j' || key == TB_KEY_ARROW_DOWN) {
       // move cursor one line down
       if (Display_row < Last_printed_row) ++Display_row;
@@ -115,14 +115,14 @@ void start_trace_browser() {
       // move cursor to bottom of screen
       Display_row = tb_height()-1;
     }
-    if (key == 'J' || key == TB_KEY_PGDN) {
+    if (key == 'J' || key == TB_KEY_PGDN || key == TB_KEY_CTRL_F) {
       // page-down
       if (Trace_index.find(tb_height()-1) != Trace_index.end()) {
         Top_of_screen = get(Trace_index, tb_height()-1) + 1;
         refresh_screen_rows();
       }
     }
-    if (key == 'K' || key == TB_KEY_PGUP) {
+    if (key == 'K' || key == TB_KEY_PGUP || key == TB_KEY_CTRL_B) {
       // page-up is more convoluted
       for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
         --Top_of_screen;
@@ -133,7 +133,13 @@ void start_trace_browser() {
       if (Top_of_screen >= 0)
         refresh_screen_rows();
     }
-    if (key == 'G') {
+    if (key == 'g' || key == TB_KEY_HOME) {
+        Top_of_screen = 0;
+        Last_printed_row = 0;
+        Display_row = 0;
+        refresh_screen_rows();
+    }
+    if (key == 'G' || key == TB_KEY_END) {
       // go to bottom of screen; largely like page-up, interestingly
       Top_of_screen = SIZE(Trace_stream->past_lines)-1;
       for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
