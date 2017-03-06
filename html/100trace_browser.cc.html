@@ -115,7 +115,7 @@ if ('onhashchange' in window) {
 <span id="L57" class="LineNr"> 57 </span><span class="Comment">//: browse a trace loaded from a file</span>
 <span id="L58" class="LineNr"> 58 </span><span class="Delimiter">:(after &quot;Commandline Parsing&quot;)</span>
 <span id="L59" class="LineNr"> 59 </span><span class="Normal">if</span> <span class="Delimiter">(</span>argc == <span class="Constant">3</span> &amp;&amp; <a href='001help.cc.html#L70'>is_equal</a><span class="Delimiter">(</span>argv[<span class="Constant">1</span>]<span class="Delimiter">,</span> <span class="Constant">&quot;browse-trace&quot;</span><span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L60" class="LineNr"> 60 </span>  <a href='100trace_browser.cc.html#L268'>load_trace</a><span class="Delimiter">(</span>argv[<span class="Constant">2</span>]<span class="Delimiter">);</span>
+<span id="L60" class="LineNr"> 60 </span>  <a href='100trace_browser.cc.html#L267'>load_trace</a><span class="Delimiter">(</span>argv[<span class="Constant">2</span>]<span class="Delimiter">);</span>
 <span id="L61" class="LineNr"> 61 </span>  <a href='100trace_browser.cc.html#L72'>start_trace_browser</a><span class="Delimiter">();</span>
 <span id="L62" class="LineNr"> 62 </span>  <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L63" class="LineNr"> 63 </span><span class="Delimiter">}</span>
@@ -287,12 +287,12 @@ if ('onhashchange' in window) {
 <span id="L229" class="LineNr">229 </span>      out &lt;&lt; <span class="Constant">&quot; (&quot;</span> &lt;&lt; delta &lt;&lt; <span class="Constant">&quot;)&quot;</span><span class="Delimiter">;</span>
 <span id="L230" class="LineNr">230 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>delta &gt; <span class="Constant">999</span><span class="Delimiter">)</span> out &lt;&lt; <span class="Normal">static_cast</span>&lt;<span class="Normal">char</span>&gt;<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">);</span>
 <span id="L231" class="LineNr">231 </span>    <span class="Delimiter">}</span>
-<span id="L232" class="LineNr">232 </span>    <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span>screen_row<span class="Delimiter">,</span> out<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+<span id="L232" class="LineNr">232 </span>    <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span>screen_row<span class="Delimiter">,</span> out<span class="Delimiter">.</span>str<span class="Delimiter">(),</span> screen_row == Display_row<span class="Delimiter">);</span>
 <span id="L233" class="LineNr">233 </span>  <span class="Delimiter">}</span>
 <span id="L234" class="LineNr">234 </span>  <span class="Comment">// clear rest of screen</span>
 <span id="L235" class="LineNr">235 </span>  Last_printed_row = screen_row-<span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L236" class="LineNr">236 </span>  <span class="Normal">for</span> <span class="Delimiter">(;</span> screen_row &lt; tb_height<span class="Delimiter">();</span> ++screen_row<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L237" class="LineNr">237 </span>    <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span>screen_row<span class="Delimiter">,</span> <span class="Constant">&quot;~&quot;</span><span class="Delimiter">);</span>
+<span id="L237" class="LineNr">237 </span>    <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span>screen_row<span class="Delimiter">,</span> <span class="Constant">&quot;~&quot;</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">highlight?</span><span class="Comment">*/</span><span class="Constant">false</span><span class="Delimiter">);</span>
 <span id="L238" class="LineNr">238 </span>  <span class="Delimiter">}</span>
 <span id="L239" class="LineNr">239 </span>  <span class="Comment">// move cursor back to display row at the end</span>
 <span id="L240" class="LineNr">240 </span>  tb_set_cursor<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> Display_row<span class="Delimiter">);</span>
@@ -307,7 +307,7 @@ if ('onhashchange' in window) {
 <span id="L249" class="LineNr">249 </span>    <span class="Identifier">return</span> get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row+<span class="Constant">1</span><span class="Delimiter">)</span> - get<span class="Delimiter">(</span>Trace_index<span class="Delimiter">,</span> screen_row<span class="Delimiter">);</span>
 <span id="L250" class="LineNr">250 </span><span class="Delimiter">}</span>
 <span id="L251" class="LineNr">251 </span>
-<span id="L252" class="LineNr">252 </span><span class="Normal">void</span> <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span><span class="Normal">int</span> screen_row<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L252" class="LineNr">252 </span><span class="Normal">void</span> <a href='100trace_browser.cc.html#L252'>render_line</a><span class="Delimiter">(</span><span class="Normal">int</span> screen_row<span class="Delimiter">,</span> <span class="Normal">const</span> string&amp; s<span class="Delimiter">,</span> <span class="Normal">bool</span> highlight<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L253" class="LineNr">253 </span>  <span class="Normal">int</span> col = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L254" class="LineNr">254 </span>  <span class="Normal">int</span> color = TB_WHITE<span class="Delimiter">;</span>
 <span id="L255" class="LineNr">255 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>col = <span class="Constant">0</span><span class="Delimiter">;</span> col &lt; tb_width<span class="Delimiter">()</span> &amp;&amp; col &lt; <a href='001help.cc.html#L138'>SIZE</a><span class="Delimiter">(</span>s<span class="Delimiter">);</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
@@ -316,40 +316,39 @@ if ('onhashchange' in window) {
 <span id="L258" class="LineNr">258 </span>    <span class="Comment">// escapes. hack: can't start a line with them.</span>
 <span id="L259" class="LineNr">259 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\1'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span> color = <span class="Comment">/*</span><span class="Comment">red</span><span class="Comment">*/</span><span class="Constant">1</span><span class="Delimiter">;</span> c = <span class="Constant">' '</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
 <span id="L260" class="LineNr">260 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>c == <span class="cSpecial">'\2'</span><span class="Delimiter">)</span> <span class="Delimiter">{</span> color = TB_WHITE<span class="Delimiter">;</span> c = <span class="Constant">' '</span><span class="Delimiter">;</span> <span class="Delimiter">}</span>
-<span id="L261" class="LineNr">261 </span>    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> color<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
+<span id="L261" class="LineNr">261 </span>    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> c<span class="Delimiter">,</span> color<span class="Delimiter">,</span> highlight ? <span class="Comment">/*</span><span class="Comment">subtle grey</span><span class="Comment">*/</span><span class="Constant">240</span> : TB_BLACK<span class="Delimiter">);</span>
 <span id="L262" class="LineNr">262 </span>  <span class="Delimiter">}</span>
-<span id="L263" class="LineNr">263 </span>  <span class="Normal">for</span> <span class="Delimiter">(;</span> col &lt; tb_width<span class="Delimiter">();</span> ++col<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L264" class="LineNr">264 </span>    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> TB_BLACK<span class="Delimiter">);</span>
-<span id="L265" class="LineNr">265 </span>  <span class="Delimiter">}</span>
-<span id="L266" class="LineNr">266 </span><span class="Delimiter">}</span>
-<span id="L267" class="LineNr">267 </span>
-<span id="L268" class="LineNr">268 </span><span class="Normal">void</span> <a href='100trace_browser.cc.html#L268'>load_trace</a><span class="Delimiter">(</span><span class="Normal">const</span> <span class="Normal">char</span>* filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L269" class="LineNr">269 </span>  ifstream tin<span class="Delimiter">(</span>filename<span class="Delimiter">);</span>
-<span id="L270" class="LineNr">270 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!tin<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L271" class="LineNr">271 </span>    cerr &lt;&lt; <span class="Constant">&quot;no such file: &quot;</span> &lt;&lt; filename &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L272" class="LineNr">272 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L273" class="LineNr">273 </span>  <span class="Delimiter">}</span>
-<span id="L274" class="LineNr">274 </span>  Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
-<span id="L275" class="LineNr">275 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><a href='001help.cc.html#L235'>has_data</a><span class="Delimiter">(</span>tin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L276" class="LineNr">276 </span>    tin &gt;&gt; std::noskipws<span class="Delimiter">;</span>
-<span id="L277" class="LineNr">277 </span>      skip_whitespace_but_not_newline<span class="Delimiter">(</span>tin<span class="Delimiter">);</span>
-<span id="L278" class="LineNr">278 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!isdigit<span class="Delimiter">(</span>tin<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
-<span id="L279" class="LineNr">279 </span>        string dummy<span class="Delimiter">;</span>
-<span id="L280" class="LineNr">280 </span>        getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> dummy<span class="Delimiter">);</span>
-<span id="L281" class="LineNr">281 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L282" class="LineNr">282 </span>      <span class="Delimiter">}</span>
-<span id="L283" class="LineNr">283 </span>    tin &gt;&gt; std::skipws<span class="Delimiter">;</span>
-<span id="L284" class="LineNr">284 </span>    <span class="Normal">int</span> depth<span class="Delimiter">;</span>
-<span id="L285" class="LineNr">285 </span>    tin &gt;&gt; depth<span class="Delimiter">;</span>
-<span id="L286" class="LineNr">286 </span>    string label<span class="Delimiter">;</span>
-<span id="L287" class="LineNr">287 </span>    tin &gt;&gt; label<span class="Delimiter">;</span>
-<span id="L288" class="LineNr">288 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*--label<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span> label<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>--label<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">());</span>
-<span id="L289" class="LineNr">289 </span>    string line<span class="Delimiter">;</span>
-<span id="L290" class="LineNr">290 </span>    getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> line<span class="Delimiter">);</span>
-<span id="L291" class="LineNr">291 </span>    Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>depth<span class="Delimiter">,</span> label<span class="Delimiter">,</span> line<span class="Delimiter">));</span>
-<span id="L292" class="LineNr">292 </span>  <span class="Delimiter">}</span>
-<span id="L293" class="LineNr">293 </span>  cerr &lt;&lt; <span class="Constant">&quot;lines read: &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L294" class="LineNr">294 </span><span class="Delimiter">}</span>
+<span id="L263" class="LineNr">263 </span>  <span class="Normal">for</span> <span class="Delimiter">(;</span> col &lt; tb_width<span class="Delimiter">();</span> ++col<span class="Delimiter">)</span>
+<span id="L264" class="LineNr">264 </span>    tb_change_cell<span class="Delimiter">(</span>col<span class="Delimiter">,</span> screen_row<span class="Delimiter">,</span> <span class="Constant">' '</span><span class="Delimiter">,</span> TB_WHITE<span class="Delimiter">,</span> highlight ? <span class="Comment">/*</span><span class="Comment">subtle grey</span><span class="Comment">*/</span><span class="Constant">240</span> : TB_BLACK<span class="Delimiter">);</span>
+<span id="L265" class="LineNr">265 </span><span class="Delimiter">}</span>
+<span id="L266" class="LineNr">266 </span>
+<span id="L267" class="LineNr">267 </span><span class="Normal">void</span> <a href='100trace_browser.cc.html#L267'>load_trace</a><span class="Delimiter">(</span><span class="Normal">const</span> <span class="Normal">char</span>* filename<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L268" class="LineNr">268 </span>  ifstream tin<span class="Delimiter">(</span>filename<span class="Delimiter">);</span>
+<span id="L269" class="LineNr">269 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!tin<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L270" class="LineNr">270 </span>    cerr &lt;&lt; <span class="Constant">&quot;no such file: &quot;</span> &lt;&lt; filename &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L271" class="LineNr">271 </span>    exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L272" class="LineNr">272 </span>  <span class="Delimiter">}</span>
+<span id="L273" class="LineNr">273 </span>  Trace_stream = <span class="Normal">new</span> trace_stream<span class="Delimiter">;</span>
+<span id="L274" class="LineNr">274 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span><a href='001help.cc.html#L235'>has_data</a><span class="Delimiter">(</span>tin<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L275" class="LineNr">275 </span>    tin &gt;&gt; std::noskipws<span class="Delimiter">;</span>
+<span id="L276" class="LineNr">276 </span>      skip_whitespace_but_not_newline<span class="Delimiter">(</span>tin<span class="Delimiter">);</span>
+<span id="L277" class="LineNr">277 </span>      <span class="Normal">if</span> <span class="Delimiter">(</span>!isdigit<span class="Delimiter">(</span>tin<span class="Delimiter">.</span>peek<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+<span id="L278" class="LineNr">278 </span>        string dummy<span class="Delimiter">;</span>
+<span id="L279" class="LineNr">279 </span>        getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> dummy<span class="Delimiter">);</span>
+<span id="L280" class="LineNr">280 </span>        <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L281" class="LineNr">281 </span>      <span class="Delimiter">}</span>
+<span id="L282" class="LineNr">282 </span>    tin &gt;&gt; std::skipws<span class="Delimiter">;</span>
+<span id="L283" class="LineNr">283 </span>    <span class="Normal">int</span> depth<span class="Delimiter">;</span>
+<span id="L284" class="LineNr">284 </span>    tin &gt;&gt; depth<span class="Delimiter">;</span>
+<span id="L285" class="LineNr">285 </span>    string label<span class="Delimiter">;</span>
+<span id="L286" class="LineNr">286 </span>    tin &gt;&gt; label<span class="Delimiter">;</span>
+<span id="L287" class="LineNr">287 </span>    <span class="Normal">if</span> <span class="Delimiter">(</span>*--label<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">()</span> == <span class="Constant">':'</span><span class="Delimiter">)</span> label<span class="Delimiter">.</span>erase<span class="Delimiter">(</span>--label<span class="Delimiter">.</span><a href='003trace.cc.html#L185'>end</a><span class="Delimiter">());</span>
+<span id="L288" class="LineNr">288 </span>    string line<span class="Delimiter">;</span>
+<span id="L289" class="LineNr">289 </span>    getline<span class="Delimiter">(</span>tin<span class="Delimiter">,</span> line<span class="Delimiter">);</span>
+<span id="L290" class="LineNr">290 </span>    Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>trace_line<span class="Delimiter">(</span>depth<span class="Delimiter">,</span> label<span class="Delimiter">,</span> line<span class="Delimiter">));</span>
+<span id="L291" class="LineNr">291 </span>  <span class="Delimiter">}</span>
+<span id="L292" class="LineNr">292 </span>  cerr &lt;&lt; <span class="Constant">&quot;lines read: &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>past_lines<span class="Delimiter">.</span>size<span class="Delimiter">()</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L293" class="LineNr">293 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

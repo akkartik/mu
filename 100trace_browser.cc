@@ -229,12 +229,12 @@ void render() {
       out << " (" << delta << ")";
       if (delta > 999) out << static_cast<char>(2);
     }
-    render_line(screen_row, out.str());
+    render_line(screen_row, out.str(), screen_row == Display_row);
   }
   // clear rest of screen
   Last_printed_row = screen_row-1;
   for (; screen_row < tb_height(); ++screen_row) {
-    render_line(screen_row, "~");
+    render_line(screen_row, "~", /*highlight?*/false);
   }
   // move cursor back to display row at the end
   tb_set_cursor(0, Display_row);
@@ -249,7 +249,7 @@ int lines_hidden(int screen_row) {
     return get(Trace_index, screen_row+1) - get(Trace_index, screen_row);
 }
 
-void render_line(int screen_row, const string& s) {
+void render_line(int screen_row, const string& s, bool highlight) {
   int col = 0;
   int color = TB_WHITE;
   for (col = 0; col < tb_width() && col < SIZE(s); ++col) {
@@ -258,11 +258,10 @@ void render_line(int screen_row, const string& s) {
     // escapes. hack: can't start a line with them.
     if (c == '\1') { color = /*red*/1; c = ' '; }
     if (c == '\2') { color = TB_WHITE; c = ' '; }
-    tb_change_cell(col, screen_row, c, color, TB_BLACK);
+    tb_change_cell(col, screen_row, c, color, highlight ? /*subtle grey*/240 : TB_BLACK);
   }
-  for (; col < tb_width(); ++col) {
-    tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
-  }
+  for (; col < tb_width(); ++col)
+    tb_change_cell(col, screen_row, ' ', TB_WHITE, highlight ? /*subtle grey*/240 : TB_BLACK);
 }
 
 void load_trace(const char* filename) {
