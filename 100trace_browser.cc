@@ -1,4 +1,43 @@
 //: A debugging helper that lets you zoom in/out on a trace.
+//:
+//: To try it out, first create an example trace:
+//:   mu --trace nqueens.mu
+//: Then to browse the trace, which was stored in a file called 'last_run':
+//:   mu browse-trace last_run
+//:
+//: You should now find yourself in a UI showing a subsequence of lines from
+//: the trace, each line starting with a numeric depth, and ending with a
+//: parenthetical count of trace lines hidden after it with greater depths.
+//:
+//: For example, this line:
+//:   2 app: line1 (30)
+//: indicates that it was logged with depth 2, and that 30 following lines
+//: have been hidden at a depth greater than 2.
+//:
+//: As an experiment, hidden counts of 1000 or more are in red to highlight
+//: where you might be particularly interested in expanding.
+//:
+//: The UI provides the following hotkeys:
+//:
+//:   'q': Quit.
+//:
+//:   'Enter': 'Zoom into' this line. Expand some or all of the hidden lines
+//:   at the next higher level, updating parenthetical counts of hidden lines.
+//:
+//:   'Backspace': 'Zoom out' on a line after zooming in, collapsing expanded
+//:   lines below by some series of <Enter> commands.
+//:
+//:   'j': Move cursor down one line.
+//:   'k': Move cursor up one line.
+//:   'J': Move cursor down one page.
+//:   'K': Move cursor up one page.
+//:   (arrow and pgUp/pgDn keys should also work)
+//:
+//:   'G': Move cursor to end of trace.
+//:
+//:   'H': Move cursor to top line on screen.
+//:   'M': Move cursor to center line on screen.
+//:   'L': Move cursor to bottom line on screen.
 
 //: browse the trace we just created
 :(before "End Primitive Recipe Declarations")
