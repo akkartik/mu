@@ -45,6 +45,7 @@ void initialize_transforms() {
 
 void transform_all() {
   trace(9990, "transform") << "=== transform_all()" << end();
+  // Begin transform_all
   for (int t = 0;  t < SIZE(Transform);  ++t) {
     for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p) {
       recipe& r = p->second;
