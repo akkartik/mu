@@ -39,7 +39,6 @@
 //:   `M`: Move cursor to center line on screen.
 //:   `L`: Move cursor to bottom line on screen.
 
-//: browse the trace we just created
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
 :(before "End Primitive Recipe Numbers")
