@@ -115,10 +115,14 @@ void start_trace_browser() {
     else if (key == 'c') {
       // move cursor to center of screen
       Display_row = tb_height()/2;
+      while (!contains_key(Trace_index, Display_row))
+        --Display_row;
     }
     else if (key == 'b') {
       // move cursor to bottom of screen
       Display_row = tb_height()-1;
+      while (!contains_key(Trace_index, Display_row))
+        --Display_row;
     }
     else if (key == 'T') {
       // scroll line at cursor to top of screen
