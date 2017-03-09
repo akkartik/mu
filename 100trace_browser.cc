@@ -121,21 +121,26 @@ void start_trace_browser() {
       Display_row = tb_height()-1;
     }
     if (key == 'T') {
+      // move cursor _row_ to top of screen
       Top_of_screen = get(Trace_index, Display_row);
       Display_row = 0;
       refresh_screen_rows();
     }
     if (key == 'h' || key == TB_KEY_ARROW_LEFT) {
+      // pan screen one character right
       --Left_of_screen;
     }
     if (key == 'l' || key == TB_KEY_ARROW_RIGHT) {
+      // pan screen one character left
       ++Left_of_screen;
     }
     if (key == 'H') {
+      // pan screen one screen-width left
       Left_of_screen -= (tb_width() - 5);
       if (Left_of_screen < 0) Left_of_screen = 0;
     }
     if (key == 'L') {
+      // pan screen one screen-width right
       Left_of_screen += (tb_width() - 5);
     }
     if (key == 'J' || key == TB_KEY_PGDN || key == TB_KEY_CTRL_F) {
