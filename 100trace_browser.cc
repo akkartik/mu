@@ -128,11 +128,11 @@ void start_trace_browser() {
       refresh_screen_rows();
     }
     else if (key == 'h' || key == TB_KEY_ARROW_LEFT) {
-      // pan screen one character right
-      --Left_of_screen;
+      // pan screen one character left
+      if (Left_of_screen > 0) --Left_of_screen;
     }
     else if (key == 'l' || key == TB_KEY_ARROW_RIGHT) {
-      // pan screen one character left
+      // pan screen one character right
       ++Left_of_screen;
     }
     else if (key == 'H') {
