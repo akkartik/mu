@@ -38,6 +38,7 @@
 //:   `t`: Move cursor to top line on screen.
 //:   `c`: Move cursor to center line on screen.
 //:   `b`: Move cursor to bottom line on screen.
+//:   `T`: Scroll line at cursor to top of screen.
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -113,6 +114,11 @@ void start_trace_browser() {
     if (key == 'b') {
       // move cursor to bottom of screen
       Display_row = tb_height()-1;
+    }
+    if (key == 'T') {
+      Top_of_screen = get(Trace_index, Display_row);
+      Display_row = 0;
+      refresh_screen_rows();
     }
     if (key == 'J' || key == TB_KEY_PGDN || key == TB_KEY_CTRL_F) {
       // page-down
