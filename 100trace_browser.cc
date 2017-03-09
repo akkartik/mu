@@ -1,4 +1,5 @@
 //: A debugging helper that lets you zoom in/out on a trace.
+//: Warning: this tool has zero automated tests.
 //:
 //: To try it out, first create an example trace:
 //:   mu --trace nqueens.mu
@@ -90,15 +91,11 @@ void start_trace_browser() {
   }
   tb_init();
   Display_row = Display_column = 0;
-  tb_event event;
   Top_of_screen = 0;
   refresh_screen_rows();
   while (true) {
     render();
-    do {
-      tb_poll_event(&event);
-    } while (event.type != TB_EVENT_KEY);
-    int key = event.key ? event.key : event.ch;
+    int key = read_key();
     if (key == 'q' || key == 'Q' || key == TB_KEY_CTRL_C) break;
     if (key == 'j' || key == TB_KEY_ARROW_DOWN) {
       // move cursor one line down
@@ -322,4 +319,12 @@ void load_trace(const char* filename) {
     Trace_stream->past_lines.push_back(trace_line(depth, label, line));
   }
   cerr << "lines read: " << Trace_stream->past_lines.size() << '\n';
+}
+
+int read_key() {
+  tb_event event;
+  do {
+    tb_poll_event(&event);
+  } while (event.type != TB_EVENT_KEY);
+  return event.key ? event.key : event.ch;
 }
