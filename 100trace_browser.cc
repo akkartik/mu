@@ -35,9 +35,9 @@
 //:   `g` or `home`: Move cursor to start of trace.
 //:   `G` or `end`: Move cursor to end of trace.
 //:
-//:   `H`: Move cursor to top line on screen.
-//:   `M`: Move cursor to center line on screen.
-//:   `L`: Move cursor to bottom line on screen.
+//:   `t`: Move cursor to top line on screen.
+//:   `c`: Move cursor to center line on screen.
+//:   `b`: Move cursor to bottom line on screen.
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -102,15 +102,15 @@ void start_trace_browser() {
       // move cursor one line up
       if (Display_row > 0) --Display_row;
     }
-    if (key == 'H') {
+    if (key == 't') {
       // move cursor to top of screen
       Display_row = 0;
     }
-    if (key == 'M') {
+    if (key == 'c') {
       // move cursor to center of screen
       Display_row = tb_height()/2;
     }
-    if (key == 'L') {
+    if (key == 'b') {
       // move cursor to bottom of screen
       Display_row = tb_height()-1;
     }
