@@ -78,13 +78,13 @@ void start_trace_browser() {
   if (!Trace_stream) return;
   cerr << "computing min depth to display\n";
   int min_depth = 9999;
-  for (int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
+  for (int i = 0;  i < SIZE(Trace_stream->past_lines);  ++i) {
     trace_line& curr_line = Trace_stream->past_lines.at(i);
     if (curr_line.depth < min_depth) min_depth = curr_line.depth;
   }
   cerr << "min depth is " << min_depth << '\n';
   cerr << "computing lines to display\n";
-  for (int i = 0; i < SIZE(Trace_stream->past_lines); ++i) {
+  for (int i = 0;  i < SIZE(Trace_stream->past_lines);  ++i) {
     if (Trace_stream->past_lines.at(i).depth == min_depth)
       Visible.insert(i);
   }
@@ -156,7 +156,7 @@ void start_trace_browser() {
     }
     else if (key == 'K' || key == TB_KEY_PGUP || key == TB_KEY_CTRL_B) {
       // page-up is more convoluted
-      for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
+      for (int screen_row = tb_height();  screen_row > 0 && Top_of_screen > 0;  --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
         while (Top_of_screen > 0 && !contains_key(Visible, Top_of_screen))
@@ -174,7 +174,7 @@ void start_trace_browser() {
     else if (key == 'G' || key == TB_KEY_END) {
       // go to bottom of screen; largely like page-up, interestingly
       Top_of_screen = SIZE(Trace_stream->past_lines)-1;
-      for (int screen_row = tb_height(); screen_row > 0 && Top_of_screen > 0; --screen_row) {
+      for (int screen_row = tb_height();  screen_row > 0 && Top_of_screen > 0;  --screen_row) {
         --Top_of_screen;
         if (Top_of_screen <= 0) break;
         while (Top_of_screen > 0 && !contains_key(Visible, Top_of_screen))
@@ -192,7 +192,7 @@ void start_trace_browser() {
       int index = 0;
       // simultaneously compute end_index and min_depth
       int min_depth = 9999;
-      for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
+      for (index = start_index+1;  index < SIZE(Trace_stream->past_lines);  ++index) {
         if (contains_key(Visible, index)) break;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         assert(curr_line.depth > Trace_stream->past_lines.at(start_index).depth);
@@ -200,7 +200,7 @@ void start_trace_browser() {
       }
       int end_index = index;
       // mark as visible all intervening indices at min_depth
-      for (index = start_index; index < end_index; ++index) {
+      for (index = start_index;  index < end_index;  ++index) {
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth == min_depth) {
           Visible.insert(index);
@@ -215,14 +215,14 @@ void start_trace_browser() {
       int index = 0;
       // end_index is the next line at a depth same as or lower than start_index
       int initial_depth = Trace_stream->past_lines.at(start_index).depth;
-      for (index = start_index+1; index < SIZE(Trace_stream->past_lines); ++index) {
+      for (index = start_index+1;  index < SIZE(Trace_stream->past_lines);  ++index) {
         if (!contains_key(Visible, index)) continue;
         trace_line& curr_line = Trace_stream->past_lines.at(index);
         if (curr_line.depth <= initial_depth) break;
       }
       int end_index = index;
       // mark as visible all intervening indices at min_depth
-      for (index = start_index+1; index < end_index; ++index) {
+      for (index = start_index+1;  index < end_index;  ++index) {
         Visible.erase(index);
       }
       refresh_screen_rows();
@@ -235,7 +235,7 @@ void start_trace_browser() {
 void refresh_screen_rows() {
   int screen_row = 0, index = 0;
   Trace_index.clear();
-  for (screen_row = 0, index = Top_of_screen; screen_row < tb_height() && index < SIZE(Trace_stream->past_lines); ++screen_row, ++index) {
+  for (screen_row = 0, index = Top_of_screen;  screen_row < tb_height() && index < SIZE(Trace_stream->past_lines);  ++screen_row, ++index) {
     // skip lines without depth for now
     while (!contains_key(Visible, index)) {
       ++index;
@@ -249,7 +249,7 @@ done:;
 
 void render() {
   int screen_row = 0;
-  for (screen_row = 0; screen_row < tb_height(); ++screen_row) {
+  for (screen_row = 0;  screen_row < tb_height();  ++screen_row) {
     if (!contains_key(Trace_index, screen_row)) break;
     trace_line& curr_line = Trace_stream->past_lines.at(get(Trace_index, screen_row));
     ostringstream out;
@@ -265,7 +265,7 @@ void render() {
   }
   // clear rest of screen
   Last_printed_row = screen_row-1;
-  for (; screen_row < tb_height(); ++screen_row) {
+  for (;  screen_row < tb_height();  ++screen_row) {
     render_line(screen_row, "~", /*highlight?*/false);
   }
   // move cursor back to display row at the end
@@ -284,15 +284,15 @@ int lines_hidden(int screen_row) {
 void render_line(int screen_row, const string& s, bool highlight) {
   int col = 0;
   int color = TB_WHITE;
-  for (col = 0; col < tb_width() && col+Left_of_screen < SIZE(s); ++col) {
+  for (col = 0;  col < tb_width() && col+Left_of_screen < SIZE(s);  ++col) {
     char c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
-    if (c == '\1') { color = /*red*/1; c = ' '; }
-    if (c == '\2') { color = TB_WHITE; c = ' '; }
+    if (c == '\1') { color = /*red*/1;  c = ' '; }
+    if (c == '\2') { color = TB_WHITE;  c = ' '; }
     tb_change_cell(col, screen_row, c, color, highlight ? /*subtle grey*/240 : TB_BLACK);
   }
-  for (; col < tb_width(); ++col)
+  for (;  col < tb_width();  ++col)
     tb_change_cell(col, screen_row, ' ', TB_WHITE, highlight ? /*subtle grey*/240 : TB_BLACK);
 }
 
