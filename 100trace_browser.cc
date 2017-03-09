@@ -31,6 +31,8 @@
 //:   `k` or `up-arrow`: Move/scroll cursor up one line.
 //:   `J` or `ctrl-f` or `page-down`: Scroll cursor down one page.
 //:   `K` or `ctrl-b` or `page-up`: Scroll cursor up one page.
+//:   `H`: Scroll cursor left one screen-width.
+//:   `L`: Scroll cursor right one screen-width.
 //:
 //:   `g` or `home`: Move cursor to start of trace.
 //:   `G` or `end`: Move cursor to end of trace.
@@ -65,6 +67,7 @@ if (argc == 3 && is_equal(argv[1], "browse-trace")) {
 :(before "End Globals")
 set<int> Visible;
 int Top_of_screen = 0;
+int Left_of_screen = 0;
 int Last_printed_row = 0;
 map<int, int> Trace_index;  // screen row -> trace index
 
@@ -119,6 +122,13 @@ void start_trace_browser() {
       Top_of_screen = get(Trace_index, Display_row);
       Display_row = 0;
       refresh_screen_rows();
+    }
+    if (key == 'H') {
+      Left_of_screen -= (tb_width() - 5);
+      if (Left_of_screen < 0) Left_of_screen = 0;
+    }
+    if (key == 'L') {
+      Left_of_screen += (tb_width() - 5);
     }
     if (key == 'J' || key == TB_KEY_PGDN || key == TB_KEY_CTRL_F) {
       // page-down
@@ -257,8 +267,8 @@ int lines_hidden(int screen_row) {
 void render_line(int screen_row, const string& s, bool highlight) {
   int col = 0;
   int color = TB_WHITE;
-  for (col = 0; col < tb_width() && col < SIZE(s); ++col) {
-    char c = s.at(col);  // todo: unicode
+  for (col = 0; col < tb_width() && col+Left_of_screen < SIZE(s); ++col) {
+    char c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
     if (c == '\1') { color = /*red*/1; c = ' '; }
