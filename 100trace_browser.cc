@@ -31,6 +31,8 @@
 //:   `k` or `up-arrow`: Move/scroll cursor up one line.
 //:   `J` or `ctrl-f` or `page-down`: Scroll cursor down one page.
 //:   `K` or `ctrl-b` or `page-up`: Scroll cursor up one page.
+//:   `h` or `left-arrow`: Scroll cursor left one character.
+//:   `l` or `right-arrow`: Scroll cursor right one character.
 //:   `H`: Scroll cursor left one screen-width.
 //:   `L`: Scroll cursor right one screen-width.
 //:
@@ -122,6 +124,12 @@ void start_trace_browser() {
       Top_of_screen = get(Trace_index, Display_row);
       Display_row = 0;
       refresh_screen_rows();
+    }
+    if (key == 'h' || key == TB_KEY_ARROW_LEFT) {
+      --Left_of_screen;
+    }
+    if (key == 'l' || key == TB_KEY_ARROW_RIGHT) {
+      ++Left_of_screen;
     }
     if (key == 'H') {
       Left_of_screen -= (tb_width() - 5);
