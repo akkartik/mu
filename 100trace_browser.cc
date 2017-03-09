@@ -27,10 +27,10 @@
 //:   `Backspace`: 'Zoom out' on a line after zooming in, collapsing expanded
 //:   lines below by some series of <Enter> commands.
 //:
-//:   `j` or `down-arrow`: Move cursor down one line.
-//:   `k` or `up-arrow`: Move cursor up one line.
-//:   `J` or `ctrl-f` or `page-down`: Move cursor down one page.
-//:   `K` or `ctrl-b` or `page-up`: Move cursor up one page.
+//:   `j` or `down-arrow`: Move/scroll cursor down one line.
+//:   `k` or `up-arrow`: Move/scroll cursor up one line.
+//:   `J` or `ctrl-f` or `page-down`: Scroll cursor down one page.
+//:   `K` or `ctrl-b` or `page-up`: Scroll cursor up one page.
 //:
 //:   `g` or `home`: Move cursor to start of trace.
 //:   `G` or `end`: Move cursor to end of trace.
