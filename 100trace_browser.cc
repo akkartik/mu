@@ -44,6 +44,10 @@
 //:   `c`: Move cursor to center line on screen.
 //:   `b`: Move cursor to bottom line on screen.
 //:   `T`: Scroll line at cursor to top of screen.
+//:
+//:   `/`: Search for a pattern.
+//:   `n`: Jump to next instance of search pattern.
+//:   `p`: Jump to previous instance of search pattern.
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -73,6 +77,7 @@ int Top_of_screen = 0;
 int Left_of_screen = 0;
 int Last_printed_row = 0;
 map<int, int> Trace_index;  // screen row -> trace index
+string Current_search_pattern = "";
 
 :(code)
 void start_trace_browser() {
@@ -224,8 +229,75 @@ void start_trace_browser() {
       }
       refresh_screen_rows();
     }
+    else if (key == '/') {
+      start_search_editor();
+      search_next(Current_search_pattern);
+    }
+    else if (key == 'n') {
+      search_next(Current_search_pattern);
+    }
+    else if (key == 'N') {
+      search_previous(Current_search_pattern);
+    }
   }
   tb_shutdown();
+}
+
+void start_search_editor() {
+  const int bottom_screen_line = tb_height()-1;
+  // run a little editor just in the last line of the screen
+  clear_line(bottom_screen_line);
+  tb_set_cursor(0, bottom_screen_line);
+  int col = 0;
+  tb_change_cell(col, bottom_screen_line, '/', TB_WHITE, TB_BLACK);
+  ++col;
+  tb_set_cursor(col, bottom_screen_line);
+  tb_present();
+  string pattern;
+  while (true) {
+    int key = read_key();
+    if (key == TB_KEY_ENTER) {
+      Current_search_pattern = pattern;
+      break;
+    }
+    else {
+      char c = static_cast<char>(key);
+      tb_change_cell(col, bottom_screen_line, c, TB_WHITE, TB_BLACK);
+      ++col;
+      tb_set_cursor(col, bottom_screen_line);
+      tb_present();
+      pattern += static_cast<char>(key);
+    }
+  }
+}
+
+void search_next(const string& pat) {
+  for (int trace_index = get(Trace_index, Display_row)+1;  trace_index < SIZE(Trace_stream->past_lines);  ++trace_index) {
+    if (!contains_key(Visible, trace_index)) continue;
+    const trace_line& line = Trace_stream->past_lines.at(trace_index);
+    if (line.label.find(pat) == string::npos && line.contents.find(pat) == string::npos) continue;
+    Top_of_screen = trace_index;
+    Display_row = 0;
+    refresh_screen_rows();
+    return;
+  }
+}
+
+void search_previous(const string& pat) {
+  for (int trace_index = get(Trace_index, Display_row)-1;  trace_index >= 0;  --trace_index) {
+    if (!contains_key(Visible, trace_index)) continue;
+    const trace_line& line = Trace_stream->past_lines.at(trace_index);
+    if (line.label.find(pat) == string::npos && line.contents.find(pat) == string::npos) continue;
+    Top_of_screen = trace_index;
+    Display_row = 0;
+    refresh_screen_rows();
+    return;
+  }
+}
+
+void clear_line(int screen_row) {
+  for (int col = 0;  col < tb_width();  ++col)
+    tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
 }
 
 // update Trace_indices for each screen_row on the basis of Top_of_screen and Visible
