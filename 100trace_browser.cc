@@ -397,9 +397,8 @@ void render() {
   }
   // clear rest of screen
   Last_printed_row = screen_row-1;
-  for (;  screen_row < tb_height();  ++screen_row) {
+  for (;  screen_row < tb_height();  ++screen_row)
     render_line(screen_row, "~", /*cursor_line?*/false);
-  }
   // move cursor back to display row at the end
   tb_set_cursor(0, Display_row);
   tb_present();
