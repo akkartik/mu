@@ -304,10 +304,20 @@ bool start_search_editor() {
     else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       if (col > /*slash*/1) {
         --col;
-        tb_change_cell(col, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+        // update pattern
+        pattern.erase(col-/*slash*/1, /*len*/1);
+        // update screen
+        if (col > SIZE(pattern)) {
+          tb_change_cell(col, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+        }
+        else {
+          assert(col <= SIZE(pattern));
+          for (int x = col;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
+            tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
+          tb_change_cell(SIZE(pattern)+/*skip slash*/1, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+        }
         tb_set_cursor(col, bottom_screen_line);
         tb_present();
-        pattern.erase(--pattern.end());
       }
     }
     else if (key < 128) {  // ascii only
