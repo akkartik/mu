@@ -51,14 +51,14 @@
 //:
 //:   After hitting `/`, a small editor on the bottom-most line supports the
 //:   following hotkeys:
-//:     ascii characters: add the key to the pattern
-//:     `Enter`: search for the pattern
+//:     ascii characters: add the key to the pattern.
+//:     `Enter`: search for the pattern.
 //:     `Esc` or `ctrl-c`: cancel the current search, setting the screen back
-//:       to its state before the search
-//:     `left-arrow`: move cursor left
-//:     `right-arrow`: move cursor right
-//:     `ctrl-a` or `home`: move cursor to start of search pattern
-//:     `ctrl-e` or `end`: move cursor to end of search pattern
+//:       to its state before the search.
+//:     `left-arrow`: move cursor left.
+//:     `right-arrow`: move cursor right.
+//:     `ctrl-a` or `home`: move cursor to start of search pattern.
+//:     `ctrl-e` or `end`: move cursor to end of search pattern.
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
