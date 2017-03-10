@@ -55,6 +55,10 @@
 //:     `Enter`: search for the pattern
 //:     `Esc` or `ctrl-c`: cancel the current search, setting the screen back
 //:       to its state before the search
+//:     `left-arrow`: move cursor left
+//:     `right-arrow`: move cursor right
+//:     `ctrl-a` or `home`: move cursor to start of search pattern
+//:     `ctrl-e` or `end`: move cursor to end of search pattern
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -257,7 +261,7 @@ bool start_search_editor() {
   // run a little editor just in the last line of the screen
   clear_line(bottom_screen_line);
   tb_set_cursor(0, bottom_screen_line);
-  int col = 0;
+  int col = 0;  // screen column of cursor on bottom line. also used to update pattern.
   tb_change_cell(col, bottom_screen_line, '/', TB_WHITE, TB_BLACK);
   ++col;
   tb_set_cursor(col, bottom_screen_line);
@@ -273,8 +277,32 @@ bool start_search_editor() {
     else if (key == TB_KEY_ESC || key == TB_KEY_CTRL_C) {
       return false;
     }
+    else if (key == TB_KEY_ARROW_LEFT) {
+      if (col > /*slash*/1) {
+        --col;
+        tb_set_cursor(col, bottom_screen_line);
+        tb_present();
+      }
+    }
+    else if (key == TB_KEY_ARROW_RIGHT) {
+      if (col-/*slash*/1 < SIZE(pattern)) {
+        ++col;
+        tb_set_cursor(col, bottom_screen_line);
+        tb_present();
+      }
+    }
+    else if (key == TB_KEY_HOME || key == TB_KEY_CTRL_A) {
+      col = /*skip slash*/1;
+      tb_set_cursor(col, bottom_screen_line);
+      tb_present();
+    }
+    else if (key == TB_KEY_END || key == TB_KEY_CTRL_E) {
+      col = SIZE(pattern)+/*skip slash*/1;
+      tb_set_cursor(col, bottom_screen_line);
+      tb_present();
+    }
     else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
-      if (col > 0) {
+      if (col > /*slash*/1) {
         --col;
         tb_change_cell(col, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
         tb_set_cursor(col, bottom_screen_line);
@@ -283,12 +311,15 @@ bool start_search_editor() {
       }
     }
     else if (key < 128) {  // ascii only
+      // update pattern
       char c = static_cast<char>(key);
-      tb_change_cell(col, bottom_screen_line, c, TB_WHITE, TB_BLACK);
+      pattern.insert(col-/*slash*/1, /*num*/1, c);
+      // update screen
+      for (int x = col;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
+        tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
       ++col;
       tb_set_cursor(col, bottom_screen_line);
       tb_present();
-      pattern += static_cast<char>(key);
     }
   }
 }
