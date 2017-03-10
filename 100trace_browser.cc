@@ -389,9 +389,11 @@ void render() {
     if (screen_row < tb_height()-1) {
       int delta = lines_hidden(screen_row);
       // home-brew escape sequence for red
-      if (delta > 999) out << static_cast<char>(1);
-      out << " (" << delta << ")";
-      if (delta > 999) out << static_cast<char>(2);
+      if (delta > 1) {
+        if (delta > 999) out << static_cast<char>(1);
+        out << " (" << delta << ")";
+        if (delta > 999) out << static_cast<char>(2);
+      }
     }
     render_line(screen_row, out.str(), screen_row == Display_row);
   }
