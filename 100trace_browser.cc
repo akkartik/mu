@@ -47,7 +47,14 @@
 //:
 //:   `/`: Search for a pattern.
 //:   `n`: Jump to next instance of search pattern.
-//:   `p`: Jump to previous instance of search pattern.
+//:   `N`: Jump to previous instance of search pattern.
+//:
+//:   After hitting `/`, a small editor on the bottom-most line supports the
+//:   following hotkeys:
+//:     ascii characters: add the key to the pattern
+//:     `Enter`: search for the pattern
+//:     `Esc` or `ctrl-c`: cancel the current search, setting the screen back
+//:       to its state before the search
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -230,20 +237,22 @@ void start_trace_browser() {
       refresh_screen_rows();
     }
     else if (key == '/') {
-      start_search_editor();
-      search_next(Current_search_pattern);
+      if (start_search_editor())
+        search_next(Current_search_pattern);
     }
     else if (key == 'n') {
-      search_next(Current_search_pattern);
+      if (!Current_search_pattern.empty())
+        search_next(Current_search_pattern);
     }
     else if (key == 'N') {
-      search_previous(Current_search_pattern);
+      if (!Current_search_pattern.empty())
+        search_previous(Current_search_pattern);
     }
   }
   tb_shutdown();
 }
 
-void start_search_editor() {
+bool start_search_editor() {
   const int bottom_screen_line = tb_height()-1;
   // run a little editor just in the last line of the screen
   clear_line(bottom_screen_line);
@@ -257,10 +266,23 @@ void start_search_editor() {
   while (true) {
     int key = read_key();
     if (key == TB_KEY_ENTER) {
-      Current_search_pattern = pattern;
-      break;
+      if (!pattern.empty())
+        Current_search_pattern = pattern;
+      return true;
     }
-    else {
+    else if (key == TB_KEY_ESC || key == TB_KEY_CTRL_C) {
+      return false;
+    }
+    else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
+      if (col > 0) {
+        --col;
+        tb_change_cell(col, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+        tb_set_cursor(col, bottom_screen_line);
+        tb_present();
+        pattern.erase(--pattern.end());
+      }
+    }
+    else if (key < 128) {  // ascii only
       char c = static_cast<char>(key);
       tb_change_cell(col, bottom_screen_line, c, TB_WHITE, TB_BLACK);
       ++col;
