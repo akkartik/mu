@@ -213,8 +213,17 @@ def main [
 
 :(before "End type_tree Definition")
 struct address_element_info {
-  int offset;  // where inside a container type (after flattening nested containers!) the address lies
-  const type_tree* payload_type;  // all the information we need to compute sizes of items inside an address inside a container. Doesn't need to be a full-scale reagent, since an address inside a container can never be an array, and arrays are the only type that need to know their location to compute their size.
+  // Where inside a container type (after flattening nested containers!) the
+  // address lies
+  int offset;
+
+  // All the information we need to compute sizes of items inside an address
+  // inside a container. `payload_type` Doesn't need to be a full-scale
+  // reagent, since an address inside a container can never be an array, and
+  // arrays are the only type that need to know their location to compute their
+  // size.
+  const type_tree* payload_type;
+
   address_element_info(int o, const type_tree* p);
   address_element_info(const address_element_info& other);
   ~address_element_info();
