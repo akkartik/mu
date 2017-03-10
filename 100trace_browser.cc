@@ -398,7 +398,7 @@ void render() {
   // clear rest of screen
   Last_printed_row = screen_row-1;
   for (;  screen_row < tb_height();  ++screen_row) {
-    render_line(screen_row, "~", /*highlight?*/false);
+    render_line(screen_row, "~", /*cursor_line?*/false);
   }
   // move cursor back to display row at the end
   tb_set_cursor(0, Display_row);
@@ -413,19 +413,46 @@ int lines_hidden(int screen_row) {
     return get(Trace_index, screen_row+1) - get(Trace_index, screen_row);
 }
 
-void render_line(int screen_row, const string& s, bool highlight) {
+void render_line(int screen_row, const string& s, bool cursor_line) {
   int col = 0;
   int color = TB_WHITE;
+  int background_color = cursor_line ? /*subtle grey*/240 : TB_BLACK;
+  vector<pair<size_t, size_t> > highlight_ranges = find_all_occurrences(s, Current_search_pattern);
   for (col = 0;  col < tb_width() && col+Left_of_screen < SIZE(s);  ++col) {
     char c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
     // escapes. hack: can't start a line with them.
     if (c == '\1') { color = /*red*/1;  c = ' '; }
     if (c == '\2') { color = TB_WHITE;  c = ' '; }
-    tb_change_cell(col, screen_row, c, color, highlight ? /*subtle grey*/240 : TB_BLACK);
+    if (in_range(highlight_ranges, col+Left_of_screen))
+      tb_change_cell(col, screen_row, c, TB_BLACK, /*yellow*/11);
+    else
+      tb_change_cell(col, screen_row, c, color, background_color);
   }
   for (;  col < tb_width();  ++col)
-    tb_change_cell(col, screen_row, ' ', TB_WHITE, highlight ? /*subtle grey*/240 : TB_BLACK);
+    tb_change_cell(col, screen_row, ' ', TB_WHITE, background_color);
+}
+
+vector<pair<size_t, size_t> > find_all_occurrences(const string& s, const string& pat) {
+  vector<pair<size_t, size_t> > result;
+  if (pat.empty()) return result;
+  size_t idx = 0;
+  while (true) {
+    size_t next_idx = s.find(pat, idx);
+    if (next_idx == string::npos) break;
+    result.push_back(pair<size_t, size_t>(next_idx, next_idx+SIZE(pat)));
+    idx = next_idx+SIZE(pat);
+  }
+  return result;
+}
+
+bool in_range(const vector<pair<size_t, size_t> >& highlight_ranges, size_t idx) {
+  for (int i = 0;  i < SIZE(highlight_ranges);  ++i) {
+    if (idx >= highlight_ranges.at(i).first && idx < highlight_ranges.at(i).second)
+      return true;
+    if (idx < highlight_ranges.at(i).second) break;
+  }
+  return false;
 }
 
 void load_trace(const char* filename) {
