@@ -5,9 +5,9 @@ def equal a:text, b:text -> result:bool [
   load-ingredients
   an:num, bn:num <- copy a, b
   address-equal?:boolean <- equal an, bn
-  reply-if address-equal?, 1/true
-  reply-unless a, 0/false
-  reply-unless b, 0/false
+  return-if address-equal?, 1/true
+  return-unless a, 0/false
+  return-unless b, 0/false
   a-len:num <- length *a
   b-len:num <- length *b
   # compare lengths
@@ -1348,7 +1348,7 @@ def parse-whole-number in:text -> out:num, error?:bool [
     c:char <- index *in, i
     x:num <- character-to-code c
     digit:num, error?:bool <- character-code-to-digit x
-    reply-if error?
+    return-if error?
     result <- multiply result, 10
     result <- add result, digit
     i <- add i, 1
@@ -1364,9 +1364,9 @@ recipe character-code-to-digit character-code:number -> result:number, error?:bo
   load-ingredients
   result <- copy 0
   error? <- lesser-than character-code, 48  # '0'
-  reply-if error?
+  return-if error?
   error? <- greater-than character-code, 57  # '9'
-  reply-if error?
+  return-if error?
   result <- subtract character-code, 48
 ]
 
