@@ -173,7 +173,10 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     loop
   }
   <run-sandboxes-end>
-  $system [./snapshot_lesson]
+  {
+    break-if resources  # ignore this in tests
+    $system [./snapshot_lesson]
+  }
 ]
 
 # load code from disk
