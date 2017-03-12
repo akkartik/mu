@@ -1,0 +1,11 @@
+#!/bin/sh
+# Hacky little helper called from edit/ and sandbox/ apps to save a snapshot
+# of lesson/ using git.
+
+test -d lesson/.git || exit 0  # give up if it's not a git repo
+
+cd lesson
+# explicitly say '--all' for git 1.9
+git add --all .
+# bug in git: git diff -q messes up --exit-code
+git diff HEAD --exit-code >/dev/null || git commit -a -m . >/dev/null

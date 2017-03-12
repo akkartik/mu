@@ -173,6 +173,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     loop
   }
   <run-sandboxes-end>
+  $system [./snapshot_lesson]
 ]
 
 # load code from disk

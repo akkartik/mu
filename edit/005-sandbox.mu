@@ -144,7 +144,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
   local-scope
   load-ingredients
   errors-found?:bool <- update-recipes env, resources, screen
-  return-if errors-found?
+  jump-if errors-found?, +return
   # check contents of right editor (sandbox)
   <run-sandboxes-begin>
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -181,6 +181,8 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     loop
   }
   <run-sandboxes-end>
+  +return
+  $system [./snapshot_lesson]
 ]
 
 # load code from disk
