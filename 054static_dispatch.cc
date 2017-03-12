@@ -181,7 +181,7 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
   // Static Dispatch Phase 2
-  candidates = strictly_matching_variants_except_literal_zero_against_address(inst, variants);
+  candidates = strictly_matching_variants_except_literal_against_address_or_boolean(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
   // Static Dispatch Phase 3
@@ -189,10 +189,6 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   // End Static Dispatch Phase 3
 
   // Static Dispatch Phase 4
-  candidates = strictly_matching_variants_except_literal_against_address_or_boolean(inst, variants);
-  if (!candidates.empty()) return best_variant(inst, candidates).name;
-
-  // Static Dispatch Phase 5
   candidates = matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
@@ -251,41 +247,6 @@ bool all_header_reagents_strictly_match(const instruction& inst, const recipe& v
 }
 
 // phase 2
-vector<recipe_ordinal> strictly_matching_variants_except_literal_zero_against_address(const instruction& inst, vector<recipe_ordinal>& variants) {
-  vector<recipe_ordinal> result;
-  for (int i = 0;  i < SIZE(variants);  ++i) {
-    if (variants.at(i) == -1) continue;
-    trace(9992, "transform") << "checking variant (strict except literal-zero-against-address) " << i << ": " << header_label(variants.at(i)) << end();
-    if (all_header_reagents_strictly_match_except_literal_zero_against_address(inst, get(Recipe, variants.at(i))))
-      result.push_back(variants.at(i));
-  }
-  return result;
-}
-
-bool all_header_reagents_strictly_match_except_literal_zero_against_address(const instruction& inst, const recipe& variant) {
-  for (int i = 0;  i < min(SIZE(inst.ingredients), SIZE(variant.ingredients));  ++i) {
-    if (!types_strictly_match_except_literal_zero_against_address(variant.ingredients.at(i), inst.ingredients.at(i))) {
-      trace(9993, "transform") << "match failed: ingredient " << i << end();
-      return false;
-    }
-  }
-  for (int i = 0;  i < min(SIZE(inst.products), SIZE(variant.products));  ++i) {
-    if (is_dummy(inst.products.at(i))) continue;
-    if (!types_strictly_match(variant.products.at(i), inst.products.at(i))) {
-      trace(9993, "transform") << "match failed: product " << i << end();
-      return false;
-    }
-  }
-  return true;
-}
-
-bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from) {
-  if (is_literal(from) && is_mu_address(to))
-    return from.name == "0";
-  return types_strictly_match(to, from);
-}
-
-// phase 4
 vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address_or_boolean(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
@@ -317,10 +278,14 @@ bool all_header_reagents_strictly_match_except_literal_against_address_or_boolea
 bool types_strictly_match_except_literal_against_address_or_boolean(const reagent& to, const reagent& from) {
   if (is_literal(from) && is_mu_boolean(to))
     return from.name == "0" || from.name == "1";
-  return types_strictly_match_except_literal_zero_against_address(to, from);
+  // Match Literal Zero Against Address {
+  if (is_literal(from) && is_mu_address(to))
+    return from.name == "0";
+  // }
+  return types_strictly_match(to, from);
 }
 
-// phase 5
+// phase 4
 vector<recipe_ordinal> matching_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {

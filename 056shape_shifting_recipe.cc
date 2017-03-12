@@ -88,12 +88,9 @@ if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECI
   return;
 }
 
-:(replace{} "bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from)")
-bool types_strictly_match_except_literal_zero_against_address(const reagent& to, const reagent& from) {
-  if (is_literal(from) && is_mu_address(to))
-    return from.name == "0" && !contains_type_ingredient_name(to);
-  return types_strictly_match(to, from);
-}
+:(replace{} "Match Literal Zero Against Address")
+if (is_literal(from) && is_mu_address(to))
+  return from.name == "0" && !contains_type_ingredient_name(to);
 
 :(code)
 // phase 3 of static dispatch
