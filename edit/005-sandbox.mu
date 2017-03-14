@@ -418,7 +418,7 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
   move-cursor screen, row, left
 ]
 
-# like 'render' for texts, but with colorization for comments like in the editor
+# like 'render-text', but with colorization for comments like in the editor
 def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
   local-scope
   load-ingredients
@@ -436,7 +436,7 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
     done? <- greater-or-equal row, screen-height
     break-if done?
     c:char <- index *s, i
-    <character-c-received>  # only line different from render
+    <character-c-received>  # only line different from 'render-text'
     {
       # at right? wrap.
       at-right?:bool <- equal column, right
