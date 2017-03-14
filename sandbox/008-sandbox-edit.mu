@@ -163,7 +163,7 @@ scenario sandbox-with-print-can-be-edited [
   assume-resources [
   ]
   # right editor contains a print instruction
-  env:&:environment <- new-programming-environment resources, screen, [print-integer screen, 4]
+  env:&:environment <- new-programming-environment resources, screen, [print screen, 4]
   # run the sandbox
   assume-console [
     press F4
@@ -174,7 +174,7 @@ scenario sandbox-with-print-can-be-edited [
     .                                                  .
     .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
-    .print-integer screen, 4                           .
+    .print screen, 4                                   .
     .screen:                                           .
     .  .4                             .                .
     .  .                              .                .
@@ -193,7 +193,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   screen-should-contain [
     .                               run (F4)           .
-    .print-integer screen, 4                           .
+    .print screen, 4                                   .
     .──────────────────────────────────────────────────.
     .                                                  .
     .                                                  .

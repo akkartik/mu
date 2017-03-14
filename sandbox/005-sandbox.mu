@@ -641,7 +641,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   assume-resources [
   ]
   # sandbox editor contains an instruction
-  env:&:environment <- new-programming-environment resources, screen, [print-integer screen, 4]  # contents of sandbox editor
+  env:&:environment <- new-programming-environment resources, screen, [print screen, 4]  # contents of sandbox editor
   # run the code in the editor
   assume-console [
     press F4
@@ -655,7 +655,7 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                  .
     .──────────────────────────────────────────────────.
     .0   edit           copy           delete          .
-    .print-integer screen, 4                           .
+    .print screen, 4                                   .
     .screen:                                           .
     .  .4                             .                .
     .  .                              .                .
