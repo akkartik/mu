@@ -525,69 +525,6 @@ def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, s
   screen <- move-cursor screen, cursor-row, cursor-column
 ]
 
-# like 'render' for texts, but with colorization for comments like in the editor
-def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
-  local-scope
-  load-ingredients
-  return-unless s
-  color:num <- copy 7/white
-  column:num <- copy left
-  screen <- move-cursor screen, row, column
-  screen-height:num <- screen-height screen
-  i:num <- copy 0
-  len:num <- length *s
-  {
-    +next-character
-    done?:bool <- greater-or-equal i, len
-    break-if done?
-    done? <- greater-or-equal row, screen-height
-    break-if done?
-    c:char <- index *s, i
-    <character-c-received>  # only line different from render
-    {
-      # at right? wrap.
-      at-right?:bool <- equal column, right
-      break-unless at-right?
-      # print wrap icon
-      wrap-icon:char <- copy 8617/loop-back-to-left
-      print screen, wrap-icon, 245/grey
-      column <- copy left
-      row <- add row, 1
-      screen <- move-cursor screen, row, column
-      loop +next-character  # retry i
-    }
-    i <- add i, 1
-    {
-      # newline? move to left rather than 0
-      newline?:bool <- equal c, 10/newline
-      break-unless newline?
-      # clear rest of line in this window
-      {
-        done?:bool <- greater-than column, right
-        break-if done?
-        space:char <- copy 32/space
-        print screen, space
-        column <- add column, 1
-        loop
-      }
-      row <- add row, 1
-      column <- copy left
-      screen <- move-cursor screen, row, column
-      loop +next-character
-    }
-    print screen, c, color
-    column <- add column, 1
-    loop
-  }
-  was-at-left?:bool <- equal column, left
-  clear-line-until screen, right
-  {
-    break-if was-at-left?
-    row <- add row, 1
-  }
-  move-cursor screen, row, left
-]
-
 # ctrl-l - redraw screen (just in case it printed junk somehow)
 
 after <global-type> [
