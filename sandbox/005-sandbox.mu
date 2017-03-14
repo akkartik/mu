@@ -365,19 +365,6 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
     break-if done?
     c:char <- index *s, i
     {
-      # at right? wrap.
-      at-right?:bool <- equal column, right
-      break-unless at-right?
-      # print wrap icon
-      wrap-icon:char <- copy 8617/loop-back-to-left
-      print screen, wrap-icon, 245/grey
-      column <- copy left
-      row <- add row, 1
-      screen <- move-cursor screen, row, column
-      loop +next-character  # retry i
-    }
-    i <- add i, 1
-    {
       # newline? move to left rather than 0
       newline?:bool <- equal c, 10/newline
       break-unless newline?
@@ -393,8 +380,23 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
+      i <- add i, 1
       loop +next-character
     }
+    {
+      # at right? wrap.
+      at-right?:bool <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:char <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment i
+      loop +next-character
+    }
+    i <- add i, 1
     print screen, c, color
     column <- add column, 1
     loop
@@ -428,19 +430,6 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
     c:char <- index *s, i
     <character-c-received>  # only line different from 'render-text'
     {
-      # at right? wrap.
-      at-right?:bool <- equal column, right
-      break-unless at-right?
-      # print wrap icon
-      wrap-icon:char <- copy 8617/loop-back-to-left
-      print screen, wrap-icon, 245/grey
-      column <- copy left
-      row <- add row, 1
-      screen <- move-cursor screen, row, column
-      loop +next-character  # retry i
-    }
-    i <- add i, 1
-    {
       # newline? move to left rather than 0
       newline?:bool <- equal c, 10/newline
       break-unless newline?
@@ -456,8 +445,23 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
       row <- add row, 1
       column <- copy left
       screen <- move-cursor screen, row, column
+      i <- add i, 1
       loop +next-character
     }
+    {
+      # at right? wrap.
+      at-right?:bool <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:char <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment i
+      loop +next-character
+    }
+    i <- add i, 1
     print screen, c, color
     column <- add column, 1
     loop
