@@ -132,7 +132,6 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
   prev:&:duplex-list:char <- copy curr  # just in case curr becomes null and we can't compute prev
   curr <- next curr
   # traversing screen
-  +render-loop-initialization
   color:num <- copy 7/white
   row:num <- copy 1/top
   column:num <- copy left

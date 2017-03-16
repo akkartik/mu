@@ -150,7 +150,6 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
   curr:&:duplex-list:char <- get *editor, top-of-screen:offset
   prev:&:duplex-list:char <- copy curr  # just in case curr becomes null and we can't compute prev
   curr <- next curr
-  +render-loop-initialization
   color:num <- copy 7/white
   row:num <- copy 1/top
   column:num <- copy left
