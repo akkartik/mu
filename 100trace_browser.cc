@@ -45,9 +45,10 @@
 //:   `b`: Move cursor to bottom line on screen.
 //:   `T`: Scroll line at cursor to top of screen.
 //:
-//:   `/`: Search for a pattern.
-//:   `n`: Jump to next instance of search pattern.
-//:   `N`: Jump to previous instance of search pattern.
+//:   `/`: Search forward for a pattern.
+//:   '?': Search backward for a pattern.
+//:   `n`: Repeat the previous '/' or '?'.
+//:   `N`: Repeat the previous '/' or '?' in the opposite direction.
 //:
 //:   After hitting `/`, a small editor on the bottom-most line supports the
 //:   following hotkeys:
@@ -89,6 +90,10 @@ int Left_of_screen = 0;
 int Last_printed_row = 0;
 map<int, int> Trace_index;  // screen row -> trace index
 string Current_search_pattern = "";
+:(before "End Types")
+enum search_direction { FORWARD, BACKWARD };
+:(before "End Globals")
+search_direction Current_search_direction = FORWARD;
 
 :(code)
 void start_trace_browser() {
@@ -241,22 +246,26 @@ void start_trace_browser() {
       refresh_screen_rows();
     }
     else if (key == '/') {
-      if (start_search_editor())
-        search_next(Current_search_pattern);
+      if (start_search_editor(FORWARD))
+        search(Current_search_pattern, Current_search_direction);
+    }
+    else if (key == '?') {
+      if (start_search_editor(BACKWARD))
+        search(Current_search_pattern, Current_search_direction);
     }
     else if (key == 'n') {
       if (!Current_search_pattern.empty())
-        search_next(Current_search_pattern);
+        search(Current_search_pattern, Current_search_direction);
     }
     else if (key == 'N') {
       if (!Current_search_pattern.empty())
-        search_previous(Current_search_pattern);
+        search(Current_search_pattern, opposite(Current_search_direction));
     }
   }
   tb_shutdown();
 }
 
-bool start_search_editor() {
+bool start_search_editor(search_direction dir) {
   const int bottom_screen_line = tb_height()-1;
   // run a little editor just in the last line of the screen
   clear_line(bottom_screen_line);
@@ -270,8 +279,10 @@ bool start_search_editor() {
   while (true) {
     int key = read_key();
     if (key == TB_KEY_ENTER) {
-      if (!pattern.empty())
+      if (!pattern.empty()) {
         Current_search_pattern = pattern;
+        Current_search_direction = dir;
+      }
       return true;
     }
     else if (key == TB_KEY_ESC || key == TB_KEY_CTRL_C) {
@@ -332,6 +343,16 @@ bool start_search_editor() {
       tb_present();
     }
   }
+}
+
+void search(const string& pat, search_direction dir) {
+  if (dir == FORWARD) search_next(pat);
+  else search_previous(pat);
+}
+
+search_direction opposite(search_direction dir) {
+  if (dir == FORWARD) return BACKWARD;
+  else return FORWARD;
 }
 
 void search_next(const string& pat) {
