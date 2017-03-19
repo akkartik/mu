@@ -69,7 +69,7 @@ int new_mu_text(const string& contents) {
 def main [
   [abc]
 ]
-+error: main: instruction '[abc]' has no recipe
++error: main: instruction '[abc]' has no recipe in '[abc] '
 
 //: stash recognizes strings
 

@@ -13,7 +13,7 @@ void update_instruction_operations(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_ordinal, inst.name)) {
-      raise << maybe(caller.name) << "instruction '" << inst.name << "' has no recipe\n" << end();
+      raise << maybe(caller.name) << "instruction '" << inst.name << "' has no recipe in '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     inst.operation = get(Recipe_ordinal, inst.name);
@@ -32,4 +32,4 @@ string maybe(string s) {
 def main [
   1:number , copy 0  # typo: ',' instead of '<-'
 ]
-+error: main: instruction '1:number' has no recipe
++error: main: instruction '1:number' has no recipe in '1:number copy, 0'
