@@ -60,6 +60,8 @@
 //:     `right-arrow`: move cursor right.
 //:     `ctrl-a` or `home`: move cursor to start of search pattern.
 //:     `ctrl-e` or `end`: move cursor to end of search pattern.
+//:     `ctrl-u`: clear search pattern before cursor
+//:     `ctrl-k`: clear search pattern at and after cursor
 
 :(before "End Primitive Recipe Declarations")
 _BROWSE_TRACE,
@@ -330,6 +332,24 @@ bool start_search_editor(search_direction dir) {
         tb_set_cursor(col, bottom_screen_line);
         tb_present();
       }
+    }
+    else if (key == TB_KEY_CTRL_K) {
+      int old_pattern_size = SIZE(pattern);
+      pattern.erase(col-/*slash*/1, SIZE(pattern) - (col-/*slash*/1));
+      for (int x = col;  x < old_pattern_size+/*slash*/1;  ++x)
+        tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+      tb_set_cursor(col, bottom_screen_line);
+      tb_present();
+    }
+    else if (key == TB_KEY_CTRL_U) {
+      int old_pattern_size = SIZE(pattern);
+      pattern.erase(0, col-/*slash*/1);
+      for (int x = /*slash*/1;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
+        tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
+      for (int x = SIZE(pattern)+/*slash*/1;  x < old_pattern_size+/*skip slash*/1;  ++x)
+        tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+      tb_set_cursor(/*start of pattern skipping slash*/1, bottom_screen_line);
+      tb_present();
     }
     else if (key < 128) {  // ascii only
       // update pattern
