@@ -22,7 +22,7 @@ int Scheduling_interval = 500;
 int instructions_run_this_scheduling_slice;
 :(before "End routine Constructor")
 instructions_run_this_scheduling_slice = 0;
-:(before "Running One Instruction")
+:(after "Running One Instruction")
  ++Current_routine->instructions_run_this_scheduling_slice;
 :(replace{} "bool should_continue_running(const routine* current_routine)")
 bool should_continue_running(const routine* current_routine) {

@@ -155,7 +155,7 @@ const vector<instruction>& routine::steps() const {
   return get(Recipe, calls.front().running_recipe).steps;
 }
 
-:(before "Running One Instruction")
+:(after "Running One Instruction")
 // when we reach the end of one call, we may reach the end of the one below
 // it, and the one below that, and so on
 while (current_step_index() >= SIZE(Current_routine->steps())) {

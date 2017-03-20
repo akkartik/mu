@@ -337,7 +337,6 @@ def main [
 :(scenario "run_interactive_ignores_products_in_nested_functions")
 def main [
   1:text <- new [foo]
-  stash [aaa]
   2:text <- run-sandboxed 1:text
   10:@:char <- copy *2:text
 ]
