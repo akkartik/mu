@@ -487,8 +487,8 @@ Transform.push_back(fill_in_return_ingredients);  // idempotent
 :(code)
 void fill_in_return_ingredients(const recipe_ordinal r) {
   recipe& caller_recipe = get(Recipe, r);
-  if (!caller_recipe.has_header) return;
   trace(9991, "transform") << "--- fill in return ingredients from header for recipe " << caller_recipe.name << end();
+  if (!caller_recipe.has_header) return;
   for (int i = 0;  i < SIZE(caller_recipe.steps);  ++i) {
     instruction& inst = caller_recipe.steps.at(i);
     if (inst.name == "reply" || inst.name == "return")
@@ -613,6 +613,7 @@ Transform.push_back(check_recipe_header_constraints);
 void check_recipe_header_constraints(const recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   if (caller.name != "main") return;
+  trace(9992, "transform") << "check recipe header constraints for recipe " << caller.name << end();
   if (!caller.has_header) return;
   reagent/*local*/ expected_ingredient("x:address:array:character");
   for (int i = 0; i < SIZE(caller.ingredients); ++i) {

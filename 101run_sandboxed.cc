@@ -75,9 +75,11 @@ case RUN_SANDBOXED: {
 
 :(before "End Globals")
 bool Track_most_recent_products = false;
+int Call_depth_to_track_most_recent_products_at = 0;
 string Most_recent_products;
 :(before "End Setup")
 Track_most_recent_products = false;
+Call_depth_to_track_most_recent_products_at = 0;
 Most_recent_products = "";
 
 :(before "End Globals")
@@ -245,6 +247,7 @@ case _START_TRACKING_PRODUCTS: {
 :(before "End Primitive Recipe Implementations")
 case _START_TRACKING_PRODUCTS: {
   Track_most_recent_products = true;
+  Call_depth_to_track_most_recent_products_at = SIZE(Current_routine->calls);
   break;
 }
 
@@ -331,6 +334,23 @@ def main [
 # first letter in the output should be '4' in unicode
 +mem: storing 52 in location 11
 
+:(scenario "run_interactive_ignores_products_in_nested_functions")
+def main [
+  1:text <- new [foo]
+  stash [aaa]
+  2:text <- run-sandboxed 1:text
+  10:@:char <- copy *2:text
+]
+def foo [
+  20:num <- copy 1234
+  {
+    break
+    reply 5678
+  }
+]
+# no product should have been tracked
++mem: storing 0 in location 10
+
 :(scenario "run_interactive_returns_text")
 def main [
   # try to interactively add 2 and 2
@@ -373,7 +393,7 @@ b:num <- copy 0
 +mem: storing 0 in location 3
 
 :(before "End Running One Instruction")
-if (Track_most_recent_products) {
+if (Track_most_recent_products && SIZE(Current_routine->calls) == Call_depth_to_track_most_recent_products_at) {
   track_most_recent_products(current_instruction(), products);
 }
 :(code)
