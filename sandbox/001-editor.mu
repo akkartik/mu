@@ -413,8 +413,7 @@ def get-color color:num, c:char -> color:num [
     starting-comment?:bool <- equal c, 35/#
     break-unless starting-comment?
     trace 90, [app], [switch color back to blue]
-    color <- copy 12/lightblue
-    jump +exit
+    return 12/lightblue
   }
   # if color is blue and next character is newline, switch color to white
   {
@@ -423,16 +422,14 @@ def get-color color:num, c:char -> color:num [
     ending-comment?:bool <- equal c, 10/newline
     break-unless ending-comment?
     trace 90, [app], [switch color back to white]
-    color <- copy 7/white
-    jump +exit
+    return 7/white
   }
   # if color is white (no comments) and next character is '<', switch color to red
   {
     break-unless color-is-white?
     starting-assignment?:bool <- equal c, 60/<
     break-unless starting-assignment?
-    color <- copy 1/red
-    jump +exit
+    return 1/red
   }
   # if color is red and next character is space, switch color to white
   {
@@ -440,11 +437,9 @@ def get-color color:num, c:char -> color:num [
     break-unless color-is-red?
     ending-assignment?:bool <- equal c, 32/space
     break-unless ending-assignment?
-    color <- copy 7/white
-    jump +exit
+    return 7/white
   }
   # otherwise no change
-  +exit
   return color
 ]
 

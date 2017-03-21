@@ -476,66 +476,61 @@ if ('onhashchange' in window) {
 <span id="L413" class="LineNr">413 </span>  <span class="Conceal">¦</span> starting-comment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">35/#</span>
 <span id="L414" class="LineNr">414 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> starting-comment?
 <span id="L415" class="LineNr">415 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 90</span>, <span class="Constant">[app]</span>, <span class="Constant">[switch color back to blue]</span>
-<span id="L416" class="LineNr">416 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">12/lightblue</span>
-<span id="L417" class="LineNr">417 </span>  <span class="Conceal">¦</span> <span class="muControl">jump</span> <span class="Constant">+exit</span>
-<span id="L418" class="LineNr">418 </span>  <span class="Delimiter">}</span>
-<span id="L419" class="LineNr">419 </span>  <span class="Comment"># if color is blue and next character is newline, switch color to white</span>
-<span id="L420" class="LineNr">420 </span>  <span class="Delimiter">{</span>
-<span id="L421" class="LineNr">421 </span>  <span class="Conceal">¦</span> color-is-blue?:bool <span class="Special">&lt;-</span> equal color, <span class="Constant">12/lightblue</span>
-<span id="L422" class="LineNr">422 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-blue?
-<span id="L423" class="LineNr">423 </span>  <span class="Conceal">¦</span> ending-comment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
-<span id="L424" class="LineNr">424 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> ending-comment?
-<span id="L425" class="LineNr">425 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 90</span>, <span class="Constant">[app]</span>, <span class="Constant">[switch color back to white]</span>
-<span id="L426" class="LineNr">426 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
-<span id="L427" class="LineNr">427 </span>  <span class="Conceal">¦</span> <span class="muControl">jump</span> <span class="Constant">+exit</span>
-<span id="L428" class="LineNr">428 </span>  <span class="Delimiter">}</span>
-<span id="L429" class="LineNr">429 </span>  <span class="Comment"># if color is white (no comments) and next character is '&lt;', switch color to red</span>
-<span id="L430" class="LineNr">430 </span>  <span class="Delimiter">{</span>
-<span id="L431" class="LineNr">431 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-white?
-<span id="L432" class="LineNr">432 </span>  <span class="Conceal">¦</span> starting-assignment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">60/&lt;</span>
-<span id="L433" class="LineNr">433 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> starting-assignment?
-<span id="L434" class="LineNr">434 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">1/red</span>
-<span id="L435" class="LineNr">435 </span>  <span class="Conceal">¦</span> <span class="muControl">jump</span> <span class="Constant">+exit</span>
-<span id="L436" class="LineNr">436 </span>  <span class="Delimiter">}</span>
-<span id="L437" class="LineNr">437 </span>  <span class="Comment"># if color is red and next character is space, switch color to white</span>
-<span id="L438" class="LineNr">438 </span>  <span class="Delimiter">{</span>
-<span id="L439" class="LineNr">439 </span>  <span class="Conceal">¦</span> color-is-red?:bool <span class="Special">&lt;-</span> equal color, <span class="Constant">1/red</span>
-<span id="L440" class="LineNr">440 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-red?
-<span id="L441" class="LineNr">441 </span>  <span class="Conceal">¦</span> ending-assignment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">32/space</span>
-<span id="L442" class="LineNr">442 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> ending-assignment?
-<span id="L443" class="LineNr">443 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
-<span id="L444" class="LineNr">444 </span>  <span class="Conceal">¦</span> <span class="muControl">jump</span> <span class="Constant">+exit</span>
-<span id="L445" class="LineNr">445 </span>  <span class="Delimiter">}</span>
-<span id="L446" class="LineNr">446 </span>  <span class="Comment"># otherwise no change</span>
-<span id="L447" class="LineNr">447 </span><span class="Constant">  +exit</span>
-<span id="L448" class="LineNr">448 </span>  <span class="muControl">return</span> color
-<span id="L449" class="LineNr">449 </span>]
-<span id="L450" class="LineNr">450 </span>
-<span id="L451" class="LineNr">451 </span><span class="muScenario">scenario</span> render-colors-assignment [
-<span id="L452" class="LineNr">452 </span>  <span class="Constant">local-scope</span>
-<span id="L453" class="LineNr">453 </span>  assume-screen <span class="Constant">8/width</span>, <span class="Constant">5/height</span>
-<span id="L454" class="LineNr">454 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
-<span id="L455" class="LineNr">455 </span><span class="Constant">d &lt;- e</span>
-<span id="L456" class="LineNr">456 </span><span class="Constant">f]</span>
-<span id="L457" class="LineNr">457 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L52'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
-<span id="L458" class="LineNr">458 </span>  run [
-<span id="L459" class="LineNr">459 </span>  <span class="Conceal">¦</span> <a href='001-editor.mu.html#L123'>render</a> <a href='../081print.mu.html#L4'>screen</a>, e
-<span id="L460" class="LineNr">460 </span>  ]
-<span id="L461" class="LineNr">461 </span>  screen-should-contain [
-<span id="L462" class="LineNr">462 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L463" class="LineNr">463 </span>  <span class="Conceal">¦</span><span class="Constant"> .abc     .</span>
-<span id="L464" class="LineNr">464 </span>  <span class="Conceal">¦</span><span class="Constant"> .d &lt;- e  .</span>
-<span id="L465" class="LineNr">465 </span>  <span class="Conceal">¦</span><span class="Constant"> .f       .</span>
-<span id="L466" class="LineNr">466 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L467" class="LineNr">467 </span>  ]
-<span id="L468" class="LineNr">468 </span>  screen-should-contain-in-color <span class="Constant">1/red</span>, [
-<span id="L469" class="LineNr">469 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L470" class="LineNr">470 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L471" class="LineNr">471 </span>  <span class="Conceal">¦</span><span class="Constant"> .  &lt;-    .</span>
-<span id="L472" class="LineNr">472 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L473" class="LineNr">473 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
-<span id="L474" class="LineNr">474 </span>  ]
-<span id="L475" class="LineNr">475 </span>]
+<span id="L416" class="LineNr">416 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">12/lightblue</span>
+<span id="L417" class="LineNr">417 </span>  <span class="Delimiter">}</span>
+<span id="L418" class="LineNr">418 </span>  <span class="Comment"># if color is blue and next character is newline, switch color to white</span>
+<span id="L419" class="LineNr">419 </span>  <span class="Delimiter">{</span>
+<span id="L420" class="LineNr">420 </span>  <span class="Conceal">¦</span> color-is-blue?:bool <span class="Special">&lt;-</span> equal color, <span class="Constant">12/lightblue</span>
+<span id="L421" class="LineNr">421 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-blue?
+<span id="L422" class="LineNr">422 </span>  <span class="Conceal">¦</span> ending-comment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
+<span id="L423" class="LineNr">423 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> ending-comment?
+<span id="L424" class="LineNr">424 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 90</span>, <span class="Constant">[app]</span>, <span class="Constant">[switch color back to white]</span>
+<span id="L425" class="LineNr">425 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">7/white</span>
+<span id="L426" class="LineNr">426 </span>  <span class="Delimiter">}</span>
+<span id="L427" class="LineNr">427 </span>  <span class="Comment"># if color is white (no comments) and next character is '&lt;', switch color to red</span>
+<span id="L428" class="LineNr">428 </span>  <span class="Delimiter">{</span>
+<span id="L429" class="LineNr">429 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-white?
+<span id="L430" class="LineNr">430 </span>  <span class="Conceal">¦</span> starting-assignment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">60/&lt;</span>
+<span id="L431" class="LineNr">431 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> starting-assignment?
+<span id="L432" class="LineNr">432 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">1/red</span>
+<span id="L433" class="LineNr">433 </span>  <span class="Delimiter">}</span>
+<span id="L434" class="LineNr">434 </span>  <span class="Comment"># if color is red and next character is space, switch color to white</span>
+<span id="L435" class="LineNr">435 </span>  <span class="Delimiter">{</span>
+<span id="L436" class="LineNr">436 </span>  <span class="Conceal">¦</span> color-is-red?:bool <span class="Special">&lt;-</span> equal color, <span class="Constant">1/red</span>
+<span id="L437" class="LineNr">437 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> color-is-red?
+<span id="L438" class="LineNr">438 </span>  <span class="Conceal">¦</span> ending-assignment?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">32/space</span>
+<span id="L439" class="LineNr">439 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> ending-assignment?
+<span id="L440" class="LineNr">440 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">7/white</span>
+<span id="L441" class="LineNr">441 </span>  <span class="Delimiter">}</span>
+<span id="L442" class="LineNr">442 </span>  <span class="Comment"># otherwise no change</span>
+<span id="L443" class="LineNr">443 </span>  <span class="muControl">return</span> color
+<span id="L444" class="LineNr">444 </span>]
+<span id="L445" class="LineNr">445 </span>
+<span id="L446" class="LineNr">446 </span><span class="muScenario">scenario</span> render-colors-assignment [
+<span id="L447" class="LineNr">447 </span>  <span class="Constant">local-scope</span>
+<span id="L448" class="LineNr">448 </span>  assume-screen <span class="Constant">8/width</span>, <span class="Constant">5/height</span>
+<span id="L449" class="LineNr">449 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+<span id="L450" class="LineNr">450 </span><span class="Constant">d &lt;- e</span>
+<span id="L451" class="LineNr">451 </span><span class="Constant">f]</span>
+<span id="L452" class="LineNr">452 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L52'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">8/right</span>
+<span id="L453" class="LineNr">453 </span>  run [
+<span id="L454" class="LineNr">454 </span>  <span class="Conceal">¦</span> <a href='001-editor.mu.html#L123'>render</a> <a href='../081print.mu.html#L4'>screen</a>, e
+<span id="L455" class="LineNr">455 </span>  ]
+<span id="L456" class="LineNr">456 </span>  screen-should-contain [
+<span id="L457" class="LineNr">457 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L458" class="LineNr">458 </span>  <span class="Conceal">¦</span><span class="Constant"> .abc     .</span>
+<span id="L459" class="LineNr">459 </span>  <span class="Conceal">¦</span><span class="Constant"> .d &lt;- e  .</span>
+<span id="L460" class="LineNr">460 </span>  <span class="Conceal">¦</span><span class="Constant"> .f       .</span>
+<span id="L461" class="LineNr">461 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L462" class="LineNr">462 </span>  ]
+<span id="L463" class="LineNr">463 </span>  screen-should-contain-in-color <span class="Constant">1/red</span>, [
+<span id="L464" class="LineNr">464 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L465" class="LineNr">465 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L466" class="LineNr">466 </span>  <span class="Conceal">¦</span><span class="Constant"> .  &lt;-    .</span>
+<span id="L467" class="LineNr">467 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L468" class="LineNr">468 </span>  <span class="Conceal">¦</span><span class="Constant"> .        .</span>
+<span id="L469" class="LineNr">469 </span>  ]
+<span id="L470" class="LineNr">470 </span>]
 </pre>
 </body>
 </html>
