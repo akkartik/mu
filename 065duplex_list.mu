@@ -83,6 +83,18 @@ scenario duplex-list-handling [
   ]
 ]
 
+def length l:&:duplex-list:_elem -> result:num [
+  local-scope
+  load-ingredients
+  result <- copy 0
+  {
+    break-unless l
+    result <- add result, 1
+    l <- next l
+    loop
+  }
+]
+
 # insert 'x' after 'in'
 def insert x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope

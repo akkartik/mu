@@ -52,10 +52,13 @@ scenario list-handling [
 def length l:&:list:_elem -> result:num [
   local-scope
   load-ingredients
-  return-unless l, 0
-  rest:&:list:_elem <- rest l
-  length-of-rest:num <- length rest
-  result <- add length-of-rest, 1
+  result <- copy 0
+  {
+    break-unless l
+    result <- add result, 1
+    l <- rest l
+    loop
+  }
 ]
 
 # insert 'x' after 'in'
