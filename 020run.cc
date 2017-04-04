@@ -92,7 +92,7 @@ void run_current_routine() {
     }
     // Write Products of Instruction
     if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products! " << to_original_string(current_instruction()) << '\n' << end();
+      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
     }
     else {
       for (int i = 0;  i < SIZE(current_instruction().products);  ++i)

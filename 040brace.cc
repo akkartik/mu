@@ -60,7 +60,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     if (inst.label == "}") {
       if (open_braces.empty()) {
-        raise << maybe(get(Recipe, r).name) << "missing '{' in '" << get(Recipe, r).name << "'\n" << end();
+        raise << maybe(get(Recipe, r).name) << "unbalanced '}'\n" << end();
         return;
       }
       open_braces.pop();
