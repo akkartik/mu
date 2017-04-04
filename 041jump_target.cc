@@ -49,14 +49,14 @@ void transform_labels(const recipe_ordinal r) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
       if (inst.ingredients.empty()) {
-        raise << maybe(get(Recipe, r).name) << "'jump' expects an ingredient but got none\n" << end();
+        raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' expects an ingredient but got 0\n" << end();
         return;
       }
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if (inst.name == "jump-if" || inst.name == "jump-unless") {
       if (SIZE(inst.ingredients) < 2) {
-        raise << maybe(get(Recipe, r).name) << "'" << inst.name << "' expects 2 ingredients but got " << SIZE(inst.ingredients) << '\n' << end();
+        raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' expects 2 ingredients but got " << SIZE(inst.ingredients) << '\n' << end();
         return;
       }
       replace_offset(inst.ingredients.at(1), offset, i, r);
@@ -149,14 +149,14 @@ def main [
 def main [
   jump
 ]
-+error: main: 'jump' expects an ingredient but got none
++error: main: 'jump' expects an ingredient but got 0
 
 :(scenario jump_fails_without_target_2)
 % Hide_errors = true;
 def main [
   jump-if 1/true
 ]
-+error: main: 'jump-if' expects 2 ingredients but got 1
++error: main: 'jump-if 1/true' expects 2 ingredients but got 1
 
 :(scenario recipe_fails_on_duplicate_jump_target)
 % Hide_errors = true;

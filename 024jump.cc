@@ -16,11 +16,11 @@ put(Recipe_ordinal, "jump", JUMP);
 :(before "End Primitive Recipe Checks")
 case JUMP: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'jump' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' should get exactly one ingredient\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "first ingredient of 'jump' should be a label or offset, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "first ingredient of '" << inst.original_string << "' should be a label or offset, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
   break;
@@ -55,15 +55,15 @@ put(Recipe_ordinal, "jump-if", JUMP_IF);
 :(before "End Primitive Recipe Checks")
 case JUMP_IF: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-if' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' should get exactly two ingredients\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'jump-if' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' requires a boolean for its first ingredient, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "'jump-if' requires a label or offset for its second ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' requires a label or offset for its second ingredient, but '" << inst.ingredients.at(1).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(1).type) << "'\n" << end();
     break;
   }
   // End JUMP_IF Checks
@@ -108,15 +108,15 @@ put(Recipe_ordinal, "jump-unless", JUMP_UNLESS);
 :(before "End Primitive Recipe Checks")
 case JUMP_UNLESS: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' should get exactly two ingredients\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires a boolean for its first ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' requires a boolean for its first ingredient, but '" << inst.ingredients.at(0).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(0).type) << "'\n" << end();
     break;
   }
   if (!is_literal(inst.ingredients.at(1))) {
-    raise << maybe(get(Recipe, r).name) << "'jump-unless' requires a label or offset for its second ingredient, but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' requires a label or offset for its second ingredient, but '" << inst.ingredients.at(1).name << "' has type '" << names_to_string_without_quotes(inst.ingredients.at(1).type) << "'\n" << end();
     break;
   }
   // End JUMP_UNLESS Checks

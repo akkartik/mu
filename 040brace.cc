@@ -60,7 +60,7 @@ void transform_braces(const recipe_ordinal r) {
     }
     if (inst.label == "}") {
       if (open_braces.empty()) {
-        raise << "missing '{' in '" << get(Recipe, r).name << "'\n" << end();
+        raise << maybe(get(Recipe, r).name) << "missing '{' in '" << get(Recipe, r).name << "'\n" << end();
         return;
       }
       open_braces.pop();
@@ -79,7 +79,7 @@ void transform_braces(const recipe_ordinal r) {
     // check for errors
     if (inst.name.find("-if") != string::npos || inst.name.find("-unless") != string::npos) {
       if (inst.ingredients.empty()) {
-        raise << "'" << inst.name << "' expects 1 or 2 ingredients, but got none\n" << end();
+        raise << maybe(get(Recipe, r).name) << "'" << inst.name << "' expects 1 or 2 ingredients, but got none\n" << end();
         continue;
       }
     }
@@ -117,7 +117,7 @@ void transform_braces(const recipe_ordinal r) {
     target.type = new type_tree("offset");
     target.set_value(0);
     if (open_braces.empty())
-      raise << "'" << old_name << "' needs a '{' before\n" << end();
+      raise << maybe(get(Recipe, r).name) << "'" << old_name << "' needs a '{' before\n" << end();
     else if (old_name.find("loop") != string::npos)
       target.set_value(open_braces.top()-index);
     else  // break instruction
@@ -350,7 +350,7 @@ def test-factorial [
 def main [
   break
 ]
-+error: 'break' needs a '{' before
++error: main: 'break' needs a '{' before
 
 :(scenario break_conditional_without_ingredient_fails)
 % Hide_errors = true;
@@ -359,7 +359,7 @@ def main [
     break-if
   }
 ]
-+error: 'break-if' expects 1 or 2 ingredients, but got none
++error: main: 'break-if' expects 1 or 2 ingredients, but got none
 
 //: Using break we can now implement conditional returns.
 
