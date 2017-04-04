@@ -133,14 +133,14 @@ void finish_call_housekeeping(const instruction& call_instruction, const vector<
 def main [
   foo
 ]
-+error: main: undefined operation in 'foo '
++error: main: undefined operation in 'foo'
 
 :(scenario calling_undefined_recipe_handles_missing_result)
 % Hide_errors = true;
 def main [
   x:num <- foo
 ]
-+error: main: undefined operation in 'x:num <- foo '
++error: main: undefined operation in 'x:num <- foo'
 
 //:: finally, we need to fix the termination conditions for the run loop
 

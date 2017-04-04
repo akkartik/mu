@@ -628,7 +628,8 @@ string to_original_string(const instruction& inst) {
     out << inst.products.at(i).original_string;
   }
   if (!inst.products.empty()) out << " <- ";
-  out << inst.name << ' ';
+  out << inst.name;
+  if (!inst.ingredients.empty()) out << ' ';
   for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
     if (i > 0) out << ", ";
     out << inst.ingredients.at(i).original_string;
