@@ -25,7 +25,7 @@ void check_instruction(const recipe_ordinal r) {
           raise << maybe(get(Recipe, r).name) << "too many products in '" << inst.original_string << "'\n" << end();
           break;
         }
-        for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
+        for (int i = 0;  i < SIZE(inst.products);  ++i) {
           if (!types_coercible(inst.products.at(i), inst.ingredients.at(i))) {
             raise << maybe(get(Recipe, r).name) << "can't copy '" << inst.ingredients.at(i).original_string << "' to '" << inst.products.at(i).original_string << "'; types don't match\n" << end();
             goto finish_checking_instruction;
@@ -46,9 +46,9 @@ void check_instruction(const recipe_ordinal r) {
 :(scenario copy_checks_reagent_count)
 % Hide_errors = true;
 def main [
-  1:num <- copy 34, 35
+  1:num, 2:num <- copy 34
 ]
-+error: main: ingredients and products should match in '1:num <- copy 34, 35'
++error: main: too many products in '1:num, 2:num <- copy 34'
 
 :(scenario write_scalar_to_array_disallowed)
 % Hide_errors = true;
