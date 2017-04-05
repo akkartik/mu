@@ -325,12 +325,12 @@ const recipe& best_variant(const instruction& inst, vector<recipe_ordinal>& cand
     int score = abs(SIZE(candidate.products)-SIZE(inst.products))
                           + abs(SIZE(candidate.ingredients)-SIZE(inst.ingredients));
     // prefer functions with non-address ingredients or products
-    for (int i = 0;  i < SIZE(candidate.ingredients);  ++i) {
-      if (is_mu_address(candidate.ingredients.at(i)))
+    for (int j = 0;  j < SIZE(candidate.ingredients);  ++j) {
+      if (is_mu_address(candidate.ingredients.at(j)))
         ++score;
     }
-    for (int i = 0;  i < SIZE(candidate.products);  ++i) {
-      if (is_mu_address(candidate.products.at(i)))
+    for (int j = 0;  j < SIZE(candidate.products);  ++j) {
+      if (is_mu_address(candidate.products.at(j)))
         ++score;
     }
     assert(score < 999);
