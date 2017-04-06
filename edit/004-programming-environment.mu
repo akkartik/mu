@@ -90,18 +90,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     {
       r:resize-event, is-resize?:bool <- maybe-convert e:event, resize:variant
       break-unless is-resize?
-      # if more events, we're still resizing; wait until we stop
-      more-events?:bool <- has-more-events? console
-      {
-        break-unless more-events?
-        render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-      }
-      {
-        break-if more-events?
-        env, screen <- resize screen, env
-        screen <- render-all screen, env, render-without-moving-cursor
-        render-all-on-no-more-events? <- copy 0/false  # full render done
-      }
+      env, screen <- resize screen, env
+      screen <- render-all screen, env, render-without-moving-cursor
       loop +next-event
     }
     # if it's not global and not a touch event, send to appropriate editor
