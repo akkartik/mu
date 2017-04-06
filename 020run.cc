@@ -65,6 +65,7 @@ void run(const recipe_ordinal r) {
 void run_current_routine() {
   while (should_continue_running(Current_routine)) {  // beware: may modify Current_routine
     // Running One Instruction
+//?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index();  continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
     if (get_or_insert(Memory, 0) != 0) {
