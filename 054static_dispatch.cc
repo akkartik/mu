@@ -194,7 +194,20 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
 
   // error messages
   if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
-    raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.original_string << "'\n" << end();
+    if (SIZE(variants) == 1) {
+      raise << maybe(caller_recipe.name) << "instruction '" << inst.original_string << "' does not match '" << header_label(get(Recipe, variants.at(0))) << "'\n" << end();
+      raise << "  instruction expands to '" << to_string(inst) << "'\n" << end();
+    }
+    else {
+      raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.original_string << "'\n" << end();
+      raise << "  which expands to:\n" << end();
+      raise << "    " << to_string(inst) << '\n' << end();
+      raise << "  available variants are:\n" << end();
+      for (int i = 0;  i < SIZE(variants);  ++i) {
+        const recipe& curr = get(Recipe, variants.at(i));
+        raise << "    " << header_label(curr) << '\n' << end();
+      }
+    }
     for (list<call>::iterator p = /*skip*/++Resolve_stack.begin();  p != Resolve_stack.end();  ++p) {
       const recipe& specializer_recipe = get(Recipe, p->running_recipe);
       const instruction& specializer_inst = specializer_recipe.steps.at(p->running_step_index);
@@ -620,6 +633,42 @@ def! foo a:text -> result:num [
   return 35
 ]
 +mem: storing 35 in location 1
+
+:(scenario ignore_static_dispatch_in_type_errors_without_overloading)
+% Hide_errors = true;
+def main [
+  local-scope
+  x:&:num <- copy 0
+  foo x
+]
+def foo x:&:char [
+  local-scope
+  load-ingredients
+]
++error: main: instruction 'foo x' does not match 'recipe foo {x: ("address" "character")}'
++error:   instruction expands to 'foo {x: ("address" "number")}'
+
+:(scenario show_available_variants_in_dispatch_errors)
+% Hide_errors = true;
+def main [
+  local-scope
+  x:&:num <- copy 0
+  foo x
+]
+def foo x:&:char [
+  local-scope
+  load-ingredients
+]
+def foo x:&:bool [
+  local-scope
+  load-ingredients
+]
++error: main: failed to find a matching call for 'foo x'
++error:   which expands to:
++error:     foo {x: ("address" "number")}
++error:   available variants are:
++error:     recipe foo {x: ("address" "character")}
++error:     recipe foo_2 {x: ("address" "boolean")}
 
 :(before "End Includes")
 using std::abs;
