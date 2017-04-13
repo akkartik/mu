@@ -7,6 +7,7 @@ container stream:_elem [
 def new-stream s:&:@:_elem -> result:&:stream:_elem [
   local-scope
   load-ingredients
+  return-unless s, 0/null
   result <- new {(stream _elem): type}
   *result <- put *result, index:offset, 0
   *result <- put *result, data:offset, s
@@ -15,12 +16,14 @@ def new-stream s:&:@:_elem -> result:&:stream:_elem [
 def rewind in:&:stream:_elem -> in:&:stream:_elem [
   local-scope
   load-ingredients
+  return-unless in
   *in <- put *in, index:offset, 0
 ]
 
 def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
   local-scope
   load-ingredients
+  assert in, [cannot read; stream has no data]
   empty? <- copy 0/false
   idx:num <- get *in, index:offset
   s:&:@:_elem <- get *in, data:offset
@@ -39,6 +42,7 @@ def read in:&:stream:_elem -> result:_elem, empty?:bool, in:&:stream:_elem [
 def peek in:&:stream:_elem -> result:_elem, empty?:bool [
   local-scope
   load-ingredients
+  assert in, [cannot peek; stream has no data]
   empty?:bool <- copy 0/false
   idx:num <- get *in, index:offset
   s:&:@:_elem <- get *in, data:offset
@@ -55,6 +59,7 @@ def peek in:&:stream:_elem -> result:_elem, empty?:bool [
 def read-line in:&:stream:char -> result:text, in:&:stream:char [
   local-scope
   load-ingredients
+  assert in, [cannot read-line; stream has no data]
   idx:num <- get *in, index:offset
   s:text <- get *in, data:offset
   next-idx:num <- find-next s, 10/newline, idx
@@ -67,6 +72,7 @@ def read-line in:&:stream:char -> result:text, in:&:stream:char [
 def end-of-stream? in:&:stream:_elem -> result:bool [
   local-scope
   load-ingredients
+  assert in, [cannot check end-of-stream?; stream has no data]
   idx:num <- get *in, index:offset
   s:&:@:_elem <- get *in, data:offset
   len:num <- length *s
