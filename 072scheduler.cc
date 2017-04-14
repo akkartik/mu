@@ -289,7 +289,7 @@ def new-routine n:&:num [
 increment_any_refcounts(ingredient, ingredients.at(i));
 :(before "End Populate start-running Ingredient")
 increment_any_refcounts(ingredient, ingredients.at(i));
-:(before "End should_update_refcounts_in_write_memory Special-cases For Primitives")
+:(after "should_update_refcounts() Special-cases When Writing Products Of Primitive Instructions")
 if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING) {
   if (space_index(inst.products.at(0)) > 0) return true;
   if (has_property(inst.products.at(0), "raw")) return true;

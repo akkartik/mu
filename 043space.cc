@@ -286,14 +286,10 @@ bool escaping(const reagent& r) {
 //: since we don't decrement refcounts for escaping values above, make sure we
 //: don't increment them when the caller saves them either
 
-:(after "Write Products of Instruction")
-Update_refcounts_in_write_memory = should_update_refcounts_in_write_memory();
-:(before "End Write Products of Instruction")
-Update_refcounts_in_write_memory = true;
-:(code)
-bool should_update_refcounts_in_write_memory() {
+:(before "End should_update_refcounts() Special-cases")
+if (Writing_products_of_instruction) {
   const instruction& inst = current_instruction();
-  // End should_update_refcounts_in_write_memory Special-cases For Primitives
+  // should_update_refcounts() Special-cases When Writing Products Of Primitive Instructions
   if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
   if (!contains_key(Recipe, inst.operation)) return true;
   const recipe& callee = get(Recipe, inst.operation);
@@ -301,6 +297,7 @@ bool should_update_refcounts_in_write_memory() {
   return callee.steps.at(0).name_before_rewrite != "local-scope";  // callees that call local-scope are already dealt with before return
 }
 
+:(code)
 bool caller_uses_product(int product_index) {
   assert(Current_routine);  // run-time only
   assert(!Current_routine->calls.empty());

@@ -91,7 +91,8 @@ void run_current_routine() {
         cout << "not a primitive op: " << current_instruction().operation << '\n';
       }
     }
-    // Write Products of Instruction
+    //: used by a later layer
+    Writing_products_of_instruction = true;
     if (SIZE(products) < SIZE(current_instruction().products)) {
       raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
     }
@@ -99,13 +100,15 @@ void run_current_routine() {
       for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
         write_memory(current_instruction().products.at(i), products.at(i));
     }
-    // End Write Products of Instruction
+    Writing_products_of_instruction = false;
     // End Running One Instruction
     finish_instruction:;
     ++current_step_index();
   }
   stop_running_current_routine:;
 }
+:(before "End Globals")
+bool Writing_products_of_instruction = false;
 
 //: hook replaced in a later layer
 bool should_continue_running(const routine* current_routine) {

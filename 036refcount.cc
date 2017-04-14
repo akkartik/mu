@@ -17,18 +17,20 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
-:(before "End Globals")
-//: escape hatch for a later layer
-bool Update_refcounts_in_write_memory = true;
-
 :(before "End write_memory(x) Special-cases")
-if (Update_refcounts_in_write_memory)
-  update_any_refcounts(x, data);
+update_any_refcounts(x, data);
 
 :(code)
 void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
+  if (!should_update_refcounts()) return;
   increment_any_refcounts(canonized_x, data);  // increment first so we don't reclaim on x <- copy x
   decrement_any_refcounts(canonized_x);
+}
+
+//: escape hatch for a later layer
+bool should_update_refcounts() {
+  // End should_update_refcounts() Special-cases
+  return true;
 }
 
 void increment_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
