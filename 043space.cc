@@ -230,6 +230,7 @@ try_reclaim_locals();
 
 :(code)
 void try_reclaim_locals() {
+  if (!Reclaim_memory) return;
   // only reclaim routines starting with 'local-scope'
   const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
   const recipe& exiting_recipe = get(Recipe, r);

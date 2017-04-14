@@ -20,8 +20,16 @@ def main [
 :(before "End write_memory(x) Special-cases")
 update_any_refcounts(x, data);
 
+:(before "End Globals")
+bool Reclaim_memory = true;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--no-reclaim")) {
+  cerr << "Disabling memory reclamation. Some tests will fail.\n";
+  Reclaim_memory = false;
+}
 :(code)
 void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
+  if (!Reclaim_memory) return;
   if (!should_update_refcounts()) return;
   increment_any_refcounts(canonized_x, data);  // increment first so we don't reclaim on x <- copy x
   decrement_any_refcounts(canonized_x);
