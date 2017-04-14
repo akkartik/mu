@@ -110,6 +110,7 @@ void run_current_routine() {
 :(before "End Globals")
 bool Writing_products_of_instruction = false;
 
+:(code)
 //: hook replaced in a later layer
 bool should_continue_running(const routine* current_routine) {
   assert(current_routine == Current_routine);  // argument passed in just to make caller readable above
