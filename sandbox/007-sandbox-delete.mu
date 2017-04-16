@@ -69,10 +69,8 @@ after <global-touch> [
     break-unless delete?
     delete?, env <- try-delete-sandbox click-row, env
     break-unless delete?
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env
-    show-screen screen
     loop +next-event
   }
 ]

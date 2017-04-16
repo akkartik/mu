@@ -132,11 +132,8 @@ after <global-touch> [
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
     save-sandboxes env, resources
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env
-    # no change in cursor
-    show-screen screen
     loop +next-event
   }
 ]

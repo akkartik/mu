@@ -276,7 +276,6 @@ bool start_search_editor(search_direction dir) {
   tb_change_cell(col, bottom_screen_line, '/', TB_WHITE, TB_BLACK);
   ++col;
   tb_set_cursor(col, bottom_screen_line);
-  tb_present();
   string pattern;
   while (true) {
     int key = read_key();
@@ -294,25 +293,21 @@ bool start_search_editor(search_direction dir) {
       if (col > /*slash*/1) {
         --col;
         tb_set_cursor(col, bottom_screen_line);
-        tb_present();
       }
     }
     else if (key == TB_KEY_ARROW_RIGHT) {
       if (col-/*slash*/1 < SIZE(pattern)) {
         ++col;
         tb_set_cursor(col, bottom_screen_line);
-        tb_present();
       }
     }
     else if (key == TB_KEY_HOME || key == TB_KEY_CTRL_A) {
       col = /*skip slash*/1;
       tb_set_cursor(col, bottom_screen_line);
-      tb_present();
     }
     else if (key == TB_KEY_END || key == TB_KEY_CTRL_E) {
       col = SIZE(pattern)+/*skip slash*/1;
       tb_set_cursor(col, bottom_screen_line);
-      tb_present();
     }
     else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       if (col > /*slash*/1) {
@@ -330,7 +325,6 @@ bool start_search_editor(search_direction dir) {
           tb_change_cell(SIZE(pattern)+/*skip slash*/1, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
         }
         tb_set_cursor(col, bottom_screen_line);
-        tb_present();
       }
     }
     else if (key == TB_KEY_CTRL_K) {
@@ -339,7 +333,6 @@ bool start_search_editor(search_direction dir) {
       for (int x = col;  x < old_pattern_size+/*slash*/1;  ++x)
         tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
       tb_set_cursor(col, bottom_screen_line);
-      tb_present();
     }
     else if (key == TB_KEY_CTRL_U) {
       int old_pattern_size = SIZE(pattern);
@@ -349,7 +342,6 @@ bool start_search_editor(search_direction dir) {
       for (int x = SIZE(pattern)+/*slash*/1;  x < old_pattern_size+/*skip slash*/1;  ++x)
         tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
       tb_set_cursor(/*start of pattern skipping slash*/1, bottom_screen_line);
-      tb_present();
     }
     else if (key < 128) {  // ascii only
       // update pattern
@@ -360,7 +352,6 @@ bool start_search_editor(search_direction dir) {
         tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
       ++col;
       tb_set_cursor(col, bottom_screen_line);
-      tb_present();
     }
   }
 }
@@ -444,7 +435,6 @@ void render() {
     render_line(screen_row, "~", /*cursor_line?*/false);
   // move cursor back to display row at the end
   tb_set_cursor(0, Display_row);
-  tb_present();
 }
 
 int lines_hidden(int screen_row) {

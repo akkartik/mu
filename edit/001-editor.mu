@@ -6,10 +6,8 @@ def main text:text [
   local-scope
   load-ingredients
   open-console
-  hide-screen 0/screen
   e:&:editor <- new-editor text, 0/left, 5/right
   render 0/screen, e
-  show-screen 0/screen
   wait-for-event 0/console
   close-console
 ]
@@ -239,6 +237,12 @@ def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen
   local-scope
   load-ingredients
   row <- add row, 1
+  # if it's the real screen, use the optimized primitive
+  {
+    break-if screen
+    clear-display-from row, left, left, right
+    return
+  }
   screen <- move-cursor screen, row, left
   screen-height:num <- screen-height screen
   {

@@ -2,10 +2,11 @@
 #include"termbox.h"
 
 int main() {
-  tb_event event;
   tb_init();
-  tb_poll_event(&event);
+  tb_clear();
+  tb_change_cell(0, 0, 'a', TB_WHITE, TB_BLACK);
+  tb_event x;
+  tb_poll_event(&x);
   tb_shutdown();
-  std::cerr << (int)event.type << '\n';
   return 0;
 }

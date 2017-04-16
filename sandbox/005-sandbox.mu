@@ -793,9 +793,7 @@ after <global-keypress> [
       render-from <- add render-from, 1
       *env <- put *env, render-from:offset, render-from
     }
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
-    show-screen screen
     jump +finish-event
   }
 ]
@@ -822,9 +820,7 @@ after <global-keypress> [
     break-if at-beginning?
     render-from <- subtract render-from, 1
     *env <- put *env, render-from:offset, render-from
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
-    show-screen screen
     jump +finish-event
   }
 ]
