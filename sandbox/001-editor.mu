@@ -237,6 +237,12 @@ def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen
   local-scope
   load-ingredients
   row <- add row, 1
+  # if it's the real screen, use the optimized primitive
+  {
+    break-if screen
+    clear-display-from row, left, left, right
+    return
+  }
   screen <- move-cursor screen, row, left
   screen-height:num <- screen-height screen
   {

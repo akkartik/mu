@@ -186,159 +186,157 @@ if ('onhashchange' in window) {
 <span id="L124" class="LineNr">124 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L80'>&lt;global-touch&gt;</a></span> [
 <span id="L125" class="LineNr">125 </span>  <span class="Comment"># support 'copy' button</span>
 <span id="L126" class="LineNr">126 </span>  <span class="Delimiter">{</span>
-<span id="L127" class="LineNr">127 </span>  <span class="Conceal">¦</span> copy?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L140'>should-attempt-copy?</a> click-row, click-column, env
+<span id="L127" class="LineNr">127 </span>  <span class="Conceal">¦</span> copy?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L138'>should-attempt-copy?</a> click-row, click-column, env
 <span id="L128" class="LineNr">128 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> copy?
-<span id="L129" class="LineNr">129 </span>  <span class="Conceal">¦</span> copy?, env <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L159'>try-copy-sandbox</a> click-row, env
+<span id="L129" class="LineNr">129 </span>  <span class="Conceal">¦</span> copy?, env <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L157'>try-copy-sandbox</a> click-row, env
 <span id="L130" class="LineNr">130 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> copy?
-<span id="L131" class="LineNr">131 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L623'>hide-screen</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L132" class="LineNr">132 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L123'>render</a>
-<span id="L133" class="LineNr">133 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L500'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L134" class="LineNr">134 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L631'>show-screen</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L135" class="LineNr">135 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L136" class="LineNr">136 </span>  <span class="Delimiter">}</span>
-<span id="L137" class="LineNr">137 </span>]
-<span id="L138" class="LineNr">138 </span>
-<span id="L139" class="LineNr">139 </span><span class="Comment"># some preconditions for attempting to copy a sandbox</span>
-<span id="L140" class="LineNr">140 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L140'>should-attempt-copy?</a> click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
-<span id="L141" class="LineNr">141 </span>  <span class="Constant">local-scope</span>
-<span id="L142" class="LineNr">142 </span>  <span class="Constant">load-ingredients</span>
-<span id="L143" class="LineNr">143 </span>  <span class="Comment"># are we below the sandbox editor?</span>
-<span id="L144" class="LineNr">144 </span>  click-sandbox-area?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L190'>click-on-sandbox-area?</a> click-row, click-column, env
-<span id="L145" class="LineNr">145 </span>  <span class="muControl">return-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
-<span id="L146" class="LineNr">146 </span>  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
-<span id="L147" class="LineNr">147 </span>  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L148" class="LineNr">148 </span>  assert first-sandbox, <span class="Constant">[!!]</span>
-<span id="L149" class="LineNr">149 </span>  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
-<span id="L150" class="LineNr">150 </span>  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
-<span id="L151" class="LineNr">151 </span>  _, _, copy-button-left:num, copy-button-right:num, _ <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L344'>sandbox-menu-columns</a> sandbox-left-margin, sandbox-right-margin
-<span id="L152" class="LineNr">152 </span>  copy-button-vertical-area?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L211'>within-range?</a> click-column, copy-button-left, copy-button-right
-<span id="L153" class="LineNr">153 </span>  <span class="muControl">return-unless</span> copy-button-vertical-area?, <span class="Constant">0/false</span>
-<span id="L154" class="LineNr">154 </span>  <span class="Comment"># finally, is sandbox editor empty?</span>
-<span id="L155" class="LineNr">155 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L156" class="LineNr">156 </span>  result <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L203'>empty-editor?</a> current-sandbox
-<span id="L157" class="LineNr">157 </span>]
-<span id="L158" class="LineNr">158 </span>
-<span id="L159" class="LineNr">159 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L159'>try-copy-sandbox</a> click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-copy-button?:bool, env:&amp;:environment [
-<span id="L160" class="LineNr">160 </span>  <span class="Constant">local-scope</span>
-<span id="L161" class="LineNr">161 </span>  <span class="Constant">load-ingredients</span>
-<span id="L162" class="LineNr">162 </span>  <span class="Comment"># identify the sandbox to copy, if the click was actually on the 'copy' button</span>
-<span id="L163" class="LineNr">163 </span>  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L175'>find-sandbox</a> env, click-row
-<span id="L164" class="LineNr">164 </span>  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
-<span id="L165" class="LineNr">165 </span>  clicked-on-copy-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
-<span id="L166" class="LineNr">166 </span>  text:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
-<span id="L167" class="LineNr">167 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L168" class="LineNr">168 </span>  current-sandbox <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L73'>insert-text</a> current-sandbox, text
-<span id="L169" class="LineNr">169 </span>  <span class="Comment"># reset scroll</span>
-<span id="L170" class="LineNr">170 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
-<span id="L171" class="LineNr">171 </span>  <span class="Comment"># position cursor in sandbox editor</span>
-<span id="L172" class="LineNr">172 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
-<span id="L173" class="LineNr">173 </span>]
-<span id="L174" class="LineNr">174 </span>
-<span id="L175" class="LineNr">175 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L175'>find-sandbox</a> env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>result:&amp;:sandbox [
-<span id="L176" class="LineNr">176 </span>  <span class="Constant">local-scope</span>
-<span id="L177" class="LineNr">177 </span>  <span class="Constant">load-ingredients</span>
-<span id="L178" class="LineNr">178 </span>  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L179" class="LineNr">179 </span>  <span class="Delimiter">{</span>
-<span id="L180" class="LineNr">180 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr-sandbox
-<span id="L181" class="LineNr">181 </span>  <span class="Conceal">¦</span> start:num <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-<span id="L182" class="LineNr">182 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> equal click-row, start
-<span id="L183" class="LineNr">183 </span>  <span class="Conceal">¦</span> <span class="muControl">return-if</span> found?, curr-sandbox
-<span id="L184" class="LineNr">184 </span>  <span class="Conceal">¦</span> curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
-<span id="L185" class="LineNr">185 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L186" class="LineNr">186 </span>  <span class="Delimiter">}</span>
-<span id="L187" class="LineNr">187 </span>  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
-<span id="L188" class="LineNr">188 </span>]
-<span id="L189" class="LineNr">189 </span>
-<span id="L190" class="LineNr">190 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L190'>click-on-sandbox-area?</a> click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
-<span id="L191" class="LineNr">191 </span>  <span class="Constant">local-scope</span>
-<span id="L192" class="LineNr">192 </span>  <span class="Constant">load-ingredients</span>
-<span id="L193" class="LineNr">193 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L194" class="LineNr">194 </span>  sandbox-left-margin:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
-<span id="L195" class="LineNr">195 </span>  on-sandbox-side?:bool <span class="Special">&lt;-</span> greater-or-equal click-column, sandbox-left-margin
-<span id="L196" class="LineNr">196 </span>  <span class="muControl">return-unless</span> on-sandbox-side?, <span class="Constant">0/false</span>
-<span id="L197" class="LineNr">197 </span>  first-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L198" class="LineNr">198 </span>  <span class="muControl">return-unless</span> first-sandbox, <span class="Constant">0/false</span>
-<span id="L199" class="LineNr">199 </span>  first-sandbox-begins:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-<span id="L200" class="LineNr">200 </span>  result <span class="Special">&lt;-</span> greater-or-equal click-row, first-sandbox-begins
-<span id="L201" class="LineNr">201 </span>]
-<span id="L202" class="LineNr">202 </span>
-<span id="L203" class="LineNr">203 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L203'>empty-editor?</a> editor:&amp;:editor<span class="muRecipe"> -&gt; </span>result:bool [
-<span id="L204" class="LineNr">204 </span>  <span class="Constant">local-scope</span>
-<span id="L205" class="LineNr">205 </span>  <span class="Constant">load-ingredients</span>
-<span id="L206" class="LineNr">206 </span>  head:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
-<span id="L207" class="LineNr">207 </span>  first:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> head
-<span id="L208" class="LineNr">208 </span>  result <span class="Special">&lt;-</span> not first
-<span id="L209" class="LineNr">209 </span>]
-<span id="L210" class="LineNr">210 </span>
-<span id="L211" class="LineNr">211 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L211'>within-range?</a> x:num, low:num, high:num<span class="muRecipe"> -&gt; </span>result:bool [
-<span id="L212" class="LineNr">212 </span>  <span class="Constant">local-scope</span>
-<span id="L213" class="LineNr">213 </span>  <span class="Constant">load-ingredients</span>
-<span id="L214" class="LineNr">214 </span>  not-too-far-left?:bool <span class="Special">&lt;-</span> greater-or-equal x, low
-<span id="L215" class="LineNr">215 </span>  not-too-far-right?:bool <span class="Special">&lt;-</span> lesser-or-equal x, high
-<span id="L216" class="LineNr">216 </span>  result <span class="Special">&lt;-</span> and not-too-far-left? not-too-far-right?
-<span id="L217" class="LineNr">217 </span>]
-<span id="L218" class="LineNr">218 </span>
-<span id="L219" class="LineNr">219 </span><span class="muScenario">scenario</span> copy-fails-if-sandbox-editor-not-empty [
-<span id="L220" class="LineNr">220 </span>  <span class="Constant">local-scope</span>
-<span id="L221" class="LineNr">221 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L222" class="LineNr">222 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L223" class="LineNr">223 </span>  <span class="Comment"># empty recipes</span>
-<span id="L224" class="LineNr">224 </span>  assume-resources [
-<span id="L225" class="LineNr">225 </span>  ]
-<span id="L226" class="LineNr">226 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[add 1, 1]</span>  <span class="Comment"># contents of sandbox editor</span>
-<span id="L227" class="LineNr">227 </span>  <span class="Comment"># run it</span>
-<span id="L228" class="LineNr">228 </span>  assume-console [
-<span id="L229" class="LineNr">229 </span>  <span class="Conceal">¦</span> press F4
-<span id="L230" class="LineNr">230 </span>  ]
-<span id="L231" class="LineNr">231 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L232" class="LineNr">232 </span>  screen-should-contain [
-<span id="L233" class="LineNr">233 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L234" class="LineNr">234 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L235" class="LineNr">235 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L236" class="LineNr">236 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-<span id="L237" class="LineNr">237 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L238" class="LineNr">238 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L239" class="LineNr">239 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L240" class="LineNr">240 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L241" class="LineNr">241 </span>  ]
-<span id="L242" class="LineNr">242 </span>  <span class="Comment"># type something into the sandbox editor, then click on the 'copy' button</span>
-<span id="L243" class="LineNr">243 </span>  assume-console [
-<span id="L244" class="LineNr">244 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 70</span>  <span class="Comment"># put cursor in sandbox editor</span>
-<span id="L245" class="LineNr">245 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0]</span>  <span class="Comment"># type something</span>
-<span id="L246" class="LineNr">246 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 3</span>,<span class="Constant"> 70</span>  <span class="Comment"># click 'copy' button</span>
-<span id="L247" class="LineNr">247 </span>  ]
-<span id="L248" class="LineNr">248 </span>  run [
-<span id="L249" class="LineNr">249 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L250" class="LineNr">250 </span>  ]
-<span id="L251" class="LineNr">251 </span>  <span class="Comment"># copy doesn't happen</span>
-<span id="L252" class="LineNr">252 </span>  screen-should-contain [
-<span id="L253" class="LineNr">253 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L254" class="LineNr">254 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0                                                .</span>
-<span id="L255" class="LineNr">255 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L256" class="LineNr">256 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-<span id="L257" class="LineNr">257 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L258" class="LineNr">258 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L259" class="LineNr">259 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L260" class="LineNr">260 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L261" class="LineNr">261 </span>  ]
-<span id="L262" class="LineNr">262 </span>  <span class="Comment"># cursor should be in the right place</span>
-<span id="L263" class="LineNr">263 </span>  assume-console [
-<span id="L264" class="LineNr">264 </span>  <span class="Conceal">¦</span> type <span class="Constant">[1]</span>
-<span id="L265" class="LineNr">265 </span>  ]
-<span id="L266" class="LineNr">266 </span>  run [
-<span id="L267" class="LineNr">267 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L268" class="LineNr">268 </span>  ]
-<span id="L269" class="LineNr">269 </span>  screen-should-contain [
-<span id="L270" class="LineNr">270 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L271" class="LineNr">271 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎01                                               .</span>
-<span id="L272" class="LineNr">272 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L273" class="LineNr">273 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
-<span id="L274" class="LineNr">274 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L275" class="LineNr">275 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L276" class="LineNr">276 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L277" class="LineNr">277 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L278" class="LineNr">278 </span>  ]
-<span id="L279" class="LineNr">279 </span>]
+<span id="L131" class="LineNr">131 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L121'>render</a>
+<span id="L132" class="LineNr">132 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L495'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L133" class="LineNr">133 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L134" class="LineNr">134 </span>  <span class="Delimiter">}</span>
+<span id="L135" class="LineNr">135 </span>]
+<span id="L136" class="LineNr">136 </span>
+<span id="L137" class="LineNr">137 </span><span class="Comment"># some preconditions for attempting to copy a sandbox</span>
+<span id="L138" class="LineNr">138 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L138'>should-attempt-copy?</a> click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L139" class="LineNr">139 </span>  <span class="Constant">local-scope</span>
+<span id="L140" class="LineNr">140 </span>  <span class="Constant">load-ingredients</span>
+<span id="L141" class="LineNr">141 </span>  <span class="Comment"># are we below the sandbox editor?</span>
+<span id="L142" class="LineNr">142 </span>  click-sandbox-area?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L188'>click-on-sandbox-area?</a> click-row, click-column, env
+<span id="L143" class="LineNr">143 </span>  <span class="muControl">return-unless</span> click-sandbox-area?, <span class="Constant">0/false</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Comment"># narrower, is the click in the columns spanning the 'copy' button?</span>
+<span id="L145" class="LineNr">145 </span>  first-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L146" class="LineNr">146 </span>  assert first-sandbox, <span class="Constant">[!!]</span>
+<span id="L147" class="LineNr">147 </span>  sandbox-left-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">left:offset</span>
+<span id="L148" class="LineNr">148 </span>  sandbox-right-margin:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">right:offset</span>
+<span id="L149" class="LineNr">149 </span>  _, _, copy-button-left:num, copy-button-right:num, _ <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L344'>sandbox-menu-columns</a> sandbox-left-margin, sandbox-right-margin
+<span id="L150" class="LineNr">150 </span>  copy-button-vertical-area?:bool <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L209'>within-range?</a> click-column, copy-button-left, copy-button-right
+<span id="L151" class="LineNr">151 </span>  <span class="muControl">return-unless</span> copy-button-vertical-area?, <span class="Constant">0/false</span>
+<span id="L152" class="LineNr">152 </span>  <span class="Comment"># finally, is sandbox editor empty?</span>
+<span id="L153" class="LineNr">153 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L154" class="LineNr">154 </span>  result <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L201'>empty-editor?</a> current-sandbox
+<span id="L155" class="LineNr">155 </span>]
+<span id="L156" class="LineNr">156 </span>
+<span id="L157" class="LineNr">157 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L157'>try-copy-sandbox</a> click-row:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>clicked-on-copy-button?:bool, env:&amp;:environment [
+<span id="L158" class="LineNr">158 </span>  <span class="Constant">local-scope</span>
+<span id="L159" class="LineNr">159 </span>  <span class="Constant">load-ingredients</span>
+<span id="L160" class="LineNr">160 </span>  <span class="Comment"># identify the sandbox to copy, if the click was actually on the 'copy' button</span>
+<span id="L161" class="LineNr">161 </span>  sandbox:&amp;:sandbox <span class="Special">&lt;-</span> <a href='006-sandbox-copy.mu.html#L173'>find-sandbox</a> env, click-row
+<span id="L162" class="LineNr">162 </span>  <span class="muControl">return-unless</span> sandbox, <span class="Constant">0/false</span>
+<span id="L163" class="LineNr">163 </span>  clicked-on-copy-button? <span class="Special">&lt;-</span> copy <span class="Constant">1/true</span>
+<span id="L164" class="LineNr">164 </span>  text:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
+<span id="L165" class="LineNr">165 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L166" class="LineNr">166 </span>  current-sandbox <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L71'>insert-text</a> current-sandbox, text
+<span id="L167" class="LineNr">167 </span>  <span class="Comment"># reset scroll</span>
+<span id="L168" class="LineNr">168 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>,<span class="Constant"> -1</span>
+<span id="L169" class="LineNr">169 </span>  <span class="Comment"># position cursor in sandbox editor</span>
+<span id="L170" class="LineNr">170 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, <span class="Constant">1/true</span>
+<span id="L171" class="LineNr">171 </span>]
+<span id="L172" class="LineNr">172 </span>
+<span id="L173" class="LineNr">173 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L173'>find-sandbox</a> env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>result:&amp;:sandbox [
+<span id="L174" class="LineNr">174 </span>  <span class="Constant">local-scope</span>
+<span id="L175" class="LineNr">175 </span>  <span class="Constant">load-ingredients</span>
+<span id="L176" class="LineNr">176 </span>  curr-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<span id="L177" class="LineNr">177 </span>  <span class="Delimiter">{</span>
+<span id="L178" class="LineNr">178 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr-sandbox
+<span id="L179" class="LineNr">179 </span>  <span class="Conceal">¦</span> start:num <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+<span id="L180" class="LineNr">180 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> equal click-row, start
+<span id="L181" class="LineNr">181 </span>  <span class="Conceal">¦</span> <span class="muControl">return-if</span> found?, curr-sandbox
+<span id="L182" class="LineNr">182 </span>  <span class="Conceal">¦</span> curr-sandbox <span class="Special">&lt;-</span> get *curr-sandbox, <span class="Constant">next-sandbox:offset</span>
+<span id="L183" class="LineNr">183 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L184" class="LineNr">184 </span>  <span class="Delimiter">}</span>
+<span id="L185" class="LineNr">185 </span>  <span class="muControl">return</span> <span class="Constant">0/not-found</span>
+<span id="L186" class="LineNr">186 </span>]
+<span id="L187" class="LineNr">187 </span>
+<span id="L188" class="LineNr">188 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L188'>click-on-sandbox-area?</a> click-row:num, click-column:num, env:&amp;:environment<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L189" class="LineNr">189 </span>  <span class="Constant">local-scope</span>
+<span id="L190" class="LineNr">190 </span>  <span class="Constant">load-ingredients</span>
+<span id="L191" class="LineNr">191 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L192" class="LineNr">192 </span>  sandbox-left-margin:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
+<span id="L193" class="LineNr">193 </span>  on-sandbox-side?:bool <span class="Special">&lt;-</span> greater-or-equal click-column, sandbox-left-margin
+<span id="L194" class="LineNr">194 </span>  <span class="muControl">return-unless</span> on-sandbox-side?, <span class="Constant">0/false</span>
+<span id="L195" class="LineNr">195 </span>  first-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<span id="L196" class="LineNr">196 </span>  <span class="muControl">return-unless</span> first-sandbox, <span class="Constant">0/false</span>
+<span id="L197" class="LineNr">197 </span>  first-sandbox-begins:num <span class="Special">&lt;-</span> get *first-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+<span id="L198" class="LineNr">198 </span>  result <span class="Special">&lt;-</span> greater-or-equal click-row, first-sandbox-begins
+<span id="L199" class="LineNr">199 </span>]
+<span id="L200" class="LineNr">200 </span>
+<span id="L201" class="LineNr">201 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L201'>empty-editor?</a> editor:&amp;:editor<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L202" class="LineNr">202 </span>  <span class="Constant">local-scope</span>
+<span id="L203" class="LineNr">203 </span>  <span class="Constant">load-ingredients</span>
+<span id="L204" class="LineNr">204 </span>  head:&amp;:duplex-list:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
+<span id="L205" class="LineNr">205 </span>  first:&amp;:duplex-list:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> head
+<span id="L206" class="LineNr">206 </span>  result <span class="Special">&lt;-</span> not first
+<span id="L207" class="LineNr">207 </span>]
+<span id="L208" class="LineNr">208 </span>
+<span id="L209" class="LineNr">209 </span><span class="muRecipe">def</span> <a href='006-sandbox-copy.mu.html#L209'>within-range?</a> x:num, low:num, high:num<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L210" class="LineNr">210 </span>  <span class="Constant">local-scope</span>
+<span id="L211" class="LineNr">211 </span>  <span class="Constant">load-ingredients</span>
+<span id="L212" class="LineNr">212 </span>  not-too-far-left?:bool <span class="Special">&lt;-</span> greater-or-equal x, low
+<span id="L213" class="LineNr">213 </span>  not-too-far-right?:bool <span class="Special">&lt;-</span> lesser-or-equal x, high
+<span id="L214" class="LineNr">214 </span>  result <span class="Special">&lt;-</span> and not-too-far-left? not-too-far-right?
+<span id="L215" class="LineNr">215 </span>]
+<span id="L216" class="LineNr">216 </span>
+<span id="L217" class="LineNr">217 </span><span class="muScenario">scenario</span> copy-fails-if-sandbox-editor-not-empty [
+<span id="L218" class="LineNr">218 </span>  <span class="Constant">local-scope</span>
+<span id="L219" class="LineNr">219 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L220" class="LineNr">220 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L221" class="LineNr">221 </span>  <span class="Comment"># empty recipes</span>
+<span id="L222" class="LineNr">222 </span>  assume-resources [
+<span id="L223" class="LineNr">223 </span>  ]
+<span id="L224" class="LineNr">224 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[add 1, 1]</span>  <span class="Comment"># contents of sandbox editor</span>
+<span id="L225" class="LineNr">225 </span>  <span class="Comment"># run it</span>
+<span id="L226" class="LineNr">226 </span>  assume-console [
+<span id="L227" class="LineNr">227 </span>  <span class="Conceal">¦</span> press F4
+<span id="L228" class="LineNr">228 </span>  ]
+<span id="L229" class="LineNr">229 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L230" class="LineNr">230 </span>  screen-should-contain [
+<span id="L231" class="LineNr">231 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L232" class="LineNr">232 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L233" class="LineNr">233 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L234" class="LineNr">234 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<span id="L235" class="LineNr">235 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L236" class="LineNr">236 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L237" class="LineNr">237 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L238" class="LineNr">238 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L239" class="LineNr">239 </span>  ]
+<span id="L240" class="LineNr">240 </span>  <span class="Comment"># type something into the sandbox editor, then click on the 'copy' button</span>
+<span id="L241" class="LineNr">241 </span>  assume-console [
+<span id="L242" class="LineNr">242 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 70</span>  <span class="Comment"># put cursor in sandbox editor</span>
+<span id="L243" class="LineNr">243 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0]</span>  <span class="Comment"># type something</span>
+<span id="L244" class="LineNr">244 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 3</span>,<span class="Constant"> 70</span>  <span class="Comment"># click 'copy' button</span>
+<span id="L245" class="LineNr">245 </span>  ]
+<span id="L246" class="LineNr">246 </span>  run [
+<span id="L247" class="LineNr">247 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L248" class="LineNr">248 </span>  ]
+<span id="L249" class="LineNr">249 </span>  <span class="Comment"># copy doesn't happen</span>
+<span id="L250" class="LineNr">250 </span>  screen-should-contain [
+<span id="L251" class="LineNr">251 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L252" class="LineNr">252 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0                                                .</span>
+<span id="L253" class="LineNr">253 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L254" class="LineNr">254 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<span id="L255" class="LineNr">255 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L256" class="LineNr">256 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L257" class="LineNr">257 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L258" class="LineNr">258 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L259" class="LineNr">259 </span>  ]
+<span id="L260" class="LineNr">260 </span>  <span class="Comment"># cursor should be in the right place</span>
+<span id="L261" class="LineNr">261 </span>  assume-console [
+<span id="L262" class="LineNr">262 </span>  <span class="Conceal">¦</span> type <span class="Constant">[1]</span>
+<span id="L263" class="LineNr">263 </span>  ]
+<span id="L264" class="LineNr">264 </span>  run [
+<span id="L265" class="LineNr">265 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L266" class="LineNr">266 </span>  ]
+<span id="L267" class="LineNr">267 </span>  screen-should-contain [
+<span id="L268" class="LineNr">268 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L269" class="LineNr">269 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎01                                               .</span>
+<span id="L270" class="LineNr">270 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L271" class="LineNr">271 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit          copy            delete         .</span>
+<span id="L272" class="LineNr">272 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L273" class="LineNr">273 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L274" class="LineNr">274 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L275" class="LineNr">275 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L276" class="LineNr">276 </span>  ]
+<span id="L277" class="LineNr">277 </span>]
 </pre>
 </body>
 </html>
