@@ -192,7 +192,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
   {
     break-if pair?
     # atom
-    buf:&:buffer <- new-buffer 30
+    buf:&:buffer:char <- new-buffer 30
     {
       done?:bool <- end-of-stream? in
       break-if done?
@@ -288,12 +288,12 @@ def skip-whitespace in:&:stream:char -> in:&:stream:char [
 def to-text x:&:cell -> out:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   buf <- to-buffer x, buf
   out <- buffer-to-array buf
 ]
 
-def to-buffer x:&:cell, buf:&:buffer -> buf:&:buffer [
+def to-buffer x:&:cell, buf:&:buffer:char -> buf:&:buffer:char [
   local-scope
   load-ingredients
   # base case: empty cell
@@ -575,12 +575,12 @@ scenario parse-dotted-list-of-more-than-two-atoms [
 def to-mu in:&:cell -> out:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   buf <- to-mu in, buf
   out <- buffer-to-array buf
 ]
 
-def to-mu in:&:cell, buf:&:buffer -> buf:&:buffer, result-name:text [
+def to-mu in:&:cell, buf:&:buffer:char -> buf:&:buffer:char, result-name:text [
   local-scope
   load-ingredients
   # null cell? no change.

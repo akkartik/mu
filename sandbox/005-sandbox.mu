@@ -674,7 +674,7 @@ scenario run-instruction-manages-screen-per-sandbox [
 def editor-contents editor:&:editor -> result:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 80
+  buf:&:buffer:char <- new-buffer 80
   curr:&:duplex-list:char <- get *editor, data:offset
   # skip § sentinel
   assert curr, [editor without data is illegal; must have at least a sentinel]

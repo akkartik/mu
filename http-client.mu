@@ -4,7 +4,7 @@ def main [
   local-scope
   google:&:source:char <- start-reading-from-network 0/real-resources, [google.com/]
   n:num <- copy 0
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   {
     c:char, done?:bool <- read google
     break-if done?
