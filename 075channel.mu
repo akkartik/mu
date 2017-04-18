@@ -391,7 +391,7 @@ def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:si
   # repeat forever
   eof?:bool <- copy 0/false
   {
-    line:&:buffer <- new-buffer 30
+    line:&:buffer:char <- new-buffer 30
     # read characters from 'in' until newline, copy into line
     {
       +next-character
@@ -487,7 +487,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 def drain source:&:source:char -> result:text, source:&:source:char [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   {
     c:char, done?:bool <- read source
     break-if done?

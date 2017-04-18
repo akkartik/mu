@@ -40,7 +40,7 @@ def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
   load-ingredients
   source:&:source:char, error?:bool <- start-reading resources, filename
   return-if error?, 0/contents
-  buf:&:buffer <- new-buffer 30/capacity
+  buf:&:buffer:char <- new-buffer 30/capacity
   {
     c:char, done?:bool, source <- read source
     break-if done?
@@ -165,7 +165,7 @@ def transmit-to-fake-resource resources:&:resources, filename:text, source:&:sou
   lock:location <- get-location *resources, lock:offset
   wait-for-reset-then-set lock
   # compute new file contents
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   {
     c:char, done?:bool, source <- read source
     break-if done?

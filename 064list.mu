@@ -293,7 +293,7 @@ scenario reverse-list [
 def to-text in:&:list:_elem -> result:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 80
+  buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf
   result <- buffer-to-array buf
 ]
@@ -302,12 +302,12 @@ def to-text in:&:list:_elem -> result:text [
 def to-text-line in:&:list:_elem -> result:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 80
+  buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
   result <- buffer-to-array buf
 ]
 
-def to-buffer in:&:list:_elem, buf:&:buffer -> buf:&:buffer [
+def to-buffer in:&:list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   local-scope
   load-ingredients
   {

@@ -123,28 +123,27 @@ scenario text-equal-common-lengths-but-distinct [
 ]
 
 # A new type to help incrementally construct texts.
-# todo: make this shape-shifting.
-container buffer [
+container buffer:_elem [
   length:num
-  data:text
+  data:&:@:_elem
 ]
 
-def new-buffer capacity:num -> result:&:buffer [
+def new-buffer capacity:num -> result:&:buffer:_elem [
   local-scope
   load-ingredients
-  result <- new buffer:type
+  result <- new {(buffer _elem): type}
   *result <- put *result, length:offset, 0
   {
     break-if capacity
     # capacity not provided
     capacity <- copy 10
   }
-  data:text <- new character:type, capacity
+  data:&:@:_elem <- new _elem:type, capacity
   *result <- put *result, data:offset, data
   return result
 ]
 
-def grow-buffer buf:&:buffer -> buf:&:buffer [
+def grow-buffer buf:&:buffer:_elem -> buf:&:buffer:_elem [
   local-scope
   load-ingredients
   # double buffer size
@@ -165,7 +164,7 @@ def grow-buffer buf:&:buffer -> buf:&:buffer [
   }
 ]
 
-def buffer-full? in:&:buffer -> result:bool [
+def buffer-full? in:&:buffer:_elem -> result:bool [
   local-scope
   load-ingredients
   len:num <- get *in, length:offset
@@ -175,7 +174,7 @@ def buffer-full? in:&:buffer -> result:bool [
 ]
 
 # most broadly applicable definition of append to a buffer: just call to-text
-def append buf:&:buffer, x:_elem -> buf:&:buffer [
+def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
   local-scope
   load-ingredients
   text:text <- to-text x
@@ -191,7 +190,7 @@ def append buf:&:buffer, x:_elem -> buf:&:buffer [
   }
 ]
 
-def append buf:&:buffer, c:char -> buf:&:buffer [
+def append buf:&:buffer:char, c:char -> buf:&:buffer:char [
   local-scope
   load-ingredients
   len:num <- get *buf, length:offset
@@ -217,7 +216,7 @@ def append buf:&:buffer, c:char -> buf:&:buffer [
   *buf <- put *buf, length:offset, len
 ]
 
-def append buf:&:buffer, t:text -> buf:&:buffer [
+def append buf:&:buffer:char, t:text -> buf:&:buffer:char [
   local-scope
   load-ingredients
   len:num <- length *t
@@ -234,7 +233,7 @@ def append buf:&:buffer, t:text -> buf:&:buffer [
 
 scenario append-to-empty-buffer [
   local-scope
-  x:&:buffer <- new-buffer
+  x:&:buffer:char <- new-buffer
   run [
     c:char <- copy 97/a
     x <- append x, c
@@ -252,7 +251,7 @@ scenario append-to-empty-buffer [
 
 scenario append-to-buffer [
   local-scope
-  x:&:buffer <- new-buffer
+  x:&:buffer:char <- new-buffer
   c:char <- copy 97/a
   x <- append x, c
   run [
@@ -274,7 +273,7 @@ scenario append-to-buffer [
 
 scenario append-grows-buffer [
   local-scope
-  x:&:buffer <- new-buffer 3
+  x:&:buffer:char <- new-buffer 3
   s1:text <- get *x, data:offset
   x <- append x, [abc]  # buffer is now full
   s2:text <- get *x, data:offset
@@ -311,7 +310,7 @@ scenario append-grows-buffer [
 
 scenario buffer-append-handles-backspace [
   local-scope
-  x:&:buffer <- new-buffer
+  x:&:buffer:char <- new-buffer
   x <- append x, [ab]
   run [
     c:char <- copy 8/backspace
@@ -326,7 +325,7 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
-def buffer-to-array in:&:buffer -> result:text [
+def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   local-scope
   load-ingredients
   {
@@ -360,7 +359,7 @@ def buffer-to-array in:&:buffer -> result:text [
 def append first:text -> result:text [
   local-scope
   load-ingredients
-  buf:&:buffer <- new-buffer 30
+  buf:&:buffer:char <- new-buffer 30
   # append first ingredient
   {
     break-unless first
