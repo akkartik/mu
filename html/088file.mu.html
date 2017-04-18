@@ -79,7 +79,7 @@ if ('onhashchange' in window) {
 <span id="L18" class="LineNr"> 18 </span>  contents:text
 <span id="L19" class="LineNr"> 19 </span>]
 <span id="L20" class="LineNr"> 20 </span>
-<span id="L21" class="LineNr"> 21 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L21'>start-reading</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
+<span id="L21" class="LineNr"> 21 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L21'>start-reading</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text<span class="muRecipe"> -&gt; </span>contents:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, error?:bool [
 <span id="L22" class="LineNr"> 22 </span>  <span class="Constant">local-scope</span>
 <span id="L23" class="LineNr"> 23 </span>  <span class="Constant">load-ingredients</span>
 <span id="L24" class="LineNr"> 24 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
@@ -92,18 +92,18 @@ if ('onhashchange' in window) {
 <span id="L31" class="LineNr"> 31 </span>  <span class="Comment"># real file system</span>
 <span id="L32" class="LineNr"> 32 </span>  file:num <span class="Special">&lt;-</span> $open-file-for-reading filename
 <span id="L33" class="LineNr"> 33 </span>  <span class="muControl">return-unless</span> file, <span class="Constant">0/contents</span>, <span class="Constant">1/error?</span>
-<span id="L34" class="LineNr"> 34 </span>  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
-<span id="L35" class="LineNr"> 35 </span>  start-running <a href='088file.mu.html#L76'>receive-from-file</a> file, sink
+<span id="L34" class="LineNr"> 34 </span>  contents:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
+<span id="L35" class="LineNr"> 35 </span>  start-running <a href='088file.mu.html#L76'>receive-from-file</a> file, <a href='075channel.mu.html#L47'>sink</a>
 <span id="L36" class="LineNr"> 36 </span>]
 <span id="L37" class="LineNr"> 37 </span>
 <span id="L38" class="LineNr"> 38 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L38'>slurp</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text<span class="muRecipe"> -&gt; </span>contents:text, error?:bool [
 <span id="L39" class="LineNr"> 39 </span>  <span class="Constant">local-scope</span>
 <span id="L40" class="LineNr"> 40 </span>  <span class="Constant">load-ingredients</span>
-<span id="L41" class="LineNr"> 41 </span>  source:&amp;:source:char, error?:bool <span class="Special">&lt;-</span> <a href='088file.mu.html#L21'>start-reading</a> <a href='088file.mu.html#L11'>resources</a>, filename
+<span id="L41" class="LineNr"> 41 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, error?:bool <span class="Special">&lt;-</span> <a href='088file.mu.html#L21'>start-reading</a> <a href='088file.mu.html#L11'>resources</a>, filename
 <span id="L42" class="LineNr"> 42 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/contents</span>
-<span id="L43" class="LineNr"> 43 </span>  buf:&amp;:buffer:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a> <span class="Constant">30/capacity</span>
+<span id="L43" class="LineNr"> 43 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a> <span class="Constant">30/capacity</span>
 <span id="L44" class="LineNr"> 44 </span>  <span class="Delimiter">{</span>
-<span id="L45" class="LineNr"> 45 </span>  <span class="Conceal">¦</span> c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L45" class="LineNr"> 45 </span>  <span class="Conceal">¦</span> c:char, done?:bool, <a href='075channel.mu.html#L43'>source</a> <span class="Special">&lt;-</span> read <a href='075channel.mu.html#L43'>source</a>
 <span id="L46" class="LineNr"> 46 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L47" class="LineNr"> 47 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> append buf, c
 <span id="L48" class="LineNr"> 48 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
@@ -111,7 +111,7 @@ if ('onhashchange' in window) {
 <span id="L50" class="LineNr"> 50 </span>  contents <span class="Special">&lt;-</span> <a href='061text.mu.html#L328'>buffer-to-array</a> buf
 <span id="L51" class="LineNr"> 51 </span>]
 <span id="L52" class="LineNr"> 52 </span>
-<span id="L53" class="LineNr"> 53 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L53'>start-reading-from-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, <a href='088file.mu.html#L16'>resource</a>:text<span class="muRecipe"> -&gt; </span>contents:&amp;:source:char, error?:bool [
+<span id="L53" class="LineNr"> 53 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L53'>start-reading-from-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, <a href='088file.mu.html#L16'>resource</a>:text<span class="muRecipe"> -&gt; </span>contents:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, error?:bool [
 <span id="L54" class="LineNr"> 54 </span>  <span class="Constant">local-scope</span>
 <span id="L55" class="LineNr"> 55 </span>  <span class="Constant">load-ingredients</span>
 <span id="L56" class="LineNr"> 56 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/no-error</span>
@@ -126,28 +126,28 @@ if ('onhashchange' in window) {
 <span id="L65" class="LineNr"> 65 </span>  <span class="Conceal">¦</span> curr-resource:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">name:offset</span>
 <span id="L66" class="LineNr"> 66 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> equal <a href='088file.mu.html#L16'>resource</a>, curr-resource
 <span id="L67" class="LineNr"> 67 </span>  <span class="Conceal">¦</span> <span class="muControl">loop-unless</span> found?
-<span id="L68" class="LineNr"> 68 </span>  <span class="Conceal">¦</span> contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="Conceal">¦</span> contents:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
 <span id="L69" class="LineNr"> 69 </span>  <span class="Conceal">¦</span> curr-contents:text <span class="Special">&lt;-</span> get tmp, <span class="Constant">contents:offset</span>
-<span id="L70" class="LineNr"> 70 </span>  <span class="Conceal">¦</span> start-running <a href='088file.mu.html#L89'>receive-from-text</a> curr-contents, sink
+<span id="L70" class="LineNr"> 70 </span>  <span class="Conceal">¦</span> start-running <a href='088file.mu.html#L89'>receive-from-text</a> curr-contents, <a href='075channel.mu.html#L47'>sink</a>
 <span id="L71" class="LineNr"> 71 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
 <span id="L72" class="LineNr"> 72 </span>  <span class="Delimiter">}</span>
 <span id="L73" class="LineNr"> 73 </span>  <span class="muControl">return</span> <span class="Constant">0/not-found</span>, <span class="Constant">1/error</span>
 <span id="L74" class="LineNr"> 74 </span>]
 <span id="L75" class="LineNr"> 75 </span>
-<span id="L76" class="LineNr"> 76 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L76'>receive-from-file</a> file:num, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span id="L76" class="LineNr"> 76 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L76'>receive-from-file</a> file:num, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char<span class="muRecipe"> -&gt; </span><a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char [
 <span id="L77" class="LineNr"> 77 </span>  <span class="Constant">local-scope</span>
 <span id="L78" class="LineNr"> 78 </span>  <span class="Constant">load-ingredients</span>
 <span id="L79" class="LineNr"> 79 </span>  <span class="Delimiter">{</span>
 <span id="L80" class="LineNr"> 80 </span>  <span class="Conceal">¦</span> c:char, eof?:bool <span class="Special">&lt;-</span> $read-from-file file
 <span id="L81" class="LineNr"> 81 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> eof?
-<span id="L82" class="LineNr"> 82 </span>  <span class="Conceal">¦</span> sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink, c
+<span id="L82" class="LineNr"> 82 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> <a href='075channel.mu.html#L47'>sink</a>, c
 <span id="L83" class="LineNr"> 83 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L84" class="LineNr"> 84 </span>  <span class="Delimiter">}</span>
-<span id="L85" class="LineNr"> 85 </span>  sink <span class="Special">&lt;-</span> close sink
+<span id="L85" class="LineNr"> 85 </span>  <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> close <a href='075channel.mu.html#L47'>sink</a>
 <span id="L86" class="LineNr"> 86 </span>  file <span class="Special">&lt;-</span> $close-file file
 <span id="L87" class="LineNr"> 87 </span>]
 <span id="L88" class="LineNr"> 88 </span>
-<span id="L89" class="LineNr"> 89 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L89'>receive-from-text</a> contents:text, sink:&amp;:sink:char<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char [
+<span id="L89" class="LineNr"> 89 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L89'>receive-from-text</a> contents:text, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char<span class="muRecipe"> -&gt; </span><a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char [
 <span id="L90" class="LineNr"> 90 </span>  <span class="Constant">local-scope</span>
 <span id="L91" class="LineNr"> 91 </span>  <span class="Constant">load-ingredients</span>
 <span id="L92" class="LineNr"> 92 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
@@ -156,22 +156,22 @@ if ('onhashchange' in window) {
 <span id="L95" class="LineNr"> 95 </span>  <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal i, len
 <span id="L96" class="LineNr"> 96 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L97" class="LineNr"> 97 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> index *contents, i
-<span id="L98" class="LineNr"> 98 </span>  <span class="Conceal">¦</span> sink <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> sink, c
+<span id="L98" class="LineNr"> 98 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L66'>write</a> <a href='075channel.mu.html#L47'>sink</a>, c
 <span id="L99" class="LineNr"> 99 </span>  <span class="Conceal">¦</span> i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L100" class="LineNr">100 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L101" class="LineNr">101 </span>  <span class="Delimiter">}</span>
-<span id="L102" class="LineNr">102 </span>  sink <span class="Special">&lt;-</span> close sink
+<span id="L102" class="LineNr">102 </span>  <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> close <a href='075channel.mu.html#L47'>sink</a>
 <span id="L103" class="LineNr">103 </span>]
 <span id="L104" class="LineNr">104 </span>
-<span id="L105" class="LineNr">105 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L105'>start-writing</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text<span class="muRecipe"> -&gt; </span>sink:&amp;:sink:char, routine-id:num, error?:bool [
+<span id="L105" class="LineNr">105 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L105'>start-writing</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text<span class="muRecipe"> -&gt; </span><a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char, routine-id:num, error?:bool [
 <span id="L106" class="LineNr">106 </span>  <span class="Constant">local-scope</span>
 <span id="L107" class="LineNr">107 </span>  <span class="Constant">load-ingredients</span>
 <span id="L108" class="LineNr">108 </span>  error? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L109" class="LineNr">109 </span>  source:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
+<span id="L109" class="LineNr">109 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
 <span id="L110" class="LineNr">110 </span>  <span class="Delimiter">{</span>
 <span id="L111" class="LineNr">111 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='088file.mu.html#L11'>resources</a>
 <span id="L112" class="LineNr">112 </span>  <span class="Conceal">¦</span> <span class="Comment"># fake file system</span>
-<span id="L113" class="LineNr">113 </span>  <span class="Conceal">¦</span> routine-id <span class="Special">&lt;-</span> start-running <a href='088file.mu.html#L162'>transmit-to-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>, filename, source
+<span id="L113" class="LineNr">113 </span>  <span class="Conceal">¦</span> routine-id <span class="Special">&lt;-</span> start-running <a href='088file.mu.html#L162'>transmit-to-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>, filename, <a href='075channel.mu.html#L43'>source</a>
 <span id="L114" class="LineNr">114 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
 <span id="L115" class="LineNr">115 </span>  <span class="Delimiter">}</span>
 <span id="L116" class="LineNr">116 </span>  <span class="Comment"># real file system</span>
@@ -182,7 +182,7 @@ if ('onhashchange' in window) {
 <span id="L121" class="LineNr">121 </span>  <span class="Conceal">¦</span> msg:text <span class="Special">&lt;-</span> append <span class="Constant">[no such file: ]</span> filename
 <span id="L122" class="LineNr">122 </span>  <span class="Conceal">¦</span> assert file, msg
 <span id="L123" class="LineNr">123 </span>  <span class="Delimiter">}</span>
-<span id="L124" class="LineNr">124 </span>  routine-id <span class="Special">&lt;-</span> start-running <a href='088file.mu.html#L150'>transmit-to-file</a> file, source
+<span id="L124" class="LineNr">124 </span>  routine-id <span class="Special">&lt;-</span> start-running <a href='088file.mu.html#L150'>transmit-to-file</a> file, <a href='075channel.mu.html#L43'>source</a>
 <span id="L125" class="LineNr">125 </span>]
 <span id="L126" class="LineNr">126 </span>
 <span id="L127" class="LineNr">127 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L127'>dump</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text, contents:text<span class="muRecipe"> -&gt; </span><a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, error?:bool [
@@ -190,7 +190,7 @@ if ('onhashchange' in window) {
 <span id="L129" class="LineNr">129 </span>  <span class="Constant">load-ingredients</span>
 <span id="L130" class="LineNr">130 </span>  <span class="Comment"># todo: really create an empty file</span>
 <span id="L131" class="LineNr">131 </span>  <span class="muControl">return-unless</span> contents, <a href='088file.mu.html#L11'>resources</a>, <span class="Constant">0/no-error</span>
-<span id="L132" class="LineNr">132 </span>  sink-file:&amp;:sink:char, write-routine:num, error?:bool <span class="Special">&lt;-</span> <a href='088file.mu.html#L105'>start-writing</a> <a href='088file.mu.html#L11'>resources</a>, filename
+<span id="L132" class="LineNr">132 </span>  sink-file:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char, write-routine:num, error?:bool <span class="Special">&lt;-</span> <a href='088file.mu.html#L105'>start-writing</a> <a href='088file.mu.html#L11'>resources</a>, filename
 <span id="L133" class="LineNr">133 </span>  <span class="muControl">return-if</span> error?
 <span id="L134" class="LineNr">134 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L135" class="LineNr">135 </span>  len:num <span class="Special">&lt;-</span> length *contents
@@ -208,11 +208,11 @@ if ('onhashchange' in window) {
 <span id="L147" class="LineNr">147 </span>  wait-for-routine write-routine
 <span id="L148" class="LineNr">148 </span>]
 <span id="L149" class="LineNr">149 </span>
-<span id="L150" class="LineNr">150 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L150'>transmit-to-file</a> file:num, source:&amp;:source:char<span class="muRecipe"> -&gt; </span>source:&amp;:source:char [
+<span id="L150" class="LineNr">150 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L150'>transmit-to-file</a> file:num, <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char<span class="muRecipe"> -&gt; </span><a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char [
 <span id="L151" class="LineNr">151 </span>  <span class="Constant">local-scope</span>
 <span id="L152" class="LineNr">152 </span>  <span class="Constant">load-ingredients</span>
 <span id="L153" class="LineNr">153 </span>  <span class="Delimiter">{</span>
-<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> c:char, done?:bool, <a href='075channel.mu.html#L43'>source</a> <span class="Special">&lt;-</span> read <a href='075channel.mu.html#L43'>source</a>
 <span id="L155" class="LineNr">155 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L156" class="LineNr">156 </span>  <span class="Conceal">¦</span> $write-to-file file, c
 <span id="L157" class="LineNr">157 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
@@ -220,15 +220,15 @@ if ('onhashchange' in window) {
 <span id="L159" class="LineNr">159 </span>  file <span class="Special">&lt;-</span> $close-file file
 <span id="L160" class="LineNr">160 </span>]
 <span id="L161" class="LineNr">161 </span>
-<span id="L162" class="LineNr">162 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L162'>transmit-to-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text, source:&amp;:source:char<span class="muRecipe"> -&gt; </span><a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, source:&amp;:source:char [
+<span id="L162" class="LineNr">162 </span><span class="muRecipe">def</span> <a href='088file.mu.html#L162'>transmit-to-fake-resource</a> <a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, filename:text, <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char<span class="muRecipe"> -&gt; </span><a href='088file.mu.html#L11'>resources</a>:&amp;:<a href='088file.mu.html#L11'>resources</a>, <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char [
 <span id="L163" class="LineNr">163 </span>  <span class="Constant">local-scope</span>
 <span id="L164" class="LineNr">164 </span>  <span class="Constant">load-ingredients</span>
 <span id="L165" class="LineNr">165 </span>  lock:location <span class="Special">&lt;-</span> get-location *resources, <span class="Constant">lock:offset</span>
 <span id="L166" class="LineNr">166 </span>  wait-for-reset-then-set lock
 <span id="L167" class="LineNr">167 </span>  <span class="Comment"># compute new file contents</span>
-<span id="L168" class="LineNr">168 </span>  buf:&amp;:buffer:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 30</span>
+<span id="L168" class="LineNr">168 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 30</span>
 <span id="L169" class="LineNr">169 </span>  <span class="Delimiter">{</span>
-<span id="L170" class="LineNr">170 </span>  <span class="Conceal">¦</span> c:char, done?:bool, source <span class="Special">&lt;-</span> read source
+<span id="L170" class="LineNr">170 </span>  <span class="Conceal">¦</span> c:char, done?:bool, <a href='075channel.mu.html#L43'>source</a> <span class="Special">&lt;-</span> read <a href='075channel.mu.html#L43'>source</a>
 <span id="L171" class="LineNr">171 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L172" class="LineNr">172 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> append buf, c
 <span id="L173" class="LineNr">173 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
