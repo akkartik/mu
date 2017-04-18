@@ -54,6 +54,7 @@ scenario random-numbers-in-scenario [
   ]
 ]
 
+# generate a random integer in the semi-open interval [start, end)
 def random-in-range generator:&:stream:num, start:num, end:num -> result:num, fail?:bool, generator:&:stream:num [
   local-scope
   load-ingredients
