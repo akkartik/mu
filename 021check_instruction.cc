@@ -146,7 +146,12 @@ bool types_strictly_match(const type_tree* to, const type_tree* from) {
     if (from->value == -1) return from->name == to->name;
     return from->value == to->value;
   }
-  return types_strictly_match(to->left, from->left) && types_strictly_match(to->right, from->right);
+  if (types_strictly_match(to->left, from->left) && types_strictly_match(to->right, from->right))
+    return true;
+  // fallback: (x) == x
+  if (to->right == NULL && types_strictly_match(to->left, from)) return true;
+  if (from->right == NULL && types_strictly_match(to, from->left)) return true;
+  return false;
 }
 
 void test_unknown_type_does_not_match_unknown_type() {
@@ -158,6 +163,16 @@ void test_unknown_type_does_not_match_unknown_type() {
 void test_unknown_type_matches_itself() {
   reagent a("a:foo");
   reagent b("b:foo");
+  CHECK(types_strictly_match(a, b));
+}
+
+void test_type_abbreviations_match_raw_types() {
+  put(Type_abbreviations, "text", new_type_tree("address:array:character"));
+  // a has type (address buffer (address array character))
+  reagent a("a:address:buffer:text");
+  expand_type_abbreviations(a.type);
+  // b has type (address buffer address array character)
+  reagent b("b:address:buffer:address:array:character");
   CHECK(types_strictly_match(a, b));
 }
 

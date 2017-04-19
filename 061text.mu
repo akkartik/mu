@@ -344,6 +344,12 @@ scenario buffer-append-handles-backspace [
   ]
 ]
 
+scenario append-to-buffer-of-non-characters [
+  local-scope
+  x:&:buffer:text <- new-buffer 1/capacity
+  # no errors
+]
+
 def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   local-scope
   load-ingredients
