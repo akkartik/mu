@@ -147,17 +147,17 @@ def grow-buffer buf:&:buffer:_elem -> buf:&:buffer:_elem [
   local-scope
   load-ingredients
   # double buffer size
-  olddata:text <- get *buf, data:offset
+  olddata:&:@:_elem <- get *buf, data:offset
   oldlen:num <- length *olddata
   newlen:num <- multiply oldlen, 2
-  newdata:text <- new character:type, newlen
+  newdata:&:@:_elem <- new _elem:type, newlen
   *buf <- put *buf, data:offset, newdata
   # copy old contents
   i:num <- copy 0
   {
     done?:bool <- greater-or-equal i, oldlen
     break-if done?
-    src:char <- index *olddata, i
+    src:_elem <- index *olddata, i
     *newdata <- put-index *newdata, i, src
     i <- add i, 1
     loop
@@ -168,12 +168,30 @@ def buffer-full? in:&:buffer:_elem -> result:bool [
   local-scope
   load-ingredients
   len:num <- get *in, length:offset
-  s:text <- get *in, data:offset
+  s:&:@:_elem <- get *in, data:offset
   capacity:num <- length *s
   result <- greater-or-equal len, capacity
 ]
 
-# most broadly applicable definition of append to a buffer: just call to-text
+# most broadly applicable definition of append to a buffer
+def append buf:&:buffer:_elem, x:_elem -> buf:&:buffer:_elem [
+  local-scope
+  load-ingredients
+  len:num <- get *buf, length:offset
+  {
+    # grow buffer if necessary
+    full?:bool <- buffer-full? buf
+    break-unless full?
+    buf <- grow-buffer buf
+  }
+  s:&:@:_elem <- get *buf, data:offset
+  *s <- put-index *s, len, x
+  len <- add len, 1
+  *buf <- put *buf, length:offset, len
+]
+
+# most broadly applicable definition of append to a buffer of characters: just
+# call to-text
 def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
   local-scope
   load-ingredients
@@ -190,6 +208,7 @@ def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
   }
 ]
 
+# specialization for characters that is backspace-aware
 def append buf:&:buffer:char, c:char -> buf:&:buffer:char [
   local-scope
   load-ingredients
@@ -334,14 +353,14 @@ def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
     return 0
   }
   len:num <- get *in, length:offset
-  s:text <- get *in, data:offset
+  s:&:@:_elem <- get *in, data:offset
   # we can't just return s because it is usually the wrong length
-  result <- new character:type, len
+  result <- new _elem:type, len
   i:num <- copy 0
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-    src:char <- index *s, i
+    src:_elem <- index *s, i
     *result <- put-index *result, i, src
     i <- add i, 1
     loop
