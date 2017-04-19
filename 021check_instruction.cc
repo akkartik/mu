@@ -174,6 +174,8 @@ void test_type_abbreviations_match_raw_types() {
   // b has type (address buffer address array character)
   reagent b("b:address:buffer:address:array:character");
   CHECK(types_strictly_match(a, b));
+  delete Type_abbreviations["text"];
+  put(Type_abbreviations, "text", NULL);
 }
 
 //: helpers
