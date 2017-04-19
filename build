@@ -92,15 +92,8 @@ older_than tangle/tangle tangle/*.cc && {
 
 LAYERS=$(./enumerate/enumerate --until $UNTIL_LAYER  |grep -v '.mu$')
 older_than mu.cc $LAYERS enumerate/enumerate tangle/tangle && {
-  # exception to the rules above: we combine 'older_than' and 'update' here
-  # because we sometimes want to hack directly on mu.cc and not lose our
-  # changes if they're newer.
-
-  # shorter version but continues unnecessarily if tangle dies
-  #   ./tangle/tangle $LAYERS |update mu.cc
-  ./tangle/tangle $LAYERS  > mu_tmp.cc  # die if this fails
-  cat mu_tmp.cc |update mu.cc
-  rm mu_tmp.cc
+  # no update here; rely on 'update' calls downstream
+  ./tangle/tangle $LAYERS  > mu.cc
 }
 
 older_than cleave/cleave cleave/cleave.cc && {
@@ -150,5 +143,6 @@ exit 0
 #   no output when nothing needs updating
 #     no output for mu.cc when .mu files modified
 #     touch mu.cc but don't modify it; no output on second build
+#     touch a .cc layer but don't modify it; no output on second build
 #   only a single layer is recompiled when changing a C++ function
 #   stop immediately after failure in tangle
