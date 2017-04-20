@@ -576,7 +576,7 @@ string header_label(const recipe& caller) {
 
 string original_header_label(const recipe& caller) {
   ostringstream out;
-  out << "recipe " << caller.original_name;
+  out << "recipe " << caller.name;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
     out << ' ' << caller.ingredients.at(i).original_string;
   if (!caller.products.empty()) out << " ->";

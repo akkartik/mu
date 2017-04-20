@@ -76,6 +76,20 @@ void test_tangle_with_tanglecomments_inside_directive() {
   CHECK_TRACE_DOESNT_CONTAIN("tangle", "//: 1");
 }
 
+void test_tangle_with_multiword_directives() {
+  istringstream in("a b\nc\n:(after \"a b\")\nd\n");
+  list<Line> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "a bdc");
+}
+
+void test_tangle_with_quoted_multiword_directives() {
+  istringstream in("a \"b\"\nc\n:(after \"a \\\"b\\\"\")\nd\n");
+  list<Line> dummy;
+  tangle(in, dummy);
+  CHECK_TRACE_CONTENTS("tangle", "a \"b\"dc");
+}
+
 void test_tangle2() {
   istringstream in("a\nb\nc\n:(after b)\nd\n");
   list<Line> dummy;

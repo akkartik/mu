@@ -251,10 +251,13 @@ void slurp_tangle_string(istream& in, ostream& out) {
   in.get();
   char c;
   while (in >> c) {
-    if (c == '\\')  // only works for double-quotes
+    if (c == '\\') {
+      // skip backslash and save next character unconditionally
+      in >> c;
+      out << c;
       continue;
-    if (c == '"')
-      break;
+    }
+    if (c == '"') break;
     out << c;
   }
 }

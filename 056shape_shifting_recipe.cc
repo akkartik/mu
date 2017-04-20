@@ -52,6 +52,8 @@ string original_name;
 //: original name is only set during load
 :(before "End Load Recipe Name")
 result.original_name = result.name;
+:(replace "out << \"recipe \" << caller.name;" following "string original_header_label(const recipe& caller)")
+out << "recipe " << caller.original_name;
 
 :(after "Static Dispatch Phase 3")
 candidates = strictly_matching_shape_shifting_variants(inst, variants);
