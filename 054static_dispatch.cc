@@ -195,18 +195,14 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   // error messages
   if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
     if (SIZE(variants) == 1) {
-      raise << maybe(caller_recipe.name) << "instruction '" << inst.original_string << "' does not match '" << header_label(get(Recipe, variants.at(0))) << "'\n" << end();
-      raise << "  instruction expands to '" << to_string(inst) << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "types don't match in call for '" << inst.original_string << "'\n" << end();
+      raise << "  which tries to call '" << original_header_label(get(Recipe, variants.at(0))) << "'\n" << end();
     }
     else {
       raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.original_string << "'\n" << end();
-      raise << "  which expands to:\n" << end();
-      raise << "    " << to_string(inst) << '\n' << end();
       raise << "  available variants are:\n" << end();
-      for (int i = 0;  i < SIZE(variants);  ++i) {
-        const recipe& curr = get(Recipe, variants.at(i));
-        raise << "    " << header_label(curr) << '\n' << end();
-      }
+      for (int i = 0;  i < SIZE(variants);  ++i)
+        raise << "    " << original_header_label(get(Recipe, variants.at(i))) << '\n' << end();
     }
     for (list<call>::iterator p = /*skip*/++Resolve_stack.begin();  p != Resolve_stack.end();  ++p) {
       const recipe& specializer_recipe = get(Recipe, p->running_recipe);
@@ -578,6 +574,17 @@ string header_label(const recipe& caller) {
   return out.str();
 }
 
+string original_header_label(const recipe& caller) {
+  ostringstream out;
+  out << "recipe " << caller.original_name;
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
+    out << ' ' << caller.ingredients.at(i).original_string;
+  if (!caller.products.empty()) out << " ->";
+  for (int i = 0;  i < SIZE(caller.products);  ++i)
+    out << ' ' << caller.products.at(i).original_string;
+  return out.str();
+}
+
 :(scenario reload_variant_retains_other_variants)
 def main [
   1:num <- copy 34
@@ -645,8 +652,8 @@ def foo x:&:char [
   local-scope
   load-ingredients
 ]
-+error: main: instruction 'foo x' does not match 'recipe foo {x: ("address" "character")}'
-+error:   instruction expands to 'foo {x: ("address" "number")}'
++error: main: types don't match in call for 'foo x'
++error:   which tries to call 'recipe foo x:&:char'
 
 :(scenario show_available_variants_in_dispatch_errors)
 % Hide_errors = true;
@@ -664,11 +671,9 @@ def foo x:&:bool [
   load-ingredients
 ]
 +error: main: failed to find a matching call for 'foo x'
-+error:   which expands to:
-+error:     foo {x: ("address" "number")}
 +error:   available variants are:
-+error:     recipe foo {x: ("address" "character")}
-+error:     recipe foo_2 {x: ("address" "boolean")}
++error:     recipe foo x:&:char
++error:     recipe foo x:&:bool
 
 :(before "End Includes")
 using std::abs;
