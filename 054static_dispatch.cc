@@ -139,6 +139,13 @@ for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
 for (int i = 0;  i < SIZE(caller.products);  ++i)
   check_or_set_invalid_types(caller.products.at(i).type, maybe(caller.name), "recipe header product");
 
+//: save original name of recipes before renaming them
+:(before "End recipe Fields")
+string original_name;
+//: original name is only set during load
+:(before "End Load Recipe Name")
+result.original_name = result.name;
+
 //: after filling in all missing types (because we'll be introducing 'blank' types in this transform in a later layer, for shape-shifting recipes)
 :(after "Transform.push_back(transform_names)")
 Transform.push_back(resolve_ambiguous_calls);  // idempotent
@@ -576,7 +583,7 @@ string header_label(const recipe& caller) {
 
 string original_header_label(const recipe& caller) {
   ostringstream out;
-  out << "recipe " << caller.name;
+  out << "recipe " << caller.original_name;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
     out << ' ' << caller.ingredients.at(i).original_string;
   if (!caller.products.empty()) out << " ->";

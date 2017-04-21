@@ -46,15 +46,6 @@ if (Current_routine->calls.front().running_step_index == 0
 :(before "End Matching Types For Literal(to)")
 if (contains_type_ingredient_name(to)) return false;
 
-//: save original name of specialized recipes
-:(before "End recipe Fields")
-string original_name;
-//: original name is only set during load
-:(before "End Load Recipe Name")
-result.original_name = result.name;
-:(replace "out << \"recipe \" << caller.name;" following "string original_header_label(const recipe& caller)")
-out << "recipe " << caller.original_name;
-
 :(after "Static Dispatch Phase 3")
 candidates = strictly_matching_shape_shifting_variants(inst, variants);
 if (!candidates.empty()) {
