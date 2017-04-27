@@ -55,7 +55,7 @@ void transform_names(const recipe_ordinal r) {
       if (is_named_location(ingredient)) names_used = true;
       if (is_integer(ingredient.name)) continue;
       if (!already_transformed(ingredient, names)) {
-        raise << maybe(caller.name) << "tried to read ingredient '" << ingredient.name << "' in '" << to_original_string(inst) << "' but it hasn't been written to yet\n" << end();
+        raise << maybe(caller.name) << "tried to read ingredient '" << ingredient.name << "' in '" << inst.original_string << "' but it hasn't been written to yet\n" << end();
         // use-before-set Error
         return;
       }
@@ -232,7 +232,7 @@ $error: 0
 :(before "End update GET offset_value in Check")
 else {
   if (!offset.initialized) {
-    raise << maybe(get(Recipe, r).name) << "uninitialized offset '" << offset.name << "' in '" << to_original_string(inst) << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "uninitialized offset '" << offset.name << "' in '" << inst.original_string << "'\n" << end();
     break;
   }
   offset_value = offset.value;

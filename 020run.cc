@@ -94,7 +94,7 @@ void run_current_routine() {
     //: used by a later layer
     Writing_products_of_instruction = true;
     if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
+      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << current_instruction().original_string << "'\n" << end();
     }
     else {
       for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
@@ -321,11 +321,11 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
   if (is_literal(x)) return;
   // End Preprocess write_memory(x, data)
   if (x.value == 0) {
-    raise << "can't write to location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << "can't write to location 0 in '" << current_instruction().original_string << "'\n" << end();
     return;
   }
   if (size_mismatch(x, data)) {
-    raise << maybe(current_recipe_name()) << "size mismatch in storing to '" << x.original_string << "' (" << size_of(x) << " vs " << SIZE(data) << ") at '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "size mismatch in storing to '" << x.original_string << "' (" << size_of(x) << " vs " << SIZE(data) << ") at '" << current_instruction().original_string << "'\n" << end();
     return;
   }
   // End write_memory(x) Special-cases

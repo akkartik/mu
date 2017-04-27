@@ -93,16 +93,16 @@ void check_types_of_return_instructions(const recipe_ordinal r) {
         if (has_property(return_inst.ingredients.at(i), "same-as-ingredient")) {
           string_tree* tmp = property(return_inst.ingredients.at(i), "same-as-ingredient");
           if (!tmp || !tmp->atom) {
-            raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in '" << to_original_string(return_inst) << "'\n" << end();
+            raise << maybe(caller.name) << "'same-as-ingredient' metadata should take exactly one value in '" << return_inst.original_string << "'\n" << end();
             goto finish_return_check;
           }
           int ingredient_index = to_integer(tmp->value);
           if (ingredient_index >= SIZE(caller_instruction.ingredients)) {
-            raise << maybe(caller.name) << "too few ingredients in '" << to_original_string(caller_instruction) << "'\n" << end();
+            raise << maybe(caller.name) << "too few ingredients in '" << caller_instruction.original_string << "'\n" << end();
             goto finish_return_check;
           }
           if (!is_dummy(caller_instruction.products.at(i)) && !is_literal(caller_instruction.ingredients.at(ingredient_index)) && caller_instruction.products.at(i).name != caller_instruction.ingredients.at(ingredient_index).name) {
-            raise << maybe(caller.name) << "'" << to_original_string(caller_instruction) << "' should write to '" << caller_instruction.ingredients.at(ingredient_index).original_string << "' rather than '" << caller_instruction.products.at(i).original_string << "'\n" << end();
+            raise << maybe(caller.name) << "'" << caller_instruction.original_string << "' should write to '" << caller_instruction.ingredients.at(ingredient_index).original_string << "' rather than '" << caller_instruction.products.at(i).original_string << "'\n" << end();
           }
         }
       }

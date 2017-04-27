@@ -178,9 +178,9 @@ void compute_container_sizes(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute container sizes for " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
-      compute_container_sizes(inst.ingredients.at(i), " in '"+to_original_string(inst)+"'");
+      compute_container_sizes(inst.ingredients.at(i), " in '"+inst.original_string+"'");
     for (int i = 0;  i < SIZE(inst.products);  ++i)
-      compute_container_sizes(inst.products.at(i), " in '"+to_original_string(inst)+"'");
+      compute_container_sizes(inst.products.at(i), " in '"+inst.original_string+"'");
   }
 }
 
@@ -407,7 +407,7 @@ case GET: {
   // Update GET base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   const type_tree* base_type = base.type;
@@ -563,7 +563,7 @@ case PUT: {
   // Update PUT base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   const type_tree* base_type = base.type;

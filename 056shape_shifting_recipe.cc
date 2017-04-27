@@ -316,7 +316,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
     // probably a bug in mu
     // todo: make this smarter; only flag an error if exemplar_type contains some *new* type ingredient
     raise << maybe(exemplar.name) << "missing type ingredient for " << exemplar_reagent.original_string << '\n' << end();
-    raise << "  (called from '" << to_original_string(call_instruction) << "')\n" << end();
+    raise << "  (called from '" << call_instruction.original_string << "')\n" << end();
     return;
   }
   if (!exemplar_type->atom && exemplar_type->right == NULL && !refinement_type->atom && refinement_type->right != NULL) {
@@ -338,7 +338,7 @@ void accumulate_type_ingredients(const type_tree* exemplar_type, const type_tree
       }
       else {
         if (!deeply_equal_type_names(get(mappings, exemplar_type->name), curr_refinement_type)) {
-          raise << maybe(caller_recipe.name) << "no call found for '" << to_original_string(call_instruction) << "'\n" << end();
+          raise << maybe(caller_recipe.name) << "no call found for '" << call_instruction.original_string << "'\n" << end();
           *error = true;
           delete curr_refinement_type;
           return;

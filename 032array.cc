@@ -342,14 +342,14 @@ case INDEX: {
   int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   reagent/*local*/ element;
@@ -532,14 +532,14 @@ case PUT_INDEX: {
   // Update PUT_INDEX base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update PUT_INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   int address = base_address + /*skip length*/1 + index_val.at(0)*size_of(array_element(base.type));
@@ -630,7 +630,7 @@ case LENGTH: {
   reagent/*copy*/ array = current_instruction().ingredients.at(0);
   // Update LENGTH array in Run
   if (array.value == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   products.resize(1);

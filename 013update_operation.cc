@@ -13,7 +13,7 @@ void update_instruction_operations(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(index);
     if (inst.is_label) continue;
     if (!contains_key(Recipe_ordinal, inst.name)) {
-      raise << maybe(caller.name) << "instruction '" << inst.name << "' has no recipe in '" << to_original_string(inst) << "'\n" << end();
+      raise << maybe(caller.name) << "instruction '" << inst.name << "' has no recipe in '" << inst.original_string << "'\n" << end();
       continue;
     }
     inst.operation = get(Recipe_ordinal, inst.name);

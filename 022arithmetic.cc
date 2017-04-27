@@ -273,7 +273,7 @@ case DIVIDE_WITH_REMAINDER: {
   long long int a = static_cast<long long int>(ingredients.at(0).at(0));
   long long int b = static_cast<long long int>(ingredients.at(1).at(0));
   if (b == 0) {
-    raise << maybe(current_recipe_name()) << "divide by zero in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "divide by zero in '" << current_instruction().original_string << "'\n" << end();
     products.resize(2);
     products.at(0).push_back(0);
     products.at(1).push_back(0);
@@ -355,7 +355,7 @@ case SHIFT_LEFT: {
   int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
-    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << current_instruction().original_string << "'\n" << end();
     products.at(0).push_back(0);
     break;
   }
@@ -426,7 +426,7 @@ case SHIFT_RIGHT: {
   int b = static_cast<int>(ingredients.at(1).at(0));
   products.resize(1);
   if (b < 0) {
-    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "second ingredient can't be negative in '" << current_instruction().original_string << "'\n" << end();
     products.at(0).push_back(0);
     break;
   }

@@ -317,9 +317,9 @@ void compute_container_address_offsets(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute address offsets for " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
-      compute_container_address_offsets(inst.ingredients.at(i), " in '"+to_original_string(inst)+"'");
+      compute_container_address_offsets(inst.ingredients.at(i), " in '"+inst.original_string+"'");
     for (int i = 0;  i < SIZE(inst.products);  ++i)
-      compute_container_address_offsets(inst.products.at(i), " in '"+to_original_string(inst)+"'");
+      compute_container_address_offsets(inst.products.at(i), " in '"+inst.original_string+"'");
   }
 }
 

@@ -151,7 +151,7 @@ case MAYBE_CONVERT: {
   // Update MAYBE_CONVERT base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   int tag = current_instruction().ingredients.at(1).value;

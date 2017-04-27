@@ -203,7 +203,7 @@ case GET_LOCATION: {
   canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   const type_tree* base_type = get_base_type(base.type);
@@ -337,7 +337,7 @@ case WAIT_FOR_ROUTINE: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   Current_routine->state = WAITING;
@@ -499,7 +499,7 @@ case WAIT_FOR_ROUTINE_TO_BLOCK: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE_TO_BLOCK: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << to_original_string(current_instruction()) << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << current_instruction().original_string << "'\n" << end();
     break;
   }
   Current_routine->state = WAITING;
