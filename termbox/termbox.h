@@ -44,9 +44,6 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 
 /* Move the cursor. Upper-left character is (0, 0). */
 void tb_set_cursor(int cx, int cy);
-/* To hide the cursor, call tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR).
- * Cursor starts out hidden. */
-#define TB_HIDE_CURSOR -1
 
 /* Modify a specific cell of the screen. */
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);

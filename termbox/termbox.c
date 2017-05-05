@@ -23,7 +23,6 @@ extern int wcwidth (wchar_t);
 #include "output.inl"
 #include "input.inl"
 
-#define IS_CURSOR_HIDDEN(cx, cy) (cx == -1 || cy == -1)
 #define LAST_COORD_INIT -1
 
 static struct termios orig_tios;
@@ -39,8 +38,8 @@ static int winch_fds[2];
 
 static int lastx = LAST_COORD_INIT;
 static int lasty = LAST_COORD_INIT;
-static int cursor_x = -1;
-static int cursor_y = -1;
+static int cursor_x = 0;
+static int cursor_y = 0;
 
 static uint16_t background = TB_BLACK;
 static uint16_t foreground = TB_WHITE;
@@ -102,11 +101,10 @@ int tb_init(void)
   bytebuffer_init(&input_buffer, 128);
   bytebuffer_init(&output_buffer, 32 * 1024);
 
-  bytebuffer_puts(&output_buffer, funcs[T_ENTER_CA]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
-  bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_BRACKETED_PASTE]);
+  bytebuffer_flush(&output_buffer, inout);
 
   update_term_size();
   return 0;
@@ -116,10 +114,7 @@ void tb_shutdown(void)
 {
   if (termw == -1) return;
 
-  bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
   bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
-  bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
-  bytebuffer_puts(&output_buffer, funcs[T_EXIT_CA]);
   bytebuffer_puts(&output_buffer, funcs[T_EXIT_KEYPAD]);
   bytebuffer_puts(&output_buffer, funcs[T_EXIT_MOUSE]);
   bytebuffer_puts(&output_buffer, funcs[T_EXIT_BRACKETED_PASTE]);
@@ -144,14 +139,9 @@ int tb_is_active(void)
 void tb_set_cursor(int cx, int cy)
 {
   assert(termw != -1);
-  if (IS_CURSOR_HIDDEN(cursor_x, cursor_y) && !IS_CURSOR_HIDDEN(cx, cy))
-    bytebuffer_puts(&output_buffer, funcs[T_SHOW_CURSOR]);
-  if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y) && IS_CURSOR_HIDDEN(cx, cy))
-    bytebuffer_puts(&output_buffer, funcs[T_HIDE_CURSOR]);
   cursor_x = cx;
   cursor_y = cy;
-  if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-    write_cursor(cursor_x, cursor_y);
+  write_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
 }
 
@@ -316,8 +306,7 @@ static void send_clear(void)
 {
   send_attr(foreground, background);
   bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
-  if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-    write_cursor(cursor_x, cursor_y);
+  write_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
 
   /* we need to invalidate cursor position too and these two vars are

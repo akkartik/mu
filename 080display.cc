@@ -59,6 +59,7 @@ case CLOSE_CONSOLE: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLOSE_CONSOLE: {
+  tb_clear();
   tb_shutdown();
   break;
 }
@@ -333,36 +334,6 @@ case DISPLAY_HEIGHT: {
   CHECK_SCREEN;
   products.resize(1);
   products.at(0).push_back(tb_height());
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-HIDE_CURSOR_ON_DISPLAY,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "hide-cursor-on-display", HIDE_CURSOR_ON_DISPLAY);
-:(before "End Primitive Recipe Checks")
-case HIDE_CURSOR_ON_DISPLAY: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case HIDE_CURSOR_ON_DISPLAY: {
-  CHECK_SCREEN;
-  tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR);
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
-SHOW_CURSOR_ON_DISPLAY,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "show-cursor-on-display", SHOW_CURSOR_ON_DISPLAY);
-:(before "End Primitive Recipe Checks")
-case SHOW_CURSOR_ON_DISPLAY: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case SHOW_CURSOR_ON_DISPLAY: {
-  CHECK_SCREEN;
-  tb_set_cursor(Display_row, Display_column);
   break;
 }
 
