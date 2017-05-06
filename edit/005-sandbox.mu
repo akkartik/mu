@@ -967,12 +967,13 @@ after <global-keypress> [
       number-of-sandboxes:num <- get *env, number-of-sandboxes:offset
       max:num <- subtract number-of-sandboxes, 1
       at-end?:bool <- greater-or-equal render-from, max
-      jump-if at-end?, +finish-event  # render nothing
+      loop-if at-end?, +next-event  # render nothing
       render-from <- add render-from, 1
       *env <- put *env, render-from:offset, render-from
     }
     screen <- render-sandbox-side screen, env, render
-    jump +finish-event
+    screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    loop +next-event
   }
 ]
 
@@ -1001,7 +1002,8 @@ after <global-keypress> [
     render-from <- subtract render-from, 1
     *env <- put *env, render-from:offset, render-from
     screen <- render-sandbox-side screen, env, render
-    jump +finish-event
+    screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    loop +next-event
   }
 ]
 

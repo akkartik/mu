@@ -106,7 +106,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         {
           break-unless more-events?
           render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          jump +finish-event
+          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+          loop +next-event
         }
         {
           break-if more-events?
@@ -115,15 +116,17 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
             # no more events, and we have to force render
             screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
-            jump +finish-event
+            loop +next-event
           }
           # no more events, no force render
           {
             break-unless render?
             screen <- render-recipes screen, env, render
-            jump +finish-event
+            screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+            loop +next-event
           }
         }
+        screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
       }
       {
         break-unless sandbox-in-focus?
@@ -134,7 +137,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         {
           break-unless more-events?
           render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          jump +finish-event
+          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+          loop +next-event
         }
         {
           break-if more-events?
@@ -143,18 +147,18 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
             # no more events, and we have to force render
             screen <- render-all screen, env, render
             render-all-on-no-more-events? <- copy 0/false
-            jump +finish-event
+            loop +next-event
           }
           # no more events, no force render
           {
             break-unless render?
             screen <- render-sandbox-side screen, env, render
-            jump +finish-event
+            screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+            loop +next-event
           }
+          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
         }
       }
-      +finish-event
-      screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     }
     loop
   }
