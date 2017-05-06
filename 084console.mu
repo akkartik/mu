@@ -96,10 +96,9 @@ def wait-for-event console:&:console -> console:&:console [
   }
 ]
 
-# use this helper to skip rendering if there's lots of other events queued up
 def has-more-events? console:&:console -> result:bool [
   local-scope
   load-ingredients
-  return-if console, 0/false  # fake consoles should be plenty fast; never skip
+  return-if console, 0/false  # fake events are processed as soon as they arrive
   result <- interactions-left?
 ]

@@ -28,10 +28,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   local-scope
   load-ingredients
   current-sandbox:&:editor <- get *env, current-sandbox:offset
-  # if we fall behind we'll stop updating the screen, but then we have to
-  # render the entire screen when we catch up.
-  # todo: test this
-  render-all-on-no-more-events?:bool <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -73,50 +69,15 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     {
       r:resize-event, is-resize?:bool <- maybe-convert e:event, resize:variant
       break-unless is-resize?
-      # if more events, we're still resizing; wait until we stop
-      more-events?:bool <- has-more-events? console
-      {
-        break-unless more-events?
-        render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-      }
-      {
-        break-if more-events?
-        env, screen <- resize screen, env
-        screen <- render-all screen, env, render-without-moving-cursor
-        render-all-on-no-more-events? <- copy 0/false  # full render done
-      }
+      env, screen <- resize screen, env
+      screen <- render-all screen, env, render-without-moving-cursor
       loop +next-event
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
       render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
-      # refresh screen only if no more events
-      # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
-      more-events?:bool <- has-more-events? console
-      {
-        break-unless more-events?
-        render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-        screen <- update-cursor screen, current-sandbox, env
-        loop +next-event
-      }
-      {
-        break-if more-events?
-        {
-          break-unless render-all-on-no-more-events?
-          # no more events, and we have to force render
-          screen <- render-all screen, env, render
-          render-all-on-no-more-events? <- copy 0/false
-          loop +next-event
-        }
-        # no more events, no force render
-        {
-          break-unless render?
-          screen <- render-sandbox-side screen, env, render
-          screen <- update-cursor screen, current-sandbox, env
-          loop +next-event
-        }
-        screen <- update-cursor screen, current-sandbox, env
-      }
+      break-unless render?
+      screen <- render-all screen, env, render
     }
     loop
   }

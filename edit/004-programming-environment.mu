@@ -42,10 +42,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   recipes:&:editor <- get *env, recipes:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
-  # if we fall behind we'll stop updating the screen, but then we have to
-  # render the entire screen when we catch up.
-  # todo: test this
-  render-all-on-no-more-events?:bool <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -100,65 +96,16 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       {
         break-if sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, recipes, e:event
-        # refresh screen only if no more events
-        # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
-        more-events?:bool <- has-more-events? console
-        {
-          break-unless more-events?
-          render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-          loop +next-event
-        }
-        {
-          break-if more-events?
-          {
-            break-unless render-all-on-no-more-events?
-            # no more events, and we have to force render
-            screen <- render-all screen, env, render
-            render-all-on-no-more-events? <- copy 0/false
-            loop +next-event
-          }
-          # no more events, no force render
-          {
-            break-unless render?
-            screen <- render-recipes screen, env, render
-            screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-            loop +next-event
-          }
-        }
-        screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+        break-unless render?
+        screen <- render-all screen, env, render
       }
       {
         break-unless sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
-        # refresh screen only if no more events
-        # if there are more events to process, wait for them to clear up, then make sure you render-all afterward.
-        more-events?:bool <- has-more-events? console
-        {
-          break-unless more-events?
-          render-all-on-no-more-events? <- copy 1/true  # no rendering now, full rendering on some future event
-          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-          loop +next-event
-        }
-        {
-          break-if more-events?
-          {
-            break-unless render-all-on-no-more-events?
-            # no more events, and we have to force render
-            screen <- render-all screen, env, render
-            render-all-on-no-more-events? <- copy 0/false
-            loop +next-event
-          }
-          # no more events, no force render
-          {
-            break-unless render?
-            screen <- render-sandbox-side screen, env, render
-            screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-            loop +next-event
-          }
-          screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-        }
+        break-unless render?
+        screen <- render-sandbox-side screen, env, render
       }
+      screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     }
     loop
   }
