@@ -706,8 +706,7 @@ void dump(const string_tree* x, ostream& out) {
 }
 
 string to_string(const type_tree* type) {
-  // abbreviate a single-node tree to just its contents
-  if (!type) return "NULLNULLNULL";  // should never happen
+  if (type == NULL) return "()";
   ostringstream out;
   dump(type, out);
   return out.str();
@@ -742,8 +741,7 @@ void dump(type_ordinal type, ostream& out) {
 }
 
 string names_to_string(const type_tree* type) {
-  // abbreviate a single-node tree to just its contents
-  if (!type) return "()";  // should never happen
+  if (type == NULL) return "()";  // should never happen
   ostringstream out;
   dump_names(type, out);
   return out.str();
@@ -771,8 +769,7 @@ void dump_names(const type_tree* x, ostream& out) {
 }
 
 string names_to_string_without_quotes(const type_tree* type) {
-  // abbreviate a single-node tree to just its contents
-  if (!type) return "NULLNULLNULL";  // should never happen
+  if (type == NULL) return "()";
   ostringstream out;
   dump_names_without_quotes(type, out);
   return out.str();

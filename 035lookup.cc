@@ -174,7 +174,7 @@ assert(!has_property(element, "lookup"));
 bool canonize_type(reagent& r) {
   while (has_property(r, "lookup")) {
     if (!r.type || r.type->atom || !r.type->left || !r.type->left->atom || r.type->left->value != get(Type_ordinal, "address")) {
-      raise << "can't lookup non-address: '" << to_string(r) << "': '" << to_string(r.type) << "'\n" << end();
+      raise << "cannot perform lookup on '" << r.name << "' because it has non-address type " << to_string(r.type) << '\n' << end();
       return false;
     }
     drop_from_type(r, "address");
