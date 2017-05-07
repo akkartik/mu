@@ -25,7 +25,7 @@ def main [
 :(before "End NEW Check Special-cases")
 if (is_literal_text(inst.ingredients.at(0))) break;
 :(before "Convert 'new' To 'allocate'")
-if (inst.name == "new" && is_literal_text(inst.ingredients.at(0))) continue;
+if (inst.name == "new" && !inst.ingredients.empty() && is_literal_text(inst.ingredients.at(0))) continue;
 :(after "case NEW" following "Primitive Recipe Implementations")
   if (is_literal_text(current_instruction().ingredients.at(0))) {
     products.resize(1);

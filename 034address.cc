@@ -277,6 +277,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
     instruction& inst = get(Recipe, r).steps.at(i);
     // Convert 'new' To 'allocate'
     if (inst.name == "new") {
+      if (inst.ingredients.empty()) return;  // error raised elsewhere
       inst.operation = ALLOCATE;
       type_tree* type = new_type_tree(inst.ingredients.at(0).name);
       inst.ingredients.at(0).set_value(size_of(type));
@@ -425,3 +426,10 @@ def main [
 ]
 +new: routine allocated memory from 1000 to 1003
 +new: routine allocated memory from 1003 to 1006
+
+:(scenario new_without_ingredient)
+% Hide_errors = true;
+def main [
+  1:address:number <- new  # missing ingredient
+]
++error: main: 'new' requires one or two ingredients, but got '1:address:number <- new'
