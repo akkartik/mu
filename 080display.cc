@@ -84,25 +84,6 @@ case CLEAR_DISPLAY: {
 }
 
 :(before "End Primitive Recipe Declarations")
-CLEAR_LINE_ON_DISPLAY,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "clear-line-on-display", CLEAR_LINE_ON_DISPLAY);
-:(before "End Primitive Recipe Checks")
-case CLEAR_LINE_ON_DISPLAY: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case CLEAR_LINE_ON_DISPLAY: {
-  CHECK_SCREEN;
-  int width = tb_width();
-  for (int x = Display_column;  x < width;  ++x) {
-    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
-  }
-  tb_set_cursor(Display_column, Display_row);
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
 PRINT_CHARACTER_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);
@@ -442,7 +423,26 @@ case INTERACTIONS_LEFT: {
   break;
 }
 
-//: hack to make text-mode apps more responsive under Unix
+//: hacks to make text-mode apps more responsive under Unix
+
+:(before "End Primitive Recipe Declarations")
+CLEAR_LINE_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "clear-line-on-display", CLEAR_LINE_ON_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case CLEAR_LINE_ON_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CLEAR_LINE_ON_DISPLAY: {
+  CHECK_SCREEN;
+  int width = tb_width();
+  for (int x = Display_column;  x < width;  ++x) {
+    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
+  }
+  tb_set_cursor(Display_column, Display_row);
+  break;
+}
 
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY_FROM,
