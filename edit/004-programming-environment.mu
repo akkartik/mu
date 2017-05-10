@@ -418,12 +418,19 @@ def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (
   left:num <- get *recipes, left:offset
   right:num <- get *recipes, right:offset
   row:num, column:num, screen <- call render-editor, screen, recipes
+  screen-height:num <- screen-height screen
+  space-left?:bool <- lesser-than row, screen-height
+  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
+  space-left? <- lesser-than row, screen-height
+  return-unless space-left?
   <render-recipe-components-end>
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
+  space-left? <- lesser-than row, screen-height
+  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 
@@ -435,11 +442,18 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
+  screen-height:num <- screen-height screen
+  space-left?:bool <- lesser-than row, screen-height
+  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
+  space-left? <- lesser-than row, screen-height
+  return-unless space-left?
   # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right
   row <- add row, 1
+  space-left? <- lesser-than row, screen-height
+  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 

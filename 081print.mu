@@ -101,15 +101,27 @@ def print screen:&:screen, c:char -> screen:&:screen [
   row:num <- get *screen, cursor-row:offset
   row <- round row
   legal?:bool <- greater-or-equal row, 0
-  return-unless legal?
+  {
+    break-if legal?
+    row <- copy 0
+  }
   legal? <- lesser-than row, height
-  return-unless legal?
+  {
+    break-if legal?
+    row <- subtract height, 1
+  }
   column:num <- get *screen, cursor-column:offset
   column <- round column
   legal? <- greater-or-equal column, 0
-  return-unless legal?
+  {
+    break-if legal?
+    column <- copy 0
+  }
   legal? <- lesser-than column, width
-  return-unless legal?
+  {
+    break-if legal?
+    column <- subtract width, 1
+  }
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
   {

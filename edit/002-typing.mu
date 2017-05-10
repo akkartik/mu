@@ -266,10 +266,17 @@ def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   row:num, column:num <- render screen, editor
+  screen-height:num <- screen-height screen
+  space-left?:bool <- lesser-than row, screen-height
+  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
+  space-left?:bool <- lesser-than row, screen-height
+  return-unless space-left?
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
+  space-left?:bool <- lesser-than row, screen-height
+  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 
