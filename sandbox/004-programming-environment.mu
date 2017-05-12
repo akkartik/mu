@@ -28,6 +28,10 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   local-scope
   load-ingredients
   current-sandbox:&:editor <- get *env, current-sandbox:offset
+  # if we fall behind we'll stop updating the screen, but then we have to
+  # render the entire screen when we catch up.
+  # todo: test this
+  render-all-on-no-more-events?:bool <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -73,11 +77,18 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       screen <- render-all screen, env, render-without-moving-cursor
       loop +next-event
     }
-    # if it's not global and not a touch event, send to appropriate editor
+    # not global and not a touch event
     {
       render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
       break-unless render?
-      screen <- render-all screen, env, render
+      # try to batch up rendering if there are more events queued up
+      render-all-on-no-more-events? <- or render-all-on-no-more-events?, render?
+      more-events?:bool <- has-more-events? console
+      {
+        break-if more-events?
+        break-unless render-all-on-no-more-events?
+        screen <- render-all screen, env, render
+      }
     }
     loop
   }

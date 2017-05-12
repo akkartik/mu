@@ -4,6 +4,12 @@
 3. more touch event types
 4. sandbox isolation
 5. errors in reading/writing files (missing directory, others?)
+6. has-more-events?
 
 termbox issues are implementation-specific and not worth testing:
   latency in interpreting low-level escape characters
+
+calls to update-cursor are currently duplicated:
+  render-all calls update-cursor to simplify testing
+  event-loop needs to call update-cursor explicitly to backstop branches doing their own minimal rendering
+  solution: update-cursor after minimal rendering

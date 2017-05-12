@@ -42,6 +42,10 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   recipes:&:editor <- get *env, recipes:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
+  # if we fall behind we'll stop updating the screen, but then we have to
+  # render the entire screen when we catch up.
+  # todo: test this
+  render-all-on-no-more-events?:bool <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -96,14 +100,19 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       {
         break-if sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, recipes, e:event
-        break-unless render?
-        screen <- render-all screen, env, render
       }
       {
         break-unless sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
-        break-unless render?
-        screen <- render-sandbox-side screen, env, render
+      }
+      # try to batch up rendering if there are more events queued up
+      # to compensate for this additional code complexity, we always render both sides when we do render
+      render-all-on-no-more-events? <- or render-all-on-no-more-events?, render?
+      more-events?:bool <- has-more-events? console
+      {
+        break-if more-events?
+        break-unless render-all-on-no-more-events?
+        screen <- render-all screen, env, render
       }
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     }
