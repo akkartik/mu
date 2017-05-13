@@ -96,6 +96,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
+      hide-screen screen
       sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
       {
         break-if sandbox-in-focus?
@@ -115,6 +116,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         screen <- render-all screen, env, render
       }
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+      show-screen screen
     }
     loop
   }
@@ -393,6 +395,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   local-scope
   load-ingredients
   trace 10, [app], [render all]
+  hide-screen screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -416,6 +419,8 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+  #
+  show-screen screen
 ]
 
 def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
@@ -427,19 +432,12 @@ def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (
   left:num <- get *recipes, left:offset
   right:num <- get *recipes, right:offset
   row:num, column:num, screen <- call render-editor, screen, recipes
-  screen-height:num <- screen-height screen
-  space-left?:bool <- lesser-than row, screen-height
-  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   <render-recipe-components-end>
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 
@@ -451,18 +449,11 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
-  screen-height:num <- screen-height screen
-  space-left?:bool <- lesser-than row, screen-height
-  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 
@@ -481,6 +472,18 @@ def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, s
     cursor-column:num <- get *current-sandbox, cursor-column:offset
   }
   screen <- move-cursor screen, cursor-row, cursor-column
+]
+
+# ctrl-l - redraw screen (just in case it printed junk somehow)
+
+after <global-type> [
+  {
+    redraw-screen?:bool <- equal c, 12/ctrl-l
+    break-unless redraw-screen?
+    screen <- render-all screen, env:&:environment, render
+    sync-screen screen
+    loop +next-event
+  }
 ]
 
 # ctrl-n - switch focus

@@ -234,26 +234,19 @@ def! render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (re
   row:num, column:num <- copy 1, 0
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
-  screen-height:num <- screen-height screen
   # render sandbox editor
   render-from:num <- get *env, render-from:offset
   {
     render-current-sandbox?:bool <- equal render-from, -1
     break-unless render-current-sandbox?
     row, column, screen, current-sandbox <- call render-editor, screen, current-sandbox
-    space-left?:bool <- lesser-than row, screen-height
-    return-unless space-left?
     clear-screen-from screen, row, column, left, right
     row <- add row, 1
-    space-left? <- lesser-than row, screen-height
-    return-unless space-left?
   }
   # render sandboxes
   draw-horizontal screen, row, left, right
   sandbox:&:sandbox <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from, 0, env
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   clear-rest-of-screen screen, row, left, right
 ]
 
@@ -270,22 +263,16 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
     break-if hidden?
     # render sandbox menu
     row <- add row, 1
-    space-left?:bool <- lesser-than row, screen-height
-    return-unless space-left?
     screen <- move-cursor screen, row, left
     screen <- render-sandbox-menu screen, idx, left, right
     # save menu row so we can detect clicks to it later
     *sandbox <- put *sandbox, starting-row-on-screen:offset, row
     # render sandbox contents
     row <- add row, 1
-    space-left? <- lesser-than row, screen-height
-    return-unless space-left?
     screen <- move-cursor screen, row, left
     sandbox-data:text <- get *sandbox, data:offset
     row, screen <- render-code screen, sandbox-data, left, right, row
     *sandbox <- put *sandbox, code-ending-row-on-screen:offset, row
-    space-left? <- lesser-than row, screen-height
-    return-unless space-left?
     # render sandbox warnings, screen or response, in that order
     sandbox-response:text <- get *sandbox, response:offset
     <render-sandbox-results>
@@ -301,8 +288,8 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
       row, screen <- render-text screen, sandbox-response, left, right, 245/grey, row
     }
     +render-sandbox-end
-    space-left? <- lesser-than row, screen-height
-    return-unless space-left?
+    at-bottom?:bool <- greater-or-equal row, screen-height
+    return-if at-bottom?
     # draw solid line after sandbox
     draw-horizontal screen, row, left, right
   }
@@ -314,8 +301,6 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
     <end-render-sandbox-reset-hidden>
   }
   # draw next sandbox
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   next-sandbox:&:sandbox <- get *sandbox, next-sandbox:offset
   next-idx:num <- add idx, 1
   row, screen <- render-sandboxes screen, next-sandbox, left, right, row, render-from, next-idx, env
@@ -416,8 +401,6 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
     column <- add column, 1
     loop
   }
-  space-left?:bool <- lesser-than row, screen-height
-  return-unless space-left?
   was-at-left?:bool <- equal column, left
   clear-line-until screen, right
   {
@@ -483,8 +466,6 @@ def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num
     column <- add column, 1
     loop
   }
-  space-left?:bool <- lesser-than row, screen-height
-  return-unless space-left?
   was-at-left?:bool <- equal column, left
   clear-line-until screen, right
   {
@@ -812,9 +793,10 @@ after <global-keypress> [
       render-from <- add render-from, 1
       *env <- put *env, render-from:offset, render-from
     }
+    hide-screen screen
     screen <- render-sandbox-side screen, env, render
-    screen <- update-cursor screen, current-sandbox, env
-    loop +next-event
+    show-screen screen
+    jump +finish-event
   }
 ]
 
@@ -840,9 +822,10 @@ after <global-keypress> [
     break-if at-beginning?
     render-from <- subtract render-from, 1
     *env <- put *env, render-from:offset, render-from
+    hide-screen screen
     screen <- render-sandbox-side screen, env, render
-    screen <- update-cursor screen, current-sandbox, env
-    loop +next-event
+    show-screen screen
+    jump +finish-event
   }
 ]
 

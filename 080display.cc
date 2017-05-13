@@ -7,6 +7,7 @@
 :(before "End Globals")
 int Display_row = 0;
 int Display_column = 0;
+bool Autodisplay = true;
 
 :(before "End Includes")
 #define CHECK_SCREEN \
@@ -37,7 +38,6 @@ case OPEN_CONSOLE: {
 :(before "End Primitive Recipe Implementations")
 case OPEN_CONSOLE: {
   tb_init();
-  tb_clear();
   Display_row = Display_column = 0;
   int width = tb_width();
   int height = tb_height();
@@ -84,6 +84,21 @@ case CLEAR_DISPLAY: {
 }
 
 :(before "End Primitive Recipe Declarations")
+SYNC_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "sync-display", SYNC_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case SYNC_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SYNC_DISPLAY: {
+  CHECK_SCREEN;
+  tb_sync();
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
 PRINT_CHARACTER_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);
@@ -118,7 +133,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   int height = (h >= 0) ? h : 0;
   int width = (w >= 0) ? w : 0;
   int c = ingredients.at(0).at(0);
-  int color = TB_WHITE;
+  int color = TB_BLACK;
   if (SIZE(ingredients) > 1) {
     color = ingredients.at(1).at(0);
   }
@@ -133,6 +148,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
       Display_column = 0;
       ++Display_row;
       tb_set_cursor(Display_column, Display_row);
+      if (Autodisplay) tb_present();
     }
     break;
   }
@@ -141,6 +157,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
       tb_change_cell(Display_column-1, Display_row, ' ', color, bg_color);
       --Display_column;
       tb_set_cursor(Display_column, Display_row);
+      if (Autodisplay) tb_present();
     }
     break;
   }
@@ -148,6 +165,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
   }
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -194,6 +212,7 @@ case MOVE_CURSOR_ON_DISPLAY: {
   Display_row = ingredients.at(0).at(0);
   Display_column = ingredients.at(1).at(0);
   tb_set_cursor(Display_column, Display_row);
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -213,6 +232,7 @@ case MOVE_CURSOR_DOWN_ON_DISPLAY: {
   if (Display_row < height-1) {
     ++Display_row;
     tb_set_cursor(Display_column, Display_row);
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -231,6 +251,7 @@ case MOVE_CURSOR_UP_ON_DISPLAY: {
   if (Display_row > 0) {
     --Display_row;
     tb_set_cursor(Display_column, Display_row);
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -251,6 +272,7 @@ case MOVE_CURSOR_RIGHT_ON_DISPLAY: {
   if (Display_column < width-1) {
     ++Display_column;
     tb_set_cursor(Display_column, Display_row);
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -269,6 +291,7 @@ case MOVE_CURSOR_LEFT_ON_DISPLAY: {
   if (Display_column > 0) {
     --Display_column;
     tb_set_cursor(Display_column, Display_row);
+    if (Autodisplay) tb_present();
   }
   break;
 }
@@ -284,6 +307,7 @@ void move_cursor_to_start_of_next_line_on_display() {
   else Display_row = 0;
   Display_column = 0;
   tb_set_cursor(Display_column, Display_row);
+  if (Autodisplay) tb_present();
 }
 
 :(before "End Primitive Recipe Declarations")
@@ -315,6 +339,67 @@ case DISPLAY_HEIGHT: {
   CHECK_SCREEN;
   products.resize(1);
   products.at(0).push_back(tb_height());
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+HIDE_CURSOR_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "hide-cursor-on-display", HIDE_CURSOR_ON_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case HIDE_CURSOR_ON_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case HIDE_CURSOR_ON_DISPLAY: {
+  CHECK_SCREEN;
+  tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SHOW_CURSOR_ON_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "show-cursor-on-display", SHOW_CURSOR_ON_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case SHOW_CURSOR_ON_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SHOW_CURSOR_ON_DISPLAY: {
+  CHECK_SCREEN;
+  tb_set_cursor(Display_row, Display_column);
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+HIDE_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "hide-display", HIDE_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case HIDE_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case HIDE_DISPLAY: {
+  CHECK_SCREEN;
+  Autodisplay = false;
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+SHOW_DISPLAY,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "show-display", SHOW_DISPLAY);
+:(before "End Primitive Recipe Checks")
+case SHOW_DISPLAY: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case SHOW_DISPLAY: {
+  CHECK_SCREEN;
+  Autodisplay = true;
+  tb_present();
   break;
 }
 
@@ -441,6 +526,7 @@ case CLEAR_LINE_ON_DISPLAY: {
     tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
+  if (Autodisplay) tb_present();
   break;
 }
 
@@ -466,5 +552,6 @@ case CLEAR_DISPLAY_FROM: {
       tb_change_cell(column, row, ' ', TB_WHITE, TB_BLACK);
     }
   }
+  if (Autodisplay) tb_present();
   break;
 }

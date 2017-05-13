@@ -79,6 +79,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     }
     # not global and not a touch event
     {
+      hide-screen screen
       render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
       break-unless render?
       # try to batch up rendering if there are more events queued up
@@ -89,6 +90,9 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         break-unless render-all-on-no-more-events?
         screen <- render-all screen, env, render
       }
+      +finish-event
+      screen <- update-cursor screen, current-sandbox, env
+      show-screen screen
     }
     loop
   }
@@ -194,6 +198,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   local-scope
   load-ingredients
   trace 10, [app], [render all]
+  hide-screen screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -209,6 +214,8 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   #
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env
+  #
+  show-screen screen
 ]
 
 # replaced in a later layer
@@ -219,18 +226,11 @@ def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (rec
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
   row:num, column:num, screen, current-sandbox <- call render-editor, screen, current-sandbox
-  screen-height:num <- screen-height screen
-  space-left?:bool <- lesser-than row, screen-height
-  return-unless space-left?
   clear-line-until screen, right
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   # draw solid line after code (you'll see why in later layers)
   draw-horizontal screen, row, left, right
   row <- add row, 1
-  space-left? <- lesser-than row, screen-height
-  return-unless space-left?
   clear-screen-from screen, row, left, left, right
 ]
 
@@ -241,4 +241,16 @@ def update-cursor screen:&:screen, current-sandbox:&:editor, env:&:environment -
   cursor-row:num <- get *current-sandbox, cursor-row:offset
   cursor-column:num <- get *current-sandbox, cursor-column:offset
   screen <- move-cursor screen, cursor-row, cursor-column
+]
+
+# ctrl-l - redraw screen (just in case it printed junk somehow)
+
+after <global-type> [
+  {
+    redraw-screen?:bool <- equal c, 12/ctrl-l
+    break-unless redraw-screen?
+    screen <- render-all screen, env:&:environment, render
+    sync-screen screen
+    loop +next-event
+  }
 ]

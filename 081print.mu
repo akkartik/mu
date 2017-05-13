@@ -50,6 +50,13 @@ def clear-screen screen:&:screen -> screen:&:screen [
   *screen <- put *screen, cursor-column:offset, 0
 ]
 
+def sync-screen screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  return-if screen  # do nothing for fake screens
+  sync-display
+]
+
 def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients
@@ -101,27 +108,15 @@ def print screen:&:screen, c:char -> screen:&:screen [
   row:num <- get *screen, cursor-row:offset
   row <- round row
   legal?:bool <- greater-or-equal row, 0
-  {
-    break-if legal?
-    row <- copy 0
-  }
+  return-unless legal?
   legal? <- lesser-than row, height
-  {
-    break-if legal?
-    row <- subtract height, 1
-  }
+  return-unless legal?
   column:num <- get *screen, cursor-column:offset
   column <- round column
   legal? <- greater-or-equal column, 0
-  {
-    break-if legal?
-    column <- copy 0
-  }
+  return-unless legal?
   legal? <- lesser-than column, width
-  {
-    break-if legal?
-    column <- subtract width, 1
-  }
+  return-unless legal?
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
   {
@@ -607,6 +602,38 @@ def screen-height screen:&:screen -> height:num [
   }
   # real screen
   height <- display-height
+]
+
+def hide-cursor screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  return-if screen  # fake screen; do nothing
+  # real screen
+  hide-cursor-on-display
+]
+
+def show-cursor screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  return-if screen  # fake screen; do nothing
+  # real screen
+  show-cursor-on-display
+]
+
+def hide-screen screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  return-if screen  # fake screen; do nothing
+  # real screen
+  hide-display
+]
+
+def show-screen screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  return-if screen  # fake screen; do nothing
+  # real screen
+  show-display
 ]
 
 def print screen:&:screen, s:text -> screen:&:screen [

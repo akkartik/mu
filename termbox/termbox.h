@@ -9,12 +9,18 @@ extern "C" {
 /*** 1. Controlling the screen. */
 
 /* The screen is a 2D array of cells. */
+struct tb_cell {
+  uint32_t ch;  /* unicode character */
+  uint16_t fg;  /* foreground color (0-255) and attributes */
+  uint16_t bg;  /* background color (0-255) and attributes */
+};
 
-/* Names for some colors. */
+/* Names for some colors in tb_cell.fg and tb_cell.bg. */
 #define TB_BLACK 232
 #define TB_WHITE 255
 
-/* Some attributes of screen cells that can be combined with colors using bitwise-OR. */
+/* Colors in tb_cell can be combined using bitwise-OR with multiple
+ * of the following attributes. */
 #define TB_BOLD      0x0100
 #define TB_UNDERLINE 0x0200
 #define TB_REVERSE   0x0400
@@ -38,14 +44,34 @@ int tb_is_active(void);
 int tb_width(void);
 int tb_height(void);
 
-/* Clear the screen. */
+/* Update the screen with internal state. Most methods below modify just the
+ * internal state of the screen. Changes won't be visible until you call
+ * tb_present(). */
+void tb_present(void);
+
+/* Variant of tb_present() that always refreshes the entire screen. */
+void tb_sync(void);
+
+/* Returns a pointer to the internal screen state: a 1D array of cells in
+ * raster order. You'll need to call tb_width() and tb_height() for the
+ * array's dimensions. The array stays valid until tb_clear() or tb_present()
+ * are called. */
+struct tb_cell *tb_cell_buffer();
+
+/* Clear the internal screen state using either TB_DEFAULT or the
+ * color/attributes set by tb_set_clear_attributes(). */
 void tb_clear(void);
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 
-/* Move the cursor. Upper-left character is (0, 0). */
+/* Move the cursor. Upper-left character is (0, 0).
+ */
 void tb_set_cursor(int cx, int cy);
+/* To hide the cursor, call tb_set_cursor(TB_HIDE_CURSOR, TB_HIDE_CURSOR).
+ * Cursor starts out hidden. */
+#define TB_HIDE_CURSOR -1
 
-/* Modify a specific cell of the screen. */
+/* Modify a specific cell of the screen. Don't forget to call tb_present() to
+ * commit your changes. */
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
 
 /*** 2. Controlling keyboard events. */
