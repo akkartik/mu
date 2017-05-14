@@ -113,6 +113,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       {
         break-if more-events?
         break-unless render-all-on-no-more-events?
+        render-all-on-no-more-events? <- copy 0/false
         screen <- render-all screen, env, render
       }
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
