@@ -475,18 +475,6 @@ def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, s
   screen <- move-cursor screen, cursor-row, cursor-column
 ]
 
-# ctrl-l - redraw screen (just in case it printed junk somehow)
-
-after <global-type> [
-  {
-    redraw-screen?:bool <- equal c, 12/ctrl-l
-    break-unless redraw-screen?
-    screen <- render-all screen, env:&:environment, render
-    sync-screen screen
-    loop +next-event
-  }
-]
-
 # ctrl-n - switch focus
 # todo: test this
 

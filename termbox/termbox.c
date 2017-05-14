@@ -158,7 +158,7 @@ int tb_is_active(void)
   return termw != -1;
 }
 
-static void tb_repaint(bool force) {
+void tb_present() {
   int x,y,w,i;
   struct tb_cell *back, *front;
 
@@ -179,7 +179,7 @@ static void tb_repaint(bool force) {
       front = &CELL(&front_buffer, x, y);
       w = wcwidth(back->ch);
       if (w < 1) w = 1;
-      if (!force && memcmp(back, front, sizeof(struct tb_cell)) == 0) {
+      if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
         x += w;
         continue;
       }
@@ -205,16 +205,6 @@ static void tb_repaint(bool force) {
   if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
     write_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
-}
-
-void tb_present(void)
-{
-  tb_repaint(false);
-}
-
-void tb_sync(void)
-{
-  tb_repaint(true);
 }
 
 void tb_set_cursor(int cx, int cy)

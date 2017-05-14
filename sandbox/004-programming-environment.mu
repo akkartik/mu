@@ -243,15 +243,3 @@ def update-cursor screen:&:screen, current-sandbox:&:editor, env:&:environment -
   cursor-column:num <- get *current-sandbox, cursor-column:offset
   screen <- move-cursor screen, cursor-row, cursor-column
 ]
-
-# ctrl-l - redraw screen (just in case it printed junk somehow)
-
-after <global-type> [
-  {
-    redraw-screen?:bool <- equal c, 12/ctrl-l
-    break-unless redraw-screen?
-    screen <- render-all screen, env:&:environment, render
-    sync-screen screen
-    loop +next-event
-  }
-]

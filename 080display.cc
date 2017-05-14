@@ -84,21 +84,6 @@ case CLEAR_DISPLAY: {
 }
 
 :(before "End Primitive Recipe Declarations")
-SYNC_DISPLAY,
-:(before "End Primitive Recipe Numbers")
-put(Recipe_ordinal, "sync-display", SYNC_DISPLAY);
-:(before "End Primitive Recipe Checks")
-case SYNC_DISPLAY: {
-  break;
-}
-:(before "End Primitive Recipe Implementations")
-case SYNC_DISPLAY: {
-  CHECK_SCREEN;
-  tb_sync();
-  break;
-}
-
-:(before "End Primitive Recipe Declarations")
 PRINT_CHARACTER_TO_DISPLAY,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "print-character-to-display", PRINT_CHARACTER_TO_DISPLAY);

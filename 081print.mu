@@ -50,13 +50,6 @@ def clear-screen screen:&:screen -> screen:&:screen [
   *screen <- put *screen, cursor-column:offset, 0
 ]
 
-def sync-screen screen:&:screen -> screen:&:screen [
-  local-scope
-  load-ingredients
-  return-if screen  # do nothing for fake screens
-  sync-display
-]
-
 def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients

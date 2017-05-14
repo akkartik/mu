@@ -49,9 +49,6 @@ int tb_height(void);
  * tb_present(). */
 void tb_present(void);
 
-/* Variant of tb_present() that always refreshes the entire screen. */
-void tb_sync(void);
-
 /* Returns a pointer to the internal screen state: a 1D array of cells in
  * raster order. You'll need to call tb_width() and tb_height() for the
  * array's dimensions. The array stays valid until tb_clear() or tb_present()
