@@ -30,7 +30,6 @@ struct cellbuf {
 };
 
 #define CELL(buf, x, y) (buf)->cells[(y) * (buf)->width + (x)]
-#define IS_CURSOR_HIDDEN(cx, cy) (cx == -1 || cy == -1)
 #define LAST_COORD_INIT -1
 
 static struct termios orig_tios;
@@ -202,8 +201,7 @@ void tb_present() {
       x += w;
     }
   }
-  if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-    write_cursor(cursor_x, cursor_y);
+  write_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
 }
 
@@ -212,8 +210,7 @@ void tb_set_cursor(int cx, int cy)
   assert(termw != -1);
   cursor_x = cx;
   cursor_y = cy;
-  if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
-    write_cursor(cursor_x, cursor_y);
+  write_cursor(cursor_x, cursor_y);
 }
 
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
