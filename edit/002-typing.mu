@@ -7,6 +7,7 @@ def! main text:text [
   load-ingredients
   open-console
   editor:&:editor <- new-editor text, 5/left, 45/right
+  editor-render 0/screen, editor
   editor-event-loop 0/screen, 0/console, editor
   close-console
 ]
