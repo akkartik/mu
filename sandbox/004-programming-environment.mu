@@ -79,7 +79,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     }
     # not global and not a touch event
     {
-      hide-screen screen
       render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
       break-unless render?
       # try to batch up rendering if there are more events queued up
@@ -93,7 +92,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       }
       +finish-event
       screen <- update-cursor screen, current-sandbox, env
-      show-screen screen
     }
     loop
   }
@@ -199,7 +197,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   local-scope
   load-ingredients
   trace 10, [app], [render all]
-  hide-screen screen
+  old-top-idx:num <- save-top-idx screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -211,12 +209,12 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   print screen, [ run (F4) ], 255/white, 161/reddish
   #
   screen <- render-sandbox-side screen, env, render-editor
-  <render-components-end>
+  <render-components-end>  # no early returns permitted
   #
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env
   #
-  show-screen screen
+  assert-no-scroll screen, old-top-idx
 ]
 
 # replaced in a later layer

@@ -23,19 +23,10 @@ extern int wcwidth (wchar_t);
 #include "output.inl"
 #include "input.inl"
 
-struct cellbuf {
-  int width;
-  int height;
-  struct tb_cell *cells;
-};
-
-#define CELL(buf, x, y) (buf)->cells[(y) * (buf)->width + (x)]
 #define LAST_COORD_INIT -1
 
 static struct termios orig_tios;
 
-static struct cellbuf back_buffer;
-static struct cellbuf front_buffer;
 static struct bytebuffer output_buffer;
 static struct bytebuffer input_buffer;
 
@@ -45,21 +36,11 @@ static int termh = -1;
 static int inout;
 static int winch_fds[2];
 
-static int lastx = LAST_COORD_INIT;
-static int lasty = LAST_COORD_INIT;
 static int cursor_x = 0;
 static int cursor_y = 0;
 
 static uint16_t background = TB_BLACK;
 static uint16_t foreground = TB_WHITE;
-
-static void write_cursor(int x, int y);
-static void write_sgr(uint16_t fg, uint16_t bg);
-
-static void cellbuf_init(struct cellbuf *buf, int width, int height);
-static void cellbuf_resize(struct cellbuf *buf, int width, int height);
-static void cellbuf_clear(struct cellbuf *buf);
-static void cellbuf_free(struct cellbuf *buf);
 
 static void update_size(void);
 static void update_term_size(void);
@@ -121,11 +102,6 @@ int tb_init(void)
   send_clear();
 
   update_term_size();
-  cellbuf_init(&back_buffer, termw, termh);
-  cellbuf_init(&front_buffer, termw, termh);
-  cellbuf_clear(&back_buffer);
-  cellbuf_clear(&front_buffer);
-
   return 0;
 }
 
@@ -145,8 +121,6 @@ void tb_shutdown(void)
   close(winch_fds[0]);
   close(winch_fds[1]);
 
-  cellbuf_free(&back_buffer);
-  cellbuf_free(&front_buffer);
   bytebuffer_free(&output_buffer);
   bytebuffer_free(&input_buffer);
   termw = termh = -1;
@@ -157,76 +131,12 @@ int tb_is_active(void)
   return termw != -1;
 }
 
-void tb_present() {
-  int x,y,w,i;
-  struct tb_cell *back, *front;
-
-  assert(termw != -1);
-
-  /* invalidate cursor position */
-  lastx = LAST_COORD_INIT;
-  lasty = LAST_COORD_INIT;
-
-  if (buffer_size_change_request) {
-    update_size();
-    buffer_size_change_request = 0;
-  }
-
-  for (y = 0; y < front_buffer.height; ++y) {
-    for (x = 0; x < front_buffer.width; ) {
-      back = &CELL(&back_buffer, x, y);
-      front = &CELL(&front_buffer, x, y);
-      w = wcwidth(back->ch);
-      if (w < 1) w = 1;
-      if (memcmp(back, front, sizeof(struct tb_cell)) == 0) {
-        x += w;
-        continue;
-      }
-      memcpy(front, back, sizeof(struct tb_cell));
-      send_attr(back->fg, back->bg);
-      if (w > 1 && x >= front_buffer.width - (w - 1)) {
-        // Not enough room for wide ch, so send spaces
-        for (i = x; i < front_buffer.width; ++i) {
-          send_char(i, y, ' ');
-        }
-      } else {
-        send_char(x, y, back->ch);
-        for (i = 1; i < w; ++i) {
-          front = &CELL(&front_buffer, x + i, y);
-          front->ch = 0;
-          front->fg = back->fg;
-          front->bg = back->bg;
-        }
-      }
-      x += w;
-    }
-  }
-  write_cursor(cursor_x, cursor_y);
-  bytebuffer_flush(&output_buffer, inout);
-}
-
-void tb_set_cursor(int cx, int cy)
-{
-  assert(termw != -1);
-  cursor_x = cx;
-  cursor_y = cy;
-  write_cursor(cursor_x, cursor_y);
-}
-
 void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
 {
   assert(termw != -1);
-  if ((unsigned)x >= (unsigned)back_buffer.width)
-    return;
-  if ((unsigned)y >= (unsigned)back_buffer.height)
-    return;
-  struct tb_cell c = {ch, fg, bg};
-  CELL(&back_buffer, x, y) = c;
-}
-
-struct tb_cell *tb_cell_buffer()
-{
-  return back_buffer.cells;
+  send_attr(fg, bg);
+  send_char(x, y, ch);
+  bytebuffer_flush(&output_buffer, inout);
 }
 
 int tb_poll_event(struct tb_event *event)
@@ -263,7 +173,7 @@ void tb_clear(void)
     update_size();
     buffer_size_change_request = 0;
   }
-  cellbuf_clear(&back_buffer);
+  send_clear();
 }
 
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
@@ -293,73 +203,14 @@ static int convertnum(uint32_t num, char* buf) {
 #define WRITE_LITERAL(X) bytebuffer_append(&output_buffer, (X), sizeof(X)-1)
 #define WRITE_INT(X) bytebuffer_append(&output_buffer, buf, convertnum((X), buf))
 
-static void write_cursor(int x, int y) {
+void tb_set_cursor(int x, int y) {
   char buf[32];
   WRITE_LITERAL("\033[");
   WRITE_INT(y+1);
   WRITE_LITERAL(";");
   WRITE_INT(x+1);
   WRITE_LITERAL("H");
-}
-
-static void write_sgr(uint16_t fg, uint16_t bg) {
-  char buf[32];
-  WRITE_LITERAL("\033[38;5;");
-  WRITE_INT(fg);
-  WRITE_LITERAL("m");
-  WRITE_LITERAL("\033[48;5;");
-  WRITE_INT(bg);
-  WRITE_LITERAL("m");
-}
-
-static void cellbuf_init(struct cellbuf *buf, int width, int height)
-{
-  buf->cells = (struct tb_cell*)malloc(sizeof(struct tb_cell) * width * height);
-  assert(buf->cells);
-  buf->width = width;
-  buf->height = height;
-}
-
-static void cellbuf_resize(struct cellbuf *buf, int width, int height)
-{
-  if (buf->width == width && buf->height == height)
-    return;
-
-  int oldw = buf->width;
-  int oldh = buf->height;
-  struct tb_cell *oldcells = buf->cells;
-
-  cellbuf_init(buf, width, height);
-  cellbuf_clear(buf);
-
-  int minw = (width < oldw) ? width : oldw;
-  int minh = (height < oldh) ? height : oldh;
-  int i;
-
-  for (i = 0; i < minh; ++i) {
-    struct tb_cell *csrc = oldcells + (i * oldw);
-    struct tb_cell *cdst = buf->cells + (i * width);
-    memcpy(cdst, csrc, sizeof(struct tb_cell) * minw);
-  }
-
-  free(oldcells);
-}
-
-static void cellbuf_clear(struct cellbuf *buf)
-{
-  int i;
-  int ncells = buf->width * buf->height;
-
-  for (i = 0; i < ncells; ++i) {
-    buf->cells[i].ch = ' ';
-    buf->cells[i].fg = foreground;
-    buf->cells[i].bg = background;
-  }
-}
-
-static void cellbuf_free(struct cellbuf *buf)
-{
-  free(buf->cells);
+  bytebuffer_flush(&output_buffer, inout);
 }
 
 static void get_term_size(int *w, int *h)
@@ -402,7 +253,14 @@ static void send_attr(uint16_t fg, uint16_t bg)
       bytebuffer_puts(&output_buffer, funcs[T_UNDERLINE]);
     if ((fg & TB_REVERSE) || (bg & TB_REVERSE))
       bytebuffer_puts(&output_buffer, funcs[T_REVERSE]);
-    write_sgr(fgcol, bgcol);
+    char buf[32];
+    WRITE_LITERAL("\033[38;5;");
+    WRITE_INT(fgcol);
+    WRITE_LITERAL("m");
+    WRITE_LITERAL("\033[48;5;");
+    WRITE_INT(bgcol);
+    WRITE_LITERAL("m");
+    bytebuffer_flush(&output_buffer, inout);
     lastfg = fg;
     lastbg = bg;
   }
@@ -413,9 +271,7 @@ static void send_char(int x, int y, uint32_t c)
   char buf[7];
   int bw = tb_utf8_unicode_to_char(buf, c);
   buf[bw] = '\0';
-  if (x-1 != lastx || y != lasty)
-    write_cursor(x, y);
-  lastx = x; lasty = y;
+  tb_set_cursor(x, y);
   if(!c) buf[0] = ' '; // replace 0 with whitespace
   bytebuffer_puts(&output_buffer, buf);
 }
@@ -432,16 +288,8 @@ static void send_clear(void)
 {
   send_attr(foreground, background);
   bytebuffer_puts(&output_buffer, funcs[T_CLEAR_SCREEN]);
-  write_cursor(cursor_x, cursor_y);
+  tb_set_cursor(cursor_x, cursor_y);
   bytebuffer_flush(&output_buffer, inout);
-
-  /* we need to invalidate cursor position too and these two vars are
-   * used only for simple cursor positioning optimization, cursor
-   * actually may be in the correct place, but we simply discard
-   * optimization once and it gives us simple solution for the case when
-   * cursor moved */
-  lastx = LAST_COORD_INIT;
-  lasty = LAST_COORD_INIT;
 }
 
 static void sigwinch_handler(int xxx)
@@ -455,9 +303,6 @@ static void sigwinch_handler(int xxx)
 static void update_size(void)
 {
   update_term_size();
-  cellbuf_resize(&back_buffer, termw, termh);
-  cellbuf_resize(&front_buffer, termw, termh);
-  cellbuf_clear(&front_buffer);
   send_clear();
 }
 

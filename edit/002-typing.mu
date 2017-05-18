@@ -264,6 +264,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
 def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:editor [
   local-scope
   load-ingredients
+  old-top-idx:num <- save-top-idx screen
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   row:num, column:num <- render screen, editor
@@ -272,6 +273,7 @@ def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
+  assert-no-scroll screen, old-top-idx
 ]
 
 scenario editor-handles-empty-event-queue [
@@ -1057,6 +1059,9 @@ after <handle-special-key> [
 def draw-horizontal screen:&:screen, row:num, x:num, right:num -> screen:&:screen [
   local-scope
   load-ingredients
+  height:num <- screen-height screen
+  past-bottom?:bool <- greater-or-equal row, height
+  return-if past-bottom?
   style:char, style-found?:bool <- next-ingredient
   {
     break-if style-found?

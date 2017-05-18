@@ -111,10 +111,8 @@ after <global-touch> [
     break-unless edit?
     edit?, env <- try-edit-sandbox click-row, env
     break-unless edit?
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-    show-screen screen
     loop +next-event
   }
 ]

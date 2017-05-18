@@ -190,10 +190,8 @@ after <global-touch> [
     x:bool <- get *sandbox, display-trace?:offset
     x <- not x
     *sandbox <- put *sandbox, display-trace?:offset, x
-    hide-screen screen
     screen <- render-sandbox-side screen, env, render
     screen <- update-cursor screen, current-sandbox, env
-    show-screen screen
     loop +next-event
   }
 ]

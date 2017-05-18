@@ -96,7 +96,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     }
     # if it's not global and not a touch event, send to appropriate editor
     {
-      hide-screen screen
       sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
       {
         break-if sandbox-in-focus?
@@ -117,7 +116,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         screen <- render-all screen, env, render
       }
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-      show-screen screen
     }
     loop
   }
@@ -396,7 +394,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   local-scope
   load-ingredients
   trace 10, [app], [render all]
-  hide-screen screen
+  old-top-idx:num <- save-top-idx screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -414,14 +412,14 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
   #
   screen <- render-recipes screen, env, render-editor
   screen <- render-sandbox-side screen, env, render-editor
-  <render-components-end>
+  <render-components-end>  # no early returns permitted
   #
   recipes:&:editor <- get *env, recipes:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
   #
-  show-screen screen
+  assert-no-scroll screen, old-top-idx
 ]
 
 def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [

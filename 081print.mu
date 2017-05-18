@@ -6,7 +6,9 @@ container screen [
   num-columns:num
   cursor-row:num
   cursor-column:num
-  data:&:@:screen-cell
+  data:&:@:screen-cell  # capacity num-rows*num-columns
+  top-idx:num  # index inside data that corresponds to top-left of screen
+               # modified on scroll, wrapping around to the top of data
 ]
 
 container screen-cell [
@@ -18,9 +20,13 @@ def new-fake-screen w:num, h:num -> result:&:screen [
   local-scope
   load-ingredients
   result <- new screen:type
+  non-zero-width?:bool <- greater-than w, 0
+  assert non-zero-width?, [screen can't have zero width]
+  non-zero-height?:bool <- greater-than h, 0
+  assert non-zero-height?, [screen can't have zero height]
   bufsize:num <- multiply w, h
   data:&:@:screen-cell <- new screen-cell:type, bufsize
-  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data
+  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data, 0/top-idx
   result <- clear-screen result
 ]
 
@@ -48,6 +54,7 @@ def clear-screen screen:&:screen -> screen:&:screen [
   # reset cursor
   *screen <- put *screen, cursor-row:offset, 0
   *screen <- put *screen, cursor-column:offset, 0
+  *screen <- put *screen, top-idx:offset, 0
 ]
 
 def fake-screen-is-empty? screen:&:screen -> result:bool [
@@ -97,69 +104,150 @@ def print screen:&:screen, c:char -> screen:&:screen [
   # (handle special cases exactly like in the real screen)
   width:num <- get *screen, num-columns:offset
   height:num <- get *screen, num-rows:offset
-  # if cursor is out of bounds, silently exit
+  capacity:num <- multiply width, height
   row:num <- get *screen, cursor-row:offset
-  row <- round row
-  legal?:bool <- greater-or-equal row, 0
-  return-unless legal?
-  legal? <- lesser-than row, height
-  return-unless legal?
   column:num <- get *screen, cursor-column:offset
+  buf:&:@:screen-cell <- get *screen, data:offset
+  # some potentially slow sanity checks for preconditions {
+  # eliminate fractions from column and row
+  row <- round row
   column <- round column
-  legal? <- greater-or-equal column, 0
-  return-unless legal?
-  legal? <- lesser-than column, width
-  return-unless legal?
+  # if cursor is past left margin (error), reset to left margin
+  {
+    too-far-left?:bool <- lesser-than column, 0
+    break-unless too-far-left?
+    column <- copy 0
+    *screen <- put *screen, cursor-column:offset, column
+  }
+  # if cursor is at right margin, wrap
+  {
+    at-right?:bool <- equal column, width
+    break-unless at-right?
+    column <- copy 0
+    *screen <- put *screen, cursor-column:offset, column
+    row <- add row, 1
+    *screen <- put *screen, cursor-row:offset, row
+  }
+  # if cursor is past right margin (error), reset to right margin
+  {
+    too-far-right?:bool <- greater-than column, width
+    break-unless too-far-right?
+    column <- subtract width, 1
+    *screen <- put *screen, cursor-row:offset, row
+  }
+  # if row is above top margin (error), reset to top margin
+  {
+    too-far-up?:bool <- lesser-than row, 0
+    break-unless too-far-up?
+    row <- copy 0
+    *screen <- put *screen, cursor-row:offset, row
+  }
+  # if row is at bottom margin, scroll
+  {
+    at-bottom?:bool <- equal row, height
+    break-unless at-bottom?
+    scroll-fake-screen screen
+    row <- subtract height, 1
+    *screen <- put *screen, cursor-row:offset, row
+  }
+  # if row is below bottom margin (error), reset to bottom margin
+  {
+    too-far-down?:bool <- greater-than row, height
+    break-unless too-far-down?
+    row <- subtract height, 1
+    *screen <- put *screen, cursor-row:offset, row
+  }
+  # }
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
   {
     newline?:bool <- equal c, 10/newline
     break-unless newline?
+    cursor-down-on-fake-screen screen  # doesn't modify column
+    return
+  }
+  # special-case: linefeed
+  {
+    linefeed?:bool <- equal c, 13/linefeed
+    break-unless linefeed?
+    *screen <- put *screen, cursor-column:offset, 0
+    return
+  }
+  # special-case: backspace
+  # moves cursor left but does not erase
+  {
+    backspace?:bool <- equal c, 8/backspace
+    break-unless backspace?
     {
-      # unless cursor is already at bottom
-      bottom:num <- subtract height, 1
-      at-bottom?:bool <- greater-or-equal row, bottom
-      break-if at-bottom?
-      # move it to the next row
-      column <- copy 0
+      break-unless column
+      column <- subtract column, 1
       *screen <- put *screen, cursor-column:offset, column
-      row <- add row, 1
-      *screen <- put *screen, cursor-row:offset, row
     }
     return
   }
   # save character in fake screen
-  index:num <- multiply row, width
-  index <- add index, column
-  buf:&:@:screen-cell <- get *screen, data:offset
-  len:num <- length *buf
-  # special-case: backspace
-  {
-    backspace?:bool <- equal c, 8
-    break-unless backspace?
-    {
-      # unless cursor is already at left margin
-      at-left?:bool <- lesser-or-equal column, 0
-      break-if at-left?
-      # clear previous location
-      column <- subtract column, 1
-      *screen <- put *screen, cursor-column:offset, column
-      index <- subtract index, 1
-      cursor:screen-cell <- merge 32/space, 7/white
-      *buf <- put-index *buf, index, cursor
-    }
-    return
-  }
+  top-idx:num <- get *screen, top-idx:offset
+  index:num <- data-index row, column, width, height, top-idx
   cursor:screen-cell <- merge c, color
   *buf <- put-index *buf, index, cursor
-  # increment column unless it's already all the way to the right
+  # move cursor to next character
+  # (but don't bother making it valid; we'll do that before the next print)
+  column <- add column, 1
+  *screen <- put *screen, cursor-column:offset, column
+]
+
+def cursor-down-on-fake-screen screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  row:num <- get *screen, cursor-row:offset
+  height:num <- get *screen, num-rows:offset
+  bottom:num <- subtract height, 1
+  at-bottom?:bool <- greater-or-equal row, bottom
   {
-    right:num <- subtract width, 1
-    at-right?:bool <- greater-or-equal column, right
-    break-if at-right?
-    column <- add column, 1
-    *screen <- put *screen, cursor-column:offset, column
+    break-if at-bottom?
+    row <- add row, 1
+    *screen <- put *screen, cursor-row:offset, row
   }
+  {
+    break-unless at-bottom?
+    scroll-fake-screen screen  # does not modify row
+  }
+]
+
+def scroll-fake-screen screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  width:num <- get *screen, num-columns:offset
+  height:num <- get *screen, num-rows:offset
+  buf:&:@:screen-cell <- get *screen, data:offset
+  # clear top line and 'rotate' it to the bottom
+  top-idx:num <- get *screen, top-idx:offset  # 0 <= top-idx < len(buf)
+  next-top-idx:num <- add top-idx, width  # 0 <= next-top-idx <= len(buf)
+  empty-cell:screen-cell <- merge 0, 0
+  {
+    done?:bool <- greater-or-equal top-idx, next-top-idx
+    break-if done?
+    put-index *buf, top-idx, empty-cell
+    top-idx <- add top-idx, 1
+    # no modulo; top-idx is always a multiple of width,
+    # so it can never wrap around inside this loop
+    loop
+  }
+  # top-idx now same as next-top-idx; wrap around if necessary
+  capacity:num <- multiply width, height
+  _, top-idx <- divide-with-remainder, top-idx, capacity
+  *screen <- put *screen, top-idx:offset, top-idx
+]
+
+# translate from screen (row, column) coordinates to an index into data
+# while accounting for scrolling (sliding top-idx)
+def data-index row:num, column:num, width:num, height:num, top-idx:num -> result:num [
+  local-scope
+  load-ingredients
+  result <- multiply width, row
+  result <- add result, column, top-idx
+  capacity:num <- multiply width, height
+  _, result <- divide-with-remainder result, capacity
 ]
 
 scenario print-character-at-top-left [
@@ -232,7 +320,7 @@ scenario print-backspace-character [
   memory-should-contain [
     10 <- 0  # cursor column
     11 <- 6  # width*height
-    12 <- 32  # space, not 'a'
+    12 <- 97  # still 'a'
     13 <- 7  # white
     # rest of screen is empty
     14 <- 0
@@ -255,7 +343,7 @@ scenario print-extra-backspace-character [
   memory-should-contain [
     1 <- 0  # cursor column
     3 <- 6  # width*height
-    4 <- 32  # space, not 'a'
+    4 <- 97  # still 'a'
     5 <- 7  # white
     # rest of screen is empty
     6 <- 0
@@ -271,22 +359,26 @@ scenario print-character-at-right-margin [
   b:char <- copy 98/b
   fake-screen <- print fake-screen, b
   run [
-    # cursor now at right margin
+    # cursor now at next row
     c:char <- copy 99/c
     fake-screen <- print fake-screen, c
-    10:num/raw <- get *fake-screen, cursor-column:offset
+    10:num/raw <- get *fake-screen, cursor-row:offset
+    11:num/raw <- get *fake-screen, cursor-column:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
-    11:@:screen-cell/raw <- copy *cell
+    12:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
-    10 <- 1  # cursor column
-    11 <- 4  # width*height
-    12 <- 97  # 'a'
-    13 <- 7  # white
-    14 <- 99  # 'c' over 'b'
-    15 <- 7  # white
-    # rest of screen is empty
-    16 <- 0
+    10 <- 1  # cursor row
+    11 <- 1  # cursor column
+    12 <- 4  # width*height
+    13 <- 97  # 'a'
+    14 <- 7  # white
+    15 <- 98  # 'b'
+    16 <- 7  # white
+    17 <- 99  # 'c'
+    18 <- 7  # white
+    19 <- 0  # ' '
+    20 <- 7  # white
   ]
 ]
 
@@ -305,7 +397,7 @@ scenario print-newline-character [
   ]
   memory-should-contain [
     10 <- 1  # cursor row
-    11 <- 0  # cursor column
+    11 <- 1  # cursor column
     12 <- 6  # width*height
     13 <- 97  # 'a'
     14 <- 7  # white
@@ -336,39 +428,81 @@ scenario print-newline-at-bottom-line [
 scenario print-character-at-bottom-right [
   local-scope
   fake-screen:&:screen <- new-fake-screen 2/width, 2/height
-  newline:char <- copy 10/newline
-  fake-screen <- print fake-screen, newline
   a:char <- copy 97/a
   fake-screen <- print fake-screen, a
   b:char <- copy 98/b
   fake-screen <- print fake-screen, b
   c:char <- copy 99/c
   fake-screen <- print fake-screen, c
-  fake-screen <- print fake-screen, newline
   run [
     # cursor now at bottom right
     d:char <- copy 100/d
     fake-screen <- print fake-screen, d
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
+    12:num/raw <- get *fake-screen, top-idx:offset
+    cell:&:@:screen-cell <- get *fake-screen, data:offset
+    20:@:screen-cell/raw <- copy *cell
+  ]
+  # cursor column overflows the screen but is not wrapped yet
+  memory-should-contain [
+    10 <- 1  # cursor row
+    11 <- 2  # cursor column -- outside screen
+    12 <- 0  # top-idx -- not yet scrolled
+    20 <- 4  # screen size (width*height)
+    21 <- 97  # 'a'
+    22 <- 7  # white
+    23 <- 98  # 'b'
+    24 <- 7  # white
+    25 <- 99 # 'c'
+    26 <- 7  # white
+    27 <- 100  # 'd'
+    28 <- 7  # white
+  ]
+  run [
+    e:char <- copy 101/e
+    print fake-screen, e
+    10:num/raw <- get *fake-screen, cursor-row:offset
+    11:num/raw <- get *fake-screen, cursor-column:offset
+    12:num/raw <- get *fake-screen, top-idx:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     20:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
+    # text scrolls by 1, we lose the top line
     10 <- 1  # cursor row
-    11 <- 1  # cursor column
-    20 <- 4  # width*height
-    21 <- 0  # unused
+    11 <- 1  # cursor column -- wrapped
+    12 <- 2  # top-idx -- scrolled
+    20 <- 4  # screen size (width*height)
+    # screen now checked in rotated order
+    25 <- 99 # 'c'
+    26 <- 7  # white
+    27 <- 100  # 'd'
+    28 <- 7  # white
+    # screen wraps; bottom line is cleared of old contents
+    21 <- 101  # 'e'
     22 <- 7  # white
     23 <- 0  # unused
-    24 <- 7  # white
-    25 <- 97 # 'a'
-    26 <- 7  # white
-    27 <- 100  # 'd' over 'b' and 'c' and newline
-    28 <- 7  # white
-    # rest of screen is empty
-    29 <- 0
+    24 <- 0  # no color
   ]
+]
+
+# even though our screen supports scrolling, some apps may want to avoid
+# scrolling
+# these helpers help check for scrolling at development time
+def save-top-idx screen:&:screen -> result:num [
+  local-scope
+  load-ingredients
+  return-unless screen, 0  # check is only for fake screens
+  result <- get *screen, top-idx:offset
+]
+def assert-no-scroll screen:&:screen, old-top-idx:num [
+  local-scope
+  load-ingredients
+  return-unless screen
+  new-top-idx:num <- get *screen, top-idx:offset
+  no-scroll?:bool <- equal old-top-idx, new-top-idx
+  assert no-scroll?, [render should never use screen's scrolling capabilities]
 ]
 
 def clear-line screen:&:screen -> screen:&:screen [
@@ -398,10 +532,14 @@ def clear-line screen:&:screen -> screen:&:screen [
   *screen <- put *screen, cursor-column:offset, original-column
 ]
 
+# only for non-scrolling apps
 def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
   local-scope
   load-ingredients
-  _, column:num <- cursor-position screen
+  row:num, column:num <- cursor-position screen
+  height:num <- screen-height screen
+  past-bottom?:bool <- greater-or-equal row, height
+  return-if past-bottom?
   space:char <- copy 32/space
   bg-color:num, bg-color-found?:bool <- next-ingredient
   {
@@ -597,22 +735,6 @@ def screen-height screen:&:screen -> height:num [
   height <- display-height
 ]
 
-def hide-screen screen:&:screen -> screen:&:screen [
-  local-scope
-  load-ingredients
-  return-if screen  # fake screen; do nothing
-  # real screen
-  hide-display
-]
-
-def show-screen screen:&:screen -> screen:&:screen [
-  local-scope
-  load-ingredients
-  return-if screen  # fake screen; do nothing
-  # real screen
-  show-display
-]
-
 def print screen:&:screen, s:text -> screen:&:screen [
   local-scope
   load-ingredients
@@ -640,24 +762,32 @@ def print screen:&:screen, s:text -> screen:&:screen [
   }
 ]
 
-scenario print-text-stops-at-right-margin [
+scenario print-text-wraps-past-right-margin [
   local-scope
   fake-screen:&:screen <- new-fake-screen 3/width, 2/height
   run [
     fake-screen <- print fake-screen, [abcd]
+    5:num/raw <- get *fake-screen, cursor-row:offset
+    6:num/raw <- get *fake-screen, cursor-column:offset
+    7:num/raw <- get *fake-screen, top-idx:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     10:@:screen-cell/raw <- copy *cell
   ]
   memory-should-contain [
+    5 <- 1  # cursor-row
+    6 <- 1  # cursor-column
+    7 <- 0  # top-idx
     10 <- 6  # width*height
     11 <- 97  # 'a'
     12 <- 7  # white
     13 <- 98  # 'b'
     14 <- 7  # white
-    15 <- 100  # 'd' overwrites 'c'
+    15 <- 99  # 'c'
     16 <- 7  # white
+    17 <- 100  # 'd'
+    18 <- 7  # white
     # rest of screen is empty
-    17 <- 0
+    19 <- 0
   ]
 ]
 
