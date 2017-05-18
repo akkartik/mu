@@ -14,6 +14,7 @@ def main [
   }
   result:text <- buffer-to-array buf
   open-console
+  clear-screen 0/screen  # non-scrolling app
   len:num <- length *result
   print 0/real-screen, result
   wait-for-some-interaction

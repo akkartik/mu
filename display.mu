@@ -2,10 +2,11 @@
 
 def main [
   open-console
+  clear-display
   print-character-to-display 97, 1/red, 2/green
   1:num/raw, 2:num/raw <- cursor-position-on-display
   wait-for-some-interaction
-  clear-display
+  clear-line
   move-cursor-on-display 0, 4
   print-character-to-display 98
   wait-for-some-interaction

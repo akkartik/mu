@@ -5,6 +5,7 @@
 def main [
   local-scope
   open-console
+  clear-screen 0/screen  # non-scrolling app
   {
     e:event, found?:bool <- check-for-interaction
     break-if found?

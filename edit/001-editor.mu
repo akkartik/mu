@@ -6,6 +6,7 @@ def main text:text [
   local-scope
   load-ingredients
   open-console
+  clear-screen 0/screen  # non-scrolling app
   e:&:editor <- new-editor text, 0/left, 5/right
   render 0/screen, e
   wait-for-event 0/console

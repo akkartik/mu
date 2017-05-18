@@ -10,6 +10,7 @@
 def! main [
   local-scope
   open-console
+  clear-screen 0/screen  # non-scrolling app
   env:&:environment <- new-programming-environment 0/filesystem, 0/screen
   env <- restore-sandboxes env
   render-all 0/screen, env, render

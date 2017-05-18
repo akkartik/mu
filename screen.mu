@@ -4,6 +4,7 @@
 # screens.
 def main [
   open-console
+  clear-screen 0/screen  # non-scrolling app
   10:char <- copy 97/a
   print 0/screen, 10:char/a, 1/red, 2/green
   1:num/raw, 2:num/raw <- cursor-position 0/screen

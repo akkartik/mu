@@ -99,7 +99,6 @@ int tb_init(void)
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_BRACKETED_PASTE]);
-  send_clear();
 
   update_term_size();
   return 0;

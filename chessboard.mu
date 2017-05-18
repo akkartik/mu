@@ -4,6 +4,7 @@
 def main [
   local-scope
   open-console  # take control of screen, keyboard and mouse
+  clear-screen 0/screen  # non-scrolling app
 
   # The chessboard function takes keyboard and screen objects as 'ingredients'.
   #
