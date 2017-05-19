@@ -555,15 +555,17 @@ def main [
 
 :(before "End compute_container_sizes Non-atom Special-cases")
 const type_tree* root = get_base_type(type);
-type_info& info = get(Type, root->value);
-if (info.kind == CONTAINER) {
-  compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
-  return;
-}
-if (info.kind == EXCLUSIVE_CONTAINER) {
-  compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
-  return;
-}
+if (contains_key(Type, root->value)) {
+  type_info& info = get(Type, root->value);
+  if (info.kind == CONTAINER) {
+    compute_container_sizes(info, type, pending_metadata, location_for_error_messages);
+    return;
+  }
+  if (info.kind == EXCLUSIVE_CONTAINER) {
+    compute_exclusive_container_sizes(info, type, pending_metadata, location_for_error_messages);
+    return;
+  }
+}  // otherwise error raised elsewhere
 
 :(before "End Unit Tests")
 void test_container_sizes_shape_shifting_container() {

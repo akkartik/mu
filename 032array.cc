@@ -269,6 +269,17 @@ void test_container_sizes_from_repeated_address_and_array_types() {
   CHECK_EQ(SIZE(Container_metadata)-old_size, 1);
 }
 
+void test_container_sizes_on_unknown_type() {
+  // a container we don't have the size for
+  reagent container("x:point");
+  int old_size = SIZE(Container_metadata);
+  // scanning address to array with a typo
+  reagent r("x:address:array:adress:number");
+  compute_container_sizes(r, "");  // should not crash
+  // no non-container types precomputed
+  CHECK_EQ(SIZE(Container_metadata), old_size);
+}
+
 //:: To access elements of an array, use 'index'
 
 :(scenario index)
