@@ -435,7 +435,7 @@ case CLEAR_LINE_ON_DISPLAY: {
   CHECK_SCREEN;
   int width = tb_width();
   for (int x = Display_column;  x < width;  ++x)
-    cout << ' ';
+    tb_print(' ', TB_WHITE, TB_BLACK);
   tb_set_cursor(Display_column, Display_row);
   break;
 }
@@ -460,7 +460,7 @@ case CLEAR_DISPLAY_FROM: {
   for (/*nada*/;  row < height;  ++row, column=left) {  // start column from left in every inner loop except first
     tb_set_cursor(column, row);
     for (/*nada*/;  column <= right;  ++column)
-      cout << ' ';
+      tb_print(' ', TB_WHITE, TB_BLACK);
   }
   tb_set_cursor(Display_column, Display_row);
   break;
