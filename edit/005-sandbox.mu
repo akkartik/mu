@@ -15,7 +15,6 @@ def! main [
   env <- restore-sandboxes env
   render-all 0/screen, env, render
   event-loop 0/screen, 0/console, env, 0/filesystem
-  # never gets here
 ]
 
 container environment [

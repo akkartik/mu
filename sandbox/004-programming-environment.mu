@@ -7,7 +7,6 @@ def! main [
   env:&:environment <- new-programming-environment 0/filesystem, 0/screen
   render-all 0/screen, env, render
   event-loop 0/screen, 0/console, env, 0/filesystem
-  # never gets here
 ]
 
 container environment [
