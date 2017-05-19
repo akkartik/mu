@@ -45,7 +45,6 @@ static uint16_t foreground = TB_WHITE;
 static void update_size(void);
 static void update_term_size(void);
 static void send_attr(uint16_t fg, uint16_t bg);
-static void send_char(int x, int y, uint32_t c);
 static void send_clear(void);
 static void sigwinch_handler(int xxx);
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
@@ -99,6 +98,7 @@ int tb_init(void)
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_KEYPAD]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_MOUSE]);
   bytebuffer_puts(&output_buffer, funcs[T_ENTER_BRACKETED_PASTE]);
+  bytebuffer_flush(&output_buffer, inout);
 
   update_term_size();
   return 0;
@@ -130,11 +130,20 @@ int tb_is_active(void)
   return termw != -1;
 }
 
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
+void tb_print(uint32_t ch, uint16_t fg, uint16_t bg)
 {
   assert(termw != -1);
   send_attr(fg, bg);
-  send_char(x, y, ch);
+  if (ch == 0) {
+    // replace 0 with whitespace
+    bytebuffer_puts(&output_buffer, " ");
+  }
+  else {
+    char buf[7];
+    int bw = tb_utf8_unicode_to_char(buf, ch);
+    buf[bw] = '\0';
+    bytebuffer_puts(&output_buffer, buf);
+  }
   bytebuffer_flush(&output_buffer, inout);
 }
 
@@ -263,16 +272,6 @@ static void send_attr(uint16_t fg, uint16_t bg)
     lastfg = fg;
     lastbg = bg;
   }
-}
-
-static void send_char(int x, int y, uint32_t c)
-{
-  char buf[7];
-  int bw = tb_utf8_unicode_to_char(buf, c);
-  buf[bw] = '\0';
-  tb_set_cursor(x, y);
-  if(!c) buf[0] = ' '; // replace 0 with whitespace
-  bytebuffer_puts(&output_buffer, buf);
 }
 
 const char* to_unicode(uint32_t c)

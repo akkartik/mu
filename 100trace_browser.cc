@@ -113,6 +113,7 @@ void start_trace_browser() {
       Visible.insert(i);
   }
   tb_init();
+  tb_clear();
   Display_row = Display_column = 0;
   Top_of_screen = 0;
   refresh_screen_rows();
@@ -271,11 +272,10 @@ bool start_search_editor(search_direction dir) {
   const int bottom_screen_line = tb_height()-1;
   // run a little editor just in the last line of the screen
   clear_line(bottom_screen_line);
-  tb_set_cursor(0, bottom_screen_line);
   int col = 0;  // screen column of cursor on bottom line. also used to update pattern.
-  tb_change_cell(col, bottom_screen_line, '/', TB_WHITE, TB_BLACK);
-  ++col;
   tb_set_cursor(col, bottom_screen_line);
+  tb_print('/', TB_WHITE, TB_BLACK);
+  ++col;
   string pattern;
   while (true) {
     int key = read_key();
@@ -311,45 +311,46 @@ bool start_search_editor(search_direction dir) {
     }
     else if (key == TB_KEY_BACKSPACE || key == TB_KEY_BACKSPACE2) {
       if (col > /*slash*/1) {
+        assert(col <= SIZE(pattern)+1);
         --col;
         // update pattern
         pattern.erase(col-/*slash*/1, /*len*/1);
         // update screen
-        if (col > SIZE(pattern)) {
-          tb_change_cell(col, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
-        }
-        else {
-          assert(col <= SIZE(pattern));
-          for (int x = col;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
-            tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
-          tb_change_cell(SIZE(pattern)+/*skip slash*/1, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
-        }
+        tb_set_cursor(col, bottom_screen_line);
+        for (int x = col;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
+          tb_print(pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
+        tb_print(' ', TB_WHITE, TB_BLACK);
         tb_set_cursor(col, bottom_screen_line);
       }
     }
     else if (key == TB_KEY_CTRL_K) {
       int old_pattern_size = SIZE(pattern);
       pattern.erase(col-/*slash*/1, SIZE(pattern) - (col-/*slash*/1));
+      tb_set_cursor(col, bottom_screen_line);
       for (int x = col;  x < old_pattern_size+/*slash*/1;  ++x)
-        tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
+        tb_print(' ', TB_WHITE, TB_BLACK);
       tb_set_cursor(col, bottom_screen_line);
     }
     else if (key == TB_KEY_CTRL_U) {
       int old_pattern_size = SIZE(pattern);
       pattern.erase(0, col-/*slash*/1);
+      col = /*skip slash*/1;
+      tb_set_cursor(col, bottom_screen_line);
       for (int x = /*slash*/1;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
-        tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
+        tb_print(pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
       for (int x = SIZE(pattern)+/*slash*/1;  x < old_pattern_size+/*skip slash*/1;  ++x)
-        tb_change_cell(x, bottom_screen_line, ' ', TB_WHITE, TB_BLACK);
-      tb_set_cursor(/*start of pattern skipping slash*/1, bottom_screen_line);
+        tb_print(' ', TB_WHITE, TB_BLACK);
+      tb_set_cursor(col, bottom_screen_line);
     }
     else if (key < 128) {  // ascii only
       // update pattern
       char c = static_cast<char>(key);
+      assert(col-1 >= 0);
+      assert(col-1 <= SIZE(pattern));
       pattern.insert(col-/*slash*/1, /*num*/1, c);
       // update screen
       for (int x = col;  x < SIZE(pattern)+/*skip slash*/1;  ++x)
-        tb_change_cell(x, bottom_screen_line, pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
+        tb_print(pattern.at(x-/*slash*/1), TB_WHITE, TB_BLACK);
       ++col;
       tb_set_cursor(col, bottom_screen_line);
     }
@@ -391,8 +392,10 @@ void search_previous(const string& pat) {
 }
 
 void clear_line(int screen_row) {
+  tb_set_cursor(0, screen_row);
   for (int col = 0;  col < tb_width();  ++col)
-    tb_change_cell(col, screen_row, ' ', TB_WHITE, TB_BLACK);
+    tb_print(' ', TB_WHITE, TB_BLACK);
+  tb_set_cursor(0, screen_row);
 }
 
 // update Trace_indices for each screen_row on the basis of Top_of_screen and Visible
@@ -450,6 +453,7 @@ void render_line(int screen_row, const string& s, bool cursor_line) {
   int color = TB_WHITE;
   int background_color = cursor_line ? /*subtle grey*/240 : TB_BLACK;
   vector<pair<size_t, size_t> > highlight_ranges = find_all_occurrences(s, Current_search_pattern);
+  tb_set_cursor(0, screen_row);
   for (col = 0;  col < tb_width() && col+Left_of_screen < SIZE(s);  ++col) {
     char c = s.at(col+Left_of_screen);  // todo: unicode
     if (c == '\n') c = ';';  // replace newlines with semi-colons
@@ -457,12 +461,12 @@ void render_line(int screen_row, const string& s, bool cursor_line) {
     if (c == '\1') { color = /*red*/1;  c = ' '; }
     if (c == '\2') { color = TB_WHITE;  c = ' '; }
     if (in_range(highlight_ranges, col+Left_of_screen))
-      tb_change_cell(col, screen_row, c, TB_BLACK, /*yellow*/11);
+      tb_print(c, TB_BLACK, /*yellow*/11);
     else
-      tb_change_cell(col, screen_row, c, color, background_color);
+      tb_print(c, color, background_color);
   }
   for (;  col < tb_width();  ++col)
-    tb_change_cell(col, screen_row, ' ', TB_WHITE, background_color);
+    tb_print(' ', TB_WHITE, background_color);
 }
 
 vector<pair<size_t, size_t> > find_all_occurrences(const string& s, const string& pat) {

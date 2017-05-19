@@ -37,16 +37,16 @@ int tb_is_active(void);
 int tb_width(void);
 int tb_height(void);
 
-/* Clear the internal screen state using either TB_DEFAULT or the
- * color/attributes set by tb_set_clear_attributes(). */
+/* Clear the screen using either TB_DEFAULT or the color/attributes set by
+ * tb_set_clear_attributes(). */
 void tb_clear(void);
 void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
 
 /* Move the cursor. Upper-left character is (0, 0). */
 void tb_set_cursor(int cx, int cy);
 
-/* Modify a specific cell of the screen. */
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+/* Modify the screen at the cursor. */
+void tb_print(uint32_t ch, uint16_t fg, uint16_t bg);
 
 /*** 2. Controlling keyboard events. */
 

@@ -127,7 +127,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
     bg_color = ingredients.at(2).at(0);
     if (bg_color == 0) bg_color = TB_BLACK;
   }
-  tb_change_cell(Display_column, Display_row, c, color, bg_color);
+  tb_print(c, color, bg_color);
   // track row and column, mimicking what happens on screen
   if (c == '\n') {
     if (Display_row < height-1) ++Display_row;  // otherwise we scroll and Display_row remains unchanged
@@ -145,7 +145,6 @@ case PRINT_CHARACTER_TO_DISPLAY: {
       if (Display_row < height-1) ++Display_row;
     }
   }
-  tb_set_cursor(Display_column, Display_row);
   break;
 }
 
@@ -435,9 +434,8 @@ case CLEAR_LINE_ON_DISPLAY: {
 case CLEAR_LINE_ON_DISPLAY: {
   CHECK_SCREEN;
   int width = tb_width();
-  for (int x = Display_column;  x < width;  ++x) {
-    tb_change_cell(x, Display_row, ' ', TB_WHITE, TB_BLACK);
-  }
+  for (int x = Display_column;  x < width;  ++x)
+    cout << ' ';
   tb_set_cursor(Display_column, Display_row);
   break;
 }
@@ -460,9 +458,10 @@ case CLEAR_DISPLAY_FROM: {
   int right = ingredients.at(3).at(0);
   int height=tb_height();
   for (/*nada*/;  row < height;  ++row, column=left) {  // start column from left in every inner loop except first
-    for (/*nada*/;  column <= right;  ++column) {
-      tb_change_cell(column, row, ' ', TB_WHITE, TB_BLACK);
-    }
+    tb_set_cursor(column, row);
+    for (/*nada*/;  column <= right;  ++column)
+      cout << ' ';
   }
+  tb_set_cursor(Display_column, Display_row);
   break;
 }
