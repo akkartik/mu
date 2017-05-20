@@ -45,7 +45,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
   # todo: test this
-  render-all-on-no-more-events?:bool <- copy 0/false
+  render-recipes-on-no-more-events?:bool <- copy 0/false
+  render-sandboxes-on-no-more-events?:bool <- copy 0/false
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -100,20 +101,26 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       {
         break-if sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, recipes, e:event
+        render-recipes-on-no-more-events? <- or render?, render-recipes-on-no-more-events?
       }
       {
         break-unless sandbox-in-focus?
         render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
+        render-sandboxes-on-no-more-events? <- or render?, render-sandboxes-on-no-more-events?
       }
-      # try to batch up rendering if there are more events queued up
-      # to compensate for this additional code complexity, we always render both sides when we do render
-      render-all-on-no-more-events? <- or render-all-on-no-more-events?, render?
       more-events?:bool <- has-more-events? console
       {
         break-if more-events?
-        break-unless render-all-on-no-more-events?
-        render-all-on-no-more-events? <- copy 0/false
-        screen <- render-all screen, env, render
+        {
+          break-unless render-recipes-on-no-more-events?
+          render-recipes-on-no-more-events? <- copy 0/false
+          screen <- render-recipes screen, env, render
+        }
+        {
+          break-unless render-sandboxes-on-no-more-events?
+          render-sandboxes-on-no-more-events? <- copy 0/false
+          screen <- render-sandbox-side screen, env, render
+        }
       }
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     }

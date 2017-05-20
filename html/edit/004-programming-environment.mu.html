@@ -71,7 +71,7 @@ if ('onhashchange' in window) {
 <span id="L8" class="LineNr">  8 </span>  open-console
 <span id="L9" class="LineNr">  9 </span>  <a href='../081print.mu.html#L33'>clear-screen</a> <span class="Constant">0/screen</span>  <span class="Comment"># non-scrolling app</span>
 <span id="L10" class="LineNr"> 10 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <span class="Constant">0/filesystem</span>, <span class="Constant">0/screen</span>
-<span id="L11" class="LineNr"> 11 </span>  <a href='004-programming-environment.mu.html#L393'>render-all</a> <span class="Constant">0/screen</span>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L11" class="LineNr"> 11 </span>  <a href='004-programming-environment.mu.html#L400'>render-all</a> <span class="Constant">0/screen</span>, env, <a href='001-editor.mu.html#L122'>render</a>
 <span id="L12" class="LineNr"> 12 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <span class="Constant">0/screen</span>, <span class="Constant">0/console</span>, env, <span class="Constant">0/filesystem</span>
 <span id="L13" class="LineNr"> 13 </span>]
 <span id="L14" class="LineNr"> 14 </span>
@@ -108,499 +108,506 @@ if ('onhashchange' in window) {
 <span id="L45" class="LineNr"> 45 </span>  <span class="Comment"># if we fall behind we'll stop updating the screen, but then we have to</span>
 <span id="L46" class="LineNr"> 46 </span>  <span class="Comment"># render the entire screen when we catch up.</span>
 <span id="L47" class="LineNr"> 47 </span>  <span class="Comment"># todo: test this</span>
-<span id="L48" class="LineNr"> 48 </span>  render-all-on-no-more-events?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L49" class="LineNr"> 49 </span>  <span class="Delimiter">{</span>
-<span id="L50" class="LineNr"> 50 </span>  <span class="Conceal">¦</span> <span class="Comment"># looping over each (keyboard or touch) event as it occurs</span>
-<span id="L51" class="LineNr"> 51 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> +next-event</span>
-<span id="L52" class="LineNr"> 52 </span>  <span class="Conceal">¦</span> e:<a href='../084console.mu.html#L4'>event</a>, found?:bool, quit?:bool, <a href='../084console.mu.html#L23'>console</a> <span class="Special">&lt;-</span> <a href='../084console.mu.html#L35'>read-event</a> <a href='../084console.mu.html#L23'>console</a>
-<span id="L53" class="LineNr"> 53 </span>  <span class="Conceal">¦</span> <span class="muControl">loop-unless</span> found?
-<span id="L54" class="LineNr"> 54 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> quit?  <span class="Comment"># only in tests</span>
-<span id="L55" class="LineNr"> 55 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[next-event]</span>
-<span id="L56" class="LineNr"> 56 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L56'>&lt;handle-event&gt;</a></span>
-<span id="L57" class="LineNr"> 57 </span>  <span class="Conceal">¦</span> <span class="Comment"># check for global events that will trigger regardless of which editor has focus</span>
-<span id="L58" class="LineNr"> 58 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L59" class="LineNr"> 59 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> k:num, is-keycode?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">keycode:variant</span>
-<span id="L60" class="LineNr"> 60 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-keycode?
-<span id="L61" class="LineNr"> 61 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L61'>&lt;global-keypress&gt;</a></span>
-<span id="L62" class="LineNr"> 62 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L63" class="LineNr"> 63 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L64" class="LineNr"> 64 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> c:char, is-unicode?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">text:variant</span>
-<span id="L65" class="LineNr"> 65 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-unicode?
-<span id="L66" class="LineNr"> 66 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L66'>&lt;global-type&gt;</a></span>
-<span id="L67" class="LineNr"> 67 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L68" class="LineNr"> 68 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'touch' event - send to both sides, see what picks it up</span>
-<span id="L69" class="LineNr"> 69 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L70" class="LineNr"> 70 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> t:<a href='../084console.mu.html#L12'>touch-event</a>, is-touch?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">touch:variant</span>
-<span id="L71" class="LineNr"> 71 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-touch?
-<span id="L72" class="LineNr"> 72 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># ignore all but 'left-click' events for now</span>
-<span id="L73" class="LineNr"> 73 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># todo: test this</span>
-<span id="L74" class="LineNr"> 74 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> touch-type:num <span class="Special">&lt;-</span> get t, <span class="Constant">type:offset</span>
-<span id="L75" class="LineNr"> 75 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> is-left-click?:bool <span class="Special">&lt;-</span> equal touch-type, <span class="Constant">65513/mouse-left</span>
-<span id="L76" class="LineNr"> 76 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop-unless</span> is-left-click?, <span class="Constant">+next-event</span>
-<span id="L77" class="LineNr"> 77 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> click-row:num <span class="Special">&lt;-</span> get t, <span class="Constant">row:offset</span>
-<span id="L78" class="LineNr"> 78 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> click-column:num <span class="Special">&lt;-</span> get t, <span class="Constant">column:offset</span>
-<span id="L79" class="LineNr"> 79 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># later exceptions for non-editor touches will go here</span>
-<span id="L80" class="LineNr"> 80 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L80'>&lt;global-touch&gt;</a></span>
-<span id="L81" class="LineNr"> 81 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># send to both editors</span>
-<span id="L82" class="LineNr"> 82 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> _ <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L50'>move-cursor-in-editor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, t
-<span id="L83" class="LineNr"> 83 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L50'>move-cursor-in-editor</a> <a href='../081print.mu.html#L4'>screen</a>, current-sandbox, t
-<span id="L84" class="LineNr"> 84 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
-<span id="L85" class="LineNr"> 85 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L86" class="LineNr"> 86 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L87" class="LineNr"> 87 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L88" class="LineNr"> 88 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'resize' event - redraw editor</span>
-<span id="L89" class="LineNr"> 89 </span>  <span class="Conceal">¦</span> <span class="Comment"># todo: test this after supporting resize in assume-console</span>
-<span id="L90" class="LineNr"> 90 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L91" class="LineNr"> 91 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> r:<a href='../084console.mu.html#L18'>resize-event</a>, is-resize?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant"><a href='004-programming-environment.mu.html#L124'>resize</a>:variant</span>
-<span id="L92" class="LineNr"> 92 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-resize?
-<span id="L93" class="LineNr"> 93 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> env, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L124'>resize</a> <a href='../081print.mu.html#L4'>screen</a>, env
-<span id="L94" class="LineNr"> 94 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='004-programming-environment.mu.html#L151'>render-without-moving-cursor</a>
-<span id="L95" class="LineNr"> 95 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L96" class="LineNr"> 96 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L97" class="LineNr"> 97 </span>  <span class="Conceal">¦</span> <span class="Comment"># if it's not global and not a touch event, send to appropriate editor</span>
-<span id="L98" class="LineNr"> 98 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L99" class="LineNr"> 99 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
-<span id="L100" class="LineNr">100 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L101" class="LineNr">101 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
-<span id="L102" class="LineNr">102 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L166'>handle-keyboard-event</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, e:<a href='../084console.mu.html#L4'>event</a>
-<span id="L103" class="LineNr">103 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L104" class="LineNr">104 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L105" class="LineNr">105 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
-<span id="L106" class="LineNr">106 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L166'>handle-keyboard-event</a> <a href='../081print.mu.html#L4'>screen</a>, current-sandbox, e:<a href='../084console.mu.html#L4'>event</a>
-<span id="L107" class="LineNr">107 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L108" class="LineNr">108 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># try to batch up rendering if there are more events queued up</span>
-<span id="L109" class="LineNr">109 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># to compensate for this additional code complexity, we always render both sides when we do render</span>
-<span id="L110" class="LineNr">110 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-all-on-no-more-events? <span class="Special">&lt;-</span> or render-all-on-no-more-events?, render?
+<span id="L48" class="LineNr"> 48 </span>  render-recipes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L49" class="LineNr"> 49 </span>  render-sandboxes-on-no-more-events?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L50" class="LineNr"> 50 </span>  <span class="Delimiter">{</span>
+<span id="L51" class="LineNr"> 51 </span>  <span class="Conceal">¦</span> <span class="Comment"># looping over each (keyboard or touch) event as it occurs</span>
+<span id="L52" class="LineNr"> 52 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> +next-event</span>
+<span id="L53" class="LineNr"> 53 </span>  <span class="Conceal">¦</span> e:<a href='../084console.mu.html#L4'>event</a>, found?:bool, quit?:bool, <a href='../084console.mu.html#L23'>console</a> <span class="Special">&lt;-</span> <a href='../084console.mu.html#L35'>read-event</a> <a href='../084console.mu.html#L23'>console</a>
+<span id="L54" class="LineNr"> 54 </span>  <span class="Conceal">¦</span> <span class="muControl">loop-unless</span> found?
+<span id="L55" class="LineNr"> 55 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> quit?  <span class="Comment"># only in tests</span>
+<span id="L56" class="LineNr"> 56 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[next-event]</span>
+<span id="L57" class="LineNr"> 57 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L57'>&lt;handle-event&gt;</a></span>
+<span id="L58" class="LineNr"> 58 </span>  <span class="Conceal">¦</span> <span class="Comment"># check for global events that will trigger regardless of which editor has focus</span>
+<span id="L59" class="LineNr"> 59 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L60" class="LineNr"> 60 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> k:num, is-keycode?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">keycode:variant</span>
+<span id="L61" class="LineNr"> 61 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-keycode?
+<span id="L62" class="LineNr"> 62 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L64" class="LineNr"> 64 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L65" class="LineNr"> 65 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> c:char, is-unicode?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">text:variant</span>
+<span id="L66" class="LineNr"> 66 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-unicode?
+<span id="L67" class="LineNr"> 67 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L67'>&lt;global-type&gt;</a></span>
+<span id="L68" class="LineNr"> 68 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L69" class="LineNr"> 69 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'touch' event - send to both sides, see what picks it up</span>
+<span id="L70" class="LineNr"> 70 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L71" class="LineNr"> 71 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> t:<a href='../084console.mu.html#L12'>touch-event</a>, is-touch?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant">touch:variant</span>
+<span id="L72" class="LineNr"> 72 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-touch?
+<span id="L73" class="LineNr"> 73 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># ignore all but 'left-click' events for now</span>
+<span id="L74" class="LineNr"> 74 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># todo: test this</span>
+<span id="L75" class="LineNr"> 75 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> touch-type:num <span class="Special">&lt;-</span> get t, <span class="Constant">type:offset</span>
+<span id="L76" class="LineNr"> 76 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> is-left-click?:bool <span class="Special">&lt;-</span> equal touch-type, <span class="Constant">65513/mouse-left</span>
+<span id="L77" class="LineNr"> 77 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop-unless</span> is-left-click?, <span class="Constant">+next-event</span>
+<span id="L78" class="LineNr"> 78 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> click-row:num <span class="Special">&lt;-</span> get t, <span class="Constant">row:offset</span>
+<span id="L79" class="LineNr"> 79 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> click-column:num <span class="Special">&lt;-</span> get t, <span class="Constant">column:offset</span>
+<span id="L80" class="LineNr"> 80 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># later exceptions for non-editor touches will go here</span>
+<span id="L81" class="LineNr"> 81 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> <a href='004-programming-environment.mu.html#L81'>&lt;global-touch&gt;</a></span>
+<span id="L82" class="LineNr"> 82 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># send to both editors</span>
+<span id="L83" class="LineNr"> 83 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> _ <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L50'>move-cursor-in-editor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, t
+<span id="L84" class="LineNr"> 84 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L50'>move-cursor-in-editor</a> <a href='../081print.mu.html#L4'>screen</a>, current-sandbox, t
+<span id="L85" class="LineNr"> 85 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
+<span id="L86" class="LineNr"> 86 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L466'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L87" class="LineNr"> 87 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L88" class="LineNr"> 88 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L89" class="LineNr"> 89 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'resize' event - redraw editor</span>
+<span id="L90" class="LineNr"> 90 </span>  <span class="Conceal">¦</span> <span class="Comment"># todo: test this after supporting resize in assume-console</span>
+<span id="L91" class="LineNr"> 91 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L92" class="LineNr"> 92 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> r:<a href='../084console.mu.html#L18'>resize-event</a>, is-resize?:bool <span class="Special">&lt;-</span> maybe-convert e:<a href='../084console.mu.html#L4'>event</a>, <span class="Constant"><a href='004-programming-environment.mu.html#L131'>resize</a>:variant</span>
+<span id="L93" class="LineNr"> 93 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-resize?
+<span id="L94" class="LineNr"> 94 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> env, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L131'>resize</a> <a href='../081print.mu.html#L4'>screen</a>, env
+<span id="L95" class="LineNr"> 95 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L400'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='004-programming-environment.mu.html#L158'>render-without-moving-cursor</a>
+<span id="L96" class="LineNr"> 96 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L97" class="LineNr"> 97 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L98" class="LineNr"> 98 </span>  <span class="Conceal">¦</span> <span class="Comment"># if it's not global and not a touch event, send to appropriate editor</span>
+<span id="L99" class="LineNr"> 99 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L100" class="LineNr">100 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
+<span id="L101" class="LineNr">101 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L102" class="LineNr">102 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
+<span id="L103" class="LineNr">103 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L166'>handle-keyboard-event</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, e:<a href='../084console.mu.html#L4'>event</a>
+<span id="L104" class="LineNr">104 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-recipes-on-no-more-events? <span class="Special">&lt;-</span> or render?, render-recipes-on-no-more-events?
+<span id="L105" class="LineNr">105 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L106" class="LineNr">106 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L107" class="LineNr">107 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
+<span id="L108" class="LineNr">108 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render?:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L166'>handle-keyboard-event</a> <a href='../081print.mu.html#L4'>screen</a>, current-sandbox, e:<a href='../084console.mu.html#L4'>event</a>
+<span id="L109" class="LineNr">109 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-sandboxes-on-no-more-events? <span class="Special">&lt;-</span> or render?, render-sandboxes-on-no-more-events?
+<span id="L110" class="LineNr">110 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
 <span id="L111" class="LineNr">111 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> more-events?:bool <span class="Special">&lt;-</span> <a href='../084console.mu.html#L99'>has-more-events?</a> <a href='../084console.mu.html#L23'>console</a>
 <span id="L112" class="LineNr">112 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
 <span id="L113" class="LineNr">113 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> more-events?
-<span id="L114" class="LineNr">114 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> render-all-on-no-more-events?
-<span id="L115" class="LineNr">115 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-all-on-no-more-events? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
-<span id="L116" class="LineNr">116 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
-<span id="L117" class="LineNr">117 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L118" class="LineNr">118 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L119" class="LineNr">119 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L120" class="LineNr">120 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L121" class="LineNr">121 </span>  <span class="Delimiter">}</span>
-<span id="L122" class="LineNr">122 </span>]
-<span id="L123" class="LineNr">123 </span>
-<span id="L124" class="LineNr">124 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L124'>resize</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment<span class="muRecipe"> -&gt; </span>env:&amp;:environment, <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
-<span id="L125" class="LineNr">125 </span>  <span class="Constant">local-scope</span>
-<span id="L126" class="LineNr">126 </span>  <span class="Constant">load-ingredients</span>
-<span id="L127" class="LineNr">127 </span>  <a href='../081print.mu.html#L33'>clear-screen</a> <a href='../081print.mu.html#L4'>screen</a>  <span class="Comment"># update screen dimensions</span>
-<span id="L128" class="LineNr">128 </span>  width:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L712'>screen-width</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L129" class="LineNr">129 </span>  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
-<span id="L130" class="LineNr">130 </span>  <span class="Comment"># update recipe editor</span>
-<span id="L131" class="LineNr">131 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L132" class="LineNr">132 </span>  right:num <span class="Special">&lt;-</span> subtract divider,<span class="Constant"> 1</span>
-<span id="L133" class="LineNr">133 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">right:offset</span>, right
-<span id="L134" class="LineNr">134 </span>  <span class="Comment"># reset cursor (later we'll try to preserve its position)</span>
-<span id="L135" class="LineNr">135 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">cursor-row:offset</span>,<span class="Constant"> 1</span>
-<span id="L136" class="LineNr">136 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">cursor-column:offset</span>,<span class="Constant"> 0</span>
-<span id="L137" class="LineNr">137 </span>  <span class="Comment"># update sandbox editor</span>
-<span id="L138" class="LineNr">138 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L139" class="LineNr">139 </span>  left:num <span class="Special">&lt;-</span> add divider,<span class="Constant"> 1</span>
-<span id="L140" class="LineNr">140 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">left:offset</span>, left
-<span id="L141" class="LineNr">141 </span>  right:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 1</span>
-<span id="L142" class="LineNr">142 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">right:offset</span>, right
-<span id="L143" class="LineNr">143 </span>  <span class="Comment"># reset cursor (later we'll try to preserve its position)</span>
-<span id="L144" class="LineNr">144 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">cursor-row:offset</span>,<span class="Constant"> 1</span>
-<span id="L145" class="LineNr">145 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">cursor-column:offset</span>, left
-<span id="L146" class="LineNr">146 </span>]
-<span id="L147" class="LineNr">147 </span>
-<span id="L148" class="LineNr">148 </span><span class="Comment"># Variant of 'render' that updates cursor-row and cursor-column based on</span>
-<span id="L149" class="LineNr">149 </span><span class="Comment"># before-cursor (rather than the other way around). If before-cursor moves</span>
-<span id="L150" class="LineNr">150 </span><span class="Comment"># off-screen, it resets cursor-row and cursor-column.</span>
-<span id="L151" class="LineNr">151 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L151'>render-without-moving-cursor</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, editor:&amp;:editor<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, editor:&amp;:editor [
-<span id="L152" class="LineNr">152 </span>  <span class="Constant">local-scope</span>
-<span id="L153" class="LineNr">153 </span>  <span class="Constant">load-ingredients</span>
-<span id="L154" class="LineNr">154 </span>  <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>
-<span id="L155" class="LineNr">155 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
-<span id="L156" class="LineNr">156 </span>  <a href='../081print.mu.html#L725'>screen-height</a>:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L725'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L157" class="LineNr">157 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
-<span id="L158" class="LineNr">158 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-<span id="L159" class="LineNr">159 </span>  <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
-<span id="L160" class="LineNr">160 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
-<span id="L161" class="LineNr">161 </span>  color:num <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
-<span id="L162" class="LineNr">162 </span>  row:num <span class="Special">&lt;-</span> copy <span class="Constant">1/top</span>
-<span id="L163" class="LineNr">163 </span>  column:num <span class="Special">&lt;-</span> copy left
-<span id="L164" class="LineNr">164 </span>  <span class="Comment"># save before-cursor</span>
-<span id="L165" class="LineNr">165 </span>  old-before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L166" class="LineNr">166 </span>  <span class="Comment"># initialze cursor-row/cursor-column/before-cursor to the top of the screen</span>
-<span id="L167" class="LineNr">167 </span>  <span class="Comment"># by default</span>
-<span id="L168" class="LineNr">168 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, row
-<span id="L169" class="LineNr">169 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, column
-<span id="L170" class="LineNr">170 </span>  top-of-screen:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
-<span id="L171" class="LineNr">171 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, top-of-screen
-<span id="L172" class="LineNr">172 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
-<span id="L173" class="LineNr">173 </span>  <span class="Delimiter">{</span>
-<span id="L174" class="LineNr">174 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> +next-character</span>
-<span id="L175" class="LineNr">175 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
-<span id="L176" class="LineNr">176 </span>  <span class="Conceal">¦</span> off-screen?:bool <span class="Special">&lt;-</span> greater-or-equal row, <a href='../081print.mu.html#L725'>screen-height</a>
-<span id="L177" class="LineNr">177 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> off-screen?
-<span id="L178" class="LineNr">178 </span>  <span class="Conceal">¦</span> <span class="Comment"># if we find old-before-cursor still on the new resized screen, update</span>
-<span id="L179" class="LineNr">179 </span>  <span class="Conceal">¦</span> <span class="Comment"># editor.cursor-row and editor.cursor-column based on</span>
-<span id="L180" class="LineNr">180 </span>  <span class="Conceal">¦</span> <span class="Comment"># old-before-cursor</span>
-<span id="L181" class="LineNr">181 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L182" class="LineNr">182 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-cursor?:bool <span class="Special">&lt;-</span> equal old-before-cursor, <a href='../065duplex_list.mu.html#L36'>prev</a>
-<span id="L183" class="LineNr">183 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-cursor?
-<span id="L184" class="LineNr">184 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, row
-<span id="L185" class="LineNr">185 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, column
-<span id="L186" class="LineNr">186 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, old-before-cursor
-<span id="L187" class="LineNr">187 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L188" class="LineNr">188 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
-<span id="L189" class="LineNr">189 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;character-c-received&gt;</span>
-<span id="L190" class="LineNr">190 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L191" class="LineNr">191 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># newline? move to left rather than 0</span>
-<span id="L192" class="LineNr">192 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
-<span id="L193" class="LineNr">193 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> newline?
-<span id="L194" class="LineNr">194 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># clear rest of line in this window</span>
-<span id="L195" class="LineNr">195 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
-<span id="L196" class="LineNr">196 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># skip to next line</span>
-<span id="L197" class="LineNr">197 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L198" class="LineNr">198 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> copy left
-<span id="L199" class="LineNr">199 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
-<span id="L200" class="LineNr">200 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
-<span id="L201" class="LineNr">201 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> <a href='../065duplex_list.mu.html#L36'>prev</a>
-<span id="L202" class="LineNr">202 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-character</span>
-<span id="L203" class="LineNr">203 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L204" class="LineNr">204 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L205" class="LineNr">205 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># at right? wrap. even if there's only one more letter left; we need</span>
-<span id="L206" class="LineNr">206 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># room for clicking on the cursor after it.</span>
-<span id="L207" class="LineNr">207 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-right?:bool <span class="Special">&lt;-</span> equal column, right
-<span id="L208" class="LineNr">208 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-right?
-<span id="L209" class="LineNr">209 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># print wrap icon</span>
-<span id="L210" class="LineNr">210 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> wrap-icon:char <span class="Special">&lt;-</span> copy <span class="Constant">8617/loop-back-to-left</span>
-<span id="L211" class="LineNr">211 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, wrap-icon, <span class="Constant">245/grey</span>
-<span id="L212" class="LineNr">212 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> copy left
-<span id="L213" class="LineNr">213 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L214" class="LineNr">214 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
-<span id="L215" class="LineNr">215 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># don't increment curr</span>
-<span id="L216" class="LineNr">216 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-character</span>
-<span id="L217" class="LineNr">217 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L218" class="LineNr">218 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, c, color
-<span id="L219" class="LineNr">219 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
-<span id="L220" class="LineNr">220 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> <a href='../065duplex_list.mu.html#L36'>prev</a>
-<span id="L221" class="LineNr">221 </span>  <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> add column,<span class="Constant"> 1</span>
-<span id="L222" class="LineNr">222 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L223" class="LineNr">223 </span>  <span class="Delimiter">}</span>
-<span id="L224" class="LineNr">224 </span>  <span class="Comment"># save first character off-screen</span>
-<span id="L225" class="LineNr">225 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">bottom-of-screen:offset</span>, curr
-<span id="L226" class="LineNr">226 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">bottom:offset</span>, row
-<span id="L227" class="LineNr">227 </span>  <span class="muControl">return</span> row, column
-<span id="L228" class="LineNr">228 </span>]
-<span id="L229" class="LineNr">229 </span>
-<span id="L230" class="LineNr">230 </span><span class="muScenario">scenario</span> point-at-multiple-editors [
-<span id="L231" class="LineNr">231 </span>  <span class="Constant">local-scope</span>
-<span id="L232" class="LineNr">232 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L233" class="LineNr">233 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-<span id="L234" class="LineNr">234 </span>  <span class="Comment"># initialize both halves of screen</span>
-<span id="L235" class="LineNr">235 </span>  assume-resources [
-<span id="L236" class="LineNr">236 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
-<span id="L237" class="LineNr">237 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
-<span id="L238" class="LineNr">238 </span>  <span class="Conceal">¦</span> ]
-<span id="L239" class="LineNr">239 </span>  ]
-<span id="L240" class="LineNr">240 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox editor</span>
-<span id="L241" class="LineNr">241 </span>  <span class="Comment"># focus on both sides</span>
-<span id="L242" class="LineNr">242 </span>  assume-console [
-<span id="L243" class="LineNr">243 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
-<span id="L244" class="LineNr">244 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 17</span>
-<span id="L245" class="LineNr">245 </span>  ]
-<span id="L246" class="LineNr">246 </span>  <span class="Comment"># check cursor column in each</span>
-<span id="L247" class="LineNr">247 </span>  run [
-<span id="L248" class="LineNr">248 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L249" class="LineNr">249 </span>  <span class="Conceal">¦</span> recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L250" class="LineNr">250 </span>  <span class="Conceal">¦</span> 5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
-<span id="L251" class="LineNr">251 </span>  <span class="Conceal">¦</span> sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L252" class="LineNr">252 </span>  <span class="Conceal">¦</span> 7:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">cursor-column:offset</span>
-<span id="L253" class="LineNr">253 </span>  ]
-<span id="L254" class="LineNr">254 </span>  memory-should-contain [
-<span id="L255" class="LineNr">255 </span>  <span class="Conceal">¦</span><span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
-<span id="L256" class="LineNr">256 </span>  <span class="Conceal">¦</span><span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 17</span>
-<span id="L257" class="LineNr">257 </span>  ]
-<span id="L258" class="LineNr">258 </span>]
-<span id="L259" class="LineNr">259 </span>
-<span id="L260" class="LineNr">260 </span><span class="muScenario">scenario</span> edit-multiple-editors [
-<span id="L261" class="LineNr">261 </span>  <span class="Constant">local-scope</span>
-<span id="L262" class="LineNr">262 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L263" class="LineNr">263 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-<span id="L264" class="LineNr">264 </span>  <span class="Comment"># initialize both halves of screen</span>
-<span id="L265" class="LineNr">265 </span>  assume-resources [
-<span id="L266" class="LineNr">266 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
-<span id="L267" class="LineNr">267 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
-<span id="L268" class="LineNr">268 </span>  <span class="Conceal">¦</span> ]
-<span id="L269" class="LineNr">269 </span>  ]
-<span id="L270" class="LineNr">270 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox</span>
-<span id="L271" class="LineNr">271 </span>  <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
-<span id="L272" class="LineNr">272 </span>  <span class="Comment"># type one letter in each of them</span>
-<span id="L273" class="LineNr">273 </span>  assume-console [
-<span id="L274" class="LineNr">274 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
-<span id="L275" class="LineNr">275 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0]</span>
-<span id="L276" class="LineNr">276 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 17</span>
-<span id="L277" class="LineNr">277 </span>  <span class="Conceal">¦</span> type <span class="Constant">[1]</span>
-<span id="L278" class="LineNr">278 </span>  ]
-<span id="L279" class="LineNr">279 </span>  run [
-<span id="L280" class="LineNr">280 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L281" class="LineNr">281 </span>  <span class="Conceal">¦</span> recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L282" class="LineNr">282 </span>  <span class="Conceal">¦</span> 5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
-<span id="L283" class="LineNr">283 </span>  <span class="Conceal">¦</span> sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L284" class="LineNr">284 </span>  <span class="Conceal">¦</span> 7:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">cursor-column:offset</span>
+<span id="L114" class="LineNr">114 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L115" class="LineNr">115 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> render-recipes-on-no-more-events?
+<span id="L116" class="LineNr">116 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-recipes-on-no-more-events? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L117" class="LineNr">117 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L432'>render-recipes</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L118" class="LineNr">118 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L119" class="LineNr">119 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L120" class="LineNr">120 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> render-sandboxes-on-no-more-events?
+<span id="L121" class="LineNr">121 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-sandboxes-on-no-more-events? <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
+<span id="L122" class="LineNr">122 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L123" class="LineNr">123 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L124" class="LineNr">124 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L125" class="LineNr">125 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L466'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L126" class="LineNr">126 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L127" class="LineNr">127 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L128" class="LineNr">128 </span>  <span class="Delimiter">}</span>
+<span id="L129" class="LineNr">129 </span>]
+<span id="L130" class="LineNr">130 </span>
+<span id="L131" class="LineNr">131 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L131'>resize</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment<span class="muRecipe"> -&gt; </span>env:&amp;:environment, <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
+<span id="L132" class="LineNr">132 </span>  <span class="Constant">local-scope</span>
+<span id="L133" class="LineNr">133 </span>  <span class="Constant">load-ingredients</span>
+<span id="L134" class="LineNr">134 </span>  <a href='../081print.mu.html#L33'>clear-screen</a> <a href='../081print.mu.html#L4'>screen</a>  <span class="Comment"># update screen dimensions</span>
+<span id="L135" class="LineNr">135 </span>  width:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L712'>screen-width</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L136" class="LineNr">136 </span>  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
+<span id="L137" class="LineNr">137 </span>  <span class="Comment"># update recipe editor</span>
+<span id="L138" class="LineNr">138 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+<span id="L139" class="LineNr">139 </span>  right:num <span class="Special">&lt;-</span> subtract divider,<span class="Constant"> 1</span>
+<span id="L140" class="LineNr">140 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">right:offset</span>, right
+<span id="L141" class="LineNr">141 </span>  <span class="Comment"># reset cursor (later we'll try to preserve its position)</span>
+<span id="L142" class="LineNr">142 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">cursor-row:offset</span>,<span class="Constant"> 1</span>
+<span id="L143" class="LineNr">143 </span>  *recipes <span class="Special">&lt;-</span> put *recipes, <span class="Constant">cursor-column:offset</span>,<span class="Constant"> 0</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Comment"># update sandbox editor</span>
+<span id="L145" class="LineNr">145 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L146" class="LineNr">146 </span>  left:num <span class="Special">&lt;-</span> add divider,<span class="Constant"> 1</span>
+<span id="L147" class="LineNr">147 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">left:offset</span>, left
+<span id="L148" class="LineNr">148 </span>  right:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 1</span>
+<span id="L149" class="LineNr">149 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">right:offset</span>, right
+<span id="L150" class="LineNr">150 </span>  <span class="Comment"># reset cursor (later we'll try to preserve its position)</span>
+<span id="L151" class="LineNr">151 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">cursor-row:offset</span>,<span class="Constant"> 1</span>
+<span id="L152" class="LineNr">152 </span>  *current-sandbox <span class="Special">&lt;-</span> put *current-sandbox, <span class="Constant">cursor-column:offset</span>, left
+<span id="L153" class="LineNr">153 </span>]
+<span id="L154" class="LineNr">154 </span>
+<span id="L155" class="LineNr">155 </span><span class="Comment"># Variant of 'render' that updates cursor-row and cursor-column based on</span>
+<span id="L156" class="LineNr">156 </span><span class="Comment"># before-cursor (rather than the other way around). If before-cursor moves</span>
+<span id="L157" class="LineNr">157 </span><span class="Comment"># off-screen, it resets cursor-row and cursor-column.</span>
+<span id="L158" class="LineNr">158 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L158'>render-without-moving-cursor</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, editor:&amp;:editor<span class="muRecipe"> -&gt; </span>last-row:num, last-column:num, <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, editor:&amp;:editor [
+<span id="L159" class="LineNr">159 </span>  <span class="Constant">local-scope</span>
+<span id="L160" class="LineNr">160 </span>  <span class="Constant">load-ingredients</span>
+<span id="L161" class="LineNr">161 </span>  <span class="muControl">return-unless</span> editor, <span class="Constant">1/top</span>, <span class="Constant">0/left</span>
+<span id="L162" class="LineNr">162 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
+<span id="L163" class="LineNr">163 </span>  <a href='../081print.mu.html#L725'>screen-height</a>:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L725'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L164" class="LineNr">164 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
+<span id="L165" class="LineNr">165 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
+<span id="L166" class="LineNr">166 </span>  <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy curr  <span class="Comment"># just in case curr becomes null and we can't compute prev</span>
+<span id="L167" class="LineNr">167 </span>  curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L168" class="LineNr">168 </span>  color:num <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
+<span id="L169" class="LineNr">169 </span>  row:num <span class="Special">&lt;-</span> copy <span class="Constant">1/top</span>
+<span id="L170" class="LineNr">170 </span>  column:num <span class="Special">&lt;-</span> copy left
+<span id="L171" class="LineNr">171 </span>  <span class="Comment"># save before-cursor</span>
+<span id="L172" class="LineNr">172 </span>  old-before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
+<span id="L173" class="LineNr">173 </span>  <span class="Comment"># initialze cursor-row/cursor-column/before-cursor to the top of the screen</span>
+<span id="L174" class="LineNr">174 </span>  <span class="Comment"># by default</span>
+<span id="L175" class="LineNr">175 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, row
+<span id="L176" class="LineNr">176 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, column
+<span id="L177" class="LineNr">177 </span>  top-of-screen:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
+<span id="L178" class="LineNr">178 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, top-of-screen
+<span id="L179" class="LineNr">179 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
+<span id="L180" class="LineNr">180 </span>  <span class="Delimiter">{</span>
+<span id="L181" class="LineNr">181 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> +next-character</span>
+<span id="L182" class="LineNr">182 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
+<span id="L183" class="LineNr">183 </span>  <span class="Conceal">¦</span> off-screen?:bool <span class="Special">&lt;-</span> greater-or-equal row, <a href='../081print.mu.html#L725'>screen-height</a>
+<span id="L184" class="LineNr">184 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> off-screen?
+<span id="L185" class="LineNr">185 </span>  <span class="Conceal">¦</span> <span class="Comment"># if we find old-before-cursor still on the new resized screen, update</span>
+<span id="L186" class="LineNr">186 </span>  <span class="Conceal">¦</span> <span class="Comment"># editor.cursor-row and editor.cursor-column based on</span>
+<span id="L187" class="LineNr">187 </span>  <span class="Conceal">¦</span> <span class="Comment"># old-before-cursor</span>
+<span id="L188" class="LineNr">188 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L189" class="LineNr">189 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-cursor?:bool <span class="Special">&lt;-</span> equal old-before-cursor, <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L190" class="LineNr">190 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-cursor?
+<span id="L191" class="LineNr">191 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, row
+<span id="L192" class="LineNr">192 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, column
+<span id="L193" class="LineNr">193 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, old-before-cursor
+<span id="L194" class="LineNr">194 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L195" class="LineNr">195 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
+<span id="L196" class="LineNr">196 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;character-c-received&gt;</span>
+<span id="L197" class="LineNr">197 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L198" class="LineNr">198 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># newline? move to left rather than 0</span>
+<span id="L199" class="LineNr">199 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
+<span id="L200" class="LineNr">200 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> newline?
+<span id="L201" class="LineNr">201 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># clear rest of line in this window</span>
+<span id="L202" class="LineNr">202 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
+<span id="L203" class="LineNr">203 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># skip to next line</span>
+<span id="L204" class="LineNr">204 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L205" class="LineNr">205 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> copy left
+<span id="L206" class="LineNr">206 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
+<span id="L207" class="LineNr">207 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L208" class="LineNr">208 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L209" class="LineNr">209 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-character</span>
+<span id="L210" class="LineNr">210 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L211" class="LineNr">211 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L212" class="LineNr">212 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># at right? wrap. even if there's only one more letter left; we need</span>
+<span id="L213" class="LineNr">213 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># room for clicking on the cursor after it.</span>
+<span id="L214" class="LineNr">214 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-right?:bool <span class="Special">&lt;-</span> equal column, right
+<span id="L215" class="LineNr">215 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-right?
+<span id="L216" class="LineNr">216 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># print wrap icon</span>
+<span id="L217" class="LineNr">217 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> wrap-icon:char <span class="Special">&lt;-</span> copy <span class="Constant">8617/loop-back-to-left</span>
+<span id="L218" class="LineNr">218 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, wrap-icon, <span class="Constant">245/grey</span>
+<span id="L219" class="LineNr">219 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> copy left
+<span id="L220" class="LineNr">220 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L221" class="LineNr">221 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, row, column
+<span id="L222" class="LineNr">222 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># don't increment curr</span>
+<span id="L223" class="LineNr">223 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-character</span>
+<span id="L224" class="LineNr">224 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L225" class="LineNr">225 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, c, color
+<span id="L226" class="LineNr">226 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L227" class="LineNr">227 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a> <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L228" class="LineNr">228 </span>  <span class="Conceal">¦</span> column <span class="Special">&lt;-</span> add column,<span class="Constant"> 1</span>
+<span id="L229" class="LineNr">229 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L230" class="LineNr">230 </span>  <span class="Delimiter">}</span>
+<span id="L231" class="LineNr">231 </span>  <span class="Comment"># save first character off-screen</span>
+<span id="L232" class="LineNr">232 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">bottom-of-screen:offset</span>, curr
+<span id="L233" class="LineNr">233 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">bottom:offset</span>, row
+<span id="L234" class="LineNr">234 </span>  <span class="muControl">return</span> row, column
+<span id="L235" class="LineNr">235 </span>]
+<span id="L236" class="LineNr">236 </span>
+<span id="L237" class="LineNr">237 </span><span class="muScenario">scenario</span> point-at-multiple-editors [
+<span id="L238" class="LineNr">238 </span>  <span class="Constant">local-scope</span>
+<span id="L239" class="LineNr">239 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L240" class="LineNr">240 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
+<span id="L241" class="LineNr">241 </span>  <span class="Comment"># initialize both halves of screen</span>
+<span id="L242" class="LineNr">242 </span>  assume-resources [
+<span id="L243" class="LineNr">243 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span id="L244" class="LineNr">244 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
+<span id="L245" class="LineNr">245 </span>  <span class="Conceal">¦</span> ]
+<span id="L246" class="LineNr">246 </span>  ]
+<span id="L247" class="LineNr">247 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox editor</span>
+<span id="L248" class="LineNr">248 </span>  <span class="Comment"># focus on both sides</span>
+<span id="L249" class="LineNr">249 </span>  assume-console [
+<span id="L250" class="LineNr">250 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
+<span id="L251" class="LineNr">251 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 17</span>
+<span id="L252" class="LineNr">252 </span>  ]
+<span id="L253" class="LineNr">253 </span>  <span class="Comment"># check cursor column in each</span>
+<span id="L254" class="LineNr">254 </span>  run [
+<span id="L255" class="LineNr">255 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L256" class="LineNr">256 </span>  <span class="Conceal">¦</span> recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+<span id="L257" class="LineNr">257 </span>  <span class="Conceal">¦</span> 5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
+<span id="L258" class="LineNr">258 </span>  <span class="Conceal">¦</span> sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L259" class="LineNr">259 </span>  <span class="Conceal">¦</span> 7:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">cursor-column:offset</span>
+<span id="L260" class="LineNr">260 </span>  ]
+<span id="L261" class="LineNr">261 </span>  memory-should-contain [
+<span id="L262" class="LineNr">262 </span>  <span class="Conceal">¦</span><span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+<span id="L263" class="LineNr">263 </span>  <span class="Conceal">¦</span><span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 17</span>
+<span id="L264" class="LineNr">264 </span>  ]
+<span id="L265" class="LineNr">265 </span>]
+<span id="L266" class="LineNr">266 </span>
+<span id="L267" class="LineNr">267 </span><span class="muScenario">scenario</span> edit-multiple-editors [
+<span id="L268" class="LineNr">268 </span>  <span class="Constant">local-scope</span>
+<span id="L269" class="LineNr">269 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L270" class="LineNr">270 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
+<span id="L271" class="LineNr">271 </span>  <span class="Comment"># initialize both halves of screen</span>
+<span id="L272" class="LineNr">272 </span>  assume-resources [
+<span id="L273" class="LineNr">273 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span id="L274" class="LineNr">274 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
+<span id="L275" class="LineNr">275 </span>  <span class="Conceal">¦</span> ]
+<span id="L276" class="LineNr">276 </span>  ]
+<span id="L277" class="LineNr">277 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>  <span class="Comment"># contents of sandbox</span>
+<span id="L278" class="LineNr">278 </span>  <a href='004-programming-environment.mu.html#L400'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L279" class="LineNr">279 </span>  <span class="Comment"># type one letter in each of them</span>
+<span id="L280" class="LineNr">280 </span>  assume-console [
+<span id="L281" class="LineNr">281 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 1</span>
+<span id="L282" class="LineNr">282 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0]</span>
+<span id="L283" class="LineNr">283 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 1</span>,<span class="Constant"> 17</span>
+<span id="L284" class="LineNr">284 </span>  <span class="Conceal">¦</span> type <span class="Constant">[1]</span>
 <span id="L285" class="LineNr">285 </span>  ]
-<span id="L286" class="LineNr">286 </span>  screen-should-contain [
-<span id="L287" class="LineNr">287 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .  # this line has a different background, but we don't test that yet</span>
-<span id="L288" class="LineNr">288 </span>  <span class="Conceal">¦</span><span class="Constant"> .a0bc           ╎d1ef          .</span>
-<span id="L289" class="LineNr">289 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
-<span id="L290" class="LineNr">290 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
-<span id="L291" class="LineNr">291 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L286" class="LineNr">286 </span>  run [
+<span id="L287" class="LineNr">287 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L288" class="LineNr">288 </span>  <span class="Conceal">¦</span> recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+<span id="L289" class="LineNr">289 </span>  <span class="Conceal">¦</span> 5:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
+<span id="L290" class="LineNr">290 </span>  <span class="Conceal">¦</span> sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L291" class="LineNr">291 </span>  <span class="Conceal">¦</span> 7:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">cursor-column:offset</span>
 <span id="L292" class="LineNr">292 </span>  ]
-<span id="L293" class="LineNr">293 </span>  memory-should-contain [
-<span id="L294" class="LineNr">294 </span>  <span class="Conceal">¦</span><span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor column of recipe editor</span>
-<span id="L295" class="LineNr">295 </span>  <span class="Conceal">¦</span><span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 18</span>  <span class="Comment"># cursor column of sandbox editor</span>
-<span id="L296" class="LineNr">296 </span>  ]
-<span id="L297" class="LineNr">297 </span>  <span class="Comment"># show the cursor at the right window</span>
-<span id="L298" class="LineNr">298 </span>  run [
-<span id="L299" class="LineNr">299 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L300" class="LineNr">300 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
-<span id="L301" class="LineNr">301 </span>  ]
-<span id="L302" class="LineNr">302 </span>  screen-should-contain [
-<span id="L303" class="LineNr">303 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
-<span id="L304" class="LineNr">304 </span>  <span class="Conceal">¦</span><span class="Constant"> .a0bc           ╎d1␣f          .</span>
-<span id="L305" class="LineNr">305 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
-<span id="L306" class="LineNr">306 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
-<span id="L307" class="LineNr">307 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L293" class="LineNr">293 </span>  screen-should-contain [
+<span id="L294" class="LineNr">294 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .  # this line has a different background, but we don't test that yet</span>
+<span id="L295" class="LineNr">295 </span>  <span class="Conceal">¦</span><span class="Constant"> .a0bc           ╎d1ef          .</span>
+<span id="L296" class="LineNr">296 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
+<span id="L297" class="LineNr">297 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
+<span id="L298" class="LineNr">298 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L299" class="LineNr">299 </span>  ]
+<span id="L300" class="LineNr">300 </span>  memory-should-contain [
+<span id="L301" class="LineNr">301 </span>  <span class="Conceal">¦</span><span class="Constant"> 5</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor column of recipe editor</span>
+<span id="L302" class="LineNr">302 </span>  <span class="Conceal">¦</span><span class="Constant"> 7</span> <span class="Special">&lt;-</span><span class="Constant"> 18</span>  <span class="Comment"># cursor column of sandbox editor</span>
+<span id="L303" class="LineNr">303 </span>  ]
+<span id="L304" class="LineNr">304 </span>  <span class="Comment"># show the cursor at the right window</span>
+<span id="L305" class="LineNr">305 </span>  run [
+<span id="L306" class="LineNr">306 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L307" class="LineNr">307 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
 <span id="L308" class="LineNr">308 </span>  ]
-<span id="L309" class="LineNr">309 </span>]
-<span id="L310" class="LineNr">310 </span>
-<span id="L311" class="LineNr">311 </span><span class="muScenario">scenario</span> editor-in-focus-keeps-cursor [
-<span id="L312" class="LineNr">312 </span>  <span class="Constant">local-scope</span>
-<span id="L313" class="LineNr">313 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L314" class="LineNr">314 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-<span id="L315" class="LineNr">315 </span>  assume-resources [
-<span id="L316" class="LineNr">316 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
-<span id="L317" class="LineNr">317 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
-<span id="L318" class="LineNr">318 </span>  <span class="Conceal">¦</span> ]
-<span id="L319" class="LineNr">319 </span>  ]
-<span id="L320" class="LineNr">320 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>
-<span id="L321" class="LineNr">321 </span>  <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
-<span id="L322" class="LineNr">322 </span>  <span class="Comment"># initialize programming environment and highlight cursor</span>
-<span id="L323" class="LineNr">323 </span>  assume-console <span class="Constant">[]</span>
-<span id="L324" class="LineNr">324 </span>  run [
-<span id="L325" class="LineNr">325 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L326" class="LineNr">326 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L327" class="LineNr">327 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
-<span id="L328" class="LineNr">328 </span>  ]
-<span id="L329" class="LineNr">329 </span>  <span class="Comment"># is cursor at the right place?</span>
-<span id="L330" class="LineNr">330 </span>  screen-should-contain [
-<span id="L331" class="LineNr">331 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
-<span id="L332" class="LineNr">332 </span>  <span class="Conceal">¦</span><span class="Constant"> .␣bc            ╎def           .</span>
-<span id="L333" class="LineNr">333 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
-<span id="L334" class="LineNr">334 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
-<span id="L335" class="LineNr">335 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
-<span id="L336" class="LineNr">336 </span>  ]
-<span id="L337" class="LineNr">337 </span>  <span class="Comment"># now try typing a letter</span>
-<span id="L338" class="LineNr">338 </span>  assume-console [
-<span id="L339" class="LineNr">339 </span>  <span class="Conceal">¦</span> type <span class="Constant">[z]</span>
-<span id="L340" class="LineNr">340 </span>  ]
-<span id="L341" class="LineNr">341 </span>  run [
-<span id="L342" class="LineNr">342 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L343" class="LineNr">343 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L344" class="LineNr">344 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
-<span id="L345" class="LineNr">345 </span>  ]
-<span id="L346" class="LineNr">346 </span>  <span class="Comment"># cursor should still be right</span>
-<span id="L347" class="LineNr">347 </span>  screen-should-contain [
-<span id="L348" class="LineNr">348 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
-<span id="L349" class="LineNr">349 </span>  <span class="Conceal">¦</span><span class="Constant"> .z␣bc           ╎def           .</span>
-<span id="L350" class="LineNr">350 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
-<span id="L351" class="LineNr">351 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
-<span id="L352" class="LineNr">352 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
-<span id="L353" class="LineNr">353 </span>  ]
-<span id="L354" class="LineNr">354 </span>]
-<span id="L355" class="LineNr">355 </span>
-<span id="L356" class="LineNr">356 </span><span class="muScenario">scenario</span> backspace-in-sandbox-editor-joins-lines [
-<span id="L357" class="LineNr">357 </span>  <span class="Constant">local-scope</span>
-<span id="L358" class="LineNr">358 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L359" class="LineNr">359 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
-<span id="L360" class="LineNr">360 </span>  assume-resources [
-<span id="L361" class="LineNr">361 </span>  ]
-<span id="L362" class="LineNr">362 </span>  <span class="Comment"># initialize sandbox side with two lines</span>
-<span id="L363" class="LineNr">363 </span>  test-sandbox-editor-contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
-<span id="L364" class="LineNr">364 </span><span class="Constant">def]</span>
-<span id="L365" class="LineNr">365 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, test-sandbox-editor-contents
-<span id="L366" class="LineNr">366 </span>  <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
-<span id="L367" class="LineNr">367 </span>  screen-should-contain [
-<span id="L368" class="LineNr">368 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
-<span id="L369" class="LineNr">369 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎abc           .</span>
-<span id="L370" class="LineNr">370 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎def           .</span>
-<span id="L371" class="LineNr">371 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
-<span id="L372" class="LineNr">372 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
-<span id="L373" class="LineNr">373 </span>  ]
-<span id="L374" class="LineNr">374 </span>  <span class="Comment"># position cursor at start of second line and hit backspace</span>
-<span id="L375" class="LineNr">375 </span>  assume-console [
-<span id="L376" class="LineNr">376 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 16</span>
-<span id="L377" class="LineNr">377 </span>  <span class="Conceal">¦</span> press backspace
-<span id="L378" class="LineNr">378 </span>  ]
-<span id="L379" class="LineNr">379 </span>  run [
-<span id="L380" class="LineNr">380 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L381" class="LineNr">381 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L382" class="LineNr">382 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
-<span id="L383" class="LineNr">383 </span>  ]
-<span id="L384" class="LineNr">384 </span>  <span class="Comment"># cursor moves to end of old line</span>
-<span id="L385" class="LineNr">385 </span>  screen-should-contain [
-<span id="L386" class="LineNr">386 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
-<span id="L387" class="LineNr">387 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎abc␣ef        .</span>
-<span id="L388" class="LineNr">388 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
-<span id="L389" class="LineNr">389 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L309" class="LineNr">309 </span>  screen-should-contain [
+<span id="L310" class="LineNr">310 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
+<span id="L311" class="LineNr">311 </span>  <span class="Conceal">¦</span><span class="Constant"> .a0bc           ╎d1␣f          .</span>
+<span id="L312" class="LineNr">312 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
+<span id="L313" class="LineNr">313 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
+<span id="L314" class="LineNr">314 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L315" class="LineNr">315 </span>  ]
+<span id="L316" class="LineNr">316 </span>]
+<span id="L317" class="LineNr">317 </span>
+<span id="L318" class="LineNr">318 </span><span class="muScenario">scenario</span> editor-in-focus-keeps-cursor [
+<span id="L319" class="LineNr">319 </span>  <span class="Constant">local-scope</span>
+<span id="L320" class="LineNr">320 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L321" class="LineNr">321 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
+<span id="L322" class="LineNr">322 </span>  assume-resources [
+<span id="L323" class="LineNr">323 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
+<span id="L324" class="LineNr">324 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> </span><span class="Conceal">¦</span><span class="Constant"> |abc|</span>
+<span id="L325" class="LineNr">325 </span>  <span class="Conceal">¦</span> ]
+<span id="L326" class="LineNr">326 </span>  ]
+<span id="L327" class="LineNr">327 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[def]</span>
+<span id="L328" class="LineNr">328 </span>  <a href='004-programming-environment.mu.html#L400'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L329" class="LineNr">329 </span>  <span class="Comment"># initialize programming environment and highlight cursor</span>
+<span id="L330" class="LineNr">330 </span>  assume-console <span class="Constant">[]</span>
+<span id="L331" class="LineNr">331 </span>  run [
+<span id="L332" class="LineNr">332 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L333" class="LineNr">333 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L334" class="LineNr">334 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
+<span id="L335" class="LineNr">335 </span>  ]
+<span id="L336" class="LineNr">336 </span>  <span class="Comment"># is cursor at the right place?</span>
+<span id="L337" class="LineNr">337 </span>  screen-should-contain [
+<span id="L338" class="LineNr">338 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
+<span id="L339" class="LineNr">339 </span>  <span class="Conceal">¦</span><span class="Constant"> .␣bc            ╎def           .</span>
+<span id="L340" class="LineNr">340 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
+<span id="L341" class="LineNr">341 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
+<span id="L342" class="LineNr">342 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L343" class="LineNr">343 </span>  ]
+<span id="L344" class="LineNr">344 </span>  <span class="Comment"># now try typing a letter</span>
+<span id="L345" class="LineNr">345 </span>  assume-console [
+<span id="L346" class="LineNr">346 </span>  <span class="Conceal">¦</span> type <span class="Constant">[z]</span>
+<span id="L347" class="LineNr">347 </span>  ]
+<span id="L348" class="LineNr">348 </span>  run [
+<span id="L349" class="LineNr">349 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L350" class="LineNr">350 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L351" class="LineNr">351 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
+<span id="L352" class="LineNr">352 </span>  ]
+<span id="L353" class="LineNr">353 </span>  <span class="Comment"># cursor should still be right</span>
+<span id="L354" class="LineNr">354 </span>  screen-should-contain [
+<span id="L355" class="LineNr">355 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
+<span id="L356" class="LineNr">356 </span>  <span class="Conceal">¦</span><span class="Constant"> .z␣bc           ╎def           .</span>
+<span id="L357" class="LineNr">357 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
+<span id="L358" class="LineNr">358 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎              .</span>
+<span id="L359" class="LineNr">359 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L360" class="LineNr">360 </span>  ]
+<span id="L361" class="LineNr">361 </span>]
+<span id="L362" class="LineNr">362 </span>
+<span id="L363" class="LineNr">363 </span><span class="muScenario">scenario</span> backspace-in-sandbox-editor-joins-lines [
+<span id="L364" class="LineNr">364 </span>  <span class="Constant">local-scope</span>
+<span id="L365" class="LineNr">365 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L366" class="LineNr">366 </span>  assume-screen <span class="Constant">30/width</span>, <span class="Constant">5/height</span>
+<span id="L367" class="LineNr">367 </span>  assume-resources [
+<span id="L368" class="LineNr">368 </span>  ]
+<span id="L369" class="LineNr">369 </span>  <span class="Comment"># initialize sandbox side with two lines</span>
+<span id="L370" class="LineNr">370 </span>  test-sandbox-editor-contents:text <span class="Special">&lt;-</span> new <span class="Constant">[abc</span>
+<span id="L371" class="LineNr">371 </span><span class="Constant">def]</span>
+<span id="L372" class="LineNr">372 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, test-sandbox-editor-contents
+<span id="L373" class="LineNr">373 </span>  <a href='004-programming-environment.mu.html#L400'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L374" class="LineNr">374 </span>  screen-should-contain [
+<span id="L375" class="LineNr">375 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
+<span id="L376" class="LineNr">376 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎abc           .</span>
+<span id="L377" class="LineNr">377 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎def           .</span>
+<span id="L378" class="LineNr">378 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎──────────────.</span>
+<span id="L379" class="LineNr">379 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L380" class="LineNr">380 </span>  ]
+<span id="L381" class="LineNr">381 </span>  <span class="Comment"># position cursor at start of second line and hit backspace</span>
+<span id="L382" class="LineNr">382 </span>  assume-console [
+<span id="L383" class="LineNr">383 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 16</span>
+<span id="L384" class="LineNr">384 </span>  <span class="Conceal">¦</span> press backspace
+<span id="L385" class="LineNr">385 </span>  ]
+<span id="L386" class="LineNr">386 </span>  run [
+<span id="L387" class="LineNr">387 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L388" class="LineNr">388 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L389" class="LineNr">389 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, cursor
 <span id="L390" class="LineNr">390 </span>  ]
-<span id="L391" class="LineNr">391 </span>]
-<span id="L392" class="LineNr">392 </span>
-<span id="L393" class="LineNr">393 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L393'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
-<span id="L394" class="LineNr">394 </span>  <span class="Constant">local-scope</span>
-<span id="L395" class="LineNr">395 </span>  <span class="Constant">load-ingredients</span>
-<span id="L396" class="LineNr">396 </span>  trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[render all]</span>
-<span id="L397" class="LineNr">397 </span>  old-top-idx:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L493'>save-top-idx</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L398" class="LineNr">398 </span>  <span class="Comment"># top menu</span>
-<span id="L399" class="LineNr">399 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render top menu]</span>
-<span id="L400" class="LineNr">400 </span>  width:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L712'>screen-width</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L401" class="LineNr">401 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>,<span class="Constant"> 0</span>, <span class="Constant">0/left</span>, width, <span class="Constant">32/space</span>, <span class="Constant">0/black</span>, <span class="Constant">238/grey</span>
-<span id="L402" class="LineNr">402 </span>  button-start:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 20</span>
-<span id="L403" class="LineNr">403 </span>  button-on-screen?:bool <span class="Special">&lt;-</span> greater-or-equal button-start,<span class="Constant"> 0</span>
-<span id="L404" class="LineNr">404 </span>  assert button-on-screen?, <span class="Constant">[screen too narrow for menu]</span>
-<span id="L405" class="LineNr">405 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">0/row</span>, button-start
-<span id="L406" class="LineNr">406 </span>  print <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[ run (F4) ]</span>, <span class="Constant">255/white</span>, <span class="Constant">161/reddish</span>
-<span id="L407" class="LineNr">407 </span>  <span class="Comment"># dotted line down the middle</span>
-<span id="L408" class="LineNr">408 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render divider]</span>
-<span id="L409" class="LineNr">409 </span>  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
-<span id="L410" class="LineNr">410 </span>  height:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L725'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L411" class="LineNr">411 </span>  <a href='004-programming-environment.mu.html#L493'>draw-vertical</a> <a href='../081print.mu.html#L4'>screen</a>, divider, <span class="Constant">1/top</span>, height, <span class="Constant">9482/vertical-dotted</span>
-<span id="L412" class="LineNr">412 </span>  <span class="Comment">#</span>
-<span id="L413" class="LineNr">413 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L425'>render-recipes</a> <a href='../081print.mu.html#L4'>screen</a>, env, render-editor
-<span id="L414" class="LineNr">414 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, render-editor
-<span id="L415" class="LineNr">415 </span>  <span class="Constant"><a href='004-programming-environment.mu.html#L415'>&lt;render-components-end&gt;</a></span>  <span class="Comment"># no early returns permitted</span>
-<span id="L416" class="LineNr">416 </span>  <span class="Comment">#</span>
-<span id="L417" class="LineNr">417 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L418" class="LineNr">418 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L419" class="LineNr">419 </span>  sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
-<span id="L420" class="LineNr">420 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L421" class="LineNr">421 </span>  <span class="Comment">#</span>
-<span id="L422" class="LineNr">422 </span>  <a href='../081print.mu.html#L499'>assert-no-scroll</a> <a href='../081print.mu.html#L4'>screen</a>, old-top-idx
-<span id="L423" class="LineNr">423 </span>]
-<span id="L424" class="LineNr">424 </span>
-<span id="L425" class="LineNr">425 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L425'>render-recipes</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
-<span id="L426" class="LineNr">426 </span>  <span class="Constant">local-scope</span>
-<span id="L427" class="LineNr">427 </span>  <span class="Constant">load-ingredients</span>
-<span id="L428" class="LineNr">428 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render recipes]</span>
-<span id="L429" class="LineNr">429 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L430" class="LineNr">430 </span>  <span class="Comment"># render recipes</span>
-<span id="L431" class="LineNr">431 </span>  left:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">left:offset</span>
-<span id="L432" class="LineNr">432 </span>  right:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">right:offset</span>
-<span id="L433" class="LineNr">433 </span>  row:num, column:num, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> call render-editor, <a href='../081print.mu.html#L4'>screen</a>, recipes
-<span id="L434" class="LineNr">434 </span>  <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
-<span id="L435" class="LineNr">435 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L436" class="LineNr">436 </span><span class="Constant">  <a href='004-programming-environment.mu.html#L436'>&lt;render-recipe-components-end&gt;</a></span>
-<span id="L437" class="LineNr">437 </span>  <span class="Comment"># draw dotted line after recipes</span>
-<span id="L438" class="LineNr">438 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right, <span class="Constant">9480/horizontal-dotted</span>
-<span id="L439" class="LineNr">439 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L440" class="LineNr">440 </span>  <a href='001-editor.mu.html#L222'>clear-screen-from</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, left, right
-<span id="L441" class="LineNr">441 </span>]
-<span id="L442" class="LineNr">442 </span>
-<span id="L443" class="LineNr">443 </span><span class="Comment"># replaced in a later layer</span>
-<span id="L444" class="LineNr">444 </span><span class="muRecipe">def</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
-<span id="L445" class="LineNr">445 </span>  <span class="Constant">local-scope</span>
-<span id="L446" class="LineNr">446 </span>  <span class="Constant">load-ingredients</span>
-<span id="L447" class="LineNr">447 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
-<span id="L448" class="LineNr">448 </span>  left:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
-<span id="L449" class="LineNr">449 </span>  right:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">right:offset</span>
-<span id="L450" class="LineNr">450 </span>  row:num, column:num, <a href='../081print.mu.html#L4'>screen</a>, current-sandbox <span class="Special">&lt;-</span> call render-editor, <a href='../081print.mu.html#L4'>screen</a>, current-sandbox
-<span id="L451" class="LineNr">451 </span>  <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
-<span id="L452" class="LineNr">452 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L453" class="LineNr">453 </span>  <span class="Comment"># draw solid line after code (you'll see why in later layers)</span>
-<span id="L454" class="LineNr">454 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right
-<span id="L455" class="LineNr">455 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L456" class="LineNr">456 </span>  <a href='001-editor.mu.html#L222'>clear-screen-from</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, left, right
-<span id="L457" class="LineNr">457 </span>]
-<span id="L458" class="LineNr">458 </span>
-<span id="L459" class="LineNr">459 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, recipes:&amp;:editor, current-sandbox:&amp;:editor, sandbox-in-focus?:bool, env:&amp;:environment<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
-<span id="L460" class="LineNr">460 </span>  <span class="Constant">local-scope</span>
-<span id="L461" class="LineNr">461 </span>  <span class="Constant">load-ingredients</span>
-<span id="L462" class="LineNr">462 </span><span class="Constant">  <a href='004-programming-environment.mu.html#L462'>&lt;update-cursor-special-cases&gt;</a></span>
-<span id="L463" class="LineNr">463 </span>  <span class="Delimiter">{</span>
-<span id="L464" class="LineNr">464 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
-<span id="L465" class="LineNr">465 </span>  <span class="Conceal">¦</span> cursor-row:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-row:offset</span>
-<span id="L466" class="LineNr">466 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
-<span id="L467" class="LineNr">467 </span>  <span class="Delimiter">}</span>
-<span id="L468" class="LineNr">468 </span>  <span class="Delimiter">{</span>
-<span id="L469" class="LineNr">469 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
-<span id="L470" class="LineNr">470 </span>  <span class="Conceal">¦</span> cursor-row:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">cursor-row:offset</span>
-<span id="L471" class="LineNr">471 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">cursor-column:offset</span>
-<span id="L472" class="LineNr">472 </span>  <span class="Delimiter">}</span>
-<span id="L473" class="LineNr">473 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, cursor-row, cursor-column
-<span id="L474" class="LineNr">474 </span>]
-<span id="L475" class="LineNr">475 </span>
-<span id="L476" class="LineNr">476 </span><span class="Comment"># ctrl-n - switch focus</span>
-<span id="L477" class="LineNr">477 </span><span class="Comment"># todo: test this</span>
-<span id="L478" class="LineNr">478 </span>
-<span id="L479" class="LineNr">479 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L66'>&lt;global-type&gt;</a></span> [
-<span id="L480" class="LineNr">480 </span>  <span class="Delimiter">{</span>
-<span id="L481" class="LineNr">481 </span>  <span class="Conceal">¦</span> switch-side?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">14/ctrl-n</span>
-<span id="L482" class="LineNr">482 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> switch-side?
-<span id="L483" class="LineNr">483 </span>  <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
-<span id="L484" class="LineNr">484 </span>  <span class="Conceal">¦</span> sandbox-in-focus? <span class="Special">&lt;-</span> not sandbox-in-focus?
-<span id="L485" class="LineNr">485 </span>  <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
-<span id="L486" class="LineNr">486 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L487" class="LineNr">487 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L488" class="LineNr">488 </span>  <span class="Delimiter">}</span>
-<span id="L489" class="LineNr">489 </span>]
-<span id="L490" class="LineNr">490 </span>
-<span id="L491" class="LineNr">491 </span><span class="SalientComment">## helpers</span>
-<span id="L492" class="LineNr">492 </span>
-<span id="L493" class="LineNr">493 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L493'>draw-vertical</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, col:num, y:num, bottom:num<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
-<span id="L494" class="LineNr">494 </span>  <span class="Constant">local-scope</span>
-<span id="L495" class="LineNr">495 </span>  <span class="Constant">load-ingredients</span>
-<span id="L496" class="LineNr">496 </span>  style:char, style-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L497" class="LineNr">497 </span>  <span class="Delimiter">{</span>
-<span id="L498" class="LineNr">498 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> style-found?
-<span id="L499" class="LineNr">499 </span>  <span class="Conceal">¦</span> style <span class="Special">&lt;-</span> copy <span class="Constant">9474/vertical</span>
-<span id="L500" class="LineNr">500 </span>  <span class="Delimiter">}</span>
-<span id="L501" class="LineNr">501 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L502" class="LineNr">502 </span>  <span class="Delimiter">{</span>
-<span id="L503" class="LineNr">503 </span>  <span class="Conceal">¦</span> <span class="Comment"># default color to white</span>
-<span id="L504" class="LineNr">504 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> color-found?
-<span id="L505" class="LineNr">505 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">245/grey</span>
-<span id="L506" class="LineNr">506 </span>  <span class="Delimiter">}</span>
-<span id="L507" class="LineNr">507 </span>  <span class="Delimiter">{</span>
-<span id="L508" class="LineNr">508 </span>  <span class="Conceal">¦</span> continue?:bool <span class="Special">&lt;-</span> lesser-than y, bottom
-<span id="L509" class="LineNr">509 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> continue?
-<span id="L510" class="LineNr">510 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, y, col
-<span id="L511" class="LineNr">511 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, style, color
-<span id="L512" class="LineNr">512 </span>  <span class="Conceal">¦</span> y <span class="Special">&lt;-</span> add y,<span class="Constant"> 1</span>
-<span id="L513" class="LineNr">513 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L514" class="LineNr">514 </span>  <span class="Delimiter">}</span>
-<span id="L515" class="LineNr">515 </span>]
-<span id="L516" class="LineNr">516 </span>
-<span id="L517" class="LineNr">517 </span><span class="muScenario">scenario</span> backspace-over-text [
-<span id="L518" class="LineNr">518 </span>  <span class="Constant">local-scope</span>
-<span id="L519" class="LineNr">519 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L520" class="LineNr">520 </span>  assume-screen <span class="Constant">50/width</span>, <span class="Constant">15/height</span>
-<span id="L521" class="LineNr">521 </span>  <span class="Comment"># recipes.mu is empty</span>
-<span id="L522" class="LineNr">522 </span>  assume-resources [
-<span id="L523" class="LineNr">523 </span>  ]
-<span id="L524" class="LineNr">524 </span>  <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
-<span id="L525" class="LineNr">525 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[]</span>
-<span id="L526" class="LineNr">526 </span>  <span class="Comment"># run the code in the editors</span>
-<span id="L527" class="LineNr">527 </span>  assume-console [
-<span id="L528" class="LineNr">528 </span>  <span class="Conceal">¦</span> type <span class="Constant">[a]</span>
-<span id="L529" class="LineNr">529 </span>  <span class="Conceal">¦</span> press backspace
+<span id="L391" class="LineNr">391 </span>  <span class="Comment"># cursor moves to end of old line</span>
+<span id="L392" class="LineNr">392 </span>  screen-should-contain [
+<span id="L393" class="LineNr">393 </span>  <span class="Conceal">¦</span><span class="Constant"> .           run (F4)           .</span>
+<span id="L394" class="LineNr">394 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎abc␣ef        .</span>
+<span id="L395" class="LineNr">395 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎──────────────.</span>
+<span id="L396" class="LineNr">396 </span>  <span class="Conceal">¦</span><span class="Constant"> .               ╎              .</span>
+<span id="L397" class="LineNr">397 </span>  ]
+<span id="L398" class="LineNr">398 </span>]
+<span id="L399" class="LineNr">399 </span>
+<span id="L400" class="LineNr">400 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L400'>render-all</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
+<span id="L401" class="LineNr">401 </span>  <span class="Constant">local-scope</span>
+<span id="L402" class="LineNr">402 </span>  <span class="Constant">load-ingredients</span>
+<span id="L403" class="LineNr">403 </span>  trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[render all]</span>
+<span id="L404" class="LineNr">404 </span>  old-top-idx:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L493'>save-top-idx</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L405" class="LineNr">405 </span>  <span class="Comment"># top menu</span>
+<span id="L406" class="LineNr">406 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render top menu]</span>
+<span id="L407" class="LineNr">407 </span>  width:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L712'>screen-width</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L408" class="LineNr">408 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>,<span class="Constant"> 0</span>, <span class="Constant">0/left</span>, width, <span class="Constant">32/space</span>, <span class="Constant">0/black</span>, <span class="Constant">238/grey</span>
+<span id="L409" class="LineNr">409 </span>  button-start:num <span class="Special">&lt;-</span> subtract width,<span class="Constant"> 20</span>
+<span id="L410" class="LineNr">410 </span>  button-on-screen?:bool <span class="Special">&lt;-</span> greater-or-equal button-start,<span class="Constant"> 0</span>
+<span id="L411" class="LineNr">411 </span>  assert button-on-screen?, <span class="Constant">[screen too narrow for menu]</span>
+<span id="L412" class="LineNr">412 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">0/row</span>, button-start
+<span id="L413" class="LineNr">413 </span>  print <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[ run (F4) ]</span>, <span class="Constant">255/white</span>, <span class="Constant">161/reddish</span>
+<span id="L414" class="LineNr">414 </span>  <span class="Comment"># dotted line down the middle</span>
+<span id="L415" class="LineNr">415 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render divider]</span>
+<span id="L416" class="LineNr">416 </span>  divider:num, _ <span class="Special">&lt;-</span> divide-with-remainder width,<span class="Constant"> 2</span>
+<span id="L417" class="LineNr">417 </span>  height:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L725'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L418" class="LineNr">418 </span>  <a href='004-programming-environment.mu.html#L500'>draw-vertical</a> <a href='../081print.mu.html#L4'>screen</a>, divider, <span class="Constant">1/top</span>, height, <span class="Constant">9482/vertical-dotted</span>
+<span id="L419" class="LineNr">419 </span>  <span class="Comment">#</span>
+<span id="L420" class="LineNr">420 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L432'>render-recipes</a> <a href='../081print.mu.html#L4'>screen</a>, env, render-editor
+<span id="L421" class="LineNr">421 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, render-editor
+<span id="L422" class="LineNr">422 </span>  <span class="Constant"><a href='004-programming-environment.mu.html#L422'>&lt;render-components-end&gt;</a></span>  <span class="Comment"># no early returns permitted</span>
+<span id="L423" class="LineNr">423 </span>  <span class="Comment">#</span>
+<span id="L424" class="LineNr">424 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+<span id="L425" class="LineNr">425 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L426" class="LineNr">426 </span>  sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
+<span id="L427" class="LineNr">427 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L466'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L428" class="LineNr">428 </span>  <span class="Comment">#</span>
+<span id="L429" class="LineNr">429 </span>  <a href='../081print.mu.html#L499'>assert-no-scroll</a> <a href='../081print.mu.html#L4'>screen</a>, old-top-idx
+<span id="L430" class="LineNr">430 </span>]
+<span id="L431" class="LineNr">431 </span>
+<span id="L432" class="LineNr">432 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L432'>render-recipes</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
+<span id="L433" class="LineNr">433 </span>  <span class="Constant">local-scope</span>
+<span id="L434" class="LineNr">434 </span>  <span class="Constant">load-ingredients</span>
+<span id="L435" class="LineNr">435 </span>  trace<span class="Constant"> 11</span>, <span class="Constant">[app]</span>, <span class="Constant">[render recipes]</span>
+<span id="L436" class="LineNr">436 </span>  recipes:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
+<span id="L437" class="LineNr">437 </span>  <span class="Comment"># render recipes</span>
+<span id="L438" class="LineNr">438 </span>  left:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">left:offset</span>
+<span id="L439" class="LineNr">439 </span>  right:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">right:offset</span>
+<span id="L440" class="LineNr">440 </span>  row:num, column:num, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> call render-editor, <a href='../081print.mu.html#L4'>screen</a>, recipes
+<span id="L441" class="LineNr">441 </span>  <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
+<span id="L442" class="LineNr">442 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L443" class="LineNr">443 </span><span class="Constant">  <a href='004-programming-environment.mu.html#L443'>&lt;render-recipe-components-end&gt;</a></span>
+<span id="L444" class="LineNr">444 </span>  <span class="Comment"># draw dotted line after recipes</span>
+<span id="L445" class="LineNr">445 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right, <span class="Constant">9480/horizontal-dotted</span>
+<span id="L446" class="LineNr">446 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L447" class="LineNr">447 </span>  <a href='001-editor.mu.html#L222'>clear-screen-from</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, left, right
+<span id="L448" class="LineNr">448 </span>]
+<span id="L449" class="LineNr">449 </span>
+<span id="L450" class="LineNr">450 </span><span class="Comment"># replaced in a later layer</span>
+<span id="L451" class="LineNr">451 </span><span class="muRecipe">def</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment, <span class="Delimiter">{</span>render-editor: (recipe (address screen) (address editor)<span class="muRecipe"> -&gt; </span>number number (address screen) (address editor))<span class="Delimiter">}</span><span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, env:&amp;:environment [
+<span id="L452" class="LineNr">452 </span>  <span class="Constant">local-scope</span>
+<span id="L453" class="LineNr">453 </span>  <span class="Constant">load-ingredients</span>
+<span id="L454" class="LineNr">454 </span>  current-sandbox:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">current-sandbox:offset</span>
+<span id="L455" class="LineNr">455 </span>  left:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
+<span id="L456" class="LineNr">456 </span>  right:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">right:offset</span>
+<span id="L457" class="LineNr">457 </span>  row:num, column:num, <a href='../081print.mu.html#L4'>screen</a>, current-sandbox <span class="Special">&lt;-</span> call render-editor, <a href='../081print.mu.html#L4'>screen</a>, current-sandbox
+<span id="L458" class="LineNr">458 </span>  <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
+<span id="L459" class="LineNr">459 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L460" class="LineNr">460 </span>  <span class="Comment"># draw solid line after code (you'll see why in later layers)</span>
+<span id="L461" class="LineNr">461 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right
+<span id="L462" class="LineNr">462 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
+<span id="L463" class="LineNr">463 </span>  <a href='001-editor.mu.html#L222'>clear-screen-from</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, left, right
+<span id="L464" class="LineNr">464 </span>]
+<span id="L465" class="LineNr">465 </span>
+<span id="L466" class="LineNr">466 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L466'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, recipes:&amp;:editor, current-sandbox:&amp;:editor, sandbox-in-focus?:bool, env:&amp;:environment<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
+<span id="L467" class="LineNr">467 </span>  <span class="Constant">local-scope</span>
+<span id="L468" class="LineNr">468 </span>  <span class="Constant">load-ingredients</span>
+<span id="L469" class="LineNr">469 </span><span class="Constant">  <a href='004-programming-environment.mu.html#L469'>&lt;update-cursor-special-cases&gt;</a></span>
+<span id="L470" class="LineNr">470 </span>  <span class="Delimiter">{</span>
+<span id="L471" class="LineNr">471 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
+<span id="L472" class="LineNr">472 </span>  <span class="Conceal">¦</span> cursor-row:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-row:offset</span>
+<span id="L473" class="LineNr">473 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *recipes, <span class="Constant">cursor-column:offset</span>
+<span id="L474" class="LineNr">474 </span>  <span class="Delimiter">}</span>
+<span id="L475" class="LineNr">475 </span>  <span class="Delimiter">{</span>
+<span id="L476" class="LineNr">476 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
+<span id="L477" class="LineNr">477 </span>  <span class="Conceal">¦</span> cursor-row:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">cursor-row:offset</span>
+<span id="L478" class="LineNr">478 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">cursor-column:offset</span>
+<span id="L479" class="LineNr">479 </span>  <span class="Delimiter">}</span>
+<span id="L480" class="LineNr">480 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, cursor-row, cursor-column
+<span id="L481" class="LineNr">481 </span>]
+<span id="L482" class="LineNr">482 </span>
+<span id="L483" class="LineNr">483 </span><span class="Comment"># ctrl-n - switch focus</span>
+<span id="L484" class="LineNr">484 </span><span class="Comment"># todo: test this</span>
+<span id="L485" class="LineNr">485 </span>
+<span id="L486" class="LineNr">486 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L67'>&lt;global-type&gt;</a></span> [
+<span id="L487" class="LineNr">487 </span>  <span class="Delimiter">{</span>
+<span id="L488" class="LineNr">488 </span>  <span class="Conceal">¦</span> switch-side?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">14/ctrl-n</span>
+<span id="L489" class="LineNr">489 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> switch-side?
+<span id="L490" class="LineNr">490 </span>  <span class="Conceal">¦</span> sandbox-in-focus?:bool <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox-in-focus?:offset</span>
+<span id="L491" class="LineNr">491 </span>  <span class="Conceal">¦</span> sandbox-in-focus? <span class="Special">&lt;-</span> not sandbox-in-focus?
+<span id="L492" class="LineNr">492 </span>  <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">sandbox-in-focus?:offset</span>, sandbox-in-focus?
+<span id="L493" class="LineNr">493 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L466'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L494" class="LineNr">494 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L495" class="LineNr">495 </span>  <span class="Delimiter">}</span>
+<span id="L496" class="LineNr">496 </span>]
+<span id="L497" class="LineNr">497 </span>
+<span id="L498" class="LineNr">498 </span><span class="SalientComment">## helpers</span>
+<span id="L499" class="LineNr">499 </span>
+<span id="L500" class="LineNr">500 </span><span class="muRecipe">def</span> <a href='004-programming-environment.mu.html#L500'>draw-vertical</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, col:num, y:num, bottom:num<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
+<span id="L501" class="LineNr">501 </span>  <span class="Constant">local-scope</span>
+<span id="L502" class="LineNr">502 </span>  <span class="Constant">load-ingredients</span>
+<span id="L503" class="LineNr">503 </span>  style:char, style-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L504" class="LineNr">504 </span>  <span class="Delimiter">{</span>
+<span id="L505" class="LineNr">505 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> style-found?
+<span id="L506" class="LineNr">506 </span>  <span class="Conceal">¦</span> style <span class="Special">&lt;-</span> copy <span class="Constant">9474/vertical</span>
+<span id="L507" class="LineNr">507 </span>  <span class="Delimiter">}</span>
+<span id="L508" class="LineNr">508 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L509" class="LineNr">509 </span>  <span class="Delimiter">{</span>
+<span id="L510" class="LineNr">510 </span>  <span class="Conceal">¦</span> <span class="Comment"># default color to white</span>
+<span id="L511" class="LineNr">511 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> color-found?
+<span id="L512" class="LineNr">512 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">245/grey</span>
+<span id="L513" class="LineNr">513 </span>  <span class="Delimiter">}</span>
+<span id="L514" class="LineNr">514 </span>  <span class="Delimiter">{</span>
+<span id="L515" class="LineNr">515 </span>  <span class="Conceal">¦</span> continue?:bool <span class="Special">&lt;-</span> lesser-than y, bottom
+<span id="L516" class="LineNr">516 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> continue?
+<span id="L517" class="LineNr">517 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='../081print.mu.html#L573'>move-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, y, col
+<span id="L518" class="LineNr">518 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, style, color
+<span id="L519" class="LineNr">519 </span>  <span class="Conceal">¦</span> y <span class="Special">&lt;-</span> add y,<span class="Constant"> 1</span>
+<span id="L520" class="LineNr">520 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L521" class="LineNr">521 </span>  <span class="Delimiter">}</span>
+<span id="L522" class="LineNr">522 </span>]
+<span id="L523" class="LineNr">523 </span>
+<span id="L524" class="LineNr">524 </span><span class="muScenario">scenario</span> backspace-over-text [
+<span id="L525" class="LineNr">525 </span>  <span class="Constant">local-scope</span>
+<span id="L526" class="LineNr">526 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L527" class="LineNr">527 </span>  assume-screen <span class="Constant">50/width</span>, <span class="Constant">15/height</span>
+<span id="L528" class="LineNr">528 </span>  <span class="Comment"># recipes.mu is empty</span>
+<span id="L529" class="LineNr">529 </span>  assume-resources [
 <span id="L530" class="LineNr">530 </span>  ]
-<span id="L531" class="LineNr">531 </span>  run [
-<span id="L532" class="LineNr">532 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L533" class="LineNr">533 </span>  <span class="Conceal">¦</span> 10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-row:offset</span>
-<span id="L534" class="LineNr">534 </span>  <span class="Conceal">¦</span> 11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-column:offset</span>
-<span id="L535" class="LineNr">535 </span>  ]
-<span id="L536" class="LineNr">536 </span>  memory-should-contain [
-<span id="L537" class="LineNr">537 </span>  <span class="Conceal">¦</span><span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
-<span id="L538" class="LineNr">538 </span>  <span class="Conceal">¦</span><span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
-<span id="L539" class="LineNr">539 </span>  ]
-<span id="L540" class="LineNr">540 </span>]
+<span id="L531" class="LineNr">531 </span>  <span class="Comment"># sandbox editor contains an instruction without storing outputs</span>
+<span id="L532" class="LineNr">532 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L4'>screen</a>, <span class="Constant">[]</span>
+<span id="L533" class="LineNr">533 </span>  <span class="Comment"># run the code in the editors</span>
+<span id="L534" class="LineNr">534 </span>  assume-console [
+<span id="L535" class="LineNr">535 </span>  <span class="Conceal">¦</span> type <span class="Constant">[a]</span>
+<span id="L536" class="LineNr">536 </span>  <span class="Conceal">¦</span> press backspace
+<span id="L537" class="LineNr">537 </span>  ]
+<span id="L538" class="LineNr">538 </span>  run [
+<span id="L539" class="LineNr">539 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L540" class="LineNr">540 </span>  <span class="Conceal">¦</span> 10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-row:offset</span>
+<span id="L541" class="LineNr">541 </span>  <span class="Conceal">¦</span> 11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *screen, <span class="Constant">cursor-column:offset</span>
+<span id="L542" class="LineNr">542 </span>  ]
+<span id="L543" class="LineNr">543 </span>  memory-should-contain [
+<span id="L544" class="LineNr">544 </span>  <span class="Conceal">¦</span><span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 1</span>
+<span id="L545" class="LineNr">545 </span>  <span class="Conceal">¦</span><span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>
+<span id="L546" class="LineNr">546 </span>  ]
+<span id="L547" class="LineNr">547 </span>]
 </pre>
 </body>
 </html>
