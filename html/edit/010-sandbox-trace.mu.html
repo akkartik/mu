@@ -257,62 +257,60 @@ if ('onhashchange' in window) {
 <span id="L194" class="LineNr">194 </span>  <span class="Conceal">¦</span> below-sandbox-editor?:bool <span class="Special">&lt;-</span> greater-or-equal click-row, first-sandbox-begins
 <span id="L195" class="LineNr">195 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> below-sandbox-editor?
 <span id="L196" class="LineNr">196 </span>  <span class="Conceal">¦</span> <span class="Comment"># identify the sandbox whose code is being clicked on</span>
-<span id="L197" class="LineNr">197 </span>  <span class="Conceal">¦</span> sandbox:&amp;:sandbox <span class="Special">&lt;-</span> <a href='010-sandbox-trace.mu.html#L211'>find-click-in-sandbox-code</a> env, click-row
+<span id="L197" class="LineNr">197 </span>  <span class="Conceal">¦</span> sandbox:&amp;:sandbox <span class="Special">&lt;-</span> <a href='010-sandbox-trace.mu.html#L209'>find-click-in-sandbox-code</a> env, click-row
 <span id="L198" class="LineNr">198 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox
 <span id="L199" class="LineNr">199 </span>  <span class="Conceal">¦</span> <span class="Comment"># toggle its display-trace? property</span>
 <span id="L200" class="LineNr">200 </span>  <span class="Conceal">¦</span> x:bool <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">display-trace?:offset</span>
 <span id="L201" class="LineNr">201 </span>  <span class="Conceal">¦</span> x <span class="Special">&lt;-</span> not x
 <span id="L202" class="LineNr">202 </span>  <span class="Conceal">¦</span> *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">display-trace?:offset</span>, x
-<span id="L203" class="LineNr">203 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L623'>hide-screen</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L204" class="LineNr">204 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L123'>render</a>
-<span id="L205" class="LineNr">205 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L461'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L206" class="LineNr">206 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L631'>show-screen</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L207" class="LineNr">207 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L208" class="LineNr">208 </span>  <span class="Delimiter">}</span>
-<span id="L209" class="LineNr">209 </span>]
-<span id="L210" class="LineNr">210 </span>
-<span id="L211" class="LineNr">211 </span><span class="muRecipe">def</span> <a href='010-sandbox-trace.mu.html#L211'>find-click-in-sandbox-code</a> env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox [
-<span id="L212" class="LineNr">212 </span>  <span class="Constant">local-scope</span>
-<span id="L213" class="LineNr">213 </span>  <span class="Constant">load-ingredients</span>
-<span id="L214" class="LineNr">214 </span>  <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
-<span id="L215" class="LineNr">215 </span>  sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L216" class="LineNr">216 </span>  start:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-<span id="L217" class="LineNr">217 </span>  clicked-on-sandboxes?:bool <span class="Special">&lt;-</span> greater-or-equal click-row, start
-<span id="L218" class="LineNr">218 </span>  assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
-<span id="L219" class="LineNr">219 </span>  <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
-<span id="L220" class="LineNr">220 </span>  <span class="Delimiter">{</span>
-<span id="L221" class="LineNr">221 </span>  <span class="Conceal">¦</span> next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">next-sandbox:offset</span>
-<span id="L222" class="LineNr">222 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> next-sandbox
-<span id="L223" class="LineNr">223 </span>  <span class="Conceal">¦</span> next-start:num <span class="Special">&lt;-</span> get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-<span id="L224" class="LineNr">224 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> lesser-than click-row, next-start
-<span id="L225" class="LineNr">225 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> found?
-<span id="L226" class="LineNr">226 </span>  <span class="Conceal">¦</span> sandbox <span class="Special">&lt;-</span> copy next-sandbox
-<span id="L227" class="LineNr">227 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L228" class="LineNr">228 </span>  <span class="Delimiter">}</span>
-<span id="L229" class="LineNr">229 </span>  <span class="Comment"># return sandbox if click is in its code region</span>
-<span id="L230" class="LineNr">230 </span>  code-ending-row:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
-<span id="L231" class="LineNr">231 </span>  click-above-response?:bool <span class="Special">&lt;-</span> lesser-than click-row, code-ending-row
-<span id="L232" class="LineNr">232 </span>  start:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
-<span id="L233" class="LineNr">233 </span>  click-below-menu?:bool <span class="Special">&lt;-</span> greater-than click-row, start
-<span id="L234" class="LineNr">234 </span>  click-on-sandbox-code?:bool <span class="Special">&lt;-</span> and click-above-response?, click-below-menu?
-<span id="L235" class="LineNr">235 </span>  <span class="Delimiter">{</span>
-<span id="L236" class="LineNr">236 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> click-on-sandbox-code?
-<span id="L237" class="LineNr">237 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">0/no-click-in-sandbox-output</span>
-<span id="L238" class="LineNr">238 </span>  <span class="Delimiter">}</span>
-<span id="L239" class="LineNr">239 </span>  <span class="muControl">return</span> sandbox
-<span id="L240" class="LineNr">240 </span>]
-<span id="L241" class="LineNr">241 </span>
-<span id="L242" class="LineNr">242 </span><span class="Comment"># when rendering a sandbox, dump its trace before response/warning if display-trace? property is set</span>
-<span id="L243" class="LineNr">243 </span><span class="muRecipe">after</span> <span class="Constant"><a href='005-sandbox.mu.html#L288'>&lt;render-sandbox-results&gt;</a></span> [
-<span id="L244" class="LineNr">244 </span>  <span class="Delimiter">{</span>
-<span id="L245" class="LineNr">245 </span>  <span class="Conceal">¦</span> display-trace?:bool <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">display-trace?:offset</span>
-<span id="L246" class="LineNr">246 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> display-trace?
-<span id="L247" class="LineNr">247 </span>  <span class="Conceal">¦</span> sandbox-trace:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">trace:offset</span>
-<span id="L248" class="LineNr">248 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-trace  <span class="Comment"># nothing to print; move on</span>
-<span id="L249" class="LineNr">249 </span>  <span class="Conceal">¦</span> row, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L361'>render-text</a> <a href='../081print.mu.html#L4'>screen</a>, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
-<span id="L250" class="LineNr">250 </span>  <span class="Delimiter">}</span>
-<span id="L251" class="LineNr">251 </span><span class="Constant">  <a href='010-sandbox-trace.mu.html#L251'>&lt;render-sandbox-trace-done&gt;</a></span>
-<span id="L252" class="LineNr">252 </span>]
+<span id="L203" class="LineNr">203 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L4'>screen</a>, env, <a href='001-editor.mu.html#L122'>render</a>
+<span id="L204" class="LineNr">204 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L459'>update-cursor</a> <a href='../081print.mu.html#L4'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L205" class="LineNr">205 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L206" class="LineNr">206 </span>  <span class="Delimiter">}</span>
+<span id="L207" class="LineNr">207 </span>]
+<span id="L208" class="LineNr">208 </span>
+<span id="L209" class="LineNr">209 </span><span class="muRecipe">def</span> <a href='010-sandbox-trace.mu.html#L209'>find-click-in-sandbox-code</a> env:&amp;:environment, click-row:num<span class="muRecipe"> -&gt; </span>sandbox:&amp;:sandbox [
+<span id="L210" class="LineNr">210 </span>  <span class="Constant">local-scope</span>
+<span id="L211" class="LineNr">211 </span>  <span class="Constant">load-ingredients</span>
+<span id="L212" class="LineNr">212 </span>  <span class="Comment"># assert click-row &gt;= sandbox.starting-row-on-screen</span>
+<span id="L213" class="LineNr">213 </span>  sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<span id="L214" class="LineNr">214 </span>  start:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+<span id="L215" class="LineNr">215 </span>  clicked-on-sandboxes?:bool <span class="Special">&lt;-</span> greater-or-equal click-row, start
+<span id="L216" class="LineNr">216 </span>  assert clicked-on-sandboxes?, <span class="Constant">[extract-sandbox called on click to sandbox editor]</span>
+<span id="L217" class="LineNr">217 </span>  <span class="Comment"># while click-row &lt; sandbox.next-sandbox.starting-row-on-screen</span>
+<span id="L218" class="LineNr">218 </span>  <span class="Delimiter">{</span>
+<span id="L219" class="LineNr">219 </span>  <span class="Conceal">¦</span> next-sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">next-sandbox:offset</span>
+<span id="L220" class="LineNr">220 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> next-sandbox
+<span id="L221" class="LineNr">221 </span>  <span class="Conceal">¦</span> next-start:num <span class="Special">&lt;-</span> get *next-sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+<span id="L222" class="LineNr">222 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> lesser-than click-row, next-start
+<span id="L223" class="LineNr">223 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> found?
+<span id="L224" class="LineNr">224 </span>  <span class="Conceal">¦</span> sandbox <span class="Special">&lt;-</span> copy next-sandbox
+<span id="L225" class="LineNr">225 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L226" class="LineNr">226 </span>  <span class="Delimiter">}</span>
+<span id="L227" class="LineNr">227 </span>  <span class="Comment"># return sandbox if click is in its code region</span>
+<span id="L228" class="LineNr">228 </span>  code-ending-row:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>
+<span id="L229" class="LineNr">229 </span>  click-above-response?:bool <span class="Special">&lt;-</span> lesser-than click-row, code-ending-row
+<span id="L230" class="LineNr">230 </span>  start:num <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">starting-row-on-screen:offset</span>
+<span id="L231" class="LineNr">231 </span>  click-below-menu?:bool <span class="Special">&lt;-</span> greater-than click-row, start
+<span id="L232" class="LineNr">232 </span>  click-on-sandbox-code?:bool <span class="Special">&lt;-</span> and click-above-response?, click-below-menu?
+<span id="L233" class="LineNr">233 </span>  <span class="Delimiter">{</span>
+<span id="L234" class="LineNr">234 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> click-on-sandbox-code?
+<span id="L235" class="LineNr">235 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">0/no-click-in-sandbox-output</span>
+<span id="L236" class="LineNr">236 </span>  <span class="Delimiter">}</span>
+<span id="L237" class="LineNr">237 </span>  <span class="muControl">return</span> sandbox
+<span id="L238" class="LineNr">238 </span>]
+<span id="L239" class="LineNr">239 </span>
+<span id="L240" class="LineNr">240 </span><span class="Comment"># when rendering a sandbox, dump its trace before response/warning if display-trace? property is set</span>
+<span id="L241" class="LineNr">241 </span><span class="muRecipe">after</span> <span class="Constant"><a href='005-sandbox.mu.html#L288'>&lt;render-sandbox-results&gt;</a></span> [
+<span id="L242" class="LineNr">242 </span>  <span class="Delimiter">{</span>
+<span id="L243" class="LineNr">243 </span>  <span class="Conceal">¦</span> display-trace?:bool <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">display-trace?:offset</span>
+<span id="L244" class="LineNr">244 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> display-trace?
+<span id="L245" class="LineNr">245 </span>  <span class="Conceal">¦</span> sandbox-trace:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">trace:offset</span>
+<span id="L246" class="LineNr">246 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-trace  <span class="Comment"># nothing to print; move on</span>
+<span id="L247" class="LineNr">247 </span>  <span class="Conceal">¦</span> row, <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L361'>render-text</a> <a href='../081print.mu.html#L4'>screen</a>, sandbox-trace, left, right, <span class="Constant">245/grey</span>, row
+<span id="L248" class="LineNr">248 </span>  <span class="Delimiter">}</span>
+<span id="L249" class="LineNr">249 </span><span class="Constant">  <a href='010-sandbox-trace.mu.html#L249'>&lt;render-sandbox-trace-done&gt;</a></span>
+<span id="L250" class="LineNr">250 </span>]
 </pre>
 </body>
 </html>
