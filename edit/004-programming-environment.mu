@@ -513,3 +513,28 @@ def draw-vertical screen:&:screen, col:num, y:num, bottom:num -> screen:&:screen
     loop
   }
 ]
+
+scenario backspace-over-text [
+  local-scope
+  trace-until 100/app  # trace too long
+  assume-screen 50/width, 15/height
+  # recipes.mu is empty
+  assume-resources [
+  ]
+  # sandbox editor contains an instruction without storing outputs
+  env:&:environment <- new-programming-environment resources, screen, []
+  # run the code in the editors
+  assume-console [
+    type [a]
+    press backspace
+  ]
+  run [
+    event-loop screen, console, env, resources
+    10:num/raw <- get *screen, cursor-row:offset
+    11:num/raw <- get *screen, cursor-column:offset
+  ]
+  memory-should-contain [
+    10 <- 1
+    11 <- 0
+  ]
+]
