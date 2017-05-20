@@ -1660,34 +1660,33 @@ after <handle-special-character> [
   }
 ]
 
-def minimal-render-for-ctrl-u editor:&:editor screen:&:screen -> go-render?:bool screen:&:screen [
+def minimal-render-for-ctrl-u editor:&:editor, screen:&:screen -> go-render?:bool, screen:&:screen [
   local-scope
   load-ingredients
-  # variables
-  curr-row:num <- get *editor cursor-row:offset
-  curr-column:num <- get *editor cursor-column:offset
-  left:num <- get *editor left:offset
-  right:num <- get *editor right:offset
-  end:num <- subtract left right
+  curr-row:num <- get *editor, cursor-row:offset
+  curr-column:num <- get *editor, cursor-column:offset
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  end:num <- subtract left, right
   # accumulate the current line as text and render it
-  buff:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
-  curr:&:duplex-list:char <- get *editor before-cursor:offset
+  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
+  curr:&:duplex-list:char <- get *editor, before-cursor:offset
   i:num <- copy 0
   {
-    i <- add i 1
-    wrap?:bool <- equal i end
+    i <- add i, 1
+    # if we have a wrapped line, give up and render the whole screen
+    wrap?:bool <- equal i, end
     return-if wrap?, 1/do-render
     curr <- next curr
     break-unless curr
-    c:char <- get *curr value:offset
-    b:bool <- equal c 10
+    c:char <- get *curr, value:offset
+    b:bool <- equal c, 10
     break-if b
-    buff <- append buff c
+    buf <- append buf, c
     loop
   }
-  # if everything passes render minimally
-  text:text <- buffer-to-array buff
-  render-code screen text curr-column right curr-row
+  curr-line:text <- buffer-to-array buf
+  render-code screen, curr-line, curr-column, right, curr-row
   return 0/dont-render
 ]
 
@@ -1717,6 +1716,70 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   *editor <- put *editor, before-cursor:offset, before-cursor
   left:num <- get *editor, left:offset
   *editor <- put *editor, cursor-column:offset, left
+]
+
+def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
+  local-scope
+  load-ingredients
+  return-unless s
+  color:num <- copy 7/white
+  column:num <- copy left
+  screen <- move-cursor screen, row, column
+  screen-height:num <- screen-height screen
+  i:num <- copy 0
+  len:num <- length *s
+  {
+    +next-character
+    done?:bool <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:char <- index *s, i
+    <character-c-received>
+    {
+      # newline? move to left rather than 0
+      newline?:bool <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      {
+        done?:bool <- greater-than column, right
+        break-if done?
+        space:char <- copy 32/space
+        print screen, space
+        column <- add column, 1
+        loop
+      }
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      i <- add i, 1
+      loop +next-character
+    }
+    {
+      # at right? wrap.
+      at-right?:bool <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:char <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment i
+      loop +next-character
+    }
+    i <- add i, 1
+    print screen, c, color
+    column <- add column, 1
+    loop
+  }
+  was-at-left?:bool <- equal column, left
+  clear-line-until screen, right
+  {
+    break-if was-at-left?
+    row <- add row, 1
+  }
+  move-cursor screen, row, left
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
@@ -1842,39 +1905,39 @@ after <handle-special-character> [
   }
 ]
 
-def minimal-render-for-ctrl-k editor:&:editor screen:&:screen deleted-cells:&:duplex-list:char -> go-render?:bool screen:&:screen [
+def minimal-render-for-ctrl-k editor:&:editor, screen:&:screen, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
   load-ingredients
   # if we deleted nothing, there's nothing to render
   return-unless deleted-cells, 0/dont-render
   # if we have a wrapped line, give up and render the whole screen
-  curr-column:num <- get *editor cursor-column:offset
-  dc-len:num <- length deleted-cells
-  row-len:num <- add curr-column dc-len
-  left:num <- get *editor left:offset
-  right:num <- get *editor right:offset
-  end:num <- subtract right left
-  wrap?:bool <- greater-or-equal row-len end
-  return-if wrap? 1/do-render
+  curr-column:num <- get *editor, cursor-column:offset
+  num-deleted-cells:num <- length, deleted-cells
+  old-row-len:num <- add curr-column, num-deleted-cells
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  end:num <- subtract right, left
+  wrap?:bool <- greater-or-equal old-row-len, end
+  return-if wrap?, 1/do-render
   # accumulate the current line as text and render it
-  buff:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
-  curr:&:duplex-list:char <- get *editor before-cursor:offset
+  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
+  curr:&:duplex-list:char <- get *editor, before-cursor:offset
   i:num <- copy 0
   {
-    i <- add i 1
+    i <- add i, 1
     # check if we are at the end of the line
     curr <- next curr
     break-unless curr
-    c:char <- get *curr value:offset
+    c:char <- get *curr, value:offset
     # check if we have a newline
-    b:bool <- equal c 10
+    b:bool <- equal c, 10
     break-if b
-    buff <- append buff c
+    buf <- append buf, c
     loop
   }
-  text:text <- buffer-to-array buff
-  curr-row:num <- get *editor cursor-row:offset
-  render-code screen text curr-column right curr-row
+  curr-line:text <- buffer-to-array buf
+  curr-row:num <- get *editor, cursor-row:offset
+  render-code screen, curr-line, curr-column, right, curr-row
   return 0/dont-render
 ]
 

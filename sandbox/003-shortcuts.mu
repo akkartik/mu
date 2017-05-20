@@ -1602,6 +1602,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start on second line, press ctrl-u
   assume-console [
     left-click 2, 2
@@ -1618,6 +1620,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 10, [print-character]
 ]
 
 after <handle-special-character> [
@@ -1627,8 +1630,39 @@ after <handle-special-character> [
     <delete-to-start-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
     <delete-to-start-of-line-end>
-    return 1/go-render
+    go-render?:bool <- minimal-render-for-ctrl-u editor, screen
+    return
   }
+]
+
+def minimal-render-for-ctrl-u editor:&:editor, screen:&:screen -> go-render?:bool, screen:&:screen [
+  local-scope
+  load-ingredients
+  curr-row:num <- get *editor, cursor-row:offset
+  curr-column:num <- get *editor, cursor-column:offset
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  end:num <- subtract left, right
+  # accumulate the current line as text and render it
+  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
+  curr:&:duplex-list:char <- get *editor, before-cursor:offset
+  i:num <- copy 0
+  {
+    i <- add i, 1
+    # if we have a wrapped line, give up and render the whole screen
+    wrap?:bool <- equal i, end
+    return-if wrap?, 1/do-render
+    curr <- next curr
+    break-unless curr
+    c:char <- get *curr, value:offset
+    b:bool <- equal c, 10
+    break-if b
+    buf <- append buf, c
+    loop
+  }
+  curr-line:text <- buffer-to-array buf
+  render-code screen, curr-line, curr-column, right, curr-row
+  return 0/dont-render
 ]
 
 def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
@@ -1659,12 +1693,78 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   *editor <- put *editor, cursor-column:offset, left
 ]
 
+def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
+  local-scope
+  load-ingredients
+  return-unless s
+  color:num <- copy 7/white
+  column:num <- copy left
+  screen <- move-cursor screen, row, column
+  screen-height:num <- screen-height screen
+  i:num <- copy 0
+  len:num <- length *s
+  {
+    +next-character
+    done?:bool <- greater-or-equal i, len
+    break-if done?
+    done? <- greater-or-equal row, screen-height
+    break-if done?
+    c:char <- index *s, i
+    <character-c-received>
+    {
+      # newline? move to left rather than 0
+      newline?:bool <- equal c, 10/newline
+      break-unless newline?
+      # clear rest of line in this window
+      {
+        done?:bool <- greater-than column, right
+        break-if done?
+        space:char <- copy 32/space
+        print screen, space
+        column <- add column, 1
+        loop
+      }
+      row <- add row, 1
+      column <- copy left
+      screen <- move-cursor screen, row, column
+      i <- add i, 1
+      loop +next-character
+    }
+    {
+      # at right? wrap.
+      at-right?:bool <- equal column, right
+      break-unless at-right?
+      # print wrap icon
+      wrap-icon:char <- copy 8617/loop-back-to-left
+      print screen, wrap-icon, 245/grey
+      column <- copy left
+      row <- add row, 1
+      screen <- move-cursor screen, row, column
+      # don't increment i
+      loop +next-character
+    }
+    i <- add i, 1
+    print screen, c, color
+    column <- add column, 1
+    loop
+  }
+  was-at-left?:bool <- equal column, left
+  clear-line-until screen, right
+  {
+    break-if was-at-left?
+    row <- add row, 1
+  }
+  move-cursor screen, row, left
+]
+
 scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
   local-scope
   assume-screen 10/width, 5/height
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start on first line (no newline before), press ctrl-u
   assume-console [
     left-click 1, 2
@@ -1681,6 +1781,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-2 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 10, [print-character]
 ]
 
 scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
@@ -1689,6 +1790,8 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start past end of line, press ctrl-u
   assume-console [
     left-click 1, 3
@@ -1705,6 +1808,7 @@ scenario editor-deletes-to-start-of-line-with-ctrl-u-3 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 10, [print-character]
 ]
 
 scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
@@ -1713,6 +1817,8 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start past end of final line, press ctrl-u
   assume-console [
     left-click 2, 3
@@ -1729,6 +1835,7 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 10, [print-character]
 ]
 
 # ctrl-k - delete text from cursor to end of line (but not the newline)
@@ -1739,6 +1846,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start on first line, press ctrl-k
   assume-console [
     left-click 1, 1
@@ -1755,6 +1864,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 9, [print-character]
 ]
 
 after <handle-special-character> [
@@ -1764,8 +1874,46 @@ after <handle-special-character> [
     <delete-to-end-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-end-of-line editor
     <delete-to-end-of-line-end>
-    return 1/go-render
+    # checks if we can do a minimal render and if we can it will do a minimal render
+    go-render?:bool <- minimal-render-for-ctrl-k editor, screen, deleted-cells
+    return
   }
+]
+
+def minimal-render-for-ctrl-k editor:&:editor, screen:&:screen, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
+  local-scope
+  load-ingredients
+  # if we deleted nothing, there's nothing to render
+  return-unless deleted-cells, 0/dont-render
+  # if we have a wrapped line, give up and render the whole screen
+  curr-column:num <- get *editor, cursor-column:offset
+  num-deleted-cells:num <- length, deleted-cells
+  old-row-len:num <- add curr-column, num-deleted-cells
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  end:num <- subtract right, left
+  wrap?:bool <- greater-or-equal old-row-len, end
+  return-if wrap?, 1/do-render
+  # accumulate the current line as text and render it
+  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
+  curr:&:duplex-list:char <- get *editor, before-cursor:offset
+  i:num <- copy 0
+  {
+    i <- add i, 1
+    # check if we are at the end of the line
+    curr <- next curr
+    break-unless curr
+    c:char <- get *curr, value:offset
+    # check if we have a newline
+    b:bool <- equal c, 10
+    break-if b
+    buf <- append buf, c
+    loop
+  }
+  curr-line:text <- buffer-to-array buf
+  curr-row:num <- get *editor, cursor-row:offset
+  render-code screen, curr-line, curr-column, right, curr-row
+  return 0/dont-render
 ]
 
 def delete-to-end-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
@@ -1794,6 +1942,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start on second line (no newline after), press ctrl-k
   assume-console [
     left-click 2, 1
@@ -1810,6 +1960,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-2 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 9, [print-character]
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
@@ -1818,6 +1969,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start at end of line
   assume-console [
     left-click 1, 2
@@ -1834,6 +1987,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-3 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 8, [print-character]
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
@@ -1842,6 +1996,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start past end of line
   assume-console [
     left-click 1, 3
@@ -1858,6 +2014,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-4 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 7, [print-character]
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
@@ -1866,6 +2023,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start at end of text
   assume-console [
     left-click 2, 2
@@ -1882,6 +2041,7 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-5 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  check-trace-count-for-label 8, [print-character]
 ]
 
 scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
@@ -1890,6 +2050,8 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
   s:text <- new [123
 456]
   e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   # start past end of text
   assume-console [
     left-click 2, 3
@@ -1906,6 +2068,36 @@ scenario editor-deletes-to-end-of-line-with-ctrl-k-6 [
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
   ]
+  # no prints necessary
+  check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-deletes-to-end-of-wrapped-line-with-ctrl-k [
+  local-scope
+  assume-screen 10/width, 5/height
+  # create an editor with the first line wrapping to a second screen row
+  s:text <- new [1234
+567]
+  e:&:editor <- new-editor s, 0/left, 4/right
+  editor-render screen, e
+  $clear-trace
+  # delete all of the first wrapped line
+  assume-console [
+    press ctrl-k
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  # screen shows an empty unwrapped first line
+  screen-should-contain [
+    .          .
+    .          .
+    .567       .
+    .┈┈┈┈      .
+    .          .
+  ]
+  # entire screen is refreshed
+  check-trace-count-for-label 16, [print-character]
 ]
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
