@@ -69,24 +69,23 @@ void decrement_any_refcounts(const reagent& canonized_x) {
 
 void decrement_refcount(int old_address, const type_tree* payload_type, int payload_size) {
   assert(old_address >= 0);
-  if (old_address) {
-    int old_refcount = get_or_insert(Memory, old_address);
-    trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
-    --old_refcount;
-    put(Memory, old_address, old_refcount);
-    if (old_refcount < 0) {
-      tb_shutdown();
-      cerr << "Negative refcount!!! " << old_address << ' ' << old_refcount << '\n';
-      if (Trace_stream) {
-        cerr << "Saving trace to last_trace.\n";
-        ofstream fout("last_trace");
-        fout << Trace_stream->readable_contents("");
-        fout.close();
-      }
-      exit(0);
+  if (old_address == 0) return;
+  int old_refcount = get_or_insert(Memory, old_address);
+  trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
+  --old_refcount;
+  put(Memory, old_address, old_refcount);
+  if (old_refcount < 0) {
+    tb_shutdown();
+    cerr << "Negative refcount!!! " << old_address << ' ' << old_refcount << '\n';
+    if (Trace_stream) {
+      cerr << "Saving trace to last_trace.\n";
+      ofstream fout("last_trace");
+      fout << Trace_stream->readable_contents("");
+      fout.close();
     }
-    // End Decrement Refcount(old_address, payload_type, payload_size)
+    exit(0);
   }
+  // End Decrement Refcount(old_address, payload_type, payload_size)
 }
 
 int payload_size(reagent/*copy*/ x) {
