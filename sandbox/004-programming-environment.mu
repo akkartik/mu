@@ -80,7 +80,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
     # not global and not a touch event
     {
       render?:bool <- handle-keyboard-event screen, current-sandbox, e:event
-      break-unless render?
       # try to batch up rendering if there are more events queued up
       render-all-on-no-more-events? <- or render-all-on-no-more-events?, render?
       more-events?:bool <- has-more-events? console
@@ -90,8 +89,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         render-all-on-no-more-events? <- copy 0/false
         screen <- render-all screen, env, render
       }
+      screen <- update-cursor screen, current-sandbox, env
     }
-    screen <- update-cursor screen, current-sandbox, env
     loop
   }
 ]
