@@ -729,7 +729,8 @@ after <global-keypress> [
       *env <- put *env, render-from:offset, render-from
     }
     screen <- render-sandbox-side screen, env, render
-    jump +finish-event
+    screen <- update-cursor screen, current-sandbox, env
+    loop +next-event
   }
 ]
 
@@ -756,7 +757,8 @@ after <global-keypress> [
     render-from <- subtract render-from, 1
     *env <- put *env, render-from:offset, render-from
     screen <- render-sandbox-side screen, env, render
-    jump +finish-event
+    screen <- update-cursor screen, current-sandbox, env
+    loop +next-event
   }
 ]
 

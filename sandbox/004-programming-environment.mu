@@ -91,7 +91,6 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
         screen <- render-all screen, env, render
       }
     }
-    +finish-event
     screen <- update-cursor screen, current-sandbox, env
     loop
   }
