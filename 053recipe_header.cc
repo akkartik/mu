@@ -499,14 +499,15 @@ void fill_in_return_ingredients(const recipe_ordinal r) {
       add_header_products(inst, caller_recipe);
   }
   // fall through return
-  if (caller_recipe.steps.empty()) return;  // error will be raised elsewhere if there's a product in the header; just give up
-  const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
-  if (final_instruction.name != "reply" && final_instruction.name != "return") {
-    instruction inst;
-    inst.name = "return";
-    add_header_products(inst, caller_recipe);
-    caller_recipe.steps.push_back(inst);
+  if (!caller_recipe.steps.empty()) {
+    const instruction& final_instruction = caller_recipe.steps.at(SIZE(caller_recipe.steps)-1);
+    if (final_instruction.name == "reply" || final_instruction.name == "return")
+      return;
   }
+  instruction inst;
+  inst.name = "return";
+  add_header_products(inst, caller_recipe);
+  caller_recipe.steps.push_back(inst);
 }
 
 void add_header_products(instruction& inst, const recipe& caller_recipe) {
@@ -564,6 +565,12 @@ def add2 x:num, y:num -> z:num [
 +transform: instruction: return {z: ()}
 -transform: instruction: return z:num
 +mem: storing 8 in location 1
+
+:(scenario return_causes_error_in_empty_recipe)
+% Hide_errors = true;
+def foo -> x:num [
+]
++error: foo: tried to read ingredient 'x' in 'return x:num' but it hasn't been written to yet
 
 :(scenario return_after_conditional_return_based_on_header)
 def main [

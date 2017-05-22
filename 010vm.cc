@@ -636,6 +636,7 @@ string debug_string(const recipe& x) {
 
 string to_original_string(const instruction& inst) {
   if (inst.is_label) return inst.label;
+  if (!inst.original_string.empty()) return inst.original_string;
   ostringstream out;
   for (int i = 0;  i < SIZE(inst.products);  ++i) {
     if (i > 0) out << ", ";
