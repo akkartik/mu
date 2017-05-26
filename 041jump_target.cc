@@ -49,14 +49,14 @@ void transform_labels(const recipe_ordinal r) {
     instruction& inst = get(Recipe, r).steps.at(i);
     if (inst.name == "jump") {
       if (inst.ingredients.empty()) {
-        raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' expects an ingredient but got 0\n" << end();
+        raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' expects an ingredient but got 0\n" << end();
         return;
       }
       replace_offset(inst.ingredients.at(0), offset, i, r);
     }
     if (inst.name == "jump-if" || inst.name == "jump-unless") {
       if (SIZE(inst.ingredients) < 2) {
-        raise << maybe(get(Recipe, r).name) << "'" << inst.original_string << "' expects 2 ingredients but got " << SIZE(inst.ingredients) << '\n' << end();
+        raise << maybe(get(Recipe, r).name) << "'" << to_original_string(inst) << "' expects 2 ingredients but got " << SIZE(inst.ingredients) << '\n' << end();
         return;
       }
       replace_offset(inst.ingredients.at(1), offset, i, r);

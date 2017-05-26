@@ -16,7 +16,7 @@ put(Recipe_ordinal, "$open-file-for-reading", _OPEN_FILE_FOR_READING);
 :(before "End Primitive Recipe Checks")
 case _OPEN_FILE_FOR_READING: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
@@ -24,7 +24,7 @@ case _OPEN_FILE_FOR_READING: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-reading' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
@@ -51,7 +51,7 @@ put(Recipe_ordinal, "$open-file-for-writing", _OPEN_FILE_FOR_WRITING);
 :(before "End Primitive Recipe Checks")
 case _OPEN_FILE_FOR_WRITING: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
@@ -59,7 +59,7 @@ case _OPEN_FILE_FOR_WRITING: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-file-for-writing' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
@@ -85,7 +85,7 @@ put(Recipe_ordinal, "$read-from-file", _READ_FROM_FILE);
 :(before "End Primitive Recipe Checks")
 case _READ_FROM_FILE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -93,7 +93,7 @@ case _READ_FROM_FILE: {
     break;
   }
   if (SIZE(inst.products) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly two products, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-file' requires exactly two products, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_character(inst.products.at(0))) {
@@ -149,7 +149,7 @@ put(Recipe_ordinal, "$write-to-file", _WRITE_TO_FILE);
 :(before "End Primitive Recipe Checks")
 case _WRITE_TO_FILE: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$write-to-file' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$write-to-file' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -161,7 +161,7 @@ case _WRITE_TO_FILE: {
     break;
   }
   if (!inst.products.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'$write-to-file' writes to no products, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$write-to-file' writes to no products, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -197,7 +197,7 @@ put(Recipe_ordinal, "$close-file", _CLOSE_FILE);
 :(before "End Primitive Recipe Checks")
 case _CLOSE_FILE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -205,11 +205,11 @@ case _CLOSE_FILE: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (inst.products.at(0).name != inst.ingredients.at(0).name) {
-    raise << maybe(get(Recipe, r).name) << "'$close-file' requires its product to be the same as its ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-file' requires its product to be the same as its ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;

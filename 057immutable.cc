@@ -442,9 +442,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
         && current_ingredient_and_aliases.find(inst.products.at(i)) != current_ingredient_and_aliases.end()) {
       string current_product_name = inst.products.at(i).name;
       if (current_product_name == original_ingredient_name)
-        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << inst.original_string << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       else
-        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << inst.original_string << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+        raise << maybe(caller.name) << "cannot modify '" << current_product_name << "' in instruction '" << to_original_string(inst) << "' because that would modify " << original_ingredient_name << " which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       return;
     }
   }
@@ -465,9 +465,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       if (inst.operation == PUT || inst.operation == PUT_INDEX) {
         if (current_ingredient_index == 0) {
           if (current_ingredient_name == original_ingredient_name)
-            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << inst.original_string << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
           else
-            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << inst.original_string << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+            raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
         }
       }
     }
@@ -475,9 +475,9 @@ void check_immutable_ingredient_in_instruction(const instruction& inst, const se
       // defined recipe
       if (is_modified_in_recipe(inst.operation, current_ingredient_index, caller)) {
         if (current_ingredient_name == original_ingredient_name)
-          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << inst.original_string << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because it's an ingredient of recipe " << caller.name << " but not also a product\n" << end();
         else
-          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << inst.original_string << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
+          raise << maybe(caller.name) << "cannot modify '" << current_ingredient_name << "' in instruction '" << to_original_string(inst) << "' because that would modify '" << original_ingredient_name << "' which is an ingredient of recipe " << caller.name << " but not also a product\n" << end();
       }
     }
   }

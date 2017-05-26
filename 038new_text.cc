@@ -170,7 +170,7 @@ put(Recipe_ordinal, "assert", ASSERT);
 :(before "End Primitive Recipe Checks")
 case ASSERT: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'assert' takes exactly two ingredients rather than '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_scalar(inst.ingredients.at(0))) {

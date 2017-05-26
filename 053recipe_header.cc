@@ -297,7 +297,7 @@ void check_calls_against_header(const recipe_ordinal r) {
     for (long int i = 0;  i < min(SIZE(inst.ingredients), SIZE(callee.ingredients));  ++i) {
       // ingredients coerced from call to callee
       if (!types_coercible(callee.ingredients.at(i), inst.ingredients.at(i))) {
-        raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << inst.original_string << "'\n" << end();
+        raise << maybe(caller.name) << "ingredient " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
         raise << "  ['" << to_string(callee.ingredients.at(i).type) << "' vs '" << to_string(inst.ingredients.at(i).type) << "']\n" << end();
       }
     }
@@ -305,7 +305,7 @@ void check_calls_against_header(const recipe_ordinal r) {
       if (is_dummy(inst.products.at(i))) continue;
       // products coerced from callee to call
       if (!types_coercible(inst.products.at(i), callee.products.at(i))) {
-        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << inst.original_string << "'\n" << end();
+        raise << maybe(caller.name) << "product " << i << " has the wrong type at '" << to_original_string(inst) << "'\n" << end();
         raise << "  ['" << to_string(inst.products.at(i).type) << "' vs '" << to_string(callee.products.at(i).type) << "']\n" << end();
       }
     }
@@ -337,12 +337,12 @@ void check_return_instructions_against_header(const recipe_ordinal r) {
     const instruction& inst = caller_recipe.steps.at(i);
     if (inst.name != "reply" && inst.name != "return") continue;
     if (SIZE(caller_recipe.products) != SIZE(inst.ingredients)) {
-      raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << inst.original_string << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "replied with the wrong number of products at '" << to_original_string(inst) << "'\n" << end();
       continue;
     }
     for (int i = 0;  i < SIZE(caller_recipe.products);  ++i) {
       if (!types_match(caller_recipe.products.at(i), inst.ingredients.at(i)))
-        raise << maybe(caller_recipe.name) << "replied with the wrong type at '" << inst.original_string << "'\n" << end();
+        raise << maybe(caller_recipe.name) << "replied with the wrong type at '" << to_original_string(inst) << "'\n" << end();
     }
   }
 }

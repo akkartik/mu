@@ -606,13 +606,8 @@ string to_string(const recipe& r) {
 string to_original_string(const recipe& r) {
   ostringstream out;
   out << "recipe " << r.name << " [\n";
-  for (int i = 0;  i < SIZE(r.steps);  ++i) {
-    const instruction& inst = r.steps.at(i);
-    if (inst.original_string.empty())
-      out << "  " << to_original_string(r.steps.at(i)) << '\n';
-    else
-      out << "  " << r.steps.at(i).original_string << '\n';
-  }
+  for (int i = 0;  i < SIZE(r.steps);  ++i)
+    out << "  " << to_original_string(r.steps.at(i)) << '\n';
   out << "]\n";
   return out.str();
 }

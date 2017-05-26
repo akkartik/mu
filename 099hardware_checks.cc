@@ -48,7 +48,7 @@ void check_for_misuse_of_real_hardware(const recipe_ordinal r) {
       const reagent& expected_ing = callee.ingredients.at(i);
       for (int j = 0;  j < SIZE(Real_hardware_types);  ++j) {
         if (*Real_hardware_types.at(j) == *expected_ing.type)
-          raise << maybe(caller.name) << "'" << inst.original_string << "': only 'main' can pass 0 into a " << to_string(expected_ing.type) << '\n' << end();
+          raise << maybe(caller.name) << "'" << to_original_string(inst) << "': only 'main' can pass 0 into a " << to_string(expected_ing.type) << '\n' << end();
       }
     }
   }

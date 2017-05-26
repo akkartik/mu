@@ -78,7 +78,7 @@ put(Recipe_ordinal, "wait-for-reset-then-set", WAIT_FOR_RESET_THEN_SET);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_RESET_THEN_SET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-reset-then-set' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-reset-then-set' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_location(inst.ingredients.at(0))) {
@@ -109,7 +109,7 @@ put(Recipe_ordinal, "reset", RESET);
 :(before "End Primitive Recipe Checks")
 case RESET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'reset' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'reset' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_location(inst.ingredients.at(0))) {
@@ -158,7 +158,7 @@ put(Recipe_ordinal, "get-location", GET_LOCATION);
 :(before "End Primitive Recipe Checks")
 case GET_LOCATION: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get-location' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get-location' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -203,7 +203,7 @@ case GET_LOCATION: {
   canonize(base);
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   const type_tree* base_type = get_base_type(base.type);
@@ -325,7 +325,7 @@ put(Recipe_ordinal, "wait-for-routine", WAIT_FOR_ROUTINE);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_ROUTINE: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-routine' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -337,7 +337,7 @@ case WAIT_FOR_ROUTINE: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   Current_routine->state = WAITING;
@@ -424,7 +424,7 @@ put(Recipe_ordinal, "current-routine-is-blocked", CURRENT_ROUTINE_IS_BLOCKED);
 :(before "End Primitive Recipe Checks")
 case CURRENT_ROUTINE_IS_BLOCKED: {
   if (!inst.ingredients.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'current-routine-is-blocked' should have no ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'current-routine-is-blocked' should have no ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -442,7 +442,7 @@ put(Recipe_ordinal, "current-routine-is-unblocked", CURRENT_ROUTINE_IS_UNBLOCKED
 :(before "End Primitive Recipe Checks")
 case CURRENT_ROUTINE_IS_UNBLOCKED: {
   if (!inst.ingredients.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'current-routine-is-unblocked' should have no ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'current-routine-is-unblocked' should have no ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -487,7 +487,7 @@ put(Recipe_ordinal, "wait-for-routine-to-block", WAIT_FOR_ROUTINE_TO_BLOCK);
 :(before "End Primitive Recipe Checks")
 case WAIT_FOR_ROUTINE_TO_BLOCK: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'wait-for-routine-to-block' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'wait-for-routine-to-block' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -499,7 +499,7 @@ case WAIT_FOR_ROUTINE_TO_BLOCK: {
 :(before "End Primitive Recipe Implementations")
 case WAIT_FOR_ROUTINE_TO_BLOCK: {
   if (ingredients.at(0).at(0) == Current_routine->id) {
-    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "routine can't wait for itself! '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   Current_routine->state = WAITING;
@@ -536,7 +536,7 @@ put(Recipe_ordinal, "restart", RESTART);
 :(before "End Primitive Recipe Checks")
 case RESTART: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'restart' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

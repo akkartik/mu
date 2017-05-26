@@ -62,7 +62,7 @@ void absolutize(reagent& x) {
   if (is_raw(x) || is_dummy(x)) return;
   if (x.name == "default-space") return;
   if (!x.initialized)
-    raise << current_instruction().original_string << ": reagent not initialized: '" << x.original_string << "'\n" << end();
+    raise << to_original_string(current_instruction()) << ": reagent not initialized: '" << x.original_string << "'\n" << end();
   x.set_value(address(x.value, space_base(x)));
   x.properties.push_back(pair<string, string_tree*>("raw", NULL));
   assert(is_raw(x));
@@ -311,7 +311,7 @@ bool caller_uses_product(int product_index) {
 
 void rewrite_default_space_instruction(instruction& curr) {
   if (!curr.ingredients.empty())
-    raise << "'" << curr.original_string << "' can't take any ingredients\n" << end();
+    raise << "'" << to_original_string(curr) << "' can't take any ingredients\n" << end();
   curr.name = "new";
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));

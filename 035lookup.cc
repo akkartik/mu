@@ -108,7 +108,7 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   }
   else if (check_for_null) {
     if (Current_routine)
-      raise << "tried to /lookup 0 in '" << current_instruction().original_string << "'\n" << end();
+      raise << "tried to /lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     else
       raise << "tried to /lookup 0\n" << end();
   }

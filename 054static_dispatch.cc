@@ -167,7 +167,7 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
     if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) continue;
-    trace(9992, "transform") << "instruction " << inst.original_string << end();
+    trace(9992, "transform") << "instruction " << to_original_string(inst) << end();
     Resolve_stack.push_front(call(r));
     Resolve_stack.front().running_step_index = index;
     string new_name = best_variant(inst, caller_recipe);
@@ -202,11 +202,11 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   // error messages
   if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
     if (SIZE(variants) == 1) {
-      raise << maybe(caller_recipe.name) << "types don't match in call for '" << inst.original_string << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "types don't match in call for '" << to_original_string(inst) << "'\n" << end();
       raise << "  which tries to call '" << original_header_label(get(Recipe, variants.at(0))) << "'\n" << end();
     }
     else {
-      raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << inst.original_string << "'\n" << end();
+      raise << maybe(caller_recipe.name) << "failed to find a matching call for '" << to_original_string(inst) << "'\n" << end();
       raise << "  available variants are:\n" << end();
       for (int i = 0;  i < SIZE(variants);  ++i)
         raise << "    " << original_header_label(get(Recipe, variants.at(i))) << '\n' << end();
@@ -215,17 +215,17 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
       const recipe& specializer_recipe = get(Recipe, p->running_recipe);
       const instruction& specializer_inst = specializer_recipe.steps.at(p->running_step_index);
       if (specializer_recipe.name != "interactive")
-        raise << "  (from '" << specializer_inst.original_string << "' in " << specializer_recipe.name << ")\n" << end();
+        raise << "  (from '" << to_original_string(specializer_inst) << "' in " << specializer_recipe.name << ")\n" << end();
       else
-        raise << "  (from '" << specializer_inst.original_string << "')\n" << end();
+        raise << "  (from '" << to_original_string(specializer_inst) << "')\n" << end();
       // One special-case to help with the rewrite_stash transform. (cross-layer)
       if (specializer_inst.products.at(0).name.find("stash_") == 0) {
         instruction stash_inst;
         if (next_stash(*p, &stash_inst)) {
           if (specializer_recipe.name != "interactive")
-            raise << "  (part of '" << stash_inst.original_string << "' in " << specializer_recipe.name << ")\n" << end();
+            raise << "  (part of '" << to_original_string(stash_inst) << "' in " << specializer_recipe.name << ")\n" << end();
           else
-            raise << "  (part of '" << stash_inst.original_string << "')\n" << end();
+            raise << "  (part of '" << to_original_string(stash_inst) << "')\n" << end();
         }
       }
     }

@@ -188,7 +188,7 @@ put(Recipe_ordinal, "screen-should-contain", SCREEN_SHOULD_CONTAIN);
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'screen-should-contain' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'screen-should-contain' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_literal_text(inst.ingredients.at(0))) {
@@ -212,7 +212,7 @@ put(Recipe_ordinal, "screen-should-contain-in-color", SCREEN_SHOULD_CONTAIN_IN_C
 :(before "End Primitive Recipe Checks")
 case SCREEN_SHOULD_CONTAIN_IN_COLOR: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'screen-should-contain-in-color' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'screen-should-contain-in-color' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {

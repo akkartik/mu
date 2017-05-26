@@ -163,7 +163,7 @@ put(Recipe_ordinal, "new", NEW);
 case NEW: {
   const recipe& caller = get(Recipe, r);
   if (inst.ingredients.empty() || SIZE(inst.ingredients) > 2) {
-    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(caller.name) << "'new' requires one or two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   // End NEW Check Special-cases
@@ -181,7 +181,7 @@ case NEW: {
     break;
   }
   if (!product_of_new_is_valid(inst)) {
-    raise << maybe(caller.name) << "product of 'new' has incorrect type: '" << inst.original_string << "'\n" << end();
+    raise << maybe(caller.name) << "product of 'new' has incorrect type: '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;

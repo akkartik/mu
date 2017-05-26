@@ -20,7 +20,7 @@ put(Recipe_ordinal, "create-array", CREATE_ARRAY);
 :(before "End Primitive Recipe Checks")
 case CREATE_ARRAY: {
   if (inst.products.empty()) {
-    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << inst.original_string << '\n' << end();
+    raise << maybe(get(Recipe, r).name) << "'create-array' needs one product and no ingredients but got '" << to_original_string(inst) << '\n' << end();
     break;
   }
   reagent/*copy*/ product = inst.products.at(0);
@@ -30,13 +30,13 @@ case CREATE_ARRAY: {
     break;
   }
   if (!product.type->right) {
-    raise << maybe(get(Recipe, r).name) << "create array of what? '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what? '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   // 'create-array' will need to check properties rather than types
   type_tree* array_length_from_type = product.type->right->right;
   if (!array_length_from_type) {
-    raise << maybe(get(Recipe, r).name) << "create array of what size? '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "create array of what size? '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!product.type->right->right->atom)
@@ -320,7 +320,7 @@ put(Recipe_ordinal, "index", INDEX);
 :(before "End Primitive Recipe Checks")
 case INDEX: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'index' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -353,14 +353,14 @@ case INDEX: {
   int base_address = base.value;
   trace(9998, "run") << "base address is " << base_address << end();
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent/*local*/ element;
@@ -506,7 +506,7 @@ put(Recipe_ordinal, "put-index", PUT_INDEX);
 :(before "End Primitive Recipe Checks")
 case PUT_INDEX: {
   if (SIZE(inst.ingredients) != 3) {
-    raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'put-index' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -543,14 +543,14 @@ case PUT_INDEX: {
   // Update PUT_INDEX base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   reagent/*copy*/ index = current_instruction().ingredients.at(1);
   // Update PUT_INDEX index in Run
   vector<double> index_val(read_memory(index));
   if (index_val.at(0) < 0 || index_val.at(0) >= get_or_insert(Memory, base_address)) {
-    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "invalid index " << no_scientific(index_val.at(0)) << " in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   int address = base_address + /*skip length*/1 + index_val.at(0)*size_of(array_element(base.type));
@@ -625,7 +625,7 @@ put(Recipe_ordinal, "length", LENGTH);
 :(before "End Primitive Recipe Checks")
 case LENGTH: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'length' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ array = inst.ingredients.at(0);
@@ -641,7 +641,7 @@ case LENGTH: {
   reagent/*copy*/ array = current_instruction().ingredients.at(0);
   // Update LENGTH array in Run
   if (array.value == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   products.resize(1);

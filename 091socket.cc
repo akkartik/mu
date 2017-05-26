@@ -17,7 +17,7 @@ put(Recipe_ordinal, "$open-client-socket", _OPEN_CLIENT_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _OPEN_CLIENT_SOCKET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$open-client-socket' requires exactly two ingredients, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-client-socket' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_text(inst.ingredients.at(0))) {
@@ -29,7 +29,7 @@ case _OPEN_CLIENT_SOCKET: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-client-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-client-socket' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
@@ -80,7 +80,7 @@ put(Recipe_ordinal, "$open-server-socket", _OPEN_SERVER_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _OPEN_SERVER_SOCKET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one ingredient (the port to listen for requests on), but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one ingredient (the port to listen for requests on), but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -88,7 +88,7 @@ case _OPEN_SERVER_SOCKET: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$open-server-socket' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
@@ -142,7 +142,7 @@ put(Recipe_ordinal, "$accept", _ACCEPT);
 :(before "End Primitive Recipe Checks")
 case _ACCEPT: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$accept' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$accept' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -150,7 +150,7 @@ case _ACCEPT: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$accept' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$accept' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.products.at(0))) {
@@ -191,7 +191,7 @@ put(Recipe_ordinal, "$read-from-socket", _READ_FROM_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _READ_FROM_SOCKET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires exactly one ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -200,7 +200,7 @@ case _READ_FROM_SOCKET: {
   }
   int nprod = SIZE(inst.products);
   if (nprod == 0 || nprod > 4) {
-    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires 1-4 products, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$read-from-socket' requires 1-4 products, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_character(inst.products.at(0))) {
@@ -284,7 +284,7 @@ put(Recipe_ordinal, "$write-to-socket", _WRITE_TO_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _WRITE_TO_SOCKET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'$write-to-socket' requires exactly two ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$write-to-socket' requires exactly two ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;
@@ -312,7 +312,7 @@ put(Recipe_ordinal, "$close-socket", _CLOSE_SOCKET);
 :(before "End Primitive Recipe Checks")
 case _CLOSE_SOCKET: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly two ingredient, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly two ingredient, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!is_mu_number(inst.ingredients.at(0))) {
@@ -320,7 +320,7 @@ case _CLOSE_SOCKET: {
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly one product, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'$close-socket' requires exactly one product, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (inst.products.at(0).name != inst.ingredients.at(0).name) {

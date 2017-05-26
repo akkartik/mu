@@ -171,7 +171,7 @@ void expand_type_abbreviations(const recipe& caller) {
   trace(9991, "transform") << "--- expand type abbreviations in recipe '" << caller.name << "'" << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    trace(9991, "transform") << "instruction '" << inst.original_string << end();
+    trace(9991, "transform") << "instruction '" << to_original_string(inst) << end();
     for (long int i = 0;  i < SIZE(inst.ingredients);  ++i) {
       expand_type_abbreviations(inst.ingredients.at(i).type);
       trace(9992, "transform") << "ingredient type after expanding abbreviations: " << names_to_string(inst.ingredients.at(i).type) << end();

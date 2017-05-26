@@ -178,9 +178,9 @@ void compute_container_sizes(const recipe_ordinal r) {
     instruction& inst = caller.steps.at(i);
     trace(9993, "transform") << "- compute container sizes for " << to_string(inst) << end();
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
-      compute_container_sizes(inst.ingredients.at(i), " in '"+inst.original_string+"'");
+      compute_container_sizes(inst.ingredients.at(i), " in '"+to_original_string(inst)+"'");
     for (int i = 0;  i < SIZE(inst.products);  ++i)
-      compute_container_sizes(inst.products.at(i), " in '"+inst.original_string+"'");
+      compute_container_sizes(inst.products.at(i), " in '"+to_original_string(inst)+"'");
   }
 }
 
@@ -361,7 +361,7 @@ put(Recipe_ordinal, "get", GET);
 :(before "End Primitive Recipe Checks")
 case GET: {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'get' expects exactly 2 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);  // new copy for every invocation
@@ -407,7 +407,7 @@ case GET: {
   // Update GET base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   const type_tree* base_type = base.type;
@@ -509,7 +509,7 @@ put(Recipe_ordinal, "put", PUT);
 :(before "End Primitive Recipe Checks")
 case PUT: {
   if (SIZE(inst.ingredients) != 3) {
-    raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'put' expects exactly 3 ingredients in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   reagent/*copy*/ base = inst.ingredients.at(0);
@@ -563,7 +563,7 @@ case PUT: {
   // Update PUT base in Run
   int base_address = base.value;
   if (base_address == 0) {
-    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << current_instruction().original_string << "'\n" << end();
+    raise << maybe(current_recipe_name()) << "tried to access location 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     break;
   }
   const type_tree* base_type = base.type;
@@ -830,7 +830,7 @@ void check_or_set_invalid_types(const recipe_ordinal r) {
 
 void check_or_set_invalid_types(reagent& r, const recipe& caller, const instruction& inst) {
   // Begin check_or_set_invalid_types(r)
-  check_or_set_invalid_types(r.type, maybe(caller.name), "'"+inst.original_string+"'");
+  check_or_set_invalid_types(r.type, maybe(caller.name), "'"+to_original_string(inst)+"'");
 }
 
 void check_or_set_invalid_types(type_tree* type, const string& location_for_error_messages, const string& name_for_error_messages) {

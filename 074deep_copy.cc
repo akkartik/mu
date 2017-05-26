@@ -195,15 +195,15 @@ put(Recipe_ordinal, "deep-copy", DEEP_COPY);
 :(before "End Primitive Recipe Checks")
 case DEEP_COPY: {
   if (SIZE(inst.ingredients) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'deep-copy' takes exactly one ingredient rather than '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'deep-copy' takes exactly one ingredient rather than '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (SIZE(inst.products) != 1) {
-    raise << maybe(get(Recipe, r).name) << "'deep-copy' takes exactly one ingredient rather than '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'deep-copy' takes exactly one ingredient rather than '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   if (!types_strictly_match(inst.ingredients.at(0), inst.products.at(0))) {
-    raise << maybe(get(Recipe, r).name) << "'deep-copy' requires its ingredient and product to be the same type, but got '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "'deep-copy' requires its ingredient and product to be the same type, but got '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   break;

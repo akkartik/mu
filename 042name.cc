@@ -98,7 +98,7 @@ void transform_names(const recipe_ordinal r) {
 
 bool is_disqualified(/*mutable*/ reagent& x, const instruction& inst, const string& recipe_name) {
   if (!x.type) {
-    raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << inst.original_string << "'\n" << end();
+    raise << maybe(recipe_name) << "missing type for '" << x.original_string << "' in '" << to_original_string(inst) << "'\n" << end();
     // missing-type Error 1
     return true;
   }
@@ -232,7 +232,7 @@ $error: 0
 :(before "End update GET offset_value in Check")
 else {
   if (!offset.initialized) {
-    raise << maybe(get(Recipe, r).name) << "uninitialized offset '" << offset.name << "' in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "uninitialized offset '" << offset.name << "' in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   offset_value = offset.value;
@@ -303,7 +303,7 @@ def main [
 // convert variant names of exclusive containers
 if (inst.name == "maybe-convert") {
   if (SIZE(inst.ingredients) != 2) {
-    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << inst.original_string << "'\n" << end();
+    raise << maybe(get(Recipe, r).name) << "exactly 2 ingredients expected in '" << to_original_string(inst) << "'\n" << end();
     break;
   }
   assert(is_literal(inst.ingredients.at(1)));
