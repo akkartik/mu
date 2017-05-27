@@ -415,7 +415,7 @@ after <handle-redo> [
     before-cursor <- get *editor, before-cursor:offset
     insert-from:&:duplex-list:char <- get typing, insert-from:offset  # ignore insert-to because it's already been spliced away
     # assert insert-to matches next(before-cursor)
-    insert-range before-cursor, insert-from
+    splice before-cursor, insert-from
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     cursor-row <- get typing, after-row:offset
     *editor <- put *editor, cursor-row:offset, cursor-row
@@ -1636,7 +1636,7 @@ before <backspace-character-end> [
       break-unless coalesce?
       deletion <- put deletion, delete-from:offset, before-cursor
       backspaced-so-far:&:duplex-list:char <- get deletion, deleted-text:offset
-      insert-range backspaced-cell, backspaced-so-far
+      splice backspaced-cell, backspaced-so-far
       deletion <- put deletion, deleted-text:offset, backspaced-cell
       deletion <- put deletion, after-row:offset, cursor-row
       deletion <- put deletion, after-column:offset, cursor-column
@@ -1661,7 +1661,7 @@ after <handle-undo> [
     break-unless anchor
     deleted:&:duplex-list:char <- get deletion, deleted-text:offset
     old-cursor:&:duplex-list:char <- last deleted
-    insert-range anchor, deleted
+    splice anchor, deleted
     # assert cursor-row/cursor-column/top-of-screen match after-row/after-column/after-top-of-screen
     before-cursor <- copy old-cursor
     cursor-row <- get deletion, before-row:offset

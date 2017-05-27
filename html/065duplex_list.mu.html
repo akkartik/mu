@@ -555,70 +555,64 @@ if ('onhashchange' in window) {
 <span id="L493" class="LineNr">493 </span>  ]
 <span id="L494" class="LineNr">494 </span>]
 <span id="L495" class="LineNr">495 </span>
-<span id="L496" class="LineNr">496 </span><span class="Comment"># insert list beginning at 'new' after 'in'</span>
-<span id="L497" class="LineNr">497 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L497'>insert-range</a> in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem, start:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
+<span id="L496" class="LineNr">496 </span><span class="Comment"># insert list beginning at 'start' after 'in'</span>
+<span id="L497" class="LineNr">497 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L497'>splice</a> in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem, start:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
 <span id="L498" class="LineNr">498 </span>  <span class="Constant">local-scope</span>
 <span id="L499" class="LineNr">499 </span>  <span class="Constant">load-ingredients</span>
 <span id="L500" class="LineNr">500 </span>  <span class="muControl">return-unless</span> in
 <span id="L501" class="LineNr">501 </span>  <span class="muControl">return-unless</span> start
-<span id="L502" class="LineNr">502 </span>  end:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> copy start
-<span id="L503" class="LineNr">503 </span>  <span class="Delimiter">{</span>
-<span id="L504" class="LineNr">504 </span>  <span class="Conceal">¦</span> <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> end/insert-range
+<span id="L502" class="LineNr">502 </span>  end:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L522'>last</a> start
+<span id="L503" class="LineNr">503 </span>  <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> in
+<span id="L504" class="LineNr">504 </span>  <span class="Delimiter">{</span>
 <span id="L505" class="LineNr">505 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L506" class="LineNr">506 </span>  <span class="Conceal">¦</span> end <span class="Special">&lt;-</span> copy <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L507" class="LineNr">507 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L506" class="LineNr">506 </span>  <span class="Conceal">¦</span> *end <span class="Special">&lt;-</span> put *end, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, <a href='065duplex_list.mu.html#L29'>next</a>
+<span id="L507" class="LineNr">507 </span>  <span class="Conceal">¦</span> *next <span class="Special">&lt;-</span> put *next, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, end
 <span id="L508" class="LineNr">508 </span>  <span class="Delimiter">}</span>
-<span id="L509" class="LineNr">509 </span>  <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> in
-<span id="L510" class="LineNr">510 </span>  *end <span class="Special">&lt;-</span> put *end, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L511" class="LineNr">511 </span>  <span class="Delimiter">{</span>
-<span id="L512" class="LineNr">512 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L513" class="LineNr">513 </span>  <span class="Conceal">¦</span> *next <span class="Special">&lt;-</span> put *next, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, end
-<span id="L514" class="LineNr">514 </span>  <span class="Delimiter">}</span>
-<span id="L515" class="LineNr">515 </span>  *in <span class="Special">&lt;-</span> put *in, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, start
-<span id="L516" class="LineNr">516 </span>  *start <span class="Special">&lt;-</span> put *start, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, in
-<span id="L517" class="LineNr">517 </span>]
-<span id="L518" class="LineNr">518 </span>
-<span id="L519" class="LineNr">519 </span><span class="muRecipe">def</span> append in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem, new:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
-<span id="L520" class="LineNr">520 </span>  <span class="Constant">local-scope</span>
-<span id="L521" class="LineNr">521 </span>  <span class="Constant">load-ingredients</span>
-<span id="L522" class="LineNr">522 </span>  <a href='065duplex_list.mu.html#L528'>last</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L528'>last</a> in
-<span id="L523" class="LineNr">523 </span>  *last <span class="Special">&lt;-</span> put *last, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, new
-<span id="L524" class="LineNr">524 </span>  <span class="muControl">return-unless</span> new
-<span id="L525" class="LineNr">525 </span>  *new <span class="Special">&lt;-</span> put *new, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, <a href='065duplex_list.mu.html#L528'>last</a>
-<span id="L526" class="LineNr">526 </span>]
-<span id="L527" class="LineNr">527 </span>
-<span id="L528" class="LineNr">528 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L528'>last</a> in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
-<span id="L529" class="LineNr">529 </span>  <span class="Constant">local-scope</span>
-<span id="L530" class="LineNr">530 </span>  <span class="Constant">load-ingredients</span>
-<span id="L531" class="LineNr">531 </span>  result <span class="Special">&lt;-</span> copy in
-<span id="L532" class="LineNr">532 </span>  <span class="Delimiter">{</span>
-<span id="L533" class="LineNr">533 </span>  <span class="Conceal">¦</span> <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> result
-<span id="L534" class="LineNr">534 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L535" class="LineNr">535 </span>  <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> copy <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L536" class="LineNr">536 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L537" class="LineNr">537 </span>  <span class="Delimiter">}</span>
-<span id="L538" class="LineNr">538 </span>]
-<span id="L539" class="LineNr">539 </span>
-<span id="L540" class="LineNr">540 </span><span class="Comment"># helper for debugging</span>
-<span id="L541" class="LineNr">541 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L541'>dump-from</a> x:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
-<span id="L542" class="LineNr">542 </span>  <span class="Constant">local-scope</span>
-<span id="L543" class="LineNr">543 </span>  <span class="Constant">load-ingredients</span>
-<span id="L544" class="LineNr">544 </span>  $print x, <span class="Constant">[: ]</span>
-<span id="L545" class="LineNr">545 </span>  <span class="Delimiter">{</span>
-<span id="L546" class="LineNr">546 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> x
-<span id="L547" class="LineNr">547 </span>  <span class="Conceal">¦</span> c:_elem <span class="Special">&lt;-</span> get *x, <span class="Constant">value:offset</span>
-<span id="L548" class="LineNr">548 </span>  <span class="Conceal">¦</span> $print c, <span class="Constant">[ ]</span>
-<span id="L549" class="LineNr">549 </span>  <span class="Conceal">¦</span> x <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> x
-<span id="L550" class="LineNr">550 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L551" class="LineNr">551 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> is-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
-<span id="L552" class="LineNr">552 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-newline?
-<span id="L553" class="LineNr">553 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> $print <span class="Constant">10/newline</span>
-<span id="L554" class="LineNr">554 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> $print x, <span class="Constant">[: ]</span>
-<span id="L555" class="LineNr">555 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L556" class="LineNr">556 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L557" class="LineNr">557 </span>  <span class="Delimiter">}</span>
-<span id="L558" class="LineNr">558 </span>  $print <span class="Constant">10/newline</span>, <span class="Constant">[---]</span>, <span class="Constant">10/newline</span>
-<span id="L559" class="LineNr">559 </span>]
+<span id="L509" class="LineNr">509 </span>  *in <span class="Special">&lt;-</span> put *in, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, start
+<span id="L510" class="LineNr">510 </span>  *start <span class="Special">&lt;-</span> put *start, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, in
+<span id="L511" class="LineNr">511 </span>]
+<span id="L512" class="LineNr">512 </span>
+<span id="L513" class="LineNr">513 </span><span class="muRecipe">def</span> append in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem, new:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem/contained-in:in<span class="muRecipe"> -&gt; </span>in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
+<span id="L514" class="LineNr">514 </span>  <span class="Constant">local-scope</span>
+<span id="L515" class="LineNr">515 </span>  <span class="Constant">load-ingredients</span>
+<span id="L516" class="LineNr">516 </span>  <a href='065duplex_list.mu.html#L522'>last</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L522'>last</a> in
+<span id="L517" class="LineNr">517 </span>  *last <span class="Special">&lt;-</span> put *last, <span class="Constant"><a href='065duplex_list.mu.html#L29'>next</a>:offset</span>, new
+<span id="L518" class="LineNr">518 </span>  <span class="muControl">return-unless</span> new
+<span id="L519" class="LineNr">519 </span>  *new <span class="Special">&lt;-</span> put *new, <span class="Constant"><a href='065duplex_list.mu.html#L36'>prev</a>:offset</span>, <a href='065duplex_list.mu.html#L522'>last</a>
+<span id="L520" class="LineNr">520 </span>]
+<span id="L521" class="LineNr">521 </span>
+<span id="L522" class="LineNr">522 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L522'>last</a> in:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
+<span id="L523" class="LineNr">523 </span>  <span class="Constant">local-scope</span>
+<span id="L524" class="LineNr">524 </span>  <span class="Constant">load-ingredients</span>
+<span id="L525" class="LineNr">525 </span>  result <span class="Special">&lt;-</span> copy in
+<span id="L526" class="LineNr">526 </span>  <span class="Delimiter">{</span>
+<span id="L527" class="LineNr">527 </span>  <span class="Conceal">¦</span> <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> result
+<span id="L528" class="LineNr">528 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
+<span id="L529" class="LineNr">529 </span>  <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> copy <a href='065duplex_list.mu.html#L29'>next</a>
+<span id="L530" class="LineNr">530 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L531" class="LineNr">531 </span>  <span class="Delimiter">}</span>
+<span id="L532" class="LineNr">532 </span>]
+<span id="L533" class="LineNr">533 </span>
+<span id="L534" class="LineNr">534 </span><span class="Comment"># helper for debugging</span>
+<span id="L535" class="LineNr">535 </span><span class="muRecipe">def</span> <a href='065duplex_list.mu.html#L535'>dump-from</a> x:&amp;:<a href='065duplex_list.mu.html#L3'>duplex-list</a>:_elem [
+<span id="L536" class="LineNr">536 </span>  <span class="Constant">local-scope</span>
+<span id="L537" class="LineNr">537 </span>  <span class="Constant">load-ingredients</span>
+<span id="L538" class="LineNr">538 </span>  $print x, <span class="Constant">[: ]</span>
+<span id="L539" class="LineNr">539 </span>  <span class="Delimiter">{</span>
+<span id="L540" class="LineNr">540 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> x
+<span id="L541" class="LineNr">541 </span>  <span class="Conceal">¦</span> c:_elem <span class="Special">&lt;-</span> get *x, <span class="Constant">value:offset</span>
+<span id="L542" class="LineNr">542 </span>  <span class="Conceal">¦</span> $print c, <span class="Constant">[ ]</span>
+<span id="L543" class="LineNr">543 </span>  <span class="Conceal">¦</span> x <span class="Special">&lt;-</span> <a href='065duplex_list.mu.html#L29'>next</a> x
+<span id="L544" class="LineNr">544 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L545" class="LineNr">545 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> is-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
+<span id="L546" class="LineNr">546 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-newline?
+<span id="L547" class="LineNr">547 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> $print <span class="Constant">10/newline</span>
+<span id="L548" class="LineNr">548 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> $print x, <span class="Constant">[: ]</span>
+<span id="L549" class="LineNr">549 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L550" class="LineNr">550 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L551" class="LineNr">551 </span>  <span class="Delimiter">}</span>
+<span id="L552" class="LineNr">552 </span>  $print <span class="Constant">10/newline</span>, <span class="Constant">[---]</span>, <span class="Constant">10/newline</span>
+<span id="L553" class="LineNr">553 </span>]
 </pre>
 </body>
 </html>

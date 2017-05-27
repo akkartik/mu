@@ -493,23 +493,17 @@ scenario remove-range-to-end [
   ]
 ]
 
-# insert list beginning at 'new' after 'in'
-def insert-range in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
+# insert list beginning at 'start' after 'in'
+def splice in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients
   return-unless in
   return-unless start
-  end:&:duplex-list:_elem <- copy start
-  {
-    next:&:duplex-list:_elem <- next end/insert-range
-    break-unless next
-    end <- copy next
-    loop
-  }
+  end:&:duplex-list:_elem <- last start
   next:&:duplex-list:_elem <- next in
-  *end <- put *end, next:offset, next
   {
     break-unless next
+    *end <- put *end, next:offset, next
     *next <- put *next, prev:offset, end
   }
   *in <- put *in, next:offset, start
