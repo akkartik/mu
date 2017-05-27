@@ -359,6 +359,9 @@ case CHECK_FOR_INTERACTION: {
   if (event_type == TB_EVENT_KEY && event.key < 0xff) {
     products.at(0).push_back(/*text event*/0);
     if (event.key == TB_KEY_CTRL_C) {
+      // leave the screen in a relatively clean state
+      tb_set_cursor(tb_width()-1, tb_height()-1);
+      cout << "\r\n";
       tb_shutdown();
       exit(1);
     }
