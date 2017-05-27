@@ -573,3 +573,79 @@ def dump-from x:&:duplex-list:_elem [
   }
   $print 10/newline, [---], 10/newline
 ]
+
+scenario stash-duplex-list [
+  local-scope
+  list:&:duplex-list:num <- push 1, 0
+  list <- push 2, list
+  list <- push 3, list
+  run [
+    stash [list:], list
+  ]
+  trace-should-contain [
+    app: list: 3 <-> 2 <-> 1
+  ]
+]
+
+def to-text in:&:duplex-list:_elem -> result:text [
+  local-scope
+  load-ingredients
+  buf:&:buffer:char <- new-buffer 80
+  buf <- to-buffer in, buf
+  result <- buffer-to-array buf
+]
+
+# variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
+def to-text-line in:&:duplex-list:_elem -> result:text [
+  local-scope
+  load-ingredients
+  buf:&:buffer:char <- new-buffer 80
+  buf <- to-buffer in, buf, 6  # max elements to display
+  result <- buffer-to-array buf
+]
+
+def to-buffer in:&:duplex-list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
+  local-scope
+  load-ingredients
+  {
+    break-if in
+    buf <- append buf, [[]]
+    return
+  }
+  # append in.value to buf
+  val:_elem <- get *in, value:offset
+  buf <- append buf, val
+  # now prepare next
+  next:&:duplex-list:_elem <- next in
+  nextn:num <- copy next
+  return-unless next
+  buf <- append buf, [ <-> ]
+  # and recurse
+  remaining:num, optional-ingredient-found?:bool <- next-ingredient
+  {
+    break-if optional-ingredient-found?
+    # unlimited recursion
+    buf <- to-buffer next, buf
+    return
+  }
+  {
+    break-unless remaining
+    # limited recursion
+    remaining <- subtract remaining, 1
+    buf <- to-buffer next, buf, remaining
+    return
+  }
+  # past recursion depth; insert ellipses and stop
+  append buf, [...]
+]
+
+scenario stash-empty-duplex-list [
+  local-scope
+  x:&:duplex-list:num <- copy 0
+  run [
+    stash x
+  ]
+  trace-should-contain [
+    app: []
+  ]
+]

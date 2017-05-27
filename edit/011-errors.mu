@@ -245,7 +245,7 @@ scenario run-hides-errors-from-past-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -277,7 +277,7 @@ scenario run-updates-errors-for-shape-shifting-recipes [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .  local-scope                                     ┊─────────────────────────────────────────────────.
-    .  load-ingredients                                ┊0   edit          copy            delete         .
+    .  load-ingredients                                ┊0   edit       copy       to recipe    delete    .
     .  y:&:num <- copy 0                               ┊foo 2                                            .
     .  z <- add x, y                                   ┊foo_2: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t 'y'                                            .
@@ -297,7 +297,7 @@ scenario run-updates-errors-for-shape-shifting-recipes [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo x:_elem -> z:_elem [                   ┊                                                 .
     .  local-scope                                     ┊─────────────────────────────────────────────────.
-    .  load-ingredients                                ┊0   edit          copy            delete         .
+    .  load-ingredients                                ┊0   edit       copy       to recipe    delete    .
     .  y:&:num <- copy 0                               ┊foo 2                                            .
     .  z <- add x, y                                   ┊foo_3: 'add' requires number ingredients, but go↩.
     .]                                                 ┊t 'y'                                            .
@@ -574,7 +574,7 @@ scenario run-instruction-and-print-errors [
     .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊get 1234:num, foo:offset                         .
     .                                                  ┊unknown element 'foo' in container 'number'      .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
@@ -638,7 +638,7 @@ scenario run-instruction-and-print-errors-only-once [
     .  errors found (0)                                                               run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊get 1234:num, foo:offset                         .
     .                                                  ┊unknown element 'foo' in container 'number'      .
     .                                                  ┊first ingredient of 'get' should be a container,↩.
@@ -674,7 +674,7 @@ scenario sandbox-can-handle-infinite-loop [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  {                                               ┊─────────────────────────────────────────────────.
-    .    loop                                          ┊0   edit          copy            delete         .
+    .    loop                                          ┊0   edit       copy       to recipe    delete    .
     .  }                                               ┊foo                                              .
     .]                                                 ┊took too long!                                   .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -711,7 +711,7 @@ scenario sandbox-with-errors-shows-trace [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  local-scope                                     ┊─────────────────────────────────────────────────.
-    .  a:num <- next-ingredient                        ┊0   edit          copy            delete         .
+    .  a:num <- next-ingredient                        ┊0   edit       copy       to recipe    delete    .
     .  b:num <- next-ingredient                        ┊foo 4, 0                                         .
     .  stash [dividing by], b                          ┊foo: divide by zero in '_, c:num <- divide-with-↩.
     .  _, c:num <- divide-with-remainder a, b          ┊remainder a, b'                                  .
@@ -731,7 +731,7 @@ scenario sandbox-with-errors-shows-trace [
     .  errors found (0)                                                               run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  local-scope                                     ┊─────────────────────────────────────────────────.
-    .  a:num <- next-ingredient                        ┊0   edit          copy            delete         .
+    .  a:num <- next-ingredient                        ┊0   edit       copy       to recipe    delete    .
     .  b:num <- next-ingredient                        ┊foo 4, 0                                         .
     .  stash [dividing by], b                          ┊dividing by 0                                    .
     .  _, c:num <- divide-with-remainder a, b          ┊14 instructions run                              .

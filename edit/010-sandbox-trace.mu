@@ -22,7 +22,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .                                                                                 run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  stash [abc]                                     ┊─────────────────────────────────────────────────.
-    .]                                                 ┊0   edit          copy            delete         .
+    .]                                                 ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
@@ -41,7 +41,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .                                                                                 run (F4)           .
     .␣ecipe foo [                                      ┊                                                 .
     .  stash [abc]                                     ┊─────────────────────────────────────────────────.
-    .]                                                 ┊0   edit          copy            delete         .
+    .]                                                 ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊abc                                              .
   ]
@@ -66,7 +66,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
     .                                                                                 run (F4)           .
     .␣ecipe foo [                                      ┊                                                 .
     .  stash [abc]                                     ┊─────────────────────────────────────────────────.
-    .]                                                 ┊0   edit          copy            delete         .
+    .]                                                 ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
@@ -96,7 +96,7 @@ scenario sandbox-shows-app-trace-and-result [
     .                                                                                 run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  stash [abc]                                     ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
+    .  reply 4                                         ┊0   edit       copy       to recipe    delete    .
     .]                                                 ┊foo                                              .
     .                                                  ┊4                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
@@ -114,7 +114,7 @@ scenario sandbox-shows-app-trace-and-result [
     .                                                                                 run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  stash [abc]                                     ┊─────────────────────────────────────────────────.
-    .  reply 4                                         ┊0   edit          copy            delete         .
+    .  reply 4                                         ┊0   edit       copy       to recipe    delete    .
     .]                                                 ┊foo                                              .
     .                                                  ┊abc                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊8 instructions run                               .
@@ -141,7 +141,7 @@ scenario clicking-on-app-trace-does-nothing [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊stash 123456789                                  .
     .                                                  ┊123456789                                        .
   ]
@@ -157,7 +157,7 @@ scenario clicking-on-app-trace-does-nothing [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊stash 123456789                                  .
     .                                                  ┊123456789                                        .
   ]

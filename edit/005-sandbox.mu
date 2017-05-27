@@ -59,7 +59,7 @@ scenario run-and-show-results [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -93,7 +93,7 @@ scenario run-and-show-results [
     .                                                                                                    .
     .                                                                                                    .
     .                                                                                                    .
-    .                                                   0   edit          copy            delete         .
+    .                                                   0   edit       copy       to recipe    delete    .
   ]
   # run another command
   assume-console [
@@ -109,11 +109,11 @@ scenario run-and-show-results [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -320,14 +320,16 @@ def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num 
   local-scope
   load-ingredients
   move-cursor-to-column screen, left
-  edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, delete-button-left:num <- sandbox-menu-columns left, right
+  edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, recipe-button-left:num, recipe-button-right:num, delete-button-left:num <- sandbox-menu-columns left, right
   print screen, sandbox-index, 232/dark-grey, 245/grey
   start-buttons:num <- subtract edit-button-left, 1
   clear-line-until screen, start-buttons, 245/grey
-  print screen, [edit], 232/black, 94/background-orange
-  clear-line-until screen, edit-button-right, 94/background-orange
+  print screen, [edit], 232/black, 25/background-blue
+  clear-line-until screen, edit-button-right, 25/background-blue
   print screen, [copy], 232/black, 58/background-green
   clear-line-until screen, copy-button-right, 58/background-green
+  print screen, [to recipe], 232/black, 94/background-orange
+  clear-line-until screen, recipe-button-right, 94/background-orange
   print screen, [delete], 232/black, 52/background-red
   clear-line-until screen, right, 52/background-red
 ]
@@ -335,19 +337,21 @@ def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num 
 # divide up the menu bar for a sandbox into 3 segments, for edit/copy/delete buttons
 # delete-button-right == right
 # all left/right pairs are inclusive
-def sandbox-menu-columns left:num, right:num -> edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, delete-button-left:num [
+def sandbox-menu-columns left:num, right:num -> edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, recipe-button-left:num, recipe-button-right:num, delete-button-left:num [
   local-scope
   load-ingredients
   start-buttons:num <- add left, 4/space-for-sandbox-index
   buttons-space:num <- subtract right, start-buttons
-  button-width:num <- divide-with-remainder buttons-space, 3  # integer division
-  buttons-wide-enough?:bool <- greater-or-equal button-width, 8
-  assert buttons-wide-enough?, [sandbox must be at least 30 or so characters wide]
+  button-width:num <- divide-with-remainder buttons-space, 4  # integer division
+  buttons-wide-enough?:bool <- greater-or-equal button-width, 10
+  assert buttons-wide-enough?, [sandbox must be at least 40 or so characters wide]
   edit-button-left:num <- copy start-buttons
   copy-button-left:num <- add start-buttons, button-width
   edit-button-right:num <- subtract copy-button-left, 1
-  delete-button-left:num <- subtract right, button-width
-  copy-button-right:num <- subtract delete-button-left, 1
+  recipe-button-left:num <- add copy-button-left, button-width
+  copy-button-right:num <- subtract recipe-button-left, 1
+  delete-button-left:num <- subtract right, button-width, -2  # because 'to recipe' is wider than 'delete'
+  recipe-button-right:num <- subtract delete-button-left, 1
 ]
 
 # print a text 's' to 'editor' in 'color' starting at 'row'
@@ -556,7 +560,7 @@ scenario run-updates-results [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊0   edit          copy            delete         .
+    .  local-scope                                     ┊0   edit       copy       to recipe    delete    .
     .  z:num <- add 2, 2                               ┊foo                                              .
     .  reply z                                         ┊4                                                .
     .]                                                 ┊─────────────────────────────────────────────────.
@@ -579,7 +583,7 @@ scenario run-updates-results [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .recipe foo [                                      ┊─────────────────────────────────────────────────.
-    .  local-scope                                     ┊0   edit          copy            delete         .
+    .  local-scope                                     ┊0   edit       copy       to recipe    delete    .
     .  z:num <- add 2, 3                               ┊foo                                              .
     .  reply z                                         ┊5                                                .
     .]                                                 ┊─────────────────────────────────────────────────.
@@ -610,7 +614,7 @@ scenario run-instruction-manages-screen-per-sandbox [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊print screen, 4                                  .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4                             .               .
@@ -842,7 +846,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
   ]
   # switch to sandbox window and hit 'page-down'
@@ -860,7 +864,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -878,7 +882,7 @@ scenario scrolling-down-past-bottom-of-sandbox-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊␣                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
   ]
 ]
@@ -987,7 +991,7 @@ scenario scrolling-down-past-bottom-on-recipe-side [
     .                                                                                 run (F4)           .
     .␣                                                 ┊                                                 .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
   ]
 ]
@@ -1016,11 +1020,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊␣                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -1038,11 +1042,11 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊␣   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -1057,7 +1061,7 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -1074,7 +1078,7 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -1091,11 +1095,11 @@ scenario scrolling-through-multiple-sandboxes [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -1113,11 +1117,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊␣                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -1135,11 +1139,11 @@ scenario scrolling-through-multiple-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊␣                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -1165,7 +1169,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -1183,7 +1187,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -1201,7 +1205,7 @@ scenario scrolling-manages-sandbox-index-correctly [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -1219,7 +1223,7 @@ scenario scrolling-manages-sandbox-index-correctly [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.

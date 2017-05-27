@@ -9,7 +9,7 @@ scenario deleting-sandboxes [
   env:&:environment <- new-programming-environment resources, screen, []
   # run a few commands
   assume-console [
-    left-click 1, 80
+    left-click 1, 75
     type [divide-with-remainder 11, 3]
     press F4
     type [add 2, 2]
@@ -20,11 +20,11 @@ scenario deleting-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊divide-with-remainder 11, 3                      .
     .                                                  ┊3                                                .
     .                                                  ┊2                                                .
@@ -33,7 +33,7 @@ scenario deleting-sandboxes [
   ]
   # delete second sandbox by clicking on left edge of 'delete' button
   assume-console [
-    left-click 7, 85
+    left-click 7, 90
   ]
   run [
     event-loop screen, console, env, resources
@@ -42,7 +42,7 @@ scenario deleting-sandboxes [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -90,7 +90,7 @@ def should-attempt-delete? click-row:num, click-column:num, env:&:environment ->
   assert first-sandbox, [!!]
   sandbox-left-margin:num <- get *first-sandbox, left:offset
   sandbox-right-margin:num <- get *first-sandbox, right:offset
-  _, _, _, _, delete-button-left:num <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  _, _, _, _, _, _, delete-button-left:num <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   result <- within-range? click-column, delete-button-left, sandbox-right-margin
 ]
 
@@ -168,11 +168,11 @@ scenario deleting-sandbox-after-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
   ]
   # delete the second sandbox
   assume-console [
@@ -185,7 +185,7 @@ scenario deleting-sandbox-after-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -215,11 +215,11 @@ scenario deleting-top-sandbox-after-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
   ]
   # delete the second sandbox
   assume-console [
@@ -232,7 +232,7 @@ scenario deleting-top-sandbox-after-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -263,7 +263,7 @@ scenario deleting-final-sandbox-after-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -281,7 +281,7 @@ scenario deleting-final-sandbox-after-scroll [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -311,11 +311,11 @@ scenario deleting-updates-sandbox-count [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -332,7 +332,7 @@ scenario deleting-updates-sandbox-count [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.

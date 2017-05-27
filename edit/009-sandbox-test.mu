@@ -22,7 +22,7 @@ scenario sandbox-click-on-result-toggles-color-to-green [
     .                                                                                 run (F4)           .
     .recipe foo [                                      ┊                                                 .
     .  reply 4                                         ┊─────────────────────────────────────────────────.
-    .]                                                 ┊0   edit          copy            delete         .
+    .]                                                 ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -55,7 +55,7 @@ scenario sandbox-click-on-result-toggles-color-to-green [
     .                                                                                 run (F4)           .
     .␣ecipe foo [                                      ┊                                                 .
     .  reply 4                                         ┊─────────────────────────────────────────────────.
-    .]                                                 ┊0   edit          copy            delete         .
+    .]                                                 ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊foo                                              .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.

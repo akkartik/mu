@@ -18,7 +18,7 @@ scenario copy-a-sandbox-to-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -36,7 +36,7 @@ scenario copy-a-sandbox-to-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊add 1, 1                                         .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -53,7 +53,7 @@ scenario copy-a-sandbox-to-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊0add 1, 1                                        .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -78,7 +78,7 @@ scenario copy-a-sandbox-to-editor-2 [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -86,7 +86,7 @@ scenario copy-a-sandbox-to-editor-2 [
   ]
   # click at right edge of 'copy' button (just before 'delete')
   assume-console [
-    left-click 3, 84
+    left-click 3, 76
   ]
   run [
     event-loop screen, console, env, resources
@@ -96,7 +96,7 @@ scenario copy-a-sandbox-to-editor-2 [
     .                                                                                 run (F4)           .
     .                                                  ┊add 1, 1                                         .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -113,7 +113,7 @@ scenario copy-a-sandbox-to-editor-2 [
     .                                                                                 run (F4)           .
     .                                                  ┊0add 1, 1                                        .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -146,7 +146,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
   assert first-sandbox, [!!]
   sandbox-left-margin:num <- get *first-sandbox, left:offset
   sandbox-right-margin:num <- get *first-sandbox, right:offset
-  _, _, copy-button-left:num, copy-button-right:num, _ <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  _, _, copy-button-left:num, copy-button-right:num <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
   copy-button-vertical-area?:bool <- within-range? click-column, copy-button-left, copy-button-right
   return-unless copy-button-vertical-area?, 0/false
   # finally, is sandbox editor empty?
@@ -231,7 +231,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -251,7 +251,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     .                                                                                 run (F4)           .
     .                                                  ┊0                                                .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -268,10 +268,124 @@ scenario copy-fails-if-sandbox-editor-not-empty [
     .                                                                                 run (F4)           .
     .                                                  ┊01                                               .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
     .                                                  ┊                                                 .
   ]
+]
+
+## the 'to recipe' button makes it easy to create a function out of a sandbox
+
+scenario copy-a-sandbox-to-recipe-side [
+  local-scope
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 10/height
+  # empty recipes
+  assume-resources [
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  # run it
+  assume-console [
+    press F4
+  ]
+  event-loop screen, console, env, resources
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .                                                  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit       copy       to recipe    delete    .
+    .                                                  ┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊─────────────────────────────────────────────────.
+    .                                                  ┊                                                 .
+  ]
+  # click at left edge of 'copy' button
+  assume-console [
+    left-click 3, 78
+  ]
+  run [
+    event-loop screen, console, env, resources
+  ]
+  # it copies into recipe side
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .add 1, 1                                          ┊                                                 .
+    .                                                  ┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit       copy       to recipe    delete    .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊─────────────────────────────────────────────────.
+    .                                                  ┊                                                 .
+  ]
+  # cursor should be at the top left of the recipe side
+  assume-console [
+    type [0]
+  ]
+  run [
+    event-loop screen, console, env, resources
+  ]
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .0add 1, 1                                         ┊                                                 .
+    .                                                  ┊─────────────────────────────────────────────────.
+    .                                                  ┊0   edit       copy       to recipe    delete    .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊add 1, 1                                         .
+    .                                                  ┊2                                                .
+    .                                                  ┊─────────────────────────────────────────────────.
+    .                                                  ┊                                                 .
+  ]
+]
+
+after <global-touch> [
+  # support 'copy to recipe' button
+  {
+    copy?:bool <- should-copy-to-recipe? click-row, click-column, env
+    break-unless copy?
+    modified?:bool <- prepend-sandbox-into-recipe-side click-row, env
+    break-unless modified?
+    put *env, sandbox-in-focus?:offset, 0/false
+    screen <- render-recipes screen, env, render
+    screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
+    loop +next-event
+  }
+]
+
+# some preconditions for attempting to copy a sandbox into the recipe side
+def should-copy-to-recipe? click-row:num, click-column:num, env:&:environment -> result:bool [
+  local-scope
+  load-ingredients
+  # are we below the sandbox editor?
+  click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
+  return-unless click-sandbox-area?, 0/false
+  # narrower, is the click in the columns spanning the 'copy' button?
+  first-sandbox:&:editor <- get *env, current-sandbox:offset
+  assert first-sandbox, [!!]
+  sandbox-left-margin:num <- get *first-sandbox, left:offset
+  sandbox-right-margin:num <- get *first-sandbox, right:offset
+  _, _, _, _, recipe-button-left:num, recipe-button-right:num <- sandbox-menu-columns sandbox-left-margin, sandbox-right-margin
+  result <- within-range? click-column, recipe-button-left, recipe-button-right
+]
+
+def prepend-sandbox-into-recipe-side click-row:num, env:&:environment -> clicked-on-copy-to-recipe-button?:bool, env:&:environment [
+  local-scope
+  load-ingredients
+  sandbox:&:sandbox <- find-sandbox env, click-row
+  return-unless sandbox, 0/false
+  recipe-editor:&:editor <- get *env, recipes:offset
+  recipe-data:&:duplex-list:char <- get *recipe-editor, data:offset
+  # make the newly inserted code easy to delineate
+  newline:char <- copy 10
+  insert newline, recipe-data
+  insert newline, recipe-data
+  # insert code from the selected sandbox
+  sandbox-data:text <- get *sandbox, data:offset
+  insert recipe-data, sandbox-data
+  # reset cursor
+  put *recipe-editor, top-of-screen:offset, recipe-data
+  put *recipe-editor, before-cursor:offset, recipe-data
+  put *recipe-editor, cursor-row:offset, 1
+  put *recipe-editor, cursor-column:offset, 0
+  return 1/true
 ]

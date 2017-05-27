@@ -276,7 +276,7 @@ def reverse list:&:list:_elem temp:&:list:_elem/contained-in:result -> result:&:
 
 scenario reverse-list [
   local-scope
-  list:&:list:number <- push 1, 0
+  list:&:list:num <- push 1, 0
   list <- push 2, list
   list <- push 3, list
   run [
@@ -287,6 +287,19 @@ scenario reverse-list [
   trace-should-contain [
     app: list: 3 -> 2 -> 1
     app: reversed: 1 -> 2 -> 3
+  ]
+]
+
+scenario stash-list [
+  local-scope
+  list:&:list:num <- push 1, 0
+  list <- push 2, list
+  list <- push 3, list
+  run [
+    stash [list:], list
+  ]
+  trace-should-contain [
+    app: list: 3 -> 2 -> 1
   ]
 ]
 

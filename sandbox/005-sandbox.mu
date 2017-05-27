@@ -314,16 +314,10 @@ def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num 
   print screen, sandbox-index, 232/dark-grey, 245/grey
   start-buttons:num <- subtract edit-button-left, 1
   clear-line-until screen, start-buttons, 245/grey
-  print screen, [edit], 232/black, 94/background-orange
-  clear-line-until screen, edit-button-right, 94/background-orange
-  _, col:num <- cursor-position screen
-  at-start-of-copy-button?:bool <- equal col, copy-button-left
-  assert at-start-of-copy-button?, [aaa]
+  print screen, [edit], 232/black, 25/background-blue
+  clear-line-until screen, edit-button-right, 25/background-blue
   print screen, [copy], 232/black, 58/background-green
   clear-line-until screen, copy-button-right, 58/background-green
-  _, col:num <- cursor-position screen
-  at-start-of-delete-button?:bool <- equal col, delete-button-left
-  assert at-start-of-delete-button?, [bbb]
   print screen, [delete], 232/black, 52/background-red
   clear-line-until screen, right, 52/background-red
 ]

@@ -17,7 +17,7 @@ scenario clicking-on-sandbox-edit-button-moves-it-to-editor [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -69,7 +69,7 @@ scenario clicking-on-sandbox-edit-button-moves-it-to-editor-2 [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -77,7 +77,7 @@ scenario clicking-on-sandbox-edit-button-moves-it-to-editor-2 [
   ]
   # click at right edge of 'edit' button (just before 'copy')
   assume-console [
-    left-click 3, 68
+    left-click 3, 65
   ]
   run [
     event-loop screen, console, env, resources
@@ -173,7 +173,7 @@ scenario sandbox-with-print-can-be-edited [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊print screen, 4                                  .
     .                                                  ┊screen:                                          .
     .                                                  ┊  .4                             .               .
@@ -223,7 +223,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -241,7 +241,7 @@ scenario editing-sandbox-after-scrolling-resets-scroll [
     .                                                                                 run (F4)           .
     .                                                  ┊add 2, 2                                         .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
@@ -271,11 +271,11 @@ scenario editing-sandbox-updates-sandbox-count [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -292,11 +292,11 @@ scenario editing-sandbox-updates-sandbox-count [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
-    .                                                  ┊0   edit          copy            delete         .
+    .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 1, 1                                         .
     .                                                  ┊2                                                .
     .                                                  ┊─────────────────────────────────────────────────.
-    .                                                  ┊1   edit          copy            delete         .
+    .                                                  ┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
   ]
@@ -313,7 +313,7 @@ scenario editing-sandbox-updates-sandbox-count [
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit          copy            delete         .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊1   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
     .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
