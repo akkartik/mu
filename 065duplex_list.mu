@@ -510,6 +510,28 @@ def splice in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> 
   *start <- put *start, prev:offset, in
 ]
 
+# insert contents of 'new' after 'in'
+def insert in:&:duplex-list:_elem, new:&:@:_elem -> in:&:duplex-list:_elem [
+  local-scope
+  load-ingredients
+  return-unless in
+  return-unless new
+  len:num <- length *new
+  return-unless len
+  curr:&:duplex-list:_elem <- copy in
+  idx:num <- copy 0
+  {
+    done?:bool <- greater-or-equal idx, len
+    break-if done?
+    c:_elem <- index *new, idx
+    insert c, curr
+    # next iter
+    curr <- next curr
+    idx <- add idx, 1
+    loop
+  }
+]
+
 def append in:&:duplex-list:_elem, new:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
   load-ingredients

@@ -72,23 +72,8 @@ def new-editor s:text, left:num, right:num -> result:&:editor [
 def insert-text editor:&:editor, text:text -> editor:&:editor [
   local-scope
   load-ingredients
-  # early exit if text is empty
-  return-unless text
-  len:num <- length *text
-  return-unless len
-  idx:num <- copy 0
-  # now we can start appending the rest, character by character
   curr:&:duplex-list:char <- get *editor, data:offset
-  {
-    done?:bool <- greater-or-equal idx, len
-    break-if done?
-    c:char <- index *text, idx
-    insert c, curr
-    # next iter
-    curr <- next curr
-    idx <- add idx, 1
-    loop
-  }
+  insert curr, text
 ]
 
 scenario editor-initializes-without-data [
