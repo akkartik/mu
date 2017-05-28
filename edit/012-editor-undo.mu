@@ -36,6 +36,8 @@ container move-operation [
     # 2: right arrow
     # 3: up arrow
     # 4: down arrow
+    # 5: line up
+    # 6: line down
 ]
 
 container delete-operation [

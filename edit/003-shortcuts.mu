@@ -2176,6 +2176,7 @@ after <scroll-down> [
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
 # positions until the next newline
+# returns original if no next newline
 # beware: never return null pointer.
 def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:duplex-list:char [
   local-scope
@@ -2555,6 +2556,7 @@ after <scroll-up> [
 
 # takes a pointer into the doubly-linked list, scans back to before start of
 # previous *wrapped* line
+# returns original if no next newline
 # beware: never return null pointer
 def before-previous-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
   local-scope
@@ -3488,4 +3490,63 @@ gxy
     .          .
     .dxy       .
   ]
+]
+
+# ctrl-e - scroll up by one line
+# todo: scenarios
+
+after <handle-special-character> [
+  {
+    scroll-up?:bool <- equal c, 5/ctrl-e
+    break-unless scroll-up?
+    <move-cursor-begin>
+    do-render?:bool, editor <- line-up editor, screen-height
+    undo-coalesce-tag:num <- copy 5/line-up
+    <move-cursor-end>
+    return do-render?
+  }
+]
+
+def line-up editor:&:editor, screen-height:num -> do-render?:bool, editor:&:editor [
+  local-scope
+  load-ingredients
+  left:num <- get *editor, left:offset
+  right:num <- get *editor, right:offset
+  max:num <- subtract right, left
+  old-top:&:duplex-list:char <- get *editor, top-of-screen:offset
+  new-top:&:duplex-list:char <- before-start-of-next-line old-top, max
+  movement?:bool <- not-equal old-top, new-top
+  {
+    break-unless movement?
+    *editor <- put *editor, top-of-screen:offset, new-top
+  }
+  return movement?
+]
+
+# ctrl-d - scroll down by one line
+# todo: scenarios
+
+after <handle-special-character> [
+  {
+    scroll-down?:bool <- equal c, 4/ctrl-d
+    break-unless scroll-down?
+    <move-cursor-begin>
+    do-render?:bool, editor <- line-down editor, screen-height
+    undo-coalesce-tag:num <- copy 6/line-down
+    <move-cursor-end>
+    return do-render?
+  }
+]
+
+def line-down editor:&:editor, screen-height:num -> do-render?:bool, editor:&:editor [
+  local-scope
+  load-ingredients
+  old-top:&:duplex-list:char <- get *editor, top-of-screen:offset
+  new-top:&:duplex-list:char <- before-previous-line old-top, editor
+  movement?:bool <- not-equal old-top, new-top
+  {
+    break-unless movement?
+    *editor <- put *editor, top-of-screen:offset, new-top
+  }
+  return movement?
 ]
