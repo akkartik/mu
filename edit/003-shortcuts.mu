@@ -3550,3 +3550,24 @@ def line-down editor:&:editor, screen-height:num -> do-render?:bool, editor:&:ed
   }
   return movement?
 ]
+
+# ctrl-t - move current line to top of screen
+# todo: scenarios
+
+after <handle-special-character> [
+  {
+    scroll-down?:bool <- equal c, 20/ctrl-t
+    break-unless scroll-down?
+    <move-cursor-begin>
+    old-top:&:duplex-list:char <- get *editor, top-of-screen:offset
+    cursor:&:duplex-list:char <- get *editor, before-cursor:offset
+    cursor <- next cursor
+    new-top:&:duplex-list:char <- before-previous-line cursor, editor
+    *editor <- put *editor, top-of-screen:offset, new-top
+    *editor <- put *editor, cursor-row:offset, 1
+    do-render?:bool <- not-equal new-top, old-top
+    undo-coalesce-tag:num <- copy 0/never
+    <move-cursor-end>
+    return do-render?
+  }
+]
