@@ -345,7 +345,7 @@ after <global-touch> [
     break-unless copy?
     modified?:bool <- prepend-sandbox-into-recipe-side click-row, env
     break-unless modified?
-    put *env, sandbox-in-focus?:offset, 0/false
+    *env <- put *env, sandbox-in-focus?:offset, 0/false
     screen <- render-recipes screen, env, render
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     loop +next-event
@@ -383,9 +383,9 @@ def prepend-sandbox-into-recipe-side click-row:num, env:&:environment -> clicked
   sandbox-data:text <- get *sandbox, data:offset
   insert recipe-data, sandbox-data
   # reset cursor
-  put *recipe-editor, top-of-screen:offset, recipe-data
-  put *recipe-editor, before-cursor:offset, recipe-data
-  put *recipe-editor, cursor-row:offset, 1
-  put *recipe-editor, cursor-column:offset, 0
+  *recipe-editor <- put *recipe-editor, top-of-screen:offset, recipe-data
+  *recipe-editor <- put *recipe-editor, before-cursor:offset, recipe-data
+  *recipe-editor <- put *recipe-editor, cursor-row:offset, 1
+  *recipe-editor <- put *recipe-editor, cursor-column:offset, 0
   return 1/true
 ]
