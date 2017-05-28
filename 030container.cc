@@ -575,11 +575,12 @@ case PUT: {
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire container
   // Write Memory in PUT in Run
+  write_products = false;
   for (int i = 0;  i < SIZE(ingredients.at(2));  ++i) {
     trace(9999, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));
   }
-  goto finish_instruction;
+  break;
 }
 
 :(scenario put_product_error)

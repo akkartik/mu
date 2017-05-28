@@ -107,21 +107,20 @@ if (!contains_key(Recipe, inst.operation)) {
 }
 :(replace{} "default:" following "End Primitive Recipe Implementations")
 default: {
-  const instruction& call_instruction = current_instruction();
-  if (Recipe.find(current_instruction().operation) == Recipe.end()) {  // duplicate from Checks
-    // stop running this instruction immediately
-    ++current_step_index();
-    continue;
+  if (contains_key(Recipe, current_instruction().operation)) {  // error already raised in Checks above
+    // not a primitive; look up the book of recipes
+    if (Trace_stream) {
+      ++Trace_stream->callstack_depth;
+      trace(9999, "trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
+      assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
+    }
+    const instruction& call_instruction = current_instruction();
+    Current_routine->calls.push_front(call(current_instruction().operation));
+    finish_call_housekeeping(call_instruction, ingredients);
+    // not done with caller
+    write_products = false;
+    fall_through_to_next_instruction = false;
   }
-  // not a primitive; look up the book of recipes
-  if (Trace_stream) {
-    ++Trace_stream->callstack_depth;
-    trace(9999, "trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
-    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-  }
-  Current_routine->calls.push_front(call(current_instruction().operation));
-  finish_call_housekeeping(call_instruction, ingredients);
-  continue;  // not done with caller; don't increment step_index of caller
 }
 :(code)
 void finish_call_housekeeping(const instruction& call_instruction, const vector<vector<double> >& ingredients) {

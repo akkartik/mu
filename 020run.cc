@@ -80,6 +80,12 @@ void run_current_routine() {
     }
     // instructions below will write to 'products'
     vector<vector<double> > products;
+    //: This will be a large switch that later layers will often insert cases
+    //: into. Never call 'continue' within it. Instead, we'll explicitly
+    //: control which of the following stages after the switch we run for each
+    //: instruction.
+    bool write_products = true;
+    bool fall_through_to_next_instruction = true;
     switch (current_instruction().operation) {
       // Primitive Recipe Implementations
       case COPY: {
@@ -92,18 +98,20 @@ void run_current_routine() {
       }
     }
     //: used by a later layer
-    Writing_products_of_instruction = true;
-    if (SIZE(products) < SIZE(current_instruction().products)) {
-      raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
+    if (write_products) {
+      Writing_products_of_instruction = true;
+      if (SIZE(products) < SIZE(current_instruction().products)) {
+        raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
+      }
+      else {
+        for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
+          write_memory(current_instruction().products.at(i), products.at(i));
+      }
+      Writing_products_of_instruction = false;
     }
-    else {
-      for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
-        write_memory(current_instruction().products.at(i), products.at(i));
-    }
-    Writing_products_of_instruction = false;
     // End Running One Instruction
-    finish_instruction:;
-    ++current_step_index();
+    if (fall_through_to_next_instruction)
+      ++current_step_index();
   }
   stop_running_current_routine:;
 }

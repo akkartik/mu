@@ -66,7 +66,8 @@ case CREATE_ARRAY: {
     put(Memory, base_address+i, 0);
   }
   // no need to update product
-  goto finish_instruction;
+  write_products = false;
+  break;
 }
 
 :(scenario copy_array)
@@ -557,13 +558,14 @@ case PUT_INDEX: {
   trace(9998, "run") << "address to copy to is " << address << end();
   // optimization: directly write the element rather than updating 'product'
   // and writing the entire array
+  write_products = false;
   vector<double> value = read_memory(current_instruction().ingredients.at(2));
   // Write Memory in PUT_INDEX in Run
   for (int i = 0;  i < SIZE(value);  ++i) {
     trace(9999, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
     put(Memory, address+i, value.at(i));
   }
-  goto finish_instruction;
+  break;
 }
 
 :(scenario put_index_out_of_bounds)

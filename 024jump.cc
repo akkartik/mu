@@ -30,7 +30,10 @@ case JUMP: {
   assert(current_instruction().ingredients.at(0).initialized);
   current_step_index() += ingredients.at(0).at(0)+1;
   trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
-  continue;  // skip rest of this instruction
+  // skip rest of this instruction
+  write_products = false;
+  fall_through_to_next_instruction = false;
+  break;
 }
 
 //: special type to designate jump targets
@@ -78,7 +81,10 @@ case JUMP_IF: {
   }
   current_step_index() += ingredients.at(1).at(0)+1;
   trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
-  continue;  // skip rest of this instruction
+  // skip rest of this instruction
+  write_products = false;
+  fall_through_to_next_instruction = false;
+  break;
 }
 
 :(scenario jump_if)
@@ -131,7 +137,10 @@ case JUMP_UNLESS: {
   }
   current_step_index() += ingredients.at(1).at(0)+1;
   trace(9998, "run") << "jumping to instruction " << current_step_index() << end();
-  continue;  // skip rest of this instruction
+  // skip rest of this instruction
+  write_products = false;
+  fall_through_to_next_instruction = false;
+  break;
 }
 
 :(scenario jump_unless)

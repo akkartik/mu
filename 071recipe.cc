@@ -114,13 +114,17 @@ case CALL: {
     raise << maybe(current_recipe_name()) << "tried to call empty recipe in '" << to_string(current_instruction()) << "'" << end();
     break;
   }
-  instruction/*copy*/ call_instruction = current_instruction();
+  const call& caller_frame = current_call();
+  instruction/*copy*/ call_instruction = to_instruction(caller_frame);
   call_instruction.operation = ingredients.at(0).at(0);
   call_instruction.ingredients.erase(call_instruction.ingredients.begin());
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(call_instruction, ingredients);
-  continue;
+  // not done with caller
+  write_products = false;
+  fall_through_to_next_instruction = false;
+  break;
 }
 
 //:: check types for 'call' instructions

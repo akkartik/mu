@@ -160,6 +160,7 @@ case MAYBE_CONVERT: {
   reagent/*copy*/ status = current_instruction().products.at(1);
   // Update MAYBE_CONVERT status in Run
   // optimization: directly write results to only update first product when necessary
+  write_products = false;
   if (tag == static_cast<int>(get_or_insert(Memory, base_address))) {
     const reagent& variant = variant_type(base, tag);
     trace(9999, "mem") << "storing 1 in location " << status.value << end();
@@ -177,7 +178,7 @@ case MAYBE_CONVERT: {
     trace(9999, "mem") << "storing 0 in location " << status.value << end();
     put(Memory, status.value, 0);
   }
-  goto finish_instruction;
+  break;
 }
 
 :(code)
