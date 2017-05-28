@@ -223,7 +223,7 @@ def scroll-fake-screen screen:&:screen -> screen:&:screen [
   # clear top line and 'rotate' it to the bottom
   top-idx:num <- get *screen, top-idx:offset  # 0 <= top-idx < len(buf)
   next-top-idx:num <- add top-idx, width  # 0 <= next-top-idx <= len(buf)
-  empty-cell:screen-cell <- merge 0, 0
+  empty-cell:screen-cell <- merge 0/empty, 7/white
   {
     done?:bool <- greater-or-equal top-idx, next-top-idx
     break-if done?
@@ -483,7 +483,7 @@ scenario print-character-at-bottom-right [
     21 <- 101  # 'e'
     22 <- 7  # white
     23 <- 0  # unused
-    24 <- 0  # no color
+    24 <- 7  # white
   ]
 ]
 
@@ -625,13 +625,36 @@ def cursor-down screen:&:screen -> screen:&:screen [
     return
   }
   # fake screen
-  height:num <- get *screen, num-rows:offset
-  row:num <- get *screen, cursor-row:offset
-  max:num <- subtract height, 1
-  at-bottom?:bool <- greater-or-equal row, max
-  return-if at-bottom?
-  row <- add row, 1
-  *screen <- put *screen, cursor-row:offset, row
+  cursor-down-on-fake-screen screen
+]
+
+scenario cursor-down-scrolls [
+  local-scope
+  fake-screen:&:screen <- new-fake-screen 3/width, 2/height
+  # print something to screen and scroll
+  run [
+    print fake-screen, [abc]
+    cursor-to-next-line fake-screen
+    cursor-to-next-line fake-screen
+    data:&:@:screen-cell <- get *fake-screen, data:offset
+    10:@:screen-cell/raw <- copy *data
+  ]
+  # screen is now blank
+  memory-should-contain [
+    10 <- 6  # width*height
+    11 <- 0
+    12 <- 7  # white
+    13 <- 0
+    14 <- 7  # white
+    15 <- 0
+    16 <- 7  # white
+    17 <- 0
+    18 <- 7  # white
+    19 <- 0
+    20 <- 7  # white
+    21 <- 0
+    22 <- 7  # white
+  ]
 ]
 
 def cursor-up screen:&:screen -> screen:&:screen [
