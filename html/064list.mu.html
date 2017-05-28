@@ -338,7 +338,7 @@ if ('onhashchange' in window) {
 <span id="L276" class="LineNr">276 </span>
 <span id="L277" class="LineNr">277 </span><span class="muScenario">scenario</span> reverse-list [
 <span id="L278" class="LineNr">278 </span>  <span class="Constant">local-scope</span>
-<span id="L279" class="LineNr">279 </span>  <a href='064list.mu.html#L6'>list</a>:&amp;:<a href='064list.mu.html#L6'>list</a>:number <span class="Special">&lt;-</span> push<span class="Constant"> 1</span>,<span class="Constant"> 0</span>
+<span id="L279" class="LineNr">279 </span>  <a href='064list.mu.html#L6'>list</a>:&amp;:<a href='064list.mu.html#L6'>list</a>:num <span class="Special">&lt;-</span> push<span class="Constant"> 1</span>,<span class="Constant"> 0</span>
 <span id="L280" class="LineNr">280 </span>  <a href='064list.mu.html#L6'>list</a> <span class="Special">&lt;-</span> push<span class="Constant"> 2</span>, <a href='064list.mu.html#L6'>list</a>
 <span id="L281" class="LineNr">281 </span>  <a href='064list.mu.html#L6'>list</a> <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>, <a href='064list.mu.html#L6'>list</a>
 <span id="L282" class="LineNr">282 </span>  run [
@@ -352,68 +352,81 @@ if ('onhashchange' in window) {
 <span id="L290" class="LineNr">290 </span>  ]
 <span id="L291" class="LineNr">291 </span>]
 <span id="L292" class="LineNr">292 </span>
-<span id="L293" class="LineNr">293 </span><span class="muRecipe">def</span> to-text in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L293" class="LineNr">293 </span><span class="muScenario">scenario</span> stash-list [
 <span id="L294" class="LineNr">294 </span>  <span class="Constant">local-scope</span>
-<span id="L295" class="LineNr">295 </span>  <span class="Constant">load-ingredients</span>
-<span id="L296" class="LineNr">296 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 80</span>
-<span id="L297" class="LineNr">297 </span>  buf <span class="Special">&lt;-</span> <a href='064list.mu.html#L310'>to-buffer</a> in, buf
-<span id="L298" class="LineNr">298 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L353'>buffer-to-array</a> buf
-<span id="L299" class="LineNr">299 </span>]
-<span id="L300" class="LineNr">300 </span>
-<span id="L301" class="LineNr">301 </span><span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
-<span id="L302" class="LineNr">302 </span><span class="muRecipe">def</span> to-text-line in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem<span class="muRecipe"> -&gt; </span>result:text [
-<span id="L303" class="LineNr">303 </span>  <span class="Constant">local-scope</span>
-<span id="L304" class="LineNr">304 </span>  <span class="Constant">load-ingredients</span>
-<span id="L305" class="LineNr">305 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 80</span>
-<span id="L306" class="LineNr">306 </span>  buf <span class="Special">&lt;-</span> <a href='064list.mu.html#L310'>to-buffer</a> in, buf,<span class="Constant"> 6</span>  <span class="Comment"># max elements to display</span>
-<span id="L307" class="LineNr">307 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L353'>buffer-to-array</a> buf
-<span id="L308" class="LineNr">308 </span>]
-<span id="L309" class="LineNr">309 </span>
-<span id="L310" class="LineNr">310 </span><span class="muRecipe">def</span> <a href='064list.mu.html#L310'>to-buffer</a> in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem, buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char<span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char [
-<span id="L311" class="LineNr">311 </span>  <span class="Constant">local-scope</span>
-<span id="L312" class="LineNr">312 </span>  <span class="Constant">load-ingredients</span>
-<span id="L313" class="LineNr">313 </span>  <span class="Delimiter">{</span>
-<span id="L314" class="LineNr">314 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> in
-<span id="L315" class="LineNr">315 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[[]</span>]
-<span id="L316" class="LineNr">316 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
-<span id="L317" class="LineNr">317 </span>  <span class="Delimiter">}</span>
-<span id="L318" class="LineNr">318 </span>  <span class="Comment"># append in.value to buf</span>
-<span id="L319" class="LineNr">319 </span>  val:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">value:offset</span>
-<span id="L320" class="LineNr">320 </span>  buf <span class="Special">&lt;-</span> append buf, val
-<span id="L321" class="LineNr">321 </span>  <span class="Comment"># now prepare next</span>
-<span id="L322" class="LineNr">322 </span>  <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem <span class="Special">&lt;-</span> <a href='064list.mu.html#L25'>rest</a> in
-<span id="L323" class="LineNr">323 </span>  nextn:num <span class="Special">&lt;-</span> copy <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L324" class="LineNr">324 </span>  <span class="muControl">return-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
-<span id="L325" class="LineNr">325 </span>  buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[ -&gt; ]</span>
-<span id="L326" class="LineNr">326 </span>  <span class="Comment"># and recurse</span>
-<span id="L327" class="LineNr">327 </span>  remaining:num, optional-ingredient-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L328" class="LineNr">328 </span>  <span class="Delimiter">{</span>
-<span id="L329" class="LineNr">329 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> optional-ingredient-found?
-<span id="L330" class="LineNr">330 </span>  <span class="Conceal">¦</span> <span class="Comment"># unlimited recursion</span>
-<span id="L331" class="LineNr">331 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> <a href='064list.mu.html#L310'>to-buffer</a> <a href='065duplex_list.mu.html#L29'>next</a>, buf
-<span id="L332" class="LineNr">332 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
-<span id="L333" class="LineNr">333 </span>  <span class="Delimiter">}</span>
-<span id="L334" class="LineNr">334 </span>  <span class="Delimiter">{</span>
-<span id="L335" class="LineNr">335 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> remaining
-<span id="L336" class="LineNr">336 </span>  <span class="Conceal">¦</span> <span class="Comment"># limited recursion</span>
-<span id="L337" class="LineNr">337 </span>  <span class="Conceal">¦</span> remaining <span class="Special">&lt;-</span> subtract remaining,<span class="Constant"> 1</span>
-<span id="L338" class="LineNr">338 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> <a href='064list.mu.html#L310'>to-buffer</a> <a href='065duplex_list.mu.html#L29'>next</a>, buf, remaining
-<span id="L339" class="LineNr">339 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
-<span id="L340" class="LineNr">340 </span>  <span class="Delimiter">}</span>
-<span id="L341" class="LineNr">341 </span>  <span class="Comment"># past recursion depth; insert ellipses and stop</span>
-<span id="L342" class="LineNr">342 </span>  append buf, <span class="Constant">[...]</span>
-<span id="L343" class="LineNr">343 </span>]
-<span id="L344" class="LineNr">344 </span>
-<span id="L345" class="LineNr">345 </span><span class="muScenario">scenario</span> stash-empty-list [
-<span id="L346" class="LineNr">346 </span>  <span class="Constant">local-scope</span>
-<span id="L347" class="LineNr">347 </span>  x:&amp;:<a href='064list.mu.html#L6'>list</a>:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L348" class="LineNr">348 </span>  run [
-<span id="L349" class="LineNr">349 </span>  <span class="Conceal">¦</span> stash x
-<span id="L350" class="LineNr">350 </span>  ]
-<span id="L351" class="LineNr">351 </span>  trace-should-contain [
-<span id="L352" class="LineNr">352 </span>  <span class="Conceal">¦</span> app: <span class="Constant">[]</span>
-<span id="L353" class="LineNr">353 </span>  ]
-<span id="L354" class="LineNr">354 </span>]
+<span id="L295" class="LineNr">295 </span>  <a href='064list.mu.html#L6'>list</a>:&amp;:<a href='064list.mu.html#L6'>list</a>:num <span class="Special">&lt;-</span> push<span class="Constant"> 1</span>,<span class="Constant"> 0</span>
+<span id="L296" class="LineNr">296 </span>  <a href='064list.mu.html#L6'>list</a> <span class="Special">&lt;-</span> push<span class="Constant"> 2</span>, <a href='064list.mu.html#L6'>list</a>
+<span id="L297" class="LineNr">297 </span>  <a href='064list.mu.html#L6'>list</a> <span class="Special">&lt;-</span> push<span class="Constant"> 3</span>, <a href='064list.mu.html#L6'>list</a>
+<span id="L298" class="LineNr">298 </span>  run [
+<span id="L299" class="LineNr">299 </span>  <span class="Conceal">¦</span> stash <span class="Constant">[list:]</span>, <a href='064list.mu.html#L6'>list</a>
+<span id="L300" class="LineNr">300 </span>  ]
+<span id="L301" class="LineNr">301 </span>  trace-should-contain [
+<span id="L302" class="LineNr">302 </span>  <span class="Conceal">¦</span> app: <a href='064list.mu.html#L6'>list</a>:<span class="Constant"> 3</span><span class="muRecipe"> -&gt; </span>2<span class="muRecipe"> -&gt; </span>1
+<span id="L303" class="LineNr">303 </span>  ]
+<span id="L304" class="LineNr">304 </span>]
+<span id="L305" class="LineNr">305 </span>
+<span id="L306" class="LineNr">306 </span><span class="muRecipe">def</span> to-text in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L307" class="LineNr">307 </span>  <span class="Constant">local-scope</span>
+<span id="L308" class="LineNr">308 </span>  <span class="Constant">load-ingredients</span>
+<span id="L309" class="LineNr">309 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 80</span>
+<span id="L310" class="LineNr">310 </span>  buf <span class="Special">&lt;-</span> to-buffer in, buf
+<span id="L311" class="LineNr">311 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L353'>buffer-to-array</a> buf
+<span id="L312" class="LineNr">312 </span>]
+<span id="L313" class="LineNr">313 </span>
+<span id="L314" class="LineNr">314 </span><span class="Comment"># variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)</span>
+<span id="L315" class="LineNr">315 </span><span class="muRecipe">def</span> to-text-line in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem<span class="muRecipe"> -&gt; </span>result:text [
+<span id="L316" class="LineNr">316 </span>  <span class="Constant">local-scope</span>
+<span id="L317" class="LineNr">317 </span>  <span class="Constant">load-ingredients</span>
+<span id="L318" class="LineNr">318 </span>  buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char <span class="Special">&lt;-</span> <a href='061text.mu.html#L131'>new-buffer</a><span class="Constant"> 80</span>
+<span id="L319" class="LineNr">319 </span>  buf <span class="Special">&lt;-</span> to-buffer in, buf,<span class="Constant"> 6</span>  <span class="Comment"># max elements to display</span>
+<span id="L320" class="LineNr">320 </span>  result <span class="Special">&lt;-</span> <a href='061text.mu.html#L353'>buffer-to-array</a> buf
+<span id="L321" class="LineNr">321 </span>]
+<span id="L322" class="LineNr">322 </span>
+<span id="L323" class="LineNr">323 </span><span class="muRecipe">def</span> to-buffer in:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem, buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char<span class="muRecipe"> -&gt; </span>buf:&amp;:<a href='061text.mu.html#L126'>buffer</a>:char [
+<span id="L324" class="LineNr">324 </span>  <span class="Constant">local-scope</span>
+<span id="L325" class="LineNr">325 </span>  <span class="Constant">load-ingredients</span>
+<span id="L326" class="LineNr">326 </span>  <span class="Delimiter">{</span>
+<span id="L327" class="LineNr">327 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> in
+<span id="L328" class="LineNr">328 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[[]</span>]
+<span id="L329" class="LineNr">329 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
+<span id="L330" class="LineNr">330 </span>  <span class="Delimiter">}</span>
+<span id="L331" class="LineNr">331 </span>  <span class="Comment"># append in.value to buf</span>
+<span id="L332" class="LineNr">332 </span>  val:_elem <span class="Special">&lt;-</span> get *in, <span class="Constant">value:offset</span>
+<span id="L333" class="LineNr">333 </span>  buf <span class="Special">&lt;-</span> append buf, val
+<span id="L334" class="LineNr">334 </span>  <span class="Comment"># now prepare next</span>
+<span id="L335" class="LineNr">335 </span>  <a href='065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='064list.mu.html#L6'>list</a>:_elem <span class="Special">&lt;-</span> <a href='064list.mu.html#L25'>rest</a> in
+<span id="L336" class="LineNr">336 </span>  nextn:num <span class="Special">&lt;-</span> copy <a href='065duplex_list.mu.html#L29'>next</a>
+<span id="L337" class="LineNr">337 </span>  <span class="muControl">return-unless</span> <a href='065duplex_list.mu.html#L29'>next</a>
+<span id="L338" class="LineNr">338 </span>  buf <span class="Special">&lt;-</span> append buf, <span class="Constant">[ -&gt; ]</span>
+<span id="L339" class="LineNr">339 </span>  <span class="Comment"># and recurse</span>
+<span id="L340" class="LineNr">340 </span>  remaining:num, optional-ingredient-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L341" class="LineNr">341 </span>  <span class="Delimiter">{</span>
+<span id="L342" class="LineNr">342 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> optional-ingredient-found?
+<span id="L343" class="LineNr">343 </span>  <span class="Conceal">¦</span> <span class="Comment"># unlimited recursion</span>
+<span id="L344" class="LineNr">344 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> to-buffer <a href='065duplex_list.mu.html#L29'>next</a>, buf
+<span id="L345" class="LineNr">345 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
+<span id="L346" class="LineNr">346 </span>  <span class="Delimiter">}</span>
+<span id="L347" class="LineNr">347 </span>  <span class="Delimiter">{</span>
+<span id="L348" class="LineNr">348 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> remaining
+<span id="L349" class="LineNr">349 </span>  <span class="Conceal">¦</span> <span class="Comment"># limited recursion</span>
+<span id="L350" class="LineNr">350 </span>  <span class="Conceal">¦</span> remaining <span class="Special">&lt;-</span> subtract remaining,<span class="Constant"> 1</span>
+<span id="L351" class="LineNr">351 </span>  <span class="Conceal">¦</span> buf <span class="Special">&lt;-</span> to-buffer <a href='065duplex_list.mu.html#L29'>next</a>, buf, remaining
+<span id="L352" class="LineNr">352 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
+<span id="L353" class="LineNr">353 </span>  <span class="Delimiter">}</span>
+<span id="L354" class="LineNr">354 </span>  <span class="Comment"># past recursion depth; insert ellipses and stop</span>
+<span id="L355" class="LineNr">355 </span>  append buf, <span class="Constant">[...]</span>
+<span id="L356" class="LineNr">356 </span>]
+<span id="L357" class="LineNr">357 </span>
+<span id="L358" class="LineNr">358 </span><span class="muScenario">scenario</span> stash-empty-list [
+<span id="L359" class="LineNr">359 </span>  <span class="Constant">local-scope</span>
+<span id="L360" class="LineNr">360 </span>  x:&amp;:<a href='064list.mu.html#L6'>list</a>:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L361" class="LineNr">361 </span>  run [
+<span id="L362" class="LineNr">362 </span>  <span class="Conceal">¦</span> stash x
+<span id="L363" class="LineNr">363 </span>  ]
+<span id="L364" class="LineNr">364 </span>  trace-should-contain [
+<span id="L365" class="LineNr">365 </span>  <span class="Conceal">¦</span> app: <span class="Constant">[]</span>
+<span id="L366" class="LineNr">366 </span>  ]
+<span id="L367" class="LineNr">367 </span>]
 </pre>
 </body>
 </html>
