@@ -7,7 +7,6 @@
 scenario editor-inserts-two-spaces-on-tab [
   local-scope
   assume-screen 10/width, 5/height
-  # just one character in final line
   s:text <- new [ab
 cd]
   e:&:editor <- new-editor s, 0/left, 5/right
@@ -210,12 +209,11 @@ def previous-line-length curr:&:duplex-list:char, start:&:duplex-list:char -> re
 scenario editor-clears-last-line-on-backspace [
   local-scope
   assume-screen 10/width, 5/height
-  # just one character in final line
   s:text <- new [ab
 cd]
   e:&:editor <- new-editor s, 0/left, 10/right
   assume-console [
-    left-click 2, 0  # cursor at only character in final line
+    left-click 2, 0
     press backspace
   ]
   run [
@@ -2173,4 +2171,114 @@ def before-previous-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-
     loop
   }
   return curr
+]
+
+# ctrl-/ - comment/uncomment current line
+# todo: scenarios
+
+after <handle-special-character> [
+  {
+    comment-toggle?:bool <- equal c, 31/ctrl-slash
+    break-unless comment-toggle?
+    cursor-column:num <- get *editor, cursor-column:offset
+    data:&:duplex-list:char <- get *editor, data:offset
+    <insert-character-begin>
+    cursor:&:duplex-list:char <- get *editor, before-cursor:offset
+    {
+      next:&:duplex-list:char <- next cursor
+      break-unless next
+      cursor <- copy next
+    }
+    before-line-start:&:duplex-list:char <- before-previous-line cursor, editor
+    line-start:&:duplex-list:char <- next before-line-start
+    commented-out?:bool <- match line-start, [#? ]  # comment prefix
+    {
+      break-unless commented-out?
+      # uncomment
+      data <- remove line-start, 3/length-comment-prefix, data
+      cursor-column <- subtract cursor-column, 3/length-comment-prefix
+    }
+    {
+      break-if commented-out?
+      # comment
+      insert before-line-start, [#? ]
+      cursor-column <- add cursor-column, 3/length-comment-prefix
+    }
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    <insert-character-end>
+    return 1/do-render
+  }
+]
+
+scenario editor-comments-empty-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [], 0/left, 5/right
+  assume-console [
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .#?        .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  memory-should-contain [
+    4 <- 1
+    5 <- 3
+  ]
+]
+
+scenario editor-comments-at-start-of-contents [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [ab], 0/left, 10/right
+  assume-console [
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .#? ab     .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    4 <- 1
+    5 <- 3
+  ]
+]
+
+scenario editor-comments-at-end-of-contents [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [ab], 0/left, 10/right
+  assume-console [
+    left-click 1, 7
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .#? ab     .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  memory-should-contain [
+    4 <- 1
+    5 <- 5
+  ]
 ]

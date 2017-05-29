@@ -185,6 +185,7 @@ void initialize_key_names() {
   Key["ctrl-y"] = TB_KEY_CTRL_Y;
   Key["ctrl-z"] = TB_KEY_CTRL_Z;
   Key["escape"] = TB_KEY_ESC;
+  Key["ctrl-slash"] = TB_KEY_CTRL_SLASH;
 }
 
 :(after "Begin check_or_set_invalid_types(r)")

@@ -585,6 +585,51 @@ def last in:&:duplex-list:_elem -> result:&:duplex-list:_elem [
   }
 ]
 
+# does a duplex list start with a certain sequence of elements?
+def match x:&:duplex-list:_elem, y:&:@:_elem -> result:bool [
+  local-scope
+  load-ingredients
+  i:num <- copy 0
+  max:num <- length *y
+  {
+    done?:bool <- greater-or-equal i, max
+    break-if done?
+    expected:_elem <- index *y, i
+    return-unless x, 0/no-match
+    curr:_elem <- first x
+    curr-matches?:bool <- equal curr, expected
+    return-unless curr-matches?, 0/no-match
+    x <- next x
+    i <- add i, 1
+    loop
+  }
+  return 1/successful-match
+]
+
+scenario duplex-list-match [
+  local-scope
+  list:&:duplex-list:char <- push 97/a, 0
+  list <- push 98/b, list
+  list <- push 99/c, list
+  list <- push 100/d, list
+  run [
+    10:bool/raw <- match list, []
+    11:bool/raw <- match list, [d]
+    12:bool/raw <- match list, [dc]
+    13:bool/raw <- match list, [dcba]
+    14:bool/raw <- match list, [dd]
+    15:bool/raw <- match list, [dcbax]
+  ]
+  memory-should-contain [
+    10 <- 1  # matches []
+    11 <- 1  # matches [d]
+    12 <- 1  # matches [dc]
+    13 <- 1  # matches [dcba]
+    14 <- 0  # does not match [dd]
+    15 <- 0  # does not match [dcbax]
+  ]
+]
+
 # helper for debugging
 def dump-from x:&:duplex-list:_elem [
   local-scope
