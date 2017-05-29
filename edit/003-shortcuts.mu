@@ -3492,12 +3492,12 @@ gxy
   ]
 ]
 
-# ctrl-e - scroll up by one line
+# ctrl-s - scroll up by one line
 # todo: scenarios
 
 after <handle-special-character> [
   {
-    scroll-up?:bool <- equal c, 5/ctrl-e
+    scroll-up?:bool <- equal c, 19/ctrl-s
     break-unless scroll-up?
     <move-cursor-begin>
     go-render?:bool, editor <- line-up editor, screen-height
@@ -3523,12 +3523,12 @@ def line-up editor:&:editor, screen-height:num -> go-render?:bool, editor:&:edit
   return movement?
 ]
 
-# ctrl-d - scroll down by one line
+# ctrl-x - scroll down by one line
 # todo: scenarios
 
 after <handle-special-character> [
   {
-    scroll-down?:bool <- equal c, 4/ctrl-d
+    scroll-down?:bool <- equal c, 24/ctrl-x
     break-unless scroll-down?
     <move-cursor-begin>
     go-render?:bool, editor <- line-down editor, screen-height
