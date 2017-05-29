@@ -74,7 +74,7 @@ def main [
   1:address:num <- copy 0
   2:num <- copy 1:address:num/lookup
 ]
-+error: tried to /lookup 0 in '2:num <- copy 1:address:num/lookup'
++error: main: tried to /lookup 0 in '2:num <- copy 1:address:num/lookup'
 
 :(code)
 void canonize(reagent& x) {
@@ -108,7 +108,7 @@ void lookup_memory_core(reagent& x, bool check_for_null) {
   }
   else if (check_for_null) {
     if (Current_routine)
-      raise << "tried to /lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
+      raise << maybe(current_recipe_name()) << "tried to /lookup 0 in '" << to_original_string(current_instruction()) << "'\n" << end();
     else
       raise << "tried to /lookup 0\n" << end();
   }
