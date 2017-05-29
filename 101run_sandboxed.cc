@@ -130,6 +130,7 @@ bool run_interactive(int address) {
 //: Carefully update all state to exactly how it was -- including snapshots.
 
 :(before "End Globals")
+bool Run_profiler_stash = false;
 map<string, recipe_ordinal> Recipe_ordinal_snapshot_stash;
 map<recipe_ordinal, recipe> Recipe_snapshot_stash;
 map<string, type_ordinal> Type_ordinal_snapshot_stash;
@@ -145,6 +146,8 @@ void run_code_begin(bool should_stash_snapshots) {
   // stuff to undo later, in run_code_end()
   Hide_errors = true;
   Disable_redefine_checks = true;
+  Run_profiler_stash = Run_profiler;
+  Run_profiler = false;
   if (should_stash_snapshots)
     stash_snapshots();
   Save_trace_stream = Trace_stream;
@@ -155,6 +158,8 @@ void run_code_begin(bool should_stash_snapshots) {
 void run_code_end() {
   Hide_errors = false;
   Disable_redefine_checks = false;
+  Run_profiler = Run_profiler_stash;
+  Run_profiler_stash = false;
 //?   ofstream fout("sandbox.log");
 //?   fout << Trace_stream->readable_contents("");
 //?   fout.close();

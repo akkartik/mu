@@ -79,6 +79,11 @@ int& current_step_index() {
   assert(!Current_routine->calls.empty());
   return current_call().running_step_index;
 }
+:(replace{} "recipe_ordinal currently_running_recipe()")
+recipe_ordinal currently_running_recipe() {
+  assert(!Current_routine->calls.empty());
+  return current_call().running_recipe;
+}
 :(replace{} "const string& current_recipe_name()")
 const string& current_recipe_name() {
   assert(!Current_routine->calls.empty());

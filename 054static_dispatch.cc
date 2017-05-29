@@ -566,10 +566,11 @@ def foo x:num -> y:num [
 # number variant is preferred
 +mem: storing 35 in location 1
 
-:(code)
+:(replace{} "string header_label(const recipe_ordinal r)")
 string header_label(const recipe_ordinal r) {
   return header_label(get(Recipe, r));
 }
+:(code)
 string header_label(const recipe& caller) {
   ostringstream out;
   out << "recipe " << caller.name;

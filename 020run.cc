@@ -48,9 +48,6 @@ struct routine {
 
 :(before "End Globals")
 routine* Current_routine = NULL;
-map<string, int> Instructions_running;
-map<string, int> Locations_read;
-map<string, int> Locations_read_by_instruction;
 :(before "End Setup")
 Current_routine = NULL;
 
@@ -65,7 +62,6 @@ void run(const recipe_ordinal r) {
 void run_current_routine() {
   while (should_continue_running(Current_routine)) {  // beware: may modify Current_routine
     // Running One Instruction
-//?     Instructions_running[current_recipe_name()]++;
     if (current_instruction().is_label) { ++current_step_index();  continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
     if (get_or_insert(Memory, 0) != 0) {
@@ -136,6 +132,11 @@ bool should_copy_ingredients() {
 //: hook replaced in a later layer
 int& current_step_index() {
   return Current_routine->running_step_index;
+}
+
+//: hook replaced in a later layer
+recipe_ordinal currently_running_recipe() {
+  return Current_routine->running_recipe;
 }
 
 //: hook replaced in a later layer
@@ -230,23 +231,6 @@ bool Start_tracing = false;
 else if (is_equal(*arg, "--trace")) {
   Start_tracing = true;
 }
-
-:(code)
-void dump_profile() {
-  for (map<string, int>::iterator p = Instructions_running.begin();  p != Instructions_running.end();  ++p) {
-    cerr << p->first << ": " << p->second << '\n';
-  }
-  cerr << "== locations read\n";
-  for (map<string, int>::iterator p = Locations_read.begin();  p != Locations_read.end();  ++p) {
-    cerr << p->first << ": " << p->second << '\n';
-  }
-  cerr << "== locations read by instruction\n";
-  for (map<string, int>::iterator p = Locations_read_by_instruction.begin();  p != Locations_read_by_instruction.end();  ++p) {
-    cerr << p->first << ": " << p->second << '\n';
-  }
-}
-:(before "End One-time Setup")
-//? atexit(dump_profile);
 
 :(code)
 void cleanup_main() {
@@ -456,3 +440,46 @@ def main [
   1:num, 2:num <- copy 2 ,2
 ]
 +mem: storing 2 in location 1
+
+//:: Counters for trying to understand where Mu programs are spending their
+//:: time.
+
+:(before "End Globals")
+bool Run_profiler = false;
+// We'll key profile information by recipe_ordinal rather than name because
+// it's more efficient, and because later layers will show more than just the
+// name of a recipe.
+//
+// One drawback: if you're clearing recipes your profile will be inaccurate.
+// So far that happens in tests, and in `run-sandboxed` in a later layer.
+map<recipe_ordinal, int> Instructions_running;
+:(before "End Commandline Options(*arg)")
+else if (is_equal(*arg, "--profile")) {
+  Run_profiler = true;
+}
+:(after "Running One Instruction")
+if (Run_profiler) Instructions_running[currently_running_recipe()]++;
+:(before "End One-time Setup")
+atexit(dump_profile);
+:(code)
+void dump_profile() {
+  if (!Run_profiler) return;
+  if (Run_tests) {
+    cerr << "It's not a good idea to profile a run with tests, since tests can create conflicting recipes and mislead you. To try it anyway, comment out this check in the code.\n";
+    return;
+  }
+  ofstream fout;
+  fout.open("profile.instructions");
+  if (fout) {
+    for (map<recipe_ordinal, int>::iterator p = Instructions_running.begin();  p != Instructions_running.end();  ++p) {
+      fout << std::setw(9) << p->second << ' ' << header_label(p->first) << '\n';
+    }
+  }
+  fout.close();
+  // End dump_profile
+}
+
+// overridden in a later layer
+string header_label(const recipe_ordinal r) {
+  return get(Recipe, r).name;
+}
