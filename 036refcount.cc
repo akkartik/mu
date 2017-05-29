@@ -53,6 +53,7 @@ void increment_any_refcounts(const reagent& canonized_x, const vector<double>& d
 void increment_refcount(int new_address) {
   assert(new_address >= 0);
   if (new_address == 0) return;
+  ++Total_refcount_updates;
   int new_refcount = get_or_insert(Memory, new_address);
   trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << new_refcount+1 << end();
   put(Memory, new_address, new_refcount+1);
@@ -70,6 +71,7 @@ void decrement_any_refcounts(const reagent& canonized_x) {
 void decrement_refcount(int old_address, const type_tree* payload_type, int payload_size) {
   assert(old_address >= 0);
   if (old_address == 0) return;
+  ++Total_refcount_updates;
   int old_refcount = get_or_insert(Memory, old_address);
   trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
   --old_refcount;
@@ -1035,4 +1037,44 @@ bool is_mu_exclusive_container(const type_tree* type) {
   if (type->value == 0) return false;
   type_info& info = get(Type, type->value);
   return info.kind == EXCLUSIVE_CONTAINER;
+}
+
+//:: Counters for trying to understand where Mu programs are spending time
+//:: updating refcounts.
+
+:(before "End Globals")
+int Total_refcount_updates = 0;
+map<recipe_ordinal, map</*step index*/int, /*num refcount updates*/int> > Num_refcount_updates;
+:(after "Running One Instruction")
+int initial_num_refcount_updates = Total_refcount_updates;
+:(before "End Running One Instruction")
+if (Run_profiler) {
+  Num_refcount_updates[current_call().running_recipe][current_call().running_step_index]
+      += (Total_refcount_updates - initial_num_refcount_updates);
+  initial_num_refcount_updates = Total_refcount_updates;
+}
+:(before "End Non-primitive Call(caller_frame)")
+Num_refcount_updates[caller_frame.running_recipe][caller_frame.running_step_index]
+    += (Total_refcount_updates - initial_num_refcount_updates);
+initial_num_refcount_updates = Total_refcount_updates;
+:(after "Starting Reply")
+if (Run_profiler) {
+  Num_refcount_updates[current_call().running_recipe][current_call().running_step_index]
+      += (Total_refcount_updates - initial_num_refcount_updates);
+  initial_num_refcount_updates = Total_refcount_updates;
+}
+:(before "End dump_profile")
+fout.open("profile.refcounts");
+if (fout) {
+  for (map<recipe_ordinal, recipe>::iterator p = Recipe.begin();  p != Recipe.end();  ++p)
+    dump_recipe_profile(p->first, p->second, fout);
+}
+fout.close();
+:(code)
+void dump_recipe_profile(recipe_ordinal ridx, const recipe& r, ostream& out) {
+  out << "recipe " << r.name << " [\n";
+  for (int i = 0;  i < SIZE(r.steps);  ++i) {
+    out << std::setw(6) << Num_refcount_updates[ridx][i] << ' ' << to_string(r.steps.at(i)) << '\n';
+  }
+  out << "]\n\n";
 }

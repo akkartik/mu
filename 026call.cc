@@ -119,12 +119,13 @@ default: {
       trace(9999, "trace") << "incrementing callstack depth to " << Trace_stream->callstack_depth << end();
       assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
     }
-    const instruction& call_instruction = current_instruction();
-    Current_routine->calls.push_front(call(current_instruction().operation));
-    finish_call_housekeeping(call_instruction, ingredients);
+    const call& caller_frame = current_call();
+    Current_routine->calls.push_front(call(to_instruction(caller_frame).operation));
+    finish_call_housekeeping(to_instruction(caller_frame), ingredients);
     // not done with caller
     write_products = false;
     fall_through_to_next_instruction = false;
+    // End Non-primitive Call(caller_frame)
   }
 }
 :(code)
