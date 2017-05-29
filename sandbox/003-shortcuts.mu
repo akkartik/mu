@@ -1651,7 +1651,7 @@ def minimal-render-for-ctrl-u editor:&:editor, screen:&:screen -> go-render?:boo
     i <- add i, 1
     # if we have a wrapped line, give up and render the whole screen
     wrap?:bool <- equal i, end
-    return-if wrap?, 1/do-render
+    return-if wrap?, 1/go-render
     curr <- next curr
     break-unless curr
     c:char <- get *curr, value:offset
@@ -1893,7 +1893,7 @@ def minimal-render-for-ctrl-k editor:&:editor, screen:&:screen, deleted-cells:&:
   right:num <- get *editor, right:offset
   end:num <- subtract right, left
   wrap?:bool <- greater-or-equal old-row-len, end
-  return-if wrap?, 1/do-render
+  return-if wrap?, 1/go-render
   # accumulate the current line as text and render it
   buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
   curr:&:duplex-list:char <- get *editor, before-cursor:offset
