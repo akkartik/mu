@@ -725,7 +725,6 @@ if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
 if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
   trace(9999, "mem") << "need to read old value of '" << to_string(canonized_x) << "' to figure out what refcounts to decrement" << end();
   // read from canonized_x but without canonizing again
-  // todo: inline without running canonize all over again
   reagent/*copy*/ tmp = canonized_x;
   tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
   vector<double> data = read_memory(tmp);
