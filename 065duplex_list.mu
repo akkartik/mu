@@ -47,23 +47,23 @@ scenario duplex-list-handling [
     # reserve locations 0-9 to check for missing null check
     10:num/raw <- copy 34
     11:num/raw <- copy 35
-    list:&:duplex-list:char <- push 3, 0
+    list:&:duplex-list:num <- push 3, 0
     list <- push 4, list
     list <- push 5, list
-    list2:&:duplex-list:char <- copy list
-    20:char/raw <- first list2
+    list2:&:duplex-list:num <- copy list
+    20:num/raw <- first list2
     list2 <- next list2
-    21:char/raw <- first list2
+    21:num/raw <- first list2
     list2 <- next list2
-    22:char/raw <- first list2
-    30:&:duplex-list:char/raw <- next list2
-    31:char/raw <- first 30:&:duplex-list:char/raw
-    32:&:duplex-list:char/raw <- next 30:&:duplex-list:char/raw
-    33:&:duplex-list:char/raw <- prev 30:&:duplex-list:char/raw
+    22:num/raw <- first list2
+    30:&:duplex-list:num/raw <- next list2
+    31:num/raw <- first 30:&:duplex-list:num/raw
+    32:&:duplex-list:num/raw <- next 30:&:duplex-list:num/raw
+    33:&:duplex-list:num/raw <- prev 30:&:duplex-list:num/raw
     list2 <- prev list2
-    40:char/raw <- first list2
+    40:num/raw <- first list2
     list2 <- prev list2
-    41:char/raw <- first list2
+    41:num/raw <- first list2
     50:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -112,27 +112,27 @@ def insert x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
 
 scenario inserting-into-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
-    list2:&:duplex-list:char <- next list  # inside list
+    list2:&:duplex-list:num <- next list  # inside list
     list2 <- insert 6, list2
     # check structure like before
     list2 <- copy list
-    10:char/raw <- first list2
+    10:num/raw <- first list2
     list2 <- next list2
-    11:char/raw <- first list2
+    11:num/raw <- first list2
     list2 <- next list2
-    12:char/raw <- first list2
+    12:num/raw <- first list2
     list2 <- next list2
-    13:char/raw <- first list2
+    13:num/raw <- first list2
     list2 <- prev list2
-    20:char/raw <- first list2
+    20:num/raw <- first list2
     list2 <- prev list2
-    21:char/raw <- first list2
+    21:num/raw <- first list2
     list2 <- prev list2
-    22:char/raw <- first list2
+    22:num/raw <- first list2
     30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -149,28 +149,28 @@ scenario inserting-into-duplex-list [
 
 scenario inserting-at-end-of-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
-    list2:&:duplex-list:char <- next list  # inside list
+    list2:&:duplex-list:num <- next list  # inside list
     list2 <- next list2  # now at end of list
     list2 <- insert 6, list2
     # check structure like before
     list2 <- copy list
-    10:char/raw <- first list2
+    10:num/raw <- first list2
     list2 <- next list2
-    11:char/raw <- first list2
+    11:num/raw <- first list2
     list2 <- next list2
-    12:char/raw <- first list2
+    12:num/raw <- first list2
     list2 <- next list2
-    13:char/raw <- first list2
+    13:num/raw <- first list2
     list2 <- prev list2
-    20:char/raw <- first list2
+    20:num/raw <- first list2
     list2 <- prev list2
-    21:char/raw <- first list2
+    21:num/raw <- first list2
     list2 <- prev list2
-    22:char/raw <- first list2
+    22:num/raw <- first list2
     30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -187,26 +187,26 @@ scenario inserting-at-end-of-duplex-list [
 
 scenario inserting-after-start-of-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
     list <- insert 6, list
     # check structure like before
-    list2:&:duplex-list:char <- copy list
-    10:char/raw <- first list2
+    list2:&:duplex-list:num <- copy list
+    10:num/raw <- first list2
     list2 <- next list2
-    11:char/raw <- first list2
+    11:num/raw <- first list2
     list2 <- next list2
-    12:char/raw <- first list2
+    12:num/raw <- first list2
     list2 <- next list2
-    13:char/raw <- first list2
+    13:num/raw <- first list2
     list2 <- prev list2
-    20:char/raw <- first list2
+    20:num/raw <- first list2
     list2 <- prev list2
-    21:char/raw <- first list2
+    21:num/raw <- first list2
     list2 <- prev list2
-    22:char/raw <- first list2
+    22:num/raw <- first list2
     30:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -253,21 +253,21 @@ def remove x:&:duplex-list:_elem/contained-in:in, in:&:duplex-list:_elem -> in:&
 
 scenario removing-from-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
-    list2:&:duplex-list:char <- next list  # second element
+    list2:&:duplex-list:num <- next list  # second element
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
-    11:char/raw <- first list2
+    11:num/raw <- first list2
     list2 <- next list2
-    12:char/raw <- first list2
-    20:&:duplex-list:char/raw <- next list2
+    12:num/raw <- first list2
+    20:&:duplex-list:num/raw <- next list2
     list2 <- prev list2
-    30:char/raw <- first list2
+    30:num/raw <- first list2
     40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -282,19 +282,19 @@ scenario removing-from-duplex-list [
 
 scenario removing-from-start-of-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
     list <- remove list, list
     # check structure like before
-    list2:&:duplex-list:char <- copy list
-    10:char/raw <- first list2
+    list2:&:duplex-list:num <- copy list
+    10:num/raw <- first list2
     list2 <- next list2
-    11:char/raw <- first list2
-    20:&:duplex-list:char/raw <- next list2
+    11:num/raw <- first list2
+    20:&:duplex-list:num/raw <- next list2
     list2 <- prev list2
-    30:char/raw <- first list2
+    30:num/raw <- first list2
     40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -308,23 +308,23 @@ scenario removing-from-start-of-duplex-list [
 
 scenario removing-from-end-of-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   list <- push 4, list
   list <- push 5, list
   run [
     # delete last element
-    list2:&:duplex-list:char <- next list
+    list2:&:duplex-list:num <- next list
     list2 <- next list2
     list <- remove list2, list
     10:bool/raw <- equal list2, 0
     # check structure like before
     list2 <- copy list
-    11:char/raw <- first list2
+    11:num/raw <- first list2
     list2 <- next list2
-    12:char/raw <- first list2
-    20:&:duplex-list:char/raw <- next list2
+    12:num/raw <- first list2
+    20:&:duplex-list:num/raw <- next list2
     list2 <- prev list2
-    30:char/raw <- first list2
+    30:num/raw <- first list2
     40:bool/raw <- equal list, list2
   ]
   memory-should-contain [
@@ -339,13 +339,45 @@ scenario removing-from-end-of-duplex-list [
 
 scenario removing-from-singleton-duplex-list [
   local-scope
-  list:&:duplex-list:char <- push 3, 0
+  list:&:duplex-list:num <- push 3, 0
   run [
     list <- remove list, list
     1:num/raw <- copy list
   ]
   memory-should-contain [
     1 <- 0  # back to an empty list
+  ]
+]
+
+def remove x:&:duplex-list:_elem/contained-in:in, n:num, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
+  local-scope
+  load-ingredients
+  i:num <- copy 0
+  curr:&:duplex-list:_elem <- copy x
+  {
+    done?:bool <- greater-or-equal i, n
+    break-if done?
+    break-unless curr
+    next:&:duplex-list:_elem <- next curr
+    in <- remove curr, in
+    curr <- copy next
+    i <- add i, 1
+    loop
+  }
+]
+
+scenario removing-multiple-from-duplex-list [
+  local-scope
+  list:&:duplex-list:num <- push 3, 0
+  list <- push 4, list
+  list <- push 5, list
+  run [
+    list2:&:duplex-list:num <- next list  # second element
+    list <- remove list2, 2, list
+    stash list
+  ]
+  trace-should-contain [
+    app: 5
   ]
 ]
 
@@ -377,7 +409,7 @@ def remove-between start:&:duplex-list:_elem, end:&:duplex-list:_elem/contained-
 scenario remove-range [
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
   local-scope
-  list:&:duplex-list:char <- push 18, 0
+  list:&:duplex-list:num <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
@@ -386,16 +418,16 @@ scenario remove-range [
   run [
     # delete 16 onwards
     # first pointer: to the third element
-    list2:&:duplex-list:char <- next list
+    list2:&:duplex-list:num <- next list
     list2 <- next list2
     list2 <- remove-between list2, 0
     # now check the list
-    10:char/raw <- get *list, value:offset
+    10:num/raw <- get *list, value:offset
     list <- next list
-    11:char/raw <- get *list, value:offset
+    11:num/raw <- get *list, value:offset
     list <- next list
-    12:char/raw <- get *list, value:offset
-    20:&:duplex-list:char/raw <- next list
+    12:num/raw <- get *list, value:offset
+    20:&:duplex-list:num/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
@@ -408,7 +440,7 @@ scenario remove-range [
 scenario remove-range-to-final [
   local-scope
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  list:&:duplex-list:char <- push 18, 0
+  list:&:duplex-list:num <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
@@ -417,20 +449,20 @@ scenario remove-range-to-final [
   run [
     # delete 15, 16 and 17
     # start pointer: to the second element
-    list2:&:duplex-list:char <- next list
+    list2:&:duplex-list:num <- next list
     # end pointer: to the last (sixth) element
-    end:&:duplex-list:char <- next list2
+    end:&:duplex-list:num <- next list2
     end <- next end
     end <- next end
     end <- next end
     remove-between list2, end
     # now check the list
-    10:char/raw <- get *list, value:offset
+    10:num/raw <- get *list, value:offset
     list <- next list
-    11:char/raw <- get *list, value:offset
+    11:num/raw <- get *list, value:offset
     list <- next list
-    12:char/raw <- get *list, value:offset
-    20:&:duplex-list:char/raw <- next list
+    12:num/raw <- get *list, value:offset
+    20:&:duplex-list:num/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
@@ -443,20 +475,20 @@ scenario remove-range-to-final [
 scenario remove-range-empty [
   local-scope
   # construct a duplex list with three elements [13, 14, 15]
-  list:&:duplex-list:char <- push 15, 0
+  list:&:duplex-list:num <- push 15, 0
   list <- push 14, list
   list <- push 13, list
   run [
     # delete between first and second element (i.e. nothing)
-    list2:&:duplex-list:char <- next list
+    list2:&:duplex-list:num <- next list
     remove-between list, list2
     # now check the list
-    10:char/raw <- get *list, value:offset
+    10:num/raw <- get *list, value:offset
     list <- next list
-    11:char/raw <- get *list, value:offset
+    11:num/raw <- get *list, value:offset
     list <- next list
-    12:char/raw <- get *list, value:offset
-    20:&:duplex-list:char/raw <- next list
+    12:num/raw <- get *list, value:offset
+    20:&:duplex-list:num/raw <- next list
   ]
   # no change
   memory-should-contain [
@@ -470,7 +502,7 @@ scenario remove-range-empty [
 scenario remove-range-to-end [
   local-scope
   # construct a duplex list with six elements [13, 14, 15, 16, 17, 18]
-  list:&:duplex-list:char <- push 18, 0
+  list:&:duplex-list:num <- push 18, 0
   list <- push 17, list
   list <- push 16, list
   list <- push 15, list
@@ -478,13 +510,13 @@ scenario remove-range-to-end [
   list <- push 13, list
   run [
     # remove the third element and beyond
-    list2:&:duplex-list:char <- next list
+    list2:&:duplex-list:num <- next list
     remove-between list2, 0
     # now check the list
-    10:char/raw <- get *list, value:offset
+    10:num/raw <- get *list, value:offset
     list <- next list
-    11:char/raw <- get *list, value:offset
-    20:&:duplex-list:char/raw <- next list
+    11:num/raw <- get *list, value:offset
+    20:&:duplex-list:num/raw <- next list
   ]
   memory-should-contain [
     10 <- 13
