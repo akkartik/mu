@@ -18,3 +18,16 @@ either side to run the sandbox.
 
 Known issues: you have to explicitly save inside your editor before hitting
 F4, unlike with `./mu edit`.
+
+---
+
+Appendix: keyboard shortcuts
+
+  _moving_
+  - `ctrl-a` or `home`: move cursor to start of line
+  - `ctrl-e` or `end`: move cursor to end of line
+
+  _modifying text_
+  - `ctrl-k`: delete text from cursor to end of line
+  - `ctrl-u`: delete text from start of line until just before cursor
+  - `ctrl-/`: comment/uncomment current line (using a special leader to ignore real comments https://www.reddit.com/r/vim/comments/4ootmz/_/d4ehmql)
