@@ -67,42 +67,22 @@ routine::routine(recipe_ordinal r) {
   // End routine Constructor
 }
 
-:(code)
-call& current_call() {
-  return Current_routine->calls.front();
-}
-
 //:: now update routine's helpers
 
-:(replace{} "int& current_step_index()")
-int& current_step_index() {
-  assert(!Current_routine->calls.empty());
-  return current_call().running_step_index;
-}
-:(replace{} "recipe_ordinal currently_running_recipe()")
-recipe_ordinal currently_running_recipe() {
-  assert(!Current_routine->calls.empty());
-  return current_call().running_recipe;
-}
-:(replace{} "const string& current_recipe_name()")
-const string& current_recipe_name() {
-  assert(!Current_routine->calls.empty());
-  return get(Recipe, current_call().running_recipe).name;
-}
-:(replace{} "const recipe& current_recipe()")
-const recipe& current_recipe() {
-  assert(!Current_routine->calls.empty());
-  return get(Recipe, current_call().running_recipe);
-}
-:(replace{} "const instruction& current_instruction()")
-const instruction& current_instruction() {
-  assert(!Current_routine->calls.empty());
-  return to_instruction(current_call());
-}
-:(code)
-const instruction& to_instruction(const call& call) {
-  return get(Recipe, call.running_recipe).steps.at(call.running_step_index);
-}
+:(delete{} "int& current_step_index()")
+:(delete{} "recipe_ordinal currently_running_recipe()")
+:(delete{} "const string& current_recipe_name()")
+:(delete{} "const recipe& current_recipe()")
+:(delete{} "const instruction& current_instruction()")
+
+:(before "End Includes")
+#define current_call() Current_routine->calls.front()
+#define current_step_index() current_call().running_step_index
+#define currently_running_recipe() current_call().running_recipe
+#define current_recipe() get(Recipe, currently_running_recipe())
+#define current_recipe_name() current_recipe().name
+#define to_instruction(call) get(Recipe, (call).running_recipe).steps.at((call).running_step_index)
+#define current_instruction() to_instruction(current_call())
 
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes
