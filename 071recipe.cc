@@ -378,3 +378,18 @@ def foo {f: (recipe num -> num)} [
 ]
 +error: foo: missing type for 'f' in 'b:num <- call f, 1'
 +error:   did you forget 'load-ingredients'?
+
+:(before "End Mu Types Initialization")
+put(Type_abbreviations, "function", new_type_tree("recipe"));
+
+:(scenario call_function)
+def main [
+  {1: (function number -> number)} <- copy f
+  2:num <- call {1: (function number -> number)}, 34
+]
+def f x:num -> y:num [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 2
