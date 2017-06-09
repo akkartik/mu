@@ -196,16 +196,7 @@ def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
   local-scope
   load-ingredients
   text:text <- to-text x
-  len:num <- length *text
-  i:num <- copy 0
-  {
-    done?:bool <- greater-or-equal i, len
-    break-if done?
-    c:char <- index *text, i
-    buf <- append buf, c
-    i <- add i, 1
-    loop
-  }
+  buf <- append buf, text
 ]
 
 # specialization for characters that is backspace-aware
