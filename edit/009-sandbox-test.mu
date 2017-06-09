@@ -13,6 +13,7 @@ scenario sandbox-click-on-result-toggles-color-to-green [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   # run it
   assume-console [
     press F4

@@ -249,6 +249,7 @@ scenario backspace-over-text [
   ]
   # sandbox editor contains an instruction without storing outputs
   env:&:environment <- new-programming-environment resources, screen, []
+  render-all screen, env, render
   # run the code in the editors
   assume-console [
     type [a]

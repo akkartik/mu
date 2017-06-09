@@ -451,6 +451,7 @@ def render-recipes screen:&:screen, env:&:environment, {render-editor: (recipe (
 def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
+  trace 11, [app], [render sandboxes]
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset

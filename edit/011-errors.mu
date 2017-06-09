@@ -23,20 +23,19 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
   errors-found? <- copy 0/false
 ]
 
-before <render-components-end> [
-  trace 11, [app], [render status]
-  recipe-errors:text <- get *env, recipe-errors:offset
-  {
-    break-unless recipe-errors
-    update-status screen, [errors found     ], 1/red
-  }
-]
-
-before <render-recipe-components-end> [
+after <render-recipe-errors-on-F4> [
   {
     recipe-errors:text <- get *env, recipe-errors:offset
     break-unless recipe-errors
+    recipes:&:editor <- get *env, recipes:offset
+    left:num <- get *recipes, left:offset
+    right:num <- get *recipes, right:offset
+    row:num <- get *env, recipe-bottom:offset
     row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
+    # draw dotted line after recipes
+    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+    row <- add row, 1
+    clear-screen-from screen, row, left, left, right
   }
 ]
 
@@ -61,7 +60,7 @@ before <run-sandboxes-end> [
   }
 ]
 
-before <render-components-end> [
+after <render-sandbox-errors-on-F4> [
   {
     break-if recipe-errors
     error-index:num <- get *env, error-index:offset
@@ -174,6 +173,7 @@ scenario run-updates-status-with-first-erroneous-sandbox [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, []
+  render-all screen, env, render
   assume-console [
     left-click 3, 80
     # create invalid sandbox 1
@@ -199,6 +199,7 @@ scenario run-updates-status-with-first-erroneous-sandbox-2 [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, []
+  render-all screen, env, render
   assume-console [
     left-click 3, 80
     # create invalid sandbox 2
@@ -227,6 +228,7 @@ scenario run-hides-errors-from-past-sandboxes [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [get foo, x:offset]  # invalid
+  render-all screen, env, render
   assume-console [
     press F4  # generate error
   ]
@@ -269,6 +271,7 @@ scenario run-updates-errors-for-shape-shifting-recipes [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo 2]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -322,6 +325,7 @@ scenario run-avoids-spurious-errors-on-reloading-shape-shifting-recipes [
   test-sandbox:text <- new [x:&:list:num <- copy 0
 to-text x]
   env:&:environment <- new-programming-environment resources, screen, test-sandbox
+  render-all screen, env, render
   # run it once
   assume-console [
     press F4
@@ -384,6 +388,7 @@ scenario run-shows-missing-type-errors [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -415,6 +420,7 @@ scenario run-shows-unbalanced-bracket-errors [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -446,6 +452,7 @@ scenario run-shows-get-on-non-container-errors [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -482,6 +489,7 @@ scenario run-shows-non-literal-get-argument-errors [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -518,6 +526,7 @@ scenario run-shows-errors-everytime [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -563,6 +572,7 @@ scenario run-instruction-and-print-errors [
   ]
   # sandbox editor contains an illegal instruction
   env:&:environment <- new-programming-environment resources, screen, [get 1234:num, foo:offset]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -625,6 +635,7 @@ scenario run-instruction-and-print-errors-only-once [
   ]
   # sandbox editor contains an illegal instruction
   env:&:environment <- new-programming-environment resources, screen, [get 1234:num, foo:offset]
+  render-all screen, env, render
   # run the code in the editors multiple times
   assume-console [
     press F4
@@ -663,6 +674,7 @@ scenario sandbox-can-handle-infinite-loop [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
   # run the sandbox
   assume-console [
     press F4
@@ -701,6 +713,7 @@ scenario sandbox-with-errors-shows-trace [
     ]
   ]
   env:&:environment <- new-programming-environment resources, screen, [foo 4, 0]
+  render-all screen, env, render
   # run
   assume-console [
     press F4

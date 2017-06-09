@@ -47,6 +47,7 @@ scenario run-and-show-results [
   ]
   # sandbox editor contains an instruction without storing outputs
   env:&:environment <- new-programming-environment resources, screen, [divide-with-remainder 11, 3]
+  render-all screen, env, render
   # run the code in the editors
   assume-console [
     press F4
@@ -521,6 +522,7 @@ scenario run-updates-results [
   ]
   # sandbox editor contains an instruction without storing outputs
   env:&:environment <- new-programming-environment resources, screen, [foo]  # contents of sandbox editor
+  render-all screen, env, render
   # run the code in the editors
   assume-console [
     press F4
@@ -575,6 +577,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
   # sandbox editor contains an instruction
   env:&:environment <- new-programming-environment resources, screen, [print screen, 4]  # contents of sandbox editor
+  render-all screen, env, render
   # run the code in the editor
   assume-console [
     press F4

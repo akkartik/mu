@@ -8,6 +8,7 @@ scenario clicking-on-sandbox-edit-button-moves-it-to-editor [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [add 2, 2]
+  render-all screen, env, render
   # run it
   assume-console [
     press F4
@@ -60,6 +61,7 @@ scenario clicking-on-sandbox-edit-button-moves-it-to-editor-2 [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [add 2, 2]
+  render-all screen, env, render
   # run it
   assume-console [
     press F4
@@ -164,6 +166,7 @@ scenario sandbox-with-print-can-be-edited [
   ]
   # right editor contains a print instruction
   env:&:environment <- new-programming-environment resources, screen, [print screen, 4]
+  render-all screen, env, render
   # run the sandbox
   assume-console [
     press F4

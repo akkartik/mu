@@ -47,6 +47,7 @@ scenario run-and-show-results [
   ]
   # sandbox editor contains an instruction without storing outputs
   env:&:environment <- new-programming-environment resources, screen, [divide-with-remainder 11, 3]
+  render-all screen, env, render
   # run the code in the editors
   assume-console [
     press F4
@@ -129,11 +130,16 @@ after <global-keypress> [
     break-unless do-run?
     screen <- update-status screen, [running...       ], 245/grey
     error?:bool <- run-sandboxes env, resources, screen
-    # F4 might update warnings and results on both sides
-    screen <- render-all screen, env, render
+    # we could just render-all, but we do some work to minimize the number of prints to screen
+    <render-recipe-errors-on-F4>
+    screen <- render-sandbox-side screen, env, render
     {
       break-if error?
       screen <- update-status screen, [                 ], 245/grey
+    }
+    {
+      break-unless error?
+      <render-sandbox-errors-on-F4>
     }
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     loop +next-event
@@ -551,6 +557,8 @@ scenario run-updates-results [
   ]
   # sandbox editor contains an instruction without storing outputs
   env:&:environment <- new-programming-environment resources, screen, [foo]  # contents of sandbox editor
+  render-all screen, env, render
+  $clear-trace
   # run the code in the editors
   assume-console [
     press F4
@@ -567,6 +575,10 @@ scenario run-updates-results [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
+  ]
+  # no need to update editor
+  trace-should-not-contain [
+    app: render recipes
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
   assume-console [
@@ -602,6 +614,7 @@ scenario run-instruction-manages-screen-per-sandbox [
   ]
   # sandbox editor contains an instruction
   env:&:environment <- new-programming-environment resources, screen, [print screen, 4]  # contents of sandbox editor
+  render-all screen, env, render
   # run the code in the editor
   assume-console [
     press F4

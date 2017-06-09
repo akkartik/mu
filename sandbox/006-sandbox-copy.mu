@@ -9,6 +9,7 @@ scenario copy-a-sandbox-to-editor [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  render-all screen, env, render
   # run it
   assume-console [
     press F4
@@ -75,6 +76,7 @@ scenario copy-a-sandbox-to-editor-2 [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  render-all screen, env, render
   # run it
   assume-console [
     press F4
@@ -228,6 +230,7 @@ scenario copy-fails-if-sandbox-editor-not-empty [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [add 1, 1]  # contents of sandbox editor
+  render-all screen, env, render
   # run it
   assume-console [
     press F4

@@ -8,6 +8,7 @@ scenario sandbox-click-on-code-toggles-app-trace [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [stash [abc]]
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -77,6 +78,7 @@ scenario sandbox-shows-app-trace-and-result [
   test-sandbox:text <- new [stash [abc]
 add 2, 2]
   env:&:environment <- new-programming-environment resources, screen, test-sandbox
+  render-all screen, env, render
   assume-console [
     press F4
   ]
@@ -121,6 +123,7 @@ scenario clicking-on-app-trace-does-nothing [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, [stash 123456789]
+  render-all screen, env, render
   # create and expand the trace
   assume-console [
     press F4

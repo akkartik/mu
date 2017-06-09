@@ -7,6 +7,7 @@ scenario deleting-sandboxes [
   assume-resources [
   ]
   env:&:environment <- new-programming-environment resources, screen, []
+  render-all screen, env, render
   # run a few commands
   assume-console [
     left-click 1, 75
