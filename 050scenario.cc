@@ -791,6 +791,88 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   break;
 }
 
+:(before "End Primitive Recipe Declarations")
+CHECK_TRACE_COUNT_FOR_LABEL_GREATER_THAN,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "check-trace-count-for-label-greater-than", CHECK_TRACE_COUNT_FOR_LABEL_GREATER_THAN);
+:(before "End Primitive Recipe Checks")
+case CHECK_TRACE_COUNT_FOR_LABEL_GREATER_THAN: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'check-trace-count-for-label' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  if (!is_literal_text(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CHECK_TRACE_COUNT_FOR_LABEL_GREATER_THAN: {
+  if (!Passed) break;
+  int expected_count = ingredients.at(0).at(0);
+  string label = current_instruction().ingredients.at(1).name;
+  int count = trace_count(label);
+  if (count <= expected_count) {
+    if (Current_scenario && !Scenario_testing_scenario) {
+      // genuine test in a .mu file
+      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected more than " << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
+      DUMP(label);
+    }
+    else {
+      // just testing scenario support
+      raise << maybe(current_recipe_name()) << "expected more than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
+    }
+    if (!Scenario_testing_scenario) Passed = false;
+  }
+  break;
+}
+
+:(before "End Primitive Recipe Declarations")
+CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "check-trace-count-for-label-lesser-than", CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN);
+:(before "End Primitive Recipe Checks")
+case CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN: {
+  if (SIZE(inst.ingredients) != 2) {
+    raise << maybe(get(Recipe, r).name) << "'check-trace-count-for-label' requires exactly two ingredients, but got '" << to_original_string(inst) << "'\n" << end();
+    break;
+  }
+  if (!is_mu_number(inst.ingredients.at(0))) {
+    raise << maybe(get(Recipe, r).name) << "first ingredient of 'check-trace-count-for-label' should be a number (count), but got '" << inst.ingredients.at(0).original_string << "'\n" << end();
+    break;
+  }
+  if (!is_literal_text(inst.ingredients.at(1))) {
+    raise << maybe(get(Recipe, r).name) << "second ingredient of 'check-trace-count-for-label' should be a literal string (label), but got '" << inst.ingredients.at(1).original_string << "'\n" << end();
+    break;
+  }
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN: {
+  if (!Passed) break;
+  int expected_count = ingredients.at(0).at(0);
+  string label = current_instruction().ingredients.at(1).name;
+  int count = trace_count(label);
+  if (count >= expected_count) {
+    if (Current_scenario && !Scenario_testing_scenario) {
+      // genuine test in a .mu file
+      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected less than" << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
+      DUMP(label);
+    }
+    else {
+      // just testing scenario support
+      raise << maybe(current_recipe_name()) << "expected less than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
+    }
+    if (!Scenario_testing_scenario) Passed = false;
+  }
+  break;
+}
+
 :(scenario trace_count_check_2)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;

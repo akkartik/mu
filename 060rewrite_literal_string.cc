@@ -30,6 +30,8 @@ void initialize_transform_rewrite_literal_string_to_text() {
   recipes_taking_literal_strings.insert("trace-should-contain");
   recipes_taking_literal_strings.insert("trace-should-not-contain");
   recipes_taking_literal_strings.insert("check-trace-count-for-label");
+  recipes_taking_literal_strings.insert("check-trace-count-for-label-greater-than");
+  recipes_taking_literal_strings.insert("check-trace-count-for-label-lesser-than");
   // End initialize_transform_rewrite_literal_string_to_text()
 }
 
