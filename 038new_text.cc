@@ -186,14 +186,15 @@ case ASSERT: {
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   if (!ingredients.at(0).at(0)) {
+    // Begin ASSERT in Run
     if (is_literal_text(current_instruction().ingredients.at(1)))
       raise << current_instruction().ingredients.at(1).name << '\n' << end();
     else
       raise << read_mu_text(ingredients.at(1).at(0)) << '\n' << end();
+    if (!Hide_errors) exit(1);
   }
   break;
 }
-
 
 //: 'cheating' by using the host system
 

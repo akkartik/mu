@@ -248,9 +248,8 @@ container_metadata& get(vector<pair<type_tree*, container_metadata> >& all, cons
     if (matches(all.at(i).first, key))
       return all.at(i).second;
   }
-  tb_shutdown();
   raise << "unknown size for type '" << to_string(key) << "'\n" << end();
-  assert(false);
+  exit(1);
 }
 
 bool contains_key(const vector<pair<type_tree*, container_metadata> >& all, const type_tree* key) {

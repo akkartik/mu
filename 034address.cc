@@ -367,9 +367,8 @@ int allocate(int size) {
 :(code)
 void ensure_space(int size) {
   if (size > Initial_memory_per_routine) {
-    tb_shutdown();
     cerr << "can't allocate " << size << " locations, that's too much compared to " << Initial_memory_per_routine << ".\n";
-    exit(0);
+    exit(1);
   }
   if (Current_routine->alloc + size > Current_routine->alloc_max) {
     // waste the remaining space and create a new chunk

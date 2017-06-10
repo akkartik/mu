@@ -41,11 +41,13 @@ case OPEN_CONSOLE: {
   Display_row = Display_column = 0;
   int width = tb_width();
   int height = tb_height();
-  if (width > 222 || height > 222) tb_shutdown();
-  if (width > 222)
-    raise << "sorry, Mu doesn't support windows wider than 222 characters in console mode. Please resize your window.\n" << end();
-  if (height > 222)
-    raise << "sorry, Mu doesn't support windows taller than 222 characters in console mode. Please resize your window.\n" << end();
+  if (width > 222 || height > 222) {
+    if (width > 222)
+      raise << "sorry, Mu doesn't support windows wider than 222 characters in console mode. Please resize your window.\n" << end();
+    if (height > 222)
+      raise << "sorry, Mu doesn't support windows taller than 222 characters in console mode. Please resize your window.\n" << end();
+    exit(1);
+  }
   break;
 }
 
@@ -59,13 +61,23 @@ case CLOSE_CONSOLE: {
 }
 :(before "End Primitive Recipe Implementations")
 case CLOSE_CONSOLE: {
-  tb_clear();
   tb_shutdown();
   break;
 }
 
-:(before "End Teardown")
-tb_shutdown();
+//: Automatically close the console in some situations.
+:(before "End One-time Setup")
+atexit(close_console_and_scroll_to_bottom);
+:(after "Begin ASSERT in Run")
+if (tb_is_active()) close_console_and_scroll_to_bottom();
+:(code)
+void close_console_and_scroll_to_bottom() {
+  if (!tb_is_active()) return;
+  // leave the screen in a relatively clean state
+  tb_set_cursor(tb_width()-1, tb_height()-1);
+  cout << "\r\n";
+  tb_shutdown();
+}
 
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY,
@@ -358,13 +370,7 @@ case CHECK_FOR_INTERACTION: {
   // treat keys within ascii as unicode characters
   if (event_type == TB_EVENT_KEY && event.key < 0xff) {
     products.at(0).push_back(/*text event*/0);
-    if (event.key == TB_KEY_CTRL_C) {
-      // leave the screen in a relatively clean state
-      tb_set_cursor(tb_width()-1, tb_height()-1);
-      cout << "\r\n";
-      tb_shutdown();
-      exit(1);
-    }
+    if (event.key == TB_KEY_CTRL_C) exit(1);
     if (event.key == TB_KEY_BACKSPACE2) event.key = TB_KEY_BACKSPACE;
     if (event.key == TB_KEY_CARRIAGE_RETURN) event.key = TB_KEY_NEWLINE;
     products.at(0).push_back(event.key);
