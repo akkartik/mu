@@ -80,8 +80,8 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       # later exceptions for non-editor touches will go here
       <global-touch>
       # send to both editors
-      _ <- move-cursor-in-editor screen, recipes, t
-      sandbox-in-focus?:bool <- move-cursor-in-editor screen, current-sandbox, t
+      _ <- move-cursor recipes, screen, t
+      sandbox-in-focus?:bool <- move-cursor current-sandbox, screen, t
       *env <- put *env, sandbox-in-focus?:offset, sandbox-in-focus?
       screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
       loop +next-event

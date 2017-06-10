@@ -30,7 +30,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
     t:touch-event, is-touch?:bool <- maybe-convert e, touch:variant
     {
       break-unless is-touch?
-      move-cursor-in-editor screen, editor, t
+      move-cursor editor, screen, t
       loop +next-event
     }
     # keyboard events
@@ -47,7 +47,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
 ]
 
 # process click, return if it was on current editor
-def move-cursor-in-editor screen:&:screen, editor:&:editor, t:touch-event -> in-focus?:bool, editor:&:editor [
+def move-cursor editor:&:editor, screen:&:screen, t:touch-event -> in-focus?:bool, editor:&:editor [
   local-scope
   load-ingredients
   return-unless editor, 0/false
@@ -62,7 +62,7 @@ def move-cursor-in-editor screen:&:screen, editor:&:editor, t:touch-event -> in-
   return-if too-far-right?, 0/false
   # position cursor
   <move-cursor-begin>
-  editor <- snap-cursor screen, editor, click-row, click-column
+  editor <- snap-cursor editor, screen, click-row, click-column
   undo-coalesce-tag:num <- copy 0/never
   <move-cursor-end>
   # gain focus
@@ -72,7 +72,7 @@ def move-cursor-in-editor screen:&:screen, editor:&:editor, t:touch-event -> in-
 # Variant of 'render' that only moves the cursor (coordinates and
 # before-cursor). If it's past the end of a line, it 'slides' it left. If it's
 # past the last line it positions at end of last line.
-def snap-cursor screen:&:screen, editor:&:editor, target-row:num, target-column:num -> editor:&:editor [
+def snap-cursor editor:&:editor, screen:&:screen, target-row:num, target-column:num -> editor:&:editor [
   local-scope
   load-ingredients
   return-unless editor

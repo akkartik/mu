@@ -64,7 +64,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
       click-column:num <- get t, column:offset
       # later exceptions for non-editor touches will go here
       <global-touch>
-      move-cursor-in-editor screen, current-sandbox, t
+      move-cursor current-sandbox, screen, t
       screen <- update-cursor screen, current-sandbox, env
       loop +next-event
     }
