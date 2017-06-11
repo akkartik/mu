@@ -196,6 +196,7 @@ if (argc > 1) {
   if (Run_tests) Recipe.erase(get(Recipe_ordinal, "main"));
 }
 transform_all();
+//? cerr << to_original_string(get(Type_ordinal, "editor")) << '\n';
 //? cerr << to_original_string(get(Recipe, get(Recipe_ordinal, "event-loop"))) << '\n';
 //? DUMP("");
 //? exit(0);

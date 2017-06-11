@@ -900,3 +900,16 @@ void check_invalid_types(const type_tree* type, const string& location_for_error
       raise << location_for_error_messages << "unknown type in " << name_for_error_messages << '\n' << end();
   }
 }
+
+string to_original_string(const type_ordinal t) {
+  ostringstream out;
+  if (!contains_key(Type, t)) return out.str();
+  const type_info& info = get(Type, t);
+  if (info.kind == PRIMITIVE) return out.str();
+  out << (info.kind == CONTAINER ? "container" : "exclusive-container") << " " << info.name << " [\n";
+  for (int i = 0;  i < SIZE(info.elements);  ++i) {
+    out << "  " << info.elements.at(i).original_string << "\n";
+  }
+  out << "]\n";
+  return out.str();
+}
