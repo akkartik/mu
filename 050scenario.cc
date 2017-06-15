@@ -464,7 +464,11 @@ void check_type(const string& lhs, istream& in) {
     }
     int address = x.value;
     // exclude quoting brackets
-    assert(*literal.begin() == '[');  literal.erase(literal.begin());
+    if (*literal.begin() != '[') {
+      raise << maybe(current_recipe_name()) << "array:character types inside 'memory-should-contain' can only be compared with text literals surrounded by [], not '" << literal << "'\n" << end();
+      return;
+    }
+    literal.erase(literal.begin());
     assert(*--literal.end() == ']');  literal.erase(--literal.end());
     check_string(address, literal);
     return;
@@ -542,6 +546,19 @@ def main [
   ]
 ]
 +error: F - main: location '1' can't contain non-number [abc]
+
+:(scenario memory_invalid_string_check2)
+% Hide_errors = true;
+def main [
+  1:num <- copy 3
+  2:num <- copy 97  # 'a'
+  3:num <- copy 98  # 'b'
+  4:num <- copy 99  # 'c'
+  memory-should-contain [
+    1:array:character <- 0
+  ]
+]
++error: main: array:character types inside 'memory-should-contain' can only be compared with text literals surrounded by [], not '0'
 
 :(scenario memory_check_with_comment)
 % Scenario_testing_scenario = true;
