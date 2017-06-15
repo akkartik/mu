@@ -99,7 +99,7 @@ scenario screen-in-scenario-error [
     .     .
   ]
 ]
-+error: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
++error: F - screen-in-scenario-error: expected screen location (0, 0) to contain 98 ('b') instead of 97 ('a')
 
 :(scenario screen_in_scenario_color_error)
 % Scenario_testing_scenario = true;
@@ -119,7 +119,7 @@ scenario screen-in-scenario-color-error [
     .     .
   ]
 ]
-+error: expected screen location (0, 0) to be in color 2 instead of 1
++error: F - screen-in-scenario-color-error: expected screen location (0, 0) to contain 'a' in color 2 instead of 1
 
 :(scenarios run)
 :(scenario convert_names_does_not_fail_when_mixing_special_names_and_numeric_locations)
@@ -178,7 +178,7 @@ if (curr.name == "assume-screen") {
 scenario assume-screen-shows-up-in-errors [
   assume-screen width, 5
 ]
-+error: scenario_assume-screen-shows-up-in-errors: missing type for 'width' in 'assume-screen width, 5'
++error: assume-screen-shows-up-in-errors: missing type for 'width' in 'assume-screen width, 5'
 
 //: screen-should-contain is a regular instruction
 :(before "End Primitive Recipe Declarations")
@@ -266,7 +266,7 @@ void check_screen(const string& expected_contents, const int color) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     if (cursor.get() != '.') {
-      raise << Current_scenario->name << ": each row of the expected screen should start with a '.'\n" << end();
+      raise << maybe(current_recipe_name()) << "each row of the expected screen should start with a '.'\n" << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
@@ -281,15 +281,9 @@ void check_screen(const string& expected_contents, const int color) {
       if (get_or_insert(Memory, addr) != 0 && get_or_insert(Memory, addr) == curr) {
         if (color == -1 || color == get_or_insert(Memory, addr+cell_color_offset)) continue;
         // contents match but color is off
-        if (Current_scenario && !Scenario_testing_scenario) {
-          // genuine test in a .mu file
-          raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ", address " << addr << ", value " << no_scientific(get_or_insert(Memory, addr)) << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
-          dump_screen();
-        }
-        else {
-          // just testing check_screen
-          raise << "expected screen location (" << row << ", " << column << ") to be in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << '\n' << end();
-        }
+        if (!Hide_errors) cerr << '\n';
+        raise << "F - " << maybe(current_recipe_name()) << "expected screen location (" << row << ", " << column << ") to contain '" << unicode_character_at(addr) << "' in color " << color << " instead of " << no_scientific(get_or_insert(Memory, addr+cell_color_offset)) << "\n" << end();
+        if (!Hide_errors) dump_screen();
         if (!Scenario_testing_scenario) Passed = false;
         return;
       }
@@ -309,29 +303,28 @@ void check_screen(const string& expected_contents, const int color) {
 
       ostringstream color_phrase;
       if (color != -1) color_phrase << " in color " << color;
-      if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a .mu file
-        raise << "\nF - " << Current_scenario->name << ": expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
-        dump_screen();
-      }
-      else {
-        // just testing check_screen
-        raise << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
-      }
+      if (!Hide_errors) cerr << '\n';
+      raise << "F - " << maybe(current_recipe_name()) << "expected screen location (" << row << ", " << column << ") to contain " << curr << expected_pretty << color_phrase.str() << " instead of " << no_scientific(get_or_insert(Memory, addr)) << actual_pretty << '\n' << end();
+      if (!Hide_errors) dump_screen();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     if (cursor.get() != '.') {
-      raise << Current_scenario->name << ": row " << row << " of the expected screen is too long\n" << end();
+      raise << maybe(current_recipe_name()) << "row " << row << " of the expected screen is too long\n" << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
   }
   cursor.skip_whitespace_and_comments();
   if (!cursor.at_end()) {
-    raise << Current_scenario->name << ": expected screen has too many rows\n" << end();
+    raise << maybe(current_recipe_name()) << "expected screen has too many rows\n" << end();
     Passed = false;
   }
+}
+
+const char* unicode_character_at(int addr) {
+  int unicode_code_point = static_cast<int>(get_or_insert(Memory, addr));
+  return to_unicode(unicode_code_point);
 }
 
 raw_string_stream::raw_string_stream(const string& backing) :index(0), max(SIZE(backing)), buf(backing.c_str()) {}

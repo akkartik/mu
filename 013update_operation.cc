@@ -22,8 +22,9 @@ void update_instruction_operations(const recipe_ordinal r) {
 }
 
 // hook to suppress inserting recipe name into errors
-string maybe(string s) {
-  return s + ": ";
+string maybe(string recipe_name) {
+  // End maybe(recipe_name) Special-cases
+  return recipe_name + ": ";
 }
 
 :(scenarios transform)

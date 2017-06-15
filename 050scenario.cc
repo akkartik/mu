@@ -244,8 +244,12 @@ void run_mu_scenario(const scenario& s) {
 //: Permit numeric locations to be accessed in scenarios.
 :(before "End check_default_space Special-cases")
 // user code should never create recipes with underscores in their names
-if (caller.name.find("scenario_") == 0) return;  // skip Mu scenarios which will use raw memory locations
-if (caller.name.find("run_") == 0) return;  // skip calls to 'run', which should be in scenarios and will also use raw memory locations
+if (starts_with(caller.name, "scenario_")) return;  // skip Mu scenarios which will use raw memory locations
+if (starts_with(caller.name, "run_")) return;  // skip calls to 'run', which should be in scenarios and will also use raw memory locations
+
+:(before "End maybe(recipe_name) Special-cases")
+if (starts_with(recipe_name, "scenario_"))
+  return recipe_name.substr(strlen("scenario_")) + ": ";
 
 //: Some variables for fake resources always get special /raw addresses in scenarios.
 
@@ -374,7 +378,7 @@ def main [
   ]
 ]
 +run: checking location 1
-+error: expected location '1' to contain 13 but saw 0
++error: F - main: expected location '1' to contain 13 but saw 0
 
 :(before "End Primitive Recipe Declarations")
 MEMORY_SHOULD_CONTAIN,
@@ -402,7 +406,7 @@ void check_memory(const string& s) {
     string lhs = next_word(in);
     if (lhs.empty()) {
       assert(!has_data(in));
-      raise << "incomplete 'memory-should-contain' block at end of file (0)\n" << end();
+      raise << maybe(current_recipe_name()) << "incomplete 'memory-should-contain' block at end of file (0)\n" << end();
       return;
     }
     if (!is_integer(lhs)) {
@@ -416,32 +420,22 @@ void check_memory(const string& s) {
     string rhs = next_word(in);
     if (rhs.empty()) {
       assert(!has_data(in));
-      raise << "incomplete 'memory-should-contain' block at end of file (1)\n" << end();
+      raise << maybe(current_recipe_name()) << "incomplete 'memory-should-contain' block at end of file (1)\n" << end();
       return;
     }
     if (!is_integer(rhs) && !is_noninteger(rhs)) {
-      if (Current_scenario && !Scenario_testing_scenario)
-        // genuine test in a .mu file
-        raise << "\nF - " << Current_scenario->name << ": location '" << address << "' can't contain non-number " << rhs << "\n" << end();
-      else
-        // just testing scenario support
-        raise << "location '" << address << "' can't contain non-number " << rhs << '\n' << end();
+      if (!Hide_errors) cerr << '\n';
+      raise << "F - " << maybe(current_recipe_name()) << "location '" << address << "' can't contain non-number " << rhs << '\n' << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
     double value = to_double(rhs);
     if (contains_key(locations_checked, address))
-      raise << "duplicate expectation for location '" << address << "'\n" << end();
+      raise << maybe(current_recipe_name()) << "duplicate expectation for location '" << address << "'\n" << end();
     trace(9999, "run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {
-      if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a .mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
-      }
-      else {
-        // just testing scenario support
-        raise << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
-      }
+      if (!Hide_errors) cerr << '\n';
+      raise << "F - " << maybe(current_recipe_name()) << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
@@ -457,7 +451,7 @@ void check_type(const string& lhs, istream& in) {
     string _assign = next_word(in);
     if (_assign.empty()) {
       assert(!has_data(in));
-      raise << "incomplete 'memory-should-contain' block at end of file (2)\n" << end();
+      raise << maybe(current_recipe_name()) << "incomplete 'memory-should-contain' block at end of file (2)\n" << end();
       return;
     }
     assert(_assign == "<-");
@@ -465,7 +459,7 @@ void check_type(const string& lhs, istream& in) {
     string literal = next_word(in);
     if (literal.empty()) {
       assert(!has_data(in));
-      raise << "incomplete 'memory-should-contain' block at end of file (3)\n" << end();
+      raise << maybe(current_recipe_name()) << "incomplete 'memory-should-contain' block at end of file (3)\n" << end();
       return;
     }
     int address = x.value;
@@ -482,10 +476,8 @@ void check_type(const string& lhs, istream& in) {
 void check_string(int address, const string& literal) {
   trace(9999, "run") << "checking string length at " << address << end();
   if (get_or_insert(Memory, address) != SIZE(literal)) {
-    if (Current_scenario && !Scenario_testing_scenario)
-      raise << "\nF - " << Current_scenario->name << ": expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << " (" << read_mu_text(address-/*fake refcount*/1) << ")\n" << end();
-    else
-      raise << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+    if (!Hide_errors) cerr << '\n';
+    raise << "F - " << maybe(current_recipe_name()) << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
     if (!Scenario_testing_scenario) Passed = false;
     return;
   }
@@ -493,14 +485,8 @@ void check_string(int address, const string& literal) {
   for (int i = 0;  i < SIZE(literal);  ++i) {
     trace(9999, "run") << "checking location " << address+i << end();
     if (get_or_insert(Memory, address+i) != literal.at(i)) {
-      if (Current_scenario && !Scenario_testing_scenario) {
-        // genuine test in a .mu file
-        raise << "\nF - " << Current_scenario->name << ": expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << " ('" << static_cast<char>(get_or_insert(Memory, address+i)) << "')\n" << end();
-      }
-      else {
-        // just testing scenario support
-        raise << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << '\n' << end();
-      }
+      if (!Hide_errors) cerr << '\n';
+      raise << "F - " << maybe(current_recipe_name()) << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << '\n' << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
@@ -516,7 +502,7 @@ def main [
     1 <- 0
   ]
 ]
-+error: duplicate expectation for location '1'
++error: main: duplicate expectation for location '1'
 
 :(scenario memory_check_string_length)
 % Scenario_testing_scenario = true;
@@ -530,7 +516,7 @@ def main [
     1:array:character <- [ab]
   ]
 ]
-+error: expected location '1' to contain length 2 of string [ab] but saw 3
++error: F - main: expected location '1' to contain length 2 of string [ab] but saw 3
 
 :(scenario memory_check_string)
 def main [
@@ -555,7 +541,7 @@ def main [
     1 <- [abc]
   ]
 ]
-+error: location '1' can't contain non-number [abc]
++error: F - main: location '1' can't contain non-number [abc]
 
 :(scenario memory_check_with_comment)
 % Scenario_testing_scenario = true;
@@ -582,7 +568,7 @@ def main [
     a: d
   ]
 ]
-+error: missing [b] in trace with label 'a'
++error: F - main: missing [b] in trace with label 'a'
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_CONTAIN,
@@ -614,12 +600,9 @@ void check_trace(const string& expected) {
     ++curr_expected_line;
     if (curr_expected_line == SIZE(expected_lines)) return;
   }
-  if (Current_scenario && !Scenario_testing_scenario)
-    raise << "\nF - " << Current_scenario->name << ": missing [" << expected_lines.at(curr_expected_line).contents << "] "
-          << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
-  else
-    raise << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
-          << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
+  if (!Hide_errors) cerr << '\n';
+  raise << "F - " << maybe(current_recipe_name()) << "missing [" << expected_lines.at(curr_expected_line).contents << "] "
+        << "in trace with label '" << expected_lines.at(curr_expected_line).label << "'\n" << end();
   if (!Hide_errors)
     DUMP(expected_lines.at(curr_expected_line).label);
   if (!Scenario_testing_scenario) Passed = false;
@@ -633,7 +616,7 @@ vector<trace_line> parse_trace(const string& expected) {
     if (buf.at(i).empty()) continue;
     int delim = buf.at(i).find(": ");
     if (delim == -1) {
-      raise << Current_scenario->name << ": lines in 'trace-should-contain' should be of the form <label>: <contents>. Both parts are required.\n" << end();
+      raise << maybe(current_recipe_name()) << "lines in 'trace-should-contain' should be of the form <label>: <contents>. Both parts are required.\n" << end();
       result.clear();
       return result;
     }
@@ -654,7 +637,7 @@ def main [
     a: d
   ]
 ]
-+error: missing [d] in trace with label 'a'
++error: F - main: missing [d] in trace with label 'a'
 
 :(scenario trace_check_passes_silently)
 % Scenario_testing_scenario = true;
@@ -684,7 +667,7 @@ def main [
     a: b
   ]
 ]
-+error: unexpected [b] in trace with label 'a'
++error: F - main: unexpected [b] in trace with label 'a'
 
 :(before "End Primitive Recipe Declarations")
 TRACE_SHOULD_NOT_CONTAIN,
@@ -709,7 +692,7 @@ bool check_trace_missing(const string& in) {
   vector<trace_line> lines = parse_trace(in);
   for (int i = 0;  i < SIZE(lines);  ++i) {
     if (trace_count(lines.at(i).label, lines.at(i).contents) != 0) {
-      raise << "unexpected [" << lines.at(i).contents << "] in trace with label '" << lines.at(i).label << "'\n" << end();
+      raise << "F - " << maybe(current_recipe_name()) << "unexpected [" << lines.at(i).contents << "] in trace with label '" << lines.at(i).label << "'\n" << end();
       if (!Scenario_testing_scenario) Passed = false;
       return false;
     }
@@ -739,7 +722,7 @@ def main [
     a: d
   ]
 ]
-+error: unexpected [d] in trace with label 'a'
++error: F - main: unexpected [d] in trace with label 'a'
 
 :(scenario trace_count_check)
 def main [
@@ -777,15 +760,8 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   string label = current_instruction().ingredients.at(1).name;
   int count = trace_count(label);
   if (count != expected_count) {
-    if (Current_scenario && !Scenario_testing_scenario) {
-      // genuine test in a .mu file
-      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
-      DUMP(label);
-    }
-    else {
-      // just testing scenario support
-      raise << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
-    }
+    if (!Hide_errors) cerr << '\n';
+    raise << "F - " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
     if (!Scenario_testing_scenario) Passed = false;
   }
   break;
@@ -818,14 +794,11 @@ case CHECK_TRACE_COUNT_FOR_LABEL_GREATER_THAN: {
   string label = current_instruction().ingredients.at(1).name;
   int count = trace_count(label);
   if (count <= expected_count) {
-    if (Current_scenario && !Scenario_testing_scenario) {
-      // genuine test in a .mu file
-      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected more than " << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
+    if (!Hide_errors) cerr << '\n';
+    raise << maybe(current_recipe_name()) << "expected more than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
+    if (!Hide_errors) {
+      cerr << "trace contents:\n";
       DUMP(label);
-    }
-    else {
-      // just testing scenario support
-      raise << maybe(current_recipe_name()) << "expected more than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
     }
     if (!Scenario_testing_scenario) Passed = false;
   }
@@ -859,14 +832,11 @@ case CHECK_TRACE_COUNT_FOR_LABEL_LESSER_THAN: {
   string label = current_instruction().ingredients.at(1).name;
   int count = trace_count(label);
   if (count >= expected_count) {
-    if (Current_scenario && !Scenario_testing_scenario) {
-      // genuine test in a .mu file
-      raise << "\nF - " << Current_scenario->name << ": " << maybe(current_recipe_name()) << "expected less than" << expected_count << " lines in trace with label '" << label << "' in trace: " << end();
+    if (!Hide_errors) cerr << '\n';
+    raise << "F - " << maybe(current_recipe_name()) << "expected less than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
+    if (!Hide_errors) {
+      cerr << "trace contents:\n";
       DUMP(label);
-    }
-    else {
-      // just testing scenario support
-      raise << maybe(current_recipe_name()) << "expected less than " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
     }
     if (!Scenario_testing_scenario) Passed = false;
   }
@@ -882,7 +852,7 @@ def main [
   ]
   check-trace-count-for-label 2, [a]
 ]
-+error: main: expected 2 lines in trace with label 'a' in trace
++error: F - main: expected 2 lines in trace with label 'a' in trace
 
 //: Minor detail: ignore 'system' calls in scenarios, since anything we do
 //: with them is by definition impossible to test through Mu.

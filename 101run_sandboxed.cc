@@ -229,8 +229,8 @@ load(string(
 "]\n");
 
 //: adjust errors in the sandbox
-:(after "string maybe(string s)")
-  if (s == "interactive") return "";
+:(before "End maybe(recipe_name) Special-cases")
+if (recipe_name == "interactive") return "";
 
 :(scenario run_interactive_comments)
 def main [
