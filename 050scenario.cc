@@ -362,7 +362,7 @@ def main [
 +mem: storing 13 in location 2
 
 //: 'memory-should-contain' raises errors if specific locations aren't as expected
-//: Also includes some special support for checking strings.
+//: Also includes some special support for checking Mu texts.
 
 :(before "End Globals")
 bool Scenario_testing_scenario = false;
@@ -470,27 +470,28 @@ void check_type(const string& lhs, istream& in) {
     }
     literal.erase(literal.begin());
     assert(*--literal.end() == ']');  literal.erase(--literal.end());
-    check_string(address, literal);
+    check_mu_text(address, literal);
     return;
   }
   // End Scenario Type Special-cases
   raise << "don't know how to check memory for '" << lhs << "'\n" << end();
 }
 
-void check_string(int address, const string& literal) {
-  trace(9999, "run") << "checking string length at " << address << end();
-  if (get_or_insert(Memory, address) != SIZE(literal)) {
+void check_mu_text(int start, const string& literal) {
+  trace(9999, "run") << "checking text length at " << start << end();
+  int array_length = static_cast<int>(get_or_insert(Memory, start));
+  if (array_length != SIZE(literal)) {
     if (!Hide_errors) cerr << '\n';
-    raise << "F - " << maybe(current_recipe_name()) << "expected location '" << address << "' to contain length " << SIZE(literal) << " of string [" << literal << "] but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
+    raise << "F - " << maybe(current_recipe_name()) << "expected location '" << start << "' to contain length " << SIZE(literal) << " of text [" << literal << "] but saw " << array_length << " (for text [" << read_mu_characters(start+/*skip length*/1, array_length) << "])\n" << end();
     if (!Scenario_testing_scenario) Passed = false;
     return;
   }
-  ++address;  // now skip length
+  int curr = start+1;  // now skip length
   for (int i = 0;  i < SIZE(literal);  ++i) {
-    trace(9999, "run") << "checking location " << address+i << end();
-    if (get_or_insert(Memory, address+i) != literal.at(i)) {
+    trace(9999, "run") << "checking location " << curr+i << end();
+    if (get_or_insert(Memory, curr+i) != literal.at(i)) {
       if (!Hide_errors) cerr << '\n';
-      raise << "F - " << maybe(current_recipe_name()) << "expected location " << (address+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, address+i)) << '\n' << end();
+      raise << "F - " << maybe(current_recipe_name()) << "expected location " << (curr+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, curr+i)) << '\n' << end();
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
@@ -508,7 +509,7 @@ def main [
 ]
 +error: main: duplicate expectation for location '1'
 
-:(scenario memory_check_string_length)
+:(scenario memory_check_mu_text_length)
 % Scenario_testing_scenario = true;
 % Hide_errors = true;
 def main [
@@ -520,9 +521,9 @@ def main [
     1:array:character <- [ab]
   ]
 ]
-+error: F - main: expected location '1' to contain length 2 of string [ab] but saw 3
++error: F - main: expected location '1' to contain length 2 of text [ab] but saw 3 (for text [abc])
 
-:(scenario memory_check_string)
+:(scenario memory_check_mu_text)
 def main [
   1:num <- copy 3
   2:num <- copy 97  # 'a'
@@ -532,7 +533,7 @@ def main [
     1:array:character <- [abc]
   ]
 ]
-+run: checking string length at 1
++run: checking text length at 1
 +run: checking location 2
 +run: checking location 3
 +run: checking location 4

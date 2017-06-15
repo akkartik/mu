@@ -143,12 +143,15 @@ int unicode_length(const string& s) {
 string read_mu_text(int address) {
   if (address == 0) return "";
   ++address;  // skip refcount
-  int size = get_or_insert(Memory, address);
-  if (size == 0) return "";
+  int length = get_or_insert(Memory, address);
+  if (length == 0) return "";
+  return read_mu_characters(address+1, length);
+}
+
+string read_mu_characters(int start, int length) {
   ostringstream tmp;
-  for (int curr = address+1;  curr <= address+size;  ++curr) {
+  for (int curr = start;  curr < start+length;  ++curr)
     tmp << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
-  }
   return tmp.str();
 }
 
