@@ -1021,13 +1021,13 @@ def move-to-previous-line editor:&:editor -> go-render?:bool, editor:&:editor [
       c2:char <- get *curr, value:offset
       at-newline?:bool <- equal c2, 10/newline
       break-if at-newline?
-      curr:&:duplex-list:char <- before-previous-line curr, editor
+      curr:&:duplex-list:char <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
     }
     {
       old <- copy curr
-      curr <- before-previous-line curr, editor
+      curr <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
     }
@@ -2597,7 +2597,7 @@ after <scroll-up> [
   trace 10, [app], [scroll up]
   top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
   old-top:&:duplex-list:char <- copy top-of-screen
-  top-of-screen <- before-previous-line top-of-screen, editor
+  top-of-screen <- before-previous-screen-line top-of-screen, editor
   *editor <- put *editor, top-of-screen:offset, top-of-screen
   no-movement?:bool <- equal old-top, top-of-screen
   return-if no-movement?, 0/don't-render
@@ -2607,7 +2607,7 @@ after <scroll-up> [
 # previous *wrapped* line
 # returns original if no next newline
 # beware: never return null pointer
-def before-previous-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
+def before-previous-screen-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
   local-scope
   load-ingredients
   curr:&:duplex-list:char <- copy in
@@ -3236,7 +3236,7 @@ def page-up editor:&:editor, screen-height:num -> editor:&:editor [
   {
     done?:bool <- greater-or-equal count, max
     break-if done?
-    prev:&:duplex-list:char <- before-previous-line top-of-screen, editor
+    prev:&:duplex-list:char <- before-previous-screen-line top-of-screen, editor
     break-unless prev
     top-of-screen <- copy prev
     *editor <- put *editor, top-of-screen:offset, top-of-screen
@@ -3591,7 +3591,7 @@ def line-down editor:&:editor, screen-height:num -> go-render?:bool, editor:&:ed
   local-scope
   load-ingredients
   old-top:&:duplex-list:char <- get *editor, top-of-screen:offset
-  new-top:&:duplex-list:char <- before-previous-line old-top, editor
+  new-top:&:duplex-list:char <- before-previous-screen-line old-top, editor
   movement?:bool <- not-equal old-top, new-top
   {
     break-unless movement?
@@ -3611,7 +3611,7 @@ after <handle-special-character> [
     old-top:&:duplex-list:char <- get *editor, top-of-screen:offset
     cursor:&:duplex-list:char <- get *editor, before-cursor:offset
     cursor <- next cursor
-    new-top:&:duplex-list:char <- before-previous-line cursor, editor
+    new-top:&:duplex-list:char <- before-previous-screen-line cursor, editor
     *editor <- put *editor, top-of-screen:offset, new-top
     *editor <- put *editor, cursor-row:offset, 1
     go-render?:bool <- not-equal new-top, old-top
@@ -3637,7 +3637,7 @@ after <handle-special-character> [
       break-unless next
       cursor <- copy next
     }
-    before-line-start:&:duplex-list:char <- before-previous-line cursor, editor
+    before-line-start:&:duplex-list:char <- before-previous-screen-line cursor, editor
     line-start:&:duplex-list:char <- next before-line-start
     commented-out?:bool <- match line-start, [#? ]  # comment prefix
     {
