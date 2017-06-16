@@ -1016,17 +1016,16 @@ def move-to-previous-line editor:&:editor -> go-render?:bool, editor:&:editor [
     # then scan back another line
     # if either step fails, give up without modifying cursor or coordinates
     curr:&:duplex-list:char <- copy before-cursor
+    old:&:duplex-list:char <- copy curr
     {
-      old:&:duplex-list:char <- copy curr
       c2:char <- get *curr, value:offset
       at-newline?:bool <- equal c2, 10/newline
       break-if at-newline?
-      curr:&:duplex-list:char <- before-previous-screen-line curr, editor
+      curr <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
     }
     {
-      old <- copy curr
       curr <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
@@ -3622,7 +3621,6 @@ after <handle-special-character> [
 ]
 
 # ctrl-/ - comment/uncomment current line
-# todo: scenarios
 
 after <handle-special-character> [
   {
