@@ -10,7 +10,7 @@ scenario editor-inserts-two-spaces-on-tab [
   s:text <- new [ab
 cd]
   e:&:editor <- new-editor s, 0/left, 5/right
-  render screen, e
+  editor-render screen, e
   $clear-trace
   assume-console [
     press tab
@@ -32,7 +32,7 @@ scenario editor-inserts-two-spaces-and-wraps-line-on-tab [
   assume-screen 10/width, 5/height
   s:text <- new [abcd]
   e:&:editor <- new-editor s, 0/left, 5/right
-  render screen, e
+  editor-render screen, e
   $clear-trace
   assume-console [
     press tab
@@ -3629,13 +3629,7 @@ after <handle-special-character> [
     cursor-column:num <- get *editor, cursor-column:offset
     data:&:duplex-list:char <- get *editor, data:offset
     <insert-character-begin>
-    cursor:&:duplex-list:char <- get *editor, before-cursor:offset
-    {
-      next:&:duplex-list:char <- next cursor
-      break-unless next
-      cursor <- copy next
-    }
-    before-line-start:&:duplex-list:char <- before-previous-screen-line cursor, editor
+    before-line-start:&:duplex-list:char <- before-start-of-screen-line editor
     line-start:&:duplex-list:char <- next before-line-start
     commented-out?:bool <- match line-start, [#? ]  # comment prefix
     {
@@ -3643,23 +3637,73 @@ after <handle-special-character> [
       # uncomment
       data <- remove line-start, 3/length-comment-prefix, data
       cursor-column <- subtract cursor-column, 3/length-comment-prefix
+      *editor <- put *editor, cursor-column:offset, cursor-column
+      go-render? <- render-line-from-start screen, editor, 3/size-of-comment-leader
     }
     {
       break-if commented-out?
       # comment
       insert before-line-start, [#? ]
       cursor-column <- add cursor-column, 3/length-comment-prefix
+      *editor <- put *editor, cursor-column:offset, cursor-column
+      go-render? <- render-line-from-start screen, editor, 0
     }
-    *editor <- put *editor, cursor-column:offset, cursor-column
     <insert-character-end>
-    return 1/do-render
+    return
   }
+]
+
+# Render just from the start of the current line, and only if it wasn't
+# wrapping before (include margin) and isn't wrapping now. Otherwise just tell
+# the caller to go-render? the entire screen.
+def render-line-from-start screen:&:screen, editor:&:editor, right-margin:num -> go-render?:bool, screen:&:screen [
+  local-scope
+  load-ingredients
+  before-line-start:&:duplex-list:char <- before-start-of-screen-line editor
+  line-start:&:duplex-list:char <- next before-line-start
+  color:num <- copy 7/white
+  left:num <- get *editor, left:offset
+  cursor-row:num <- get *editor, cursor-row:offset
+  screen <- move-cursor screen, cursor-row, left
+  right:num <- get *editor, right:offset
+  end:num <- subtract right, right-margin
+  i:num <- copy 0
+  curr:&:duplex-list:char <- copy line-start
+  {
+    render-all?:bool <- greater-or-equal i, end
+    return-if render-all?, 1/go-render
+    break-unless curr
+    c:char <- get *curr, value:offset
+    newline?:bool <- equal c, 10/newline
+    break-if newline?
+    color <- get-color color, c
+    print screen, c, color
+    curr <- next curr
+    i <- add i, 1
+    loop
+  }
+  clear-line-until screen, right
+  return 0/dont-render
+]
+
+def before-start-of-screen-line editor:&:editor -> result:&:duplex-list:char [
+  local-scope
+  load-ingredients
+  cursor:&:duplex-list:char <- get *editor, before-cursor:offset
+  {
+    next:&:duplex-list:char <- next cursor
+    break-unless next
+    cursor <- copy next
+  }
+  result <- before-previous-screen-line cursor, editor
 ]
 
 scenario editor-comments-empty-line [
   local-scope
   assume-screen 10/width, 5/height
   e:&:editor <- new-editor [], 0/left, 5/right
+  editor-render screen, e
+  $clear-trace
   assume-console [
     press ctrl-slash
   ]
@@ -3678,12 +3722,15 @@ scenario editor-comments-empty-line [
     4 <- 1
     5 <- 3
   ]
+  check-trace-count-for-label 5, [print-character]
 ]
 
 scenario editor-comments-at-start-of-contents [
   local-scope
   assume-screen 10/width, 5/height
   e:&:editor <- new-editor [ab], 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   assume-console [
     press ctrl-slash
   ]
@@ -3702,12 +3749,15 @@ scenario editor-comments-at-start-of-contents [
     4 <- 1
     5 <- 3
   ]
+  check-trace-count-for-label 10, [print-character]
 ]
 
 scenario editor-comments-at-end-of-contents [
   local-scope
   assume-screen 10/width, 5/height
   e:&:editor <- new-editor [ab], 0/left, 10/right
+  editor-render screen, e
+  $clear-trace
   assume-console [
     left-click 1, 7
     press ctrl-slash
@@ -3726,5 +3776,83 @@ scenario editor-comments-at-end-of-contents [
   memory-should-contain [
     4 <- 1
     5 <- 5
+  ]
+  check-trace-count-for-label 10, [print-character]
+  # toggle to uncomment
+  $clear-trace
+  assume-console [
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .ab        .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  check-trace-count-for-label 10, [print-character]
+]
+
+scenario editor-comments-almost-wrapping-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  # editor starts out with a non-wrapping line
+  e:&:editor <- new-editor [abcd], 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .abcd      .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  $clear-trace
+  # on commenting the line is now wrapped
+  assume-console [
+    left-click 1, 7
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .#? a↩     .
+    .bcd       .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+]
+
+scenario editor-uncomments-just-wrapping-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  # editor starts out with a comment that wraps the line
+  e:&:editor <- new-editor [#? ab], 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .#? a↩     .
+    .b         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  $clear-trace
+  # on uncommenting the line is no longer wrapped
+  assume-console [
+    left-click 1, 7
+    press ctrl-slash
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .ab        .
+    .┈┈┈┈┈     .
+    .          .
   ]
 ]
