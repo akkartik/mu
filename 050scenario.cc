@@ -780,6 +780,7 @@ case CHECK_TRACE_COUNT_FOR_LABEL: {
   if (count != expected_count) {
     if (!Hide_errors) cerr << '\n';
     raise << "F - " << maybe(current_recipe_name()) << "expected " << expected_count << " lines in trace with label '" << label << "' in trace\n" << end();
+    if (!Hide_errors) DUMP(label);
     if (!Scenario_testing_scenario) Passed = false;
   }
   break;
