@@ -1934,32 +1934,16 @@ def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:
   load-ingredients
   # if we deleted nothing, there's nothing to render
   return-unless deleted-cells, 0/dont-render
-  # if we have a wrapped line, give up and render the whole screen
+  # if the line used to wrap before, give up and render the whole screen
   curr-column:num <- get *editor, cursor-column:offset
-  num-deleted-cells:num <- length, deleted-cells
+  num-deleted-cells:num <- length deleted-cells
   old-row-len:num <- add curr-column, num-deleted-cells
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   end:num <- subtract right, left
   wrap?:bool <- greater-or-equal old-row-len, end
   return-if wrap?, 1/go-render
-  # accumulate the current line as text and render it
-  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
-  curr:&:duplex-list:char <- get *editor, before-cursor:offset
-  {
-    # check if we are at the end of the line
-    curr <- next curr
-    break-unless curr
-    c:char <- get *curr, value:offset
-    # check if we have a newline
-    b:bool <- equal c, 10
-    break-if b
-    buf <- append buf, c
-    loop
-  }
-  curr-line:text <- buffer-to-array buf
-  curr-row:num <- get *editor, cursor-row:offset
-  render-code screen, curr-line, curr-column, right, curr-row
+  clear-line-until screen, right
   return 0/dont-render
 ]
 
