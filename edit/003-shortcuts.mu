@@ -1681,12 +1681,12 @@ after <handle-special-character> [
     <delete-to-start-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
     <delete-to-start-of-line-end>
-    go-render?:bool <- minimal-render-for-ctrl-u screen, editor
+    go-render?:bool <- minimal-render-for-ctrl-u screen, editor, deleted-cells
     return
   }
 ]
 
-def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor -> go-render?:bool, screen:&:screen [
+def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
   load-ingredients
   curr-column:num <- get *editor, cursor-column:offset
@@ -1708,6 +1708,13 @@ def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor -> go-render?:boo
     i <- add i, 1
     loop
   }
+  # if the line used to be wrapped, give up and render the whole screen
+  num-deleted-cells:num <- length deleted-cells
+  old-row-len:num <- add i, num-deleted-cells
+  left:num <- get *editor, left:offset
+  end:num <- subtract right, left
+  wrap?:bool <- greater-or-equal old-row-len, end
+  return-if wrap?, 1/go-render
   curr-line:text <- buffer-to-array buf
   curr-row:num <- get *editor, cursor-row:offset
   render-code screen, curr-line, curr-column, right, curr-row
@@ -1885,6 +1892,42 @@ scenario editor-deletes-to-start-of-final-line-with-ctrl-u [
     .          .
   ]
   check-trace-count-for-label 10, [print-character]
+]
+
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u [
+  local-scope
+  assume-screen 10/width, 10/height
+  # first line starts out wrapping
+  s:text <- new [123456
+789]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .1234↩     .
+    .56        .
+    .789       .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  $clear-trace
+  # ctrl-u enough of the first line that it's no longer wrapping
+  assume-console [
+    left-click 1, 3
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  # entire screen needs to be refreshed
+  screen-should-contain [
+    .          .
+    .456       .
+    .789       .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  check-trace-count-for-label 45, [print-character]
 ]
 
 # ctrl-k - delete text from cursor to end of line (but not the newline)
