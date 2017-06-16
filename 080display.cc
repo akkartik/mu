@@ -65,20 +65,6 @@ case CLOSE_CONSOLE: {
   break;
 }
 
-//: Automatically close the console in some situations.
-:(before "End One-time Setup")
-atexit(close_console_and_scroll_to_bottom);
-:(after "Begin ASSERT in Run")
-if (tb_is_active()) close_console_and_scroll_to_bottom();
-:(code)
-void close_console_and_scroll_to_bottom() {
-  if (!tb_is_active()) return;
-  // leave the screen in a relatively clean state
-  tb_set_cursor(tb_width()-1, tb_height()-1);
-  cout << "\r\n";
-  tb_shutdown();
-}
-
 :(before "End Primitive Recipe Declarations")
 CLEAR_DISPLAY,
 :(before "End Primitive Recipe Numbers")

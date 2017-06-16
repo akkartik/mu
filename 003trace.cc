@@ -165,10 +165,22 @@ int Trace_errors = 0;  // used only when Trace_stream is NULL
 #define DUMP(label)  if (Trace_stream) cerr << Trace_stream->readable_contents(label);
 
 // Errors are a special layer.
-#define raise  (!Trace_stream ? (++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
+#define raise  (!Trace_stream ? (scroll_to_bottom_and_close_console(),++Trace_errors,cerr) /*do print*/ : Trace_stream->stream(Error_depth, "error"))
 // If we aren't yet sure how to deal with some corner case, use assert_for_now
 // to indicate that it isn't an inviolable invariant.
 #define assert_for_now assert
+
+//: Automatically close the console in some situations.
+:(before "End One-time Setup")
+atexit(scroll_to_bottom_and_close_console);
+:(code)
+void scroll_to_bottom_and_close_console() {
+  if (!tb_is_active()) return;
+  // leave the screen in a relatively clean state
+  tb_set_cursor(tb_width()-1, tb_height()-1);
+  cout << "\r\n";
+  tb_shutdown();
+}
 
 // Inside tests, fail any tests that displayed (unexpected) errors.
 // Expected errors in tests should always be hidden and silently checked for.

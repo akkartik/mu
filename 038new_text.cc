@@ -189,7 +189,6 @@ case ASSERT: {
 :(before "End Primitive Recipe Implementations")
 case ASSERT: {
   if (!ingredients.at(0).at(0)) {
-    // Begin ASSERT in Run
     if (is_literal_text(current_instruction().ingredients.at(1)))
       raise << current_instruction().ingredients.at(1).name << '\n' << end();
     else
