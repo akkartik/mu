@@ -10,6 +10,8 @@ scenario editor-inserts-two-spaces-on-tab [
   s:text <- new [ab
 cd]
   e:&:editor <- new-editor s, 0/left, 5/right
+  render screen, e
+  $clear-trace
   assume-console [
     press tab
   ]
@@ -21,6 +23,30 @@ cd]
     .  ab      .
     .cd        .
   ]
+  # we render at most two editor rows worth (one row for each space)
+  check-trace-count-for-label-lesser-than 10, [print-character]
+]
+
+scenario editor-inserts-two-spaces-and-wraps-line-on-tab [
+  local-scope
+  assume-screen 10/width, 5/height
+  s:text <- new [abcd]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  render screen, e
+  $clear-trace
+  assume-console [
+    press tab
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .  ab↩     .
+    .cd        .
+  ]
+  # we re-render the whole editor
+  check-trace-count-for-label-greater-than 10, [print-character]
 ]
 
 after <handle-special-character> [
@@ -28,10 +54,12 @@ after <handle-special-character> [
     tab?:bool <- equal c, 9/tab
     break-unless tab?
     <insert-character-begin>
+    # todo: decompose insert-at-cursor into editor update and screen update,
+    # so that 'tab' doesn't render the current line multiple times
     insert-at-cursor editor, 32/space, screen
-    insert-at-cursor editor, 32/space, screen
+    go-render? <- insert-at-cursor editor, 32/space, screen
     <insert-character-end>
-    return 1/go-render
+    return
   }
 ]
 
@@ -1628,27 +1656,23 @@ after <handle-special-character> [
     <delete-to-start-of-line-begin>
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
     <delete-to-start-of-line-end>
-    go-render?:bool <- minimal-render-for-ctrl-u editor, screen
+    go-render?:bool <- minimal-render-for-ctrl-u screen, editor
     return
   }
 ]
 
-def minimal-render-for-ctrl-u editor:&:editor, screen:&:screen -> go-render?:bool, screen:&:screen [
+def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor -> go-render?:bool, screen:&:screen [
   local-scope
   load-ingredients
-  curr-row:num <- get *editor, cursor-row:offset
   curr-column:num <- get *editor, cursor-column:offset
-  left:num <- get *editor, left:offset
-  right:num <- get *editor, right:offset
-  end:num <- subtract left, right
   # accumulate the current line as text and render it
   buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
   curr:&:duplex-list:char <- get *editor, before-cursor:offset
-  i:num <- copy 0
+  i:num <- copy curr-column
+  right:num <- get *editor, right:offset
   {
-    i <- add i, 1
     # if we have a wrapped line, give up and render the whole screen
-    wrap?:bool <- equal i, end
+    wrap?:bool <- greater-or-equal i, right
     return-if wrap?, 1/go-render
     curr <- next curr
     break-unless curr
@@ -1656,9 +1680,11 @@ def minimal-render-for-ctrl-u editor:&:editor, screen:&:screen -> go-render?:boo
     b:bool <- equal c, 10
     break-if b
     buf <- append buf, c
+    i <- add i, 1
     loop
   }
   curr-line:text <- buffer-to-array buf
+  curr-row:num <- get *editor, cursor-row:offset
   render-code screen, curr-line, curr-column, right, curr-row
   return 0/dont-render
 ]
@@ -1873,44 +1899,26 @@ after <handle-special-character> [
     deleted-cells:&:duplex-list:char <- delete-to-end-of-line editor
     <delete-to-end-of-line-end>
     # checks if we can do a minimal render and if we can it will do a minimal render
-    go-render?:bool <- minimal-render-for-ctrl-k editor, screen, deleted-cells
+    go-render?:bool <- minimal-render-for-ctrl-k screen, editor, deleted-cells
     return
   }
 ]
 
-def minimal-render-for-ctrl-k editor:&:editor, screen:&:screen, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
+def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
   load-ingredients
   # if we deleted nothing, there's nothing to render
   return-unless deleted-cells, 0/dont-render
-  # if we have a wrapped line, give up and render the whole screen
+  # if the line used to wrap before, give up and render the whole screen
   curr-column:num <- get *editor, cursor-column:offset
-  num-deleted-cells:num <- length, deleted-cells
+  num-deleted-cells:num <- length deleted-cells
   old-row-len:num <- add curr-column, num-deleted-cells
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   end:num <- subtract right, left
   wrap?:bool <- greater-or-equal old-row-len, end
   return-if wrap?, 1/go-render
-  # accumulate the current line as text and render it
-  buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
-  curr:&:duplex-list:char <- get *editor, before-cursor:offset
-  i:num <- copy 0
-  {
-    i <- add i, 1
-    # check if we are at the end of the line
-    curr <- next curr
-    break-unless curr
-    c:char <- get *curr, value:offset
-    # check if we have a newline
-    b:bool <- equal c, 10
-    break-if b
-    buf <- append buf, c
-    loop
-  }
-  curr-line:text <- buffer-to-array buf
-  curr-row:num <- get *editor, cursor-row:offset
-  render-code screen, curr-line, curr-column, right, curr-row
+  clear-line-until screen, right
   return 0/dont-render
 ]
 
@@ -2100,6 +2108,7 @@ scenario editor-deletes-to-end-of-wrapped-line-with-ctrl-k [
 
 # takes a pointer into the doubly-linked list, scans ahead at most 'max'
 # positions until the next newline
+# returns original if no next newline
 # beware: never return null pointer.
 def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:duplex-list:char [
   local-scope
@@ -2131,6 +2140,7 @@ def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:dup
 
 # takes a pointer into the doubly-linked list, scans back to before start of
 # previous *wrapped* line
+# returns original if no next newline
 # beware: never return null pointer
 def before-previous-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
   local-scope
