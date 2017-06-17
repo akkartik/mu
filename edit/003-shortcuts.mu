@@ -1551,17 +1551,20 @@ def move-to-end-of-line editor:&:editor -> editor:&:editor [
   load-ingredients
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   cursor-column:num <- get *editor, cursor-column:offset
-  # while not at start of line, move
+  right:num <- get *editor, right:offset
+  # while not at end of line, move
   {
     next:&:duplex-list:char <- next before-cursor
     break-unless next  # end of text
     nextc:char <- get *next, value:offset
     at-end-of-line?:bool <- equal nextc, 10/newline
     break-if at-end-of-line?
+    cursor-column <- add cursor-column, 1
+    at-right?:bool <- equal cursor-column, right
+    break-if at-right?
+    *editor <- put *editor, cursor-column:offset, cursor-column
     before-cursor <- copy next
     *editor <- put *editor, before-cursor:offset, before-cursor
-    cursor-column <- add cursor-column, 1
-    *editor <- put *editor, cursor-column:offset, cursor-column
     loop
   }
 ]
@@ -1642,6 +1645,47 @@ scenario editor-moves-to-end-of-line-with-end-2 [
     4 <- 3
   ]
   check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-moves-to-end-of-wrapped-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  s:text <- new [123456
+789]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  $clear-trace
+  # start on first line, press 'end'
+  assume-console [
+    left-click 1, 1
+    press end
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  # cursor moves to end of line
+  memory-should-contain [
+    10 <- 1
+    11 <- 3
+  ]
+  # no prints
+  check-trace-count-for-label 0, [print-character]
+  # before-cursor is also consistent
+  assume-console [
+    type [a]
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .123a↩     .
+    .456       .
+    .789       .
+    .┈┈┈┈┈     .
+  ]
 ]
 
 # ctrl-u - delete text from start of line until (but not at) cursor
