@@ -405,6 +405,20 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
   move-cursor screen, row, left
 ]
 
+scenario render-text-wraps-barely-long-lines [
+  local-scope
+  assume-screen 5/width, 5/height
+  run [
+    render-text screen, [abcde], 0/left, 4/right, 7/white, 1/row
+  ]
+  screen-should-contain [
+    .     .
+    .abcd↩.
+    .e    .
+    .     .
+  ]
+]
+
 # assumes programming environment has no sandboxes; restores them from previous session
 def restore-sandboxes env:&:environment, resources:&:resources -> env:&:environment [
   local-scope

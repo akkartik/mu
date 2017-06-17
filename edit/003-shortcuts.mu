@@ -30,8 +30,7 @@ cd]
 scenario editor-inserts-two-spaces-and-wraps-line-on-tab [
   local-scope
   assume-screen 10/width, 5/height
-  s:text <- new [abcd]
-  e:&:editor <- new-editor s, 0/left, 5/right
+  e:&:editor <- new-editor [abcd], 0/left, 5/right
   editor-render screen, e
   $clear-trace
   assume-console [
@@ -1178,8 +1177,7 @@ ghi]
 scenario editor-moves-to-top-line-in-presence-of-wrapped-line [
   local-scope
   assume-screen 10/width, 5/height
-  s:text <- new [abcde]
-  e:&:editor <- new-editor s, 0/left, 5/right
+  e:&:editor <- new-editor [abcde], 0/left, 5/right
   editor-render screen, e
   screen-should-contain [
     .          .

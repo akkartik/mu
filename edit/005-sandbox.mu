@@ -425,12 +425,11 @@ def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num
   move-cursor screen, row, left
 ]
 
-scenario read-text-wraps-barely-long-lines [
+scenario render-text-wraps-barely-long-lines [
   local-scope
   assume-screen 5/width, 5/height
-  s:text <- new [abcde]
   run [
-    render-text screen, s, 0/left, 4/right, 7/white, 1/row
+    render-text screen, [abcde], 0/left, 4/right, 7/white, 1/row
   ]
   screen-should-contain [
     .     .
