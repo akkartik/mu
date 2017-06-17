@@ -191,7 +191,9 @@ def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:nu
   return row, column
 ]
 
-def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
+type render-recipe = (recipe (address screen) (address editor) -> number number (address screen) (address editor))
+
+def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 10, [app], [render all]
@@ -216,7 +218,7 @@ def render-all screen:&:screen, env:&:environment, {render-editor: (recipe (addr
 ]
 
 # replaced in a later layer
-def render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
+def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   current-sandbox:&:editor <- get *env, current-sandbox:offset

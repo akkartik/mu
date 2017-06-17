@@ -243,7 +243,7 @@ def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resou
   }
 ]
 
-def! render-sandbox-side screen:&:screen, env:&:environment, {render-editor: (recipe (address screen) (address editor) -> number number (address screen) (address editor))} -> screen:&:screen, env:&:environment [
+def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
