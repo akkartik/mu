@@ -1310,36 +1310,37 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor [
   right:num <- get *editor, right:offset
   last-line:num <- subtract screen-height, 1
   already-at-bottom?:bool <- greater-or-equal cursor-row, last-line
-  # if cursor not at bottom
-  return-if already-at-bottom?
-  # scan to start of next line, then to right column or until end of line
-  max:num <- subtract right, left
-  next-line:&:duplex-list:char <- before-start-of-next-line before-cursor, max
-  # already at end of buffer? do nothing
-  no-motion?:bool <- equal next-line, before-cursor
-  return-if no-motion?
-  cursor-row <- add cursor-row, 1
-  *editor <- put *editor, cursor-row:offset, cursor-row
-  before-cursor <- copy next-line
-  *editor <- put *editor, before-cursor:offset, before-cursor
-  target-column:num <- copy cursor-column
-  cursor-column <- copy left
-  *editor <- put *editor, cursor-column:offset, cursor-column
-  {
-    done?:bool <- greater-or-equal cursor-column, target-column
-    break-if done?
-    curr:&:duplex-list:char <- next before-cursor
-    break-unless curr
-    currc:char <- get *curr, value:offset
-    at-newline?:bool <- equal currc, 10/newline
-    break-if at-newline?
-    #
-    before-cursor <- copy curr
+    # incorrect indent to help diff with edit/
+    # if cursor not at bottom, move it
+    return-if already-at-bottom?
+    # scan to start of next line, then to right column or until end of line
+    max:num <- subtract right, left
+    next-line:&:duplex-list:char <- before-start-of-next-line before-cursor, max
+    # already at end of buffer? do nothing
+    no-motion?:bool <- equal next-line, before-cursor
+    return-if no-motion?
+    cursor-row <- add cursor-row, 1
+    *editor <- put *editor, cursor-row:offset, cursor-row
+    before-cursor <- copy next-line
     *editor <- put *editor, before-cursor:offset, before-cursor
-    cursor-column <- add cursor-column, 1
+    target-column:num <- copy cursor-column
+    cursor-column <- copy left
     *editor <- put *editor, cursor-column:offset, cursor-column
-    loop
-  }
+    {
+      done?:bool <- greater-or-equal cursor-column, target-column
+      break-if done?
+      curr:&:duplex-list:char <- next before-cursor
+      break-unless curr
+      currc:char <- get *curr, value:offset
+      at-newline?:bool <- equal currc, 10/newline
+      break-if at-newline?
+      #
+      before-cursor <- copy curr
+      *editor <- put *editor, before-cursor:offset, before-cursor
+      cursor-column <- add cursor-column, 1
+      *editor <- put *editor, cursor-column:offset, cursor-column
+      loop
+    }
 ]
 
 scenario editor-adjusts-column-at-next-line [
