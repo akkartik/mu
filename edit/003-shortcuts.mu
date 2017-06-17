@@ -1012,15 +1012,13 @@ def move-to-previous-line editor:&:editor -> go-render?:bool, editor:&:editor [
   {
     # if cursor not at top, move it
     break-if already-at-top?
-    # if not at newline, move to start of line (previous newline)
+    # if not at start of screen line, move to start of screen line (previous newline)
     # then scan back another line
     # if either step fails, give up without modifying cursor or coordinates
     curr:&:duplex-list:char <- copy before-cursor
     old:&:duplex-list:char <- copy curr
     {
-      c2:char <- get *curr, value:offset
-      at-newline?:bool <- equal c2, 10/newline
-      break-if at-newline?
+      break-unless cursor-column
       curr <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
@@ -1174,6 +1172,92 @@ ghi]
     .0def      .
     .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-moves-to-top-line-in-presence-of-wrapped-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  s:text <- new [abcde]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .e         .
+    .┈┈┈┈┈     .
+  ]
+  $clear-trace
+  assume-console [
+    left-click 2, 0
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+    3:num/raw <- get *e, cursor-row:offset
+    4:num/raw <- get *e, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .0abc↩     .
+    .de        .
+    .┈┈┈┈┈     .
+  ]
+]
+
+scenario editor-moves-to-top-line-in-presence-of-wrapped-line-2 [
+  local-scope
+  assume-screen 10/width, 5/height
+  s:text <- new [abc
+defgh]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .abc       .
+    .defg↩     .
+    .h         .
+    .┈┈┈┈┈     .
+  ]
+  $clear-trace
+  assume-console [
+    left-click 3, 0
+    press up-arrow
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+    3:num/raw <- get *e, cursor-row:offset
+    4:num/raw <- get *e, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 1
+    4 <- 0
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .0abc      .
+    .defg↩     .
+    .h         .
+    .┈┈┈┈┈     .
   ]
 ]
 
