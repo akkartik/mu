@@ -1435,7 +1435,7 @@ after <handle-special-character> [
     move-to-start-of-line?:bool <- equal c, 1/ctrl-a
     break-unless move-to-start-of-line?
     <move-cursor-begin>
-    move-to-start-of-line editor
+    move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     return 0/don't-render
@@ -1447,35 +1447,34 @@ after <handle-special-key> [
     move-to-start-of-line?:bool <- equal k, 65521/home
     break-unless move-to-start-of-line?
     <move-cursor-begin>
-    move-to-start-of-line editor
+    move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
     <move-cursor-end>
     return 0/don't-render
   }
 ]
 
-def move-to-start-of-line editor:&:editor -> editor:&:editor [
+# handles wrapped lines
+# precondition: cursor-column should be in a consistent state
+def move-to-start-of-screen-line editor:&:editor -> editor:&:editor [
   local-scope
   load-ingredients
   # update cursor column
   left:num <- get *editor, left:offset
-  cursor-column:num <- copy left
-  *editor <- put *editor, cursor-column:offset, cursor-column
+  col:num <- get *editor, cursor-column:offset
   # update before-cursor
-  before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
-  init:&:duplex-list:char <- get *editor, data:offset
+  curr:&:duplex-list:char <- get *editor, before-cursor:offset
   # while not at start of line, move
   {
-    at-start-of-text?:bool <- equal before-cursor, init
-    break-if at-start-of-text?
-    prev:char <- get *before-cursor, value:offset
-    at-start-of-line?:bool <- equal prev, 10/newline
-    break-if at-start-of-line?
-    before-cursor <- prev before-cursor
-    *editor <- put *editor, before-cursor:offset, before-cursor
-    assert before-cursor, [move-to-start-of-line tried to move before start of text]
+    done?:bool <- equal col, left
+    break-if done?
+    assert curr, [move-to-start-of-line tried to move before start of text]
+    curr <- prev curr
+    col <- subtract col, 1
     loop
   }
+  *editor <- put *editor, cursor-column:offset, col
+  *editor <- put *editor, before-cursor:offset, curr
 ]
 
 scenario editor-moves-to-start-of-line-with-ctrl-a-2 [
@@ -1553,6 +1552,58 @@ scenario editor-moves-to-start-of-line-with-home-2 [
     4 <- 0
   ]
   check-trace-count-for-label 0, [print-character]
+]
+
+scenario editor-moves-to-start-of-screen-line-with-ctrl-a [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [123456], 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .1234↩     .
+    .56        .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  $clear-trace
+  # start on second line, press ctrl-a then up
+  assume-console [
+    left-click 2, 1
+    press ctrl-a
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  # cursor moves to start of first line
+  memory-should-contain [
+    4 <- 1  # cursor-row
+    5 <- 0  # cursor-column
+  ]
+  check-trace-count-for-label 0, [print-character]
+  # make sure before-cursor is in sync
+  assume-console [
+    type [a]
+  ]
+  run [
+    editor-event-loop screen, console, e
+    4:num/raw <- get *e, cursor-row:offset
+    5:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .a123↩     .
+    .456       .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  memory-should-contain [
+    4 <- 1  # cursor-row
+    5 <- 1  # cursor-column
+  ]
 ]
 
 # ctrl-e/end - move cursor to end of line
@@ -3176,6 +3227,31 @@ def page-down editor:&:editor -> editor:&:editor [
   move-to-start-of-line editor
   before-cursor <- get *editor, before-cursor:offset
   *editor <- put *editor, top-of-screen:offset, before-cursor
+]
+
+# jump to previous newline
+def move-to-start-of-line editor:&:editor -> editor:&:editor [
+  local-scope
+  load-ingredients
+  # update cursor column
+  left:num <- get *editor, left:offset
+  cursor-column:num <- copy left
+  *editor <- put *editor, cursor-column:offset, cursor-column
+  # update before-cursor
+  before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
+  init:&:duplex-list:char <- get *editor, data:offset
+  # while not at start of line, move
+  {
+    at-start-of-text?:bool <- equal before-cursor, init
+    break-if at-start-of-text?
+    prev:char <- get *before-cursor, value:offset
+    at-start-of-line?:bool <- equal prev, 10/newline
+    break-if at-start-of-line?
+    before-cursor <- prev before-cursor
+    *editor <- put *editor, before-cursor:offset, before-cursor
+    assert before-cursor, [move-to-start-of-line tried to move before start of text]
+    loop
+  }
 ]
 
 scenario editor-does-not-scroll-past-end [
