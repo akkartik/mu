@@ -334,7 +334,7 @@ if ('onhashchange' in window) {
 <span id="L271" class="LineNr"> 271 </span>  row:num, column:num <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L107'>render</a> <a href='../081print.mu.html#L4'>screen</a>, editor
 <span id="L272" class="LineNr"> 272 </span>  <a href='../081print.mu.html#L536'>clear-line-until</a> <a href='../081print.mu.html#L4'>screen</a>, right
 <span id="L273" class="LineNr"> 273 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
-<span id="L274" class="LineNr"> 274 </span>  <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right, <span class="Constant">9480/horizontal-dotted</span>
+<span id="L274" class="LineNr"> 274 </span>  <a href='002-typing.mu.html#L1115'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, right, <span class="Constant">9480/horizontal-dotted</span>
 <span id="L275" class="LineNr"> 275 </span>  row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
 <span id="L276" class="LineNr"> 276 </span>  <a href='001-editor.mu.html#L207'>clear-screen-from</a> <a href='../081print.mu.html#L4'>screen</a>, row, left, left, right
 <span id="L277" class="LineNr"> 277 </span>  <a href='../081print.mu.html#L499'>assert-no-scroll</a> <a href='../081print.mu.html#L4'>screen</a>, old-top-idx
@@ -937,220 +937,275 @@ if ('onhashchange' in window) {
 <span id="L874" class="LineNr"> 874 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
 <span id="L875" class="LineNr"> 875 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
 <span id="L876" class="LineNr"> 876 </span>  <a href='../081print.mu.html#L748'>screen-height</a>:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L748'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L877" class="LineNr"> 877 </span>  <span class="Comment"># insert newline</span>
-<span id="L878" class="LineNr"> 878 </span>  insert <span class="Constant">10/newline</span>, before-cursor
-<span id="L879" class="LineNr"> 879 </span>  before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
-<span id="L880" class="LineNr"> 880 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
-<span id="L881" class="LineNr"> 881 </span>  cursor-row <span class="Special">&lt;-</span> add cursor-row,<span class="Constant"> 1</span>
-<span id="L882" class="LineNr"> 882 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
-<span id="L883" class="LineNr"> 883 </span>  cursor-column <span class="Special">&lt;-</span> copy left
-<span id="L884" class="LineNr"> 884 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
-<span id="L885" class="LineNr"> 885 </span>  <span class="Comment"># maybe scroll</span>
-<span id="L886" class="LineNr"> 886 </span>  <span class="Delimiter">{</span>
-<span id="L887" class="LineNr"> 887 </span>  <span class="Conceal">¦</span> below-screen?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-row, <a href='../081print.mu.html#L748'>screen-height</a>  <span class="Comment"># must be equal, never greater</span>
-<span id="L888" class="LineNr"> 888 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> below-screen?
-<span id="L889" class="LineNr"> 889 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;scroll-down&gt;</span>
-<span id="L890" class="LineNr"> 890 </span>  <span class="Conceal">¦</span> cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># bring back into screen range</span>
-<span id="L891" class="LineNr"> 891 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
-<span id="L892" class="LineNr"> 892 </span>  <span class="Delimiter">}</span>
-<span id="L893" class="LineNr"> 893 </span>  <span class="Comment"># indent if necessary</span>
-<span id="L894" class="LineNr"> 894 </span>  indent?:bool <span class="Special">&lt;-</span> get *editor, <span class="Constant">indent?:offset</span>
-<span id="L895" class="LineNr"> 895 </span>  <span class="muControl">return-unless</span> indent?
-<span id="L896" class="LineNr"> 896 </span>  d:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
-<span id="L897" class="LineNr"> 897 </span>  end-of-previous-line:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
-<span id="L898" class="LineNr"> 898 </span>  indent:num <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L911'>line-indent</a> end-of-previous-line, d
-<span id="L899" class="LineNr"> 899 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L900" class="LineNr"> 900 </span>  <span class="Delimiter">{</span>
-<span id="L901" class="LineNr"> 901 </span>  <span class="Conceal">¦</span> indent-done?:bool <span class="Special">&lt;-</span> greater-or-equal i, indent
-<span id="L902" class="LineNr"> 902 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> indent-done?
-<span id="L903" class="LineNr"> 903 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L203'>insert-at-cursor</a> editor, <span class="Constant">32/space</span>, <a href='../081print.mu.html#L4'>screen</a>
-<span id="L904" class="LineNr"> 904 </span>  <span class="Conceal">¦</span> i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
-<span id="L905" class="LineNr"> 905 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L906" class="LineNr"> 906 </span>  <span class="Delimiter">}</span>
-<span id="L907" class="LineNr"> 907 </span>]
-<span id="L908" class="LineNr"> 908 </span>
-<span id="L909" class="LineNr"> 909 </span><span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
-<span id="L910" class="LineNr"> 910 </span><span class="Comment"># the number of spaces at the start of the line containing 'curr'.</span>
-<span id="L911" class="LineNr"> 911 </span><span class="muRecipe">def</span> <a href='002-typing.mu.html#L911'>line-indent</a> curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char, start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char<span class="muRecipe"> -&gt; </span>result:num [
-<span id="L912" class="LineNr"> 912 </span>  <span class="Constant">local-scope</span>
-<span id="L913" class="LineNr"> 913 </span>  <span class="Constant">load-ingredients</span>
-<span id="L914" class="LineNr"> 914 </span>  result:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L915" class="LineNr"> 915 </span>  <span class="muControl">return-unless</span> curr
-<span id="L916" class="LineNr"> 916 </span>  at-start?:bool <span class="Special">&lt;-</span> equal curr, start
-<span id="L917" class="LineNr"> 917 </span>  <span class="muControl">return-if</span> at-start?
-<span id="L918" class="LineNr"> 918 </span>  <span class="Delimiter">{</span>
-<span id="L919" class="LineNr"> 919 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
-<span id="L920" class="LineNr"> 920 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
-<span id="L921" class="LineNr"> 921 </span>  <span class="Conceal">¦</span> at-start?:bool <span class="Special">&lt;-</span> equal curr, start
-<span id="L922" class="LineNr"> 922 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start?
-<span id="L923" class="LineNr"> 923 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
-<span id="L924" class="LineNr"> 924 </span>  <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
-<span id="L925" class="LineNr"> 925 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
-<span id="L926" class="LineNr"> 926 </span>  <span class="Conceal">¦</span> <span class="Comment"># if c is a space, increment result</span>
-<span id="L927" class="LineNr"> 927 </span>  <span class="Conceal">¦</span> is-space?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">32/space</span>
-<span id="L928" class="LineNr"> 928 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L929" class="LineNr"> 929 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-space?
-<span id="L930" class="LineNr"> 930 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> add result,<span class="Constant"> 1</span>
-<span id="L931" class="LineNr"> 931 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L932" class="LineNr"> 932 </span>  <span class="Conceal">¦</span> <span class="Comment"># if c is not a space, reset result</span>
-<span id="L933" class="LineNr"> 933 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L934" class="LineNr"> 934 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> is-space?
-<span id="L935" class="LineNr"> 935 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
-<span id="L936" class="LineNr"> 936 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L937" class="LineNr"> 937 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L938" class="LineNr"> 938 </span>  <span class="Delimiter">}</span>
-<span id="L939" class="LineNr"> 939 </span>]
-<span id="L940" class="LineNr"> 940 </span>
-<span id="L941" class="LineNr"> 941 </span><span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline-2 [
-<span id="L942" class="LineNr"> 942 </span>  <span class="Constant">local-scope</span>
-<span id="L943" class="LineNr"> 943 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-<span id="L944" class="LineNr"> 944 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> <span class="Constant">[abc]</span>, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
-<span id="L945" class="LineNr"> 945 </span>  assume-console [
-<span id="L946" class="LineNr"> 946 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0</span>
-<span id="L947" class="LineNr"> 947 </span><span class="Constant">1]</span>
-<span id="L948" class="LineNr"> 948 </span>  ]
-<span id="L949" class="LineNr"> 949 </span>  run [
-<span id="L950" class="LineNr"> 950 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
-<span id="L951" class="LineNr"> 951 </span>  ]
-<span id="L952" class="LineNr"> 952 </span>  screen-should-contain [
-<span id="L953" class="LineNr"> 953 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L954" class="LineNr"> 954 </span>  <span class="Conceal">¦</span><span class="Constant"> . 0        .</span>
-<span id="L955" class="LineNr"> 955 </span>  <span class="Conceal">¦</span><span class="Constant"> . 1abc     .</span>
-<span id="L956" class="LineNr"> 956 </span>  <span class="Conceal">¦</span><span class="Constant"> . ╌╌╌╌╌╌╌╌╌.</span>
-<span id="L957" class="LineNr"> 957 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L958" class="LineNr"> 958 </span>  ]
-<span id="L959" class="LineNr"> 959 </span>]
-<span id="L960" class="LineNr"> 960 </span>
-<span id="L961" class="LineNr"> 961 </span><span class="muScenario">scenario</span> editor-clears-previous-line-completely-after-inserting-newline [
-<span id="L962" class="LineNr"> 962 </span>  <span class="Constant">local-scope</span>
-<span id="L963" class="LineNr"> 963 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
-<span id="L964" class="LineNr"> 964 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> <span class="Constant">[abcde]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
-<span id="L965" class="LineNr"> 965 </span>  <a href='002-typing.mu.html#L265'>editor-render</a> <a href='../081print.mu.html#L4'>screen</a>, e
-<span id="L966" class="LineNr"> 966 </span>  screen-should-contain [
-<span id="L967" class="LineNr"> 967 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L968" class="LineNr"> 968 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd↩     .</span>
-<span id="L969" class="LineNr"> 969 </span>  <span class="Conceal">¦</span><span class="Constant"> .e         .</span>
-<span id="L970" class="LineNr"> 970 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
-<span id="L971" class="LineNr"> 971 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L972" class="LineNr"> 972 </span>  ]
-<span id="L973" class="LineNr"> 973 </span>  assume-console [
-<span id="L974" class="LineNr"> 974 </span>  <span class="Conceal">¦</span> press enter
-<span id="L975" class="LineNr"> 975 </span>  ]
-<span id="L976" class="LineNr"> 976 </span>  run [
-<span id="L977" class="LineNr"> 977 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
-<span id="L978" class="LineNr"> 978 </span>  ]
-<span id="L979" class="LineNr"> 979 </span>  <span class="Comment"># line should be fully cleared</span>
-<span id="L980" class="LineNr"> 980 </span>  screen-should-contain [
-<span id="L981" class="LineNr"> 981 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L982" class="LineNr"> 982 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
-<span id="L983" class="LineNr"> 983 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd↩     .</span>
-<span id="L984" class="LineNr"> 984 </span>  <span class="Conceal">¦</span><span class="Constant"> .e         .</span>
-<span id="L985" class="LineNr"> 985 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
-<span id="L986" class="LineNr"> 986 </span>  ]
-<span id="L987" class="LineNr"> 987 </span>]
-<span id="L988" class="LineNr"> 988 </span>
-<span id="L989" class="LineNr"> 989 </span><span class="muScenario">scenario</span> editor-inserts-indent-after-newline [
-<span id="L990" class="LineNr"> 990 </span>  <span class="Constant">local-scope</span>
-<span id="L991" class="LineNr"> 991 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-<span id="L992" class="LineNr"> 992 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[ab</span>
-<span id="L993" class="LineNr"> 993 </span><span class="Constant">  cd</span>
-<span id="L994" class="LineNr"> 994 </span><span class="Constant">ef]</span>
-<span id="L995" class="LineNr"> 995 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L996" class="LineNr"> 996 </span>  <span class="Comment"># position cursor after 'cd' and hit 'newline'</span>
-<span id="L997" class="LineNr"> 997 </span>  assume-console [
-<span id="L998" class="LineNr"> 998 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 8</span>
-<span id="L999" class="LineNr"> 999 </span>  <span class="Conceal">¦</span> type [
-<span id="L1000" class="LineNr">1000 </span>]
-<span id="L1001" class="LineNr">1001 </span>  ]
-<span id="L1002" class="LineNr">1002 </span>  run [
-<span id="L1003" class="LineNr">1003 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
-<span id="L1004" class="LineNr">1004 </span>  <span class="Conceal">¦</span> 3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
-<span id="L1005" class="LineNr">1005 </span>  <span class="Conceal">¦</span> 4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
-<span id="L1006" class="LineNr">1006 </span>  ]
-<span id="L1007" class="LineNr">1007 </span>  <span class="Comment"># cursor should be below start of previous line</span>
-<span id="L1008" class="LineNr">1008 </span>  memory-should-contain [
-<span id="L1009" class="LineNr">1009 </span>  <span class="Conceal">¦</span><span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>  <span class="Comment"># cursor row</span>
-<span id="L1010" class="LineNr">1010 </span>  <span class="Conceal">¦</span><span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor column (indented)</span>
-<span id="L1011" class="LineNr">1011 </span>  ]
-<span id="L1012" class="LineNr">1012 </span>]
-<span id="L1013" class="LineNr">1013 </span>
-<span id="L1014" class="LineNr">1014 </span><span class="muScenario">scenario</span> editor-skips-indent-around-paste [
-<span id="L1015" class="LineNr">1015 </span>  <span class="Constant">local-scope</span>
-<span id="L1016" class="LineNr">1016 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
-<span id="L1017" class="LineNr">1017 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[ab</span>
-<span id="L1018" class="LineNr">1018 </span><span class="Constant">  cd</span>
-<span id="L1019" class="LineNr">1019 </span><span class="Constant">ef]</span>
-<span id="L1020" class="LineNr">1020 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
-<span id="L1021" class="LineNr">1021 </span>  <span class="Comment"># position cursor after 'cd' and hit 'newline' surrounded by paste markers</span>
-<span id="L1022" class="LineNr">1022 </span>  assume-console [
-<span id="L1023" class="LineNr">1023 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 8</span>
-<span id="L1024" class="LineNr">1024 </span>  <span class="Conceal">¦</span> press<span class="Constant"> 65507</span>  <span class="Comment"># start paste</span>
+<span id="L877" class="LineNr"> 877 </span>  <a href='002-typing.mu.html#L913'>at-start-of-wrapped-line?</a>:bool <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L913'>at-start-of-wrapped-line?</a> editor
+<span id="L878" class="LineNr"> 878 </span>  <span class="Comment"># insert newline</span>
+<span id="L879" class="LineNr"> 879 </span>  insert <span class="Constant">10/newline</span>, before-cursor
+<span id="L880" class="LineNr"> 880 </span>  before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L881" class="LineNr"> 881 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
+<span id="L882" class="LineNr"> 882 </span>  <span class="Delimiter">{</span>
+<span id="L883" class="LineNr"> 883 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='002-typing.mu.html#L913'>at-start-of-wrapped-line?</a>
+<span id="L884" class="LineNr"> 884 </span>  <span class="Conceal">¦</span> cursor-row <span class="Special">&lt;-</span> add cursor-row,<span class="Constant"> 1</span>
+<span id="L885" class="LineNr"> 885 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
+<span id="L886" class="LineNr"> 886 </span>  <span class="Delimiter">}</span>
+<span id="L887" class="LineNr"> 887 </span>  cursor-column <span class="Special">&lt;-</span> copy left
+<span id="L888" class="LineNr"> 888 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
+<span id="L889" class="LineNr"> 889 </span>  <span class="Comment"># maybe scroll</span>
+<span id="L890" class="LineNr"> 890 </span>  <span class="Delimiter">{</span>
+<span id="L891" class="LineNr"> 891 </span>  <span class="Conceal">¦</span> below-screen?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-row, <a href='../081print.mu.html#L748'>screen-height</a>  <span class="Comment"># must be equal, never greater</span>
+<span id="L892" class="LineNr"> 892 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> below-screen?
+<span id="L893" class="LineNr"> 893 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;scroll-down&gt;</span>
+<span id="L894" class="LineNr"> 894 </span>  <span class="Conceal">¦</span> cursor-row <span class="Special">&lt;-</span> subtract cursor-row,<span class="Constant"> 1</span>  <span class="Comment"># bring back into screen range</span>
+<span id="L895" class="LineNr"> 895 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>, cursor-row
+<span id="L896" class="LineNr"> 896 </span>  <span class="Delimiter">}</span>
+<span id="L897" class="LineNr"> 897 </span>  <span class="Comment"># indent if necessary</span>
+<span id="L898" class="LineNr"> 898 </span>  indent?:bool <span class="Special">&lt;-</span> get *editor, <span class="Constant">indent?:offset</span>
+<span id="L899" class="LineNr"> 899 </span>  <span class="muControl">return-unless</span> indent?
+<span id="L900" class="LineNr"> 900 </span>  d:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
+<span id="L901" class="LineNr"> 901 </span>  end-of-previous-line:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
+<span id="L902" class="LineNr"> 902 </span>  indent:num <span class="Special">&lt;-</span> <a href='002-typing.mu.html#L933'>line-indent</a> end-of-previous-line, d
+<span id="L903" class="LineNr"> 903 </span>  i:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L904" class="LineNr"> 904 </span>  <span class="Delimiter">{</span>
+<span id="L905" class="LineNr"> 905 </span>  <span class="Conceal">¦</span> indent-done?:bool <span class="Special">&lt;-</span> greater-or-equal i, indent
+<span id="L906" class="LineNr"> 906 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> indent-done?
+<span id="L907" class="LineNr"> 907 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L203'>insert-at-cursor</a> editor, <span class="Constant">32/space</span>, <a href='../081print.mu.html#L4'>screen</a>
+<span id="L908" class="LineNr"> 908 </span>  <span class="Conceal">¦</span> i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
+<span id="L909" class="LineNr"> 909 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L910" class="LineNr"> 910 </span>  <span class="Delimiter">}</span>
+<span id="L911" class="LineNr"> 911 </span>]
+<span id="L912" class="LineNr"> 912 </span>
+<span id="L913" class="LineNr"> 913 </span><span class="muRecipe">def</span> <a href='002-typing.mu.html#L913'>at-start-of-wrapped-line?</a> editor:&amp;:editor<span class="muRecipe"> -&gt; </span>result:bool [
+<span id="L914" class="LineNr"> 914 </span>  <span class="Constant">local-scope</span>
+<span id="L915" class="LineNr"> 915 </span>  <span class="Constant">load-ingredients</span>
+<span id="L916" class="LineNr"> 916 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
+<span id="L917" class="LineNr"> 917 </span>  cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
+<span id="L918" class="LineNr"> 918 </span>  cursor-at-left?:bool <span class="Special">&lt;-</span> equal cursor-column, left
+<span id="L919" class="LineNr"> 919 </span>  <span class="muControl">return-unless</span> cursor-at-left?, <span class="Constant">0/false</span>
+<span id="L920" class="LineNr"> 920 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
+<span id="L921" class="LineNr"> 921 </span>  before-before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
+<span id="L922" class="LineNr"> 922 </span>  <span class="muControl">return-unless</span> before-before-cursor, <span class="Constant">0/false</span>  <span class="Comment"># cursor is at start of editor</span>
+<span id="L923" class="LineNr"> 923 </span>  char-before-cursor:char <span class="Special">&lt;-</span> get *before-cursor, <span class="Constant">value:offset</span>
+<span id="L924" class="LineNr"> 924 </span>  cursor-after-newline?:bool <span class="Special">&lt;-</span> equal char-before-cursor, <span class="Constant">10/newline</span>
+<span id="L925" class="LineNr"> 925 </span>  <span class="muControl">return-if</span> cursor-after-newline?, <span class="Constant">0/false</span>
+<span id="L926" class="LineNr"> 926 </span>  <span class="Comment"># if cursor is at left margin and not at start, but previous character is not a newline,</span>
+<span id="L927" class="LineNr"> 927 </span>  <span class="Comment"># then we're at start of a wrapped line</span>
+<span id="L928" class="LineNr"> 928 </span>  <span class="muControl">return</span> <span class="Constant">1/true</span>
+<span id="L929" class="LineNr"> 929 </span>]
+<span id="L930" class="LineNr"> 930 </span>
+<span id="L931" class="LineNr"> 931 </span><span class="Comment"># takes a pointer 'curr' into the doubly-linked list and its sentinel, counts</span>
+<span id="L932" class="LineNr"> 932 </span><span class="Comment"># the number of spaces at the start of the line containing 'curr'.</span>
+<span id="L933" class="LineNr"> 933 </span><span class="muRecipe">def</span> <a href='002-typing.mu.html#L933'>line-indent</a> curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char, start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char<span class="muRecipe"> -&gt; </span>result:num [
+<span id="L934" class="LineNr"> 934 </span>  <span class="Constant">local-scope</span>
+<span id="L935" class="LineNr"> 935 </span>  <span class="Constant">load-ingredients</span>
+<span id="L936" class="LineNr"> 936 </span>  result:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L937" class="LineNr"> 937 </span>  <span class="muControl">return-unless</span> curr
+<span id="L938" class="LineNr"> 938 </span>  at-start?:bool <span class="Special">&lt;-</span> equal curr, start
+<span id="L939" class="LineNr"> 939 </span>  <span class="muControl">return-if</span> at-start?
+<span id="L940" class="LineNr"> 940 </span>  <span class="Delimiter">{</span>
+<span id="L941" class="LineNr"> 941 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
+<span id="L942" class="LineNr"> 942 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
+<span id="L943" class="LineNr"> 943 </span>  <span class="Conceal">¦</span> at-start?:bool <span class="Special">&lt;-</span> equal curr, start
+<span id="L944" class="LineNr"> 944 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start?
+<span id="L945" class="LineNr"> 945 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
+<span id="L946" class="LineNr"> 946 </span>  <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
+<span id="L947" class="LineNr"> 947 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
+<span id="L948" class="LineNr"> 948 </span>  <span class="Conceal">¦</span> <span class="Comment"># if c is a space, increment result</span>
+<span id="L949" class="LineNr"> 949 </span>  <span class="Conceal">¦</span> is-space?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">32/space</span>
+<span id="L950" class="LineNr"> 950 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L951" class="LineNr"> 951 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> is-space?
+<span id="L952" class="LineNr"> 952 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> add result,<span class="Constant"> 1</span>
+<span id="L953" class="LineNr"> 953 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L954" class="LineNr"> 954 </span>  <span class="Conceal">¦</span> <span class="Comment"># if c is not a space, reset result</span>
+<span id="L955" class="LineNr"> 955 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L956" class="LineNr"> 956 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> is-space?
+<span id="L957" class="LineNr"> 957 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> result <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L958" class="LineNr"> 958 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L959" class="LineNr"> 959 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L960" class="LineNr"> 960 </span>  <span class="Delimiter">}</span>
+<span id="L961" class="LineNr"> 961 </span>]
+<span id="L962" class="LineNr"> 962 </span>
+<span id="L963" class="LineNr"> 963 </span><span class="muScenario">scenario</span> editor-moves-cursor-down-after-inserting-newline-2 [
+<span id="L964" class="LineNr"> 964 </span>  <span class="Constant">local-scope</span>
+<span id="L965" class="LineNr"> 965 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+<span id="L966" class="LineNr"> 966 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> <span class="Constant">[abc]</span>, <span class="Constant">1/left</span>, <span class="Constant">10/right</span>
+<span id="L967" class="LineNr"> 967 </span>  assume-console [
+<span id="L968" class="LineNr"> 968 </span>  <span class="Conceal">¦</span> type <span class="Constant">[0</span>
+<span id="L969" class="LineNr"> 969 </span><span class="Constant">1]</span>
+<span id="L970" class="LineNr"> 970 </span>  ]
+<span id="L971" class="LineNr"> 971 </span>  run [
+<span id="L972" class="LineNr"> 972 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
+<span id="L973" class="LineNr"> 973 </span>  ]
+<span id="L974" class="LineNr"> 974 </span>  screen-should-contain [
+<span id="L975" class="LineNr"> 975 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L976" class="LineNr"> 976 </span>  <span class="Conceal">¦</span><span class="Constant"> . 0        .</span>
+<span id="L977" class="LineNr"> 977 </span>  <span class="Conceal">¦</span><span class="Constant"> . 1abc     .</span>
+<span id="L978" class="LineNr"> 978 </span>  <span class="Conceal">¦</span><span class="Constant"> . ╌╌╌╌╌╌╌╌╌.</span>
+<span id="L979" class="LineNr"> 979 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L980" class="LineNr"> 980 </span>  ]
+<span id="L981" class="LineNr"> 981 </span>]
+<span id="L982" class="LineNr"> 982 </span>
+<span id="L983" class="LineNr"> 983 </span><span class="muScenario">scenario</span> editor-clears-previous-line-completely-after-inserting-newline [
+<span id="L984" class="LineNr"> 984 </span>  <span class="Constant">local-scope</span>
+<span id="L985" class="LineNr"> 985 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+<span id="L986" class="LineNr"> 986 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> <span class="Constant">[abcde]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+<span id="L987" class="LineNr"> 987 </span>  <a href='002-typing.mu.html#L265'>editor-render</a> <a href='../081print.mu.html#L4'>screen</a>, e
+<span id="L988" class="LineNr"> 988 </span>  screen-should-contain [
+<span id="L989" class="LineNr"> 989 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L990" class="LineNr"> 990 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd↩     .</span>
+<span id="L991" class="LineNr"> 991 </span>  <span class="Conceal">¦</span><span class="Constant"> .e         .</span>
+<span id="L992" class="LineNr"> 992 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
+<span id="L993" class="LineNr"> 993 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L994" class="LineNr"> 994 </span>  ]
+<span id="L995" class="LineNr"> 995 </span>  assume-console [
+<span id="L996" class="LineNr"> 996 </span>  <span class="Conceal">¦</span> press enter
+<span id="L997" class="LineNr"> 997 </span>  ]
+<span id="L998" class="LineNr"> 998 </span>  run [
+<span id="L999" class="LineNr"> 999 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
+<span id="L1000" class="LineNr">1000 </span>  ]
+<span id="L1001" class="LineNr">1001 </span>  <span class="Comment"># line should be fully cleared</span>
+<span id="L1002" class="LineNr">1002 </span>  screen-should-contain [
+<span id="L1003" class="LineNr">1003 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L1004" class="LineNr">1004 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L1005" class="LineNr">1005 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd↩     .</span>
+<span id="L1006" class="LineNr">1006 </span>  <span class="Conceal">¦</span><span class="Constant"> .e         .</span>
+<span id="L1007" class="LineNr">1007 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
+<span id="L1008" class="LineNr">1008 </span>  ]
+<span id="L1009" class="LineNr">1009 </span>]
+<span id="L1010" class="LineNr">1010 </span>
+<span id="L1011" class="LineNr">1011 </span><span class="muScenario">scenario</span> editor-splits-wrapped-line-after-inserting-newline [
+<span id="L1012" class="LineNr">1012 </span>  <span class="Constant">local-scope</span>
+<span id="L1013" class="LineNr">1013 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">5/height</span>
+<span id="L1014" class="LineNr">1014 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> <span class="Constant">[abcdef]</span>, <span class="Constant">0/left</span>, <span class="Constant">5/right</span>
+<span id="L1015" class="LineNr">1015 </span>  <a href='002-typing.mu.html#L265'>editor-render</a> <a href='../081print.mu.html#L4'>screen</a>, e
+<span id="L1016" class="LineNr">1016 </span>  screen-should-contain [
+<span id="L1017" class="LineNr">1017 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L1018" class="LineNr">1018 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd↩     .</span>
+<span id="L1019" class="LineNr">1019 </span>  <span class="Conceal">¦</span><span class="Constant"> .ef        .</span>
+<span id="L1020" class="LineNr">1020 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
+<span id="L1021" class="LineNr">1021 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L1022" class="LineNr">1022 </span>  ]
+<span id="L1023" class="LineNr">1023 </span>  assume-console [
+<span id="L1024" class="LineNr">1024 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 0</span>
 <span id="L1025" class="LineNr">1025 </span>  <span class="Conceal">¦</span> press enter
-<span id="L1026" class="LineNr">1026 </span>  <span class="Conceal">¦</span> press<span class="Constant"> 65506</span>  <span class="Comment"># end paste</span>
-<span id="L1027" class="LineNr">1027 </span>  ]
-<span id="L1028" class="LineNr">1028 </span>  run [
-<span id="L1029" class="LineNr">1029 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
-<span id="L1030" class="LineNr">1030 </span>  <span class="Conceal">¦</span> 3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
-<span id="L1031" class="LineNr">1031 </span>  <span class="Conceal">¦</span> 4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
-<span id="L1032" class="LineNr">1032 </span>  ]
-<span id="L1033" class="LineNr">1033 </span>  <span class="Comment"># cursor should be below start of previous line</span>
-<span id="L1034" class="LineNr">1034 </span>  memory-should-contain [
-<span id="L1035" class="LineNr">1035 </span>  <span class="Conceal">¦</span><span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>  <span class="Comment"># cursor row</span>
-<span id="L1036" class="LineNr">1036 </span>  <span class="Conceal">¦</span><span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># cursor column (not indented)</span>
+<span id="L1026" class="LineNr">1026 </span>  ]
+<span id="L1027" class="LineNr">1027 </span>  run [
+<span id="L1028" class="LineNr">1028 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
+<span id="L1029" class="LineNr">1029 </span>  <span class="Conceal">¦</span> 10:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
+<span id="L1030" class="LineNr">1030 </span>  <span class="Conceal">¦</span> 11:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
+<span id="L1031" class="LineNr">1031 </span>  ]
+<span id="L1032" class="LineNr">1032 </span>  screen-should-contain [
+<span id="L1033" class="LineNr">1033 </span>  <span class="Conceal">¦</span><span class="Constant"> .          .</span>
+<span id="L1034" class="LineNr">1034 </span>  <span class="Conceal">¦</span><span class="Constant"> .abcd      .</span>
+<span id="L1035" class="LineNr">1035 </span>  <span class="Conceal">¦</span><span class="Constant"> .ef        .</span>
+<span id="L1036" class="LineNr">1036 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌     .</span>
 <span id="L1037" class="LineNr">1037 </span>  ]
-<span id="L1038" class="LineNr">1038 </span>]
-<span id="L1039" class="LineNr">1039 </span>
-<span id="L1040" class="LineNr">1040 </span><span class="muRecipe">after</span> <span class="Constant"><a href='002-typing.mu.html#L199'>&lt;handle-special-key&gt;</a></span> [
-<span id="L1041" class="LineNr">1041 </span>  <span class="Delimiter">{</span>
-<span id="L1042" class="LineNr">1042 </span>  <span class="Conceal">¦</span> paste-start?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65507/paste-start</span>
-<span id="L1043" class="LineNr">1043 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> paste-start?
-<span id="L1044" class="LineNr">1044 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">0/false</span>
-<span id="L1045" class="LineNr">1045 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">1/go-render</span>
-<span id="L1046" class="LineNr">1046 </span>  <span class="Delimiter">}</span>
-<span id="L1047" class="LineNr">1047 </span>]
-<span id="L1048" class="LineNr">1048 </span>
-<span id="L1049" class="LineNr">1049 </span><span class="muRecipe">after</span> <span class="Constant"><a href='002-typing.mu.html#L199'>&lt;handle-special-key&gt;</a></span> [
-<span id="L1050" class="LineNr">1050 </span>  <span class="Delimiter">{</span>
-<span id="L1051" class="LineNr">1051 </span>  <span class="Conceal">¦</span> paste-end?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65506/paste-end</span>
-<span id="L1052" class="LineNr">1052 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> paste-end?
-<span id="L1053" class="LineNr">1053 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">1/true</span>
-<span id="L1054" class="LineNr">1054 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">1/go-render</span>
-<span id="L1055" class="LineNr">1055 </span>  <span class="Delimiter">}</span>
-<span id="L1056" class="LineNr">1056 </span>]
-<span id="L1057" class="LineNr">1057 </span>
-<span id="L1058" class="LineNr">1058 </span><span class="SalientComment">## helpers</span>
-<span id="L1059" class="LineNr">1059 </span>
-<span id="L1060" class="LineNr">1060 </span><span class="muRecipe">def</span> <a href='002-typing.mu.html#L1060'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, row:num, x:num, right:num<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
-<span id="L1061" class="LineNr">1061 </span>  <span class="Constant">local-scope</span>
-<span id="L1062" class="LineNr">1062 </span>  <span class="Constant">load-ingredients</span>
-<span id="L1063" class="LineNr">1063 </span>  height:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L748'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
-<span id="L1064" class="LineNr">1064 </span>  past-bottom?:bool <span class="Special">&lt;-</span> greater-or-equal row, height
-<span id="L1065" class="LineNr">1065 </span>  <span class="muControl">return-if</span> past-bottom?
-<span id="L1066" class="LineNr">1066 </span>  style:char, style-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L1067" class="LineNr">1067 </span>  <span class="Delimiter">{</span>
-<span id="L1068" class="LineNr">1068 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> style-found?
-<span id="L1069" class="LineNr">1069 </span>  <span class="Conceal">¦</span> style <span class="Special">&lt;-</span> copy <span class="Constant">9472/horizontal</span>
-<span id="L1070" class="LineNr">1070 </span>  <span class="Delimiter">}</span>
-<span id="L1071" class="LineNr">1071 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L1072" class="LineNr">1072 </span>  <span class="Delimiter">{</span>
-<span id="L1073" class="LineNr">1073 </span>  <span class="Conceal">¦</span> <span class="Comment"># default color to white</span>
-<span id="L1074" class="LineNr">1074 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> color-found?
-<span id="L1075" class="LineNr">1075 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">245/grey</span>
-<span id="L1076" class="LineNr">1076 </span>  <span class="Delimiter">}</span>
-<span id="L1077" class="LineNr">1077 </span>  bg-color:num, bg-color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
-<span id="L1078" class="LineNr">1078 </span>  <span class="Delimiter">{</span>
-<span id="L1079" class="LineNr">1079 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> bg-color-found?
-<span id="L1080" class="LineNr">1080 </span>  <span class="Conceal">¦</span> bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
-<span id="L1081" class="LineNr">1081 </span>  <span class="Delimiter">}</span>
-<span id="L1082" class="LineNr">1082 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L4'>screen</a>, row, x
-<span id="L1083" class="LineNr">1083 </span>  <span class="Delimiter">{</span>
-<span id="L1084" class="LineNr">1084 </span>  <span class="Conceal">¦</span> continue?:bool <span class="Special">&lt;-</span> lesser-or-equal x, right  <span class="Comment"># right is inclusive, to match editor semantics</span>
-<span id="L1085" class="LineNr">1085 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> continue?
-<span id="L1086" class="LineNr">1086 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, style, color, bg-color
-<span id="L1087" class="LineNr">1087 </span>  <span class="Conceal">¦</span> x <span class="Special">&lt;-</span> add x,<span class="Constant"> 1</span>
-<span id="L1088" class="LineNr">1088 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L1089" class="LineNr">1089 </span>  <span class="Delimiter">}</span>
-<span id="L1090" class="LineNr">1090 </span>]
+<span id="L1038" class="LineNr">1038 </span>  memory-should-contain [
+<span id="L1039" class="LineNr">1039 </span>  <span class="Conceal">¦</span><span class="Constant"> 10</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor-row</span>
+<span id="L1040" class="LineNr">1040 </span>  <span class="Conceal">¦</span><span class="Constant"> 11</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># cursor-column</span>
+<span id="L1041" class="LineNr">1041 </span>  ]
+<span id="L1042" class="LineNr">1042 </span>]
+<span id="L1043" class="LineNr">1043 </span>
+<span id="L1044" class="LineNr">1044 </span><span class="muScenario">scenario</span> editor-inserts-indent-after-newline [
+<span id="L1045" class="LineNr">1045 </span>  <span class="Constant">local-scope</span>
+<span id="L1046" class="LineNr">1046 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
+<span id="L1047" class="LineNr">1047 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[ab</span>
+<span id="L1048" class="LineNr">1048 </span><span class="Constant">  cd</span>
+<span id="L1049" class="LineNr">1049 </span><span class="Constant">ef]</span>
+<span id="L1050" class="LineNr">1050 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+<span id="L1051" class="LineNr">1051 </span>  <span class="Comment"># position cursor after 'cd' and hit 'newline'</span>
+<span id="L1052" class="LineNr">1052 </span>  assume-console [
+<span id="L1053" class="LineNr">1053 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 8</span>
+<span id="L1054" class="LineNr">1054 </span>  <span class="Conceal">¦</span> type [
+<span id="L1055" class="LineNr">1055 </span>]
+<span id="L1056" class="LineNr">1056 </span>  ]
+<span id="L1057" class="LineNr">1057 </span>  run [
+<span id="L1058" class="LineNr">1058 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
+<span id="L1059" class="LineNr">1059 </span>  <span class="Conceal">¦</span> 3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
+<span id="L1060" class="LineNr">1060 </span>  <span class="Conceal">¦</span> 4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
+<span id="L1061" class="LineNr">1061 </span>  ]
+<span id="L1062" class="LineNr">1062 </span>  <span class="Comment"># cursor should be below start of previous line</span>
+<span id="L1063" class="LineNr">1063 </span>  memory-should-contain [
+<span id="L1064" class="LineNr">1064 </span>  <span class="Conceal">¦</span><span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>  <span class="Comment"># cursor row</span>
+<span id="L1065" class="LineNr">1065 </span>  <span class="Conceal">¦</span><span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 2</span>  <span class="Comment"># cursor column (indented)</span>
+<span id="L1066" class="LineNr">1066 </span>  ]
+<span id="L1067" class="LineNr">1067 </span>]
+<span id="L1068" class="LineNr">1068 </span>
+<span id="L1069" class="LineNr">1069 </span><span class="muScenario">scenario</span> editor-skips-indent-around-paste [
+<span id="L1070" class="LineNr">1070 </span>  <span class="Constant">local-scope</span>
+<span id="L1071" class="LineNr">1071 </span>  assume-screen <span class="Constant">10/width</span>, <span class="Constant">10/height</span>
+<span id="L1072" class="LineNr">1072 </span>  s:text <span class="Special">&lt;-</span> new <span class="Constant">[ab</span>
+<span id="L1073" class="LineNr">1073 </span><span class="Constant">  cd</span>
+<span id="L1074" class="LineNr">1074 </span><span class="Constant">ef]</span>
+<span id="L1075" class="LineNr">1075 </span>  e:&amp;:editor <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L51'>new-editor</a> s, <span class="Constant">0/left</span>, <span class="Constant">10/right</span>
+<span id="L1076" class="LineNr">1076 </span>  <span class="Comment"># position cursor after 'cd' and hit 'newline' surrounded by paste markers</span>
+<span id="L1077" class="LineNr">1077 </span>  assume-console [
+<span id="L1078" class="LineNr">1078 </span>  <span class="Conceal">¦</span> left-click<span class="Constant"> 2</span>,<span class="Constant"> 8</span>
+<span id="L1079" class="LineNr">1079 </span>  <span class="Conceal">¦</span> press<span class="Constant"> 65507</span>  <span class="Comment"># start paste</span>
+<span id="L1080" class="LineNr">1080 </span>  <span class="Conceal">¦</span> press enter
+<span id="L1081" class="LineNr">1081 </span>  <span class="Conceal">¦</span> press<span class="Constant"> 65506</span>  <span class="Comment"># end paste</span>
+<span id="L1082" class="LineNr">1082 </span>  ]
+<span id="L1083" class="LineNr">1083 </span>  run [
+<span id="L1084" class="LineNr">1084 </span>  <span class="Conceal">¦</span> <a href='002-typing.mu.html#L16'>editor-event-loop</a> <a href='../081print.mu.html#L4'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, e
+<span id="L1085" class="LineNr">1085 </span>  <span class="Conceal">¦</span> 3:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-row:offset</span>
+<span id="L1086" class="LineNr">1086 </span>  <span class="Conceal">¦</span> 4:num/<span class="Special">raw</span> <span class="Special">&lt;-</span> get *e, <span class="Constant">cursor-column:offset</span>
+<span id="L1087" class="LineNr">1087 </span>  ]
+<span id="L1088" class="LineNr">1088 </span>  <span class="Comment"># cursor should be below start of previous line</span>
+<span id="L1089" class="LineNr">1089 </span>  memory-should-contain [
+<span id="L1090" class="LineNr">1090 </span>  <span class="Conceal">¦</span><span class="Constant"> 3</span> <span class="Special">&lt;-</span><span class="Constant"> 3</span>  <span class="Comment"># cursor row</span>
+<span id="L1091" class="LineNr">1091 </span>  <span class="Conceal">¦</span><span class="Constant"> 4</span> <span class="Special">&lt;-</span><span class="Constant"> 0</span>  <span class="Comment"># cursor column (not indented)</span>
+<span id="L1092" class="LineNr">1092 </span>  ]
+<span id="L1093" class="LineNr">1093 </span>]
+<span id="L1094" class="LineNr">1094 </span>
+<span id="L1095" class="LineNr">1095 </span><span class="muRecipe">after</span> <span class="Constant"><a href='002-typing.mu.html#L199'>&lt;handle-special-key&gt;</a></span> [
+<span id="L1096" class="LineNr">1096 </span>  <span class="Delimiter">{</span>
+<span id="L1097" class="LineNr">1097 </span>  <span class="Conceal">¦</span> paste-start?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65507/paste-start</span>
+<span id="L1098" class="LineNr">1098 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> paste-start?
+<span id="L1099" class="LineNr">1099 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">0/false</span>
+<span id="L1100" class="LineNr">1100 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">1/go-render</span>
+<span id="L1101" class="LineNr">1101 </span>  <span class="Delimiter">}</span>
+<span id="L1102" class="LineNr">1102 </span>]
+<span id="L1103" class="LineNr">1103 </span>
+<span id="L1104" class="LineNr">1104 </span><span class="muRecipe">after</span> <span class="Constant"><a href='002-typing.mu.html#L199'>&lt;handle-special-key&gt;</a></span> [
+<span id="L1105" class="LineNr">1105 </span>  <span class="Delimiter">{</span>
+<span id="L1106" class="LineNr">1106 </span>  <span class="Conceal">¦</span> paste-end?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65506/paste-end</span>
+<span id="L1107" class="LineNr">1107 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> paste-end?
+<span id="L1108" class="LineNr">1108 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">indent?:offset</span>, <span class="Constant">1/true</span>
+<span id="L1109" class="LineNr">1109 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">1/go-render</span>
+<span id="L1110" class="LineNr">1110 </span>  <span class="Delimiter">}</span>
+<span id="L1111" class="LineNr">1111 </span>]
+<span id="L1112" class="LineNr">1112 </span>
+<span id="L1113" class="LineNr">1113 </span><span class="SalientComment">## helpers</span>
+<span id="L1114" class="LineNr">1114 </span>
+<span id="L1115" class="LineNr">1115 </span><span class="muRecipe">def</span> <a href='002-typing.mu.html#L1115'>draw-horizontal</a> <a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a>, row:num, x:num, right:num<span class="muRecipe"> -&gt; </span><a href='../081print.mu.html#L4'>screen</a>:&amp;:<a href='../081print.mu.html#L4'>screen</a> [
+<span id="L1116" class="LineNr">1116 </span>  <span class="Constant">local-scope</span>
+<span id="L1117" class="LineNr">1117 </span>  <span class="Constant">load-ingredients</span>
+<span id="L1118" class="LineNr">1118 </span>  height:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L748'>screen-height</a> <a href='../081print.mu.html#L4'>screen</a>
+<span id="L1119" class="LineNr">1119 </span>  past-bottom?:bool <span class="Special">&lt;-</span> greater-or-equal row, height
+<span id="L1120" class="LineNr">1120 </span>  <span class="muControl">return-if</span> past-bottom?
+<span id="L1121" class="LineNr">1121 </span>  style:char, style-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L1122" class="LineNr">1122 </span>  <span class="Delimiter">{</span>
+<span id="L1123" class="LineNr">1123 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> style-found?
+<span id="L1124" class="LineNr">1124 </span>  <span class="Conceal">¦</span> style <span class="Special">&lt;-</span> copy <span class="Constant">9472/horizontal</span>
+<span id="L1125" class="LineNr">1125 </span>  <span class="Delimiter">}</span>
+<span id="L1126" class="LineNr">1126 </span>  color:num, color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L1127" class="LineNr">1127 </span>  <span class="Delimiter">{</span>
+<span id="L1128" class="LineNr">1128 </span>  <span class="Conceal">¦</span> <span class="Comment"># default color to white</span>
+<span id="L1129" class="LineNr">1129 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> color-found?
+<span id="L1130" class="LineNr">1130 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> copy <span class="Constant">245/grey</span>
+<span id="L1131" class="LineNr">1131 </span>  <span class="Delimiter">}</span>
+<span id="L1132" class="LineNr">1132 </span>  bg-color:num, bg-color-found?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L1133" class="LineNr">1133 </span>  <span class="Delimiter">{</span>
+<span id="L1134" class="LineNr">1134 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> bg-color-found?
+<span id="L1135" class="LineNr">1135 </span>  <span class="Conceal">¦</span> bg-color <span class="Special">&lt;-</span> copy <span class="Constant">0/black</span>
+<span id="L1136" class="LineNr">1136 </span>  <span class="Delimiter">}</span>
+<span id="L1137" class="LineNr">1137 </span>  <a href='../081print.mu.html#L4'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L4'>screen</a>, row, x
+<span id="L1138" class="LineNr">1138 </span>  <span class="Delimiter">{</span>
+<span id="L1139" class="LineNr">1139 </span>  <span class="Conceal">¦</span> continue?:bool <span class="Special">&lt;-</span> lesser-or-equal x, right  <span class="Comment"># right is inclusive, to match editor semantics</span>
+<span id="L1140" class="LineNr">1140 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> continue?
+<span id="L1141" class="LineNr">1141 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L4'>screen</a>, style, color, bg-color
+<span id="L1142" class="LineNr">1142 </span>  <span class="Conceal">¦</span> x <span class="Special">&lt;-</span> add x,<span class="Constant"> 1</span>
+<span id="L1143" class="LineNr">1143 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L1144" class="LineNr">1144 </span>  <span class="Delimiter">}</span>
+<span id="L1145" class="LineNr">1145 </span>]
 </pre>
 </body>
 </html>
