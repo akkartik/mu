@@ -874,11 +874,8 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   screen-height:num <- screen-height screen
+  # update cursor coordinates
   at-start-of-wrapped-line?:bool <- at-start-of-wrapped-line? editor
-  # insert newline
-  insert 10/newline, before-cursor
-  before-cursor <- next before-cursor
-  *editor <- put *editor, before-cursor:offset, before-cursor
   {
     break-if at-start-of-wrapped-line?
     cursor-row <- add cursor-row, 1
@@ -894,6 +891,10 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
     cursor-row <- subtract cursor-row, 1  # bring back into screen range
     *editor <- put *editor, cursor-row:offset, cursor-row
   }
+  # insert newline
+  insert 10/newline, before-cursor
+  before-cursor <- next before-cursor
+  *editor <- put *editor, before-cursor:offset, before-cursor
   # indent if necessary
   indent?:bool <- get *editor, indent?:offset
   return-unless indent?
