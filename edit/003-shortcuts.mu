@@ -1902,6 +1902,8 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   load-ingredients
   # compute range to delete
   init:&:duplex-list:char <- get *editor, data:offset
+  top-of-screen:&:duplex-list:char <- get *editor, top-of-screen:offset
+  update-top-of-screen?:bool <- copy 0/false
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   start:&:duplex-list:char <- copy before-cursor
   end:&:duplex-list:char <- next before-cursor
@@ -1911,6 +1913,9 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
     curr:char <- get *start, value:offset
     at-start-of-line?:bool <- equal curr, 10/newline
     break-if at-start-of-line?
+    # if we went past top-of-screen, make a note to update it as well
+    at-top-of-screen?:bool <- equal start, top-of-screen
+    update-top-of-screen?:bool <- or update-top-of-screen?, at-top-of-screen?
     start <- prev start
     assert start, [delete-to-start-of-line tried to move before start of text]
     loop
@@ -1918,11 +1923,34 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   # snip it out
   result:&:duplex-list:char <- next start
   remove-between start, end
+  # update top-of-screen if it's just been invalidated
+  {
+    break-unless update-top-of-screen?
+    put *editor, top-of-screen:offset, start
+  }
   # adjust cursor
   before-cursor <- copy start
   *editor <- put *editor, before-cursor:offset, before-cursor
   left:num <- get *editor, left:offset
   *editor <- put *editor, cursor-column:offset, left
+  # if the line wrapped before, we may need to adjust cursor-row as well
+  right:num <- get *editor, right:offset
+  width:num <- subtract right, left
+  num-deleted:num <- length result
+  cursor-row-adjustment:num <- divide-with-remainder num-deleted, width
+  return-unless cursor-row-adjustment
+  cursor-row:num <- get *editor, cursor-row:offset
+  cursor-row-in-editor:num <- subtract cursor-row, 1  # ignore menubar
+  at-top?:bool <- lesser-or-equal cursor-row-in-editor, cursor-row-adjustment
+  {
+    break-unless at-top?
+    cursor-row <- copy 1  # top of editor, below menubar
+  }
+  {
+    break-if at-top?
+    cursor-row <- subtract cursor-row, cursor-row-adjustment
+  }
+  put *editor, cursor-row:offset, cursor-row
 ]
 
 def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
@@ -2104,6 +2132,270 @@ scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u [
     .          .
   ]
   check-trace-count-for-label 45, [print-character]
+]
+
+# sometimes hitting ctrl-u needs to adjust the cursor row
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-2 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+345678
+9]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .3456↩     .
+    .78        .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # position cursor on screen line after the wrap and hit ctrl-u
+  assume-console [
+    left-click 4, 1  # on '8'
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .8         .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # cursor moves up one screen line
+  memory-should-contain [
+    10 <- 3  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+]
+
+# line wrapping twice (taking up 3 screen lines)
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-3 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+3456789abcd
+e]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  assume-console [
+    left-click 4, 1  # on '8'
+  ]
+  editor-event-loop screen, console, e
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .3456↩     .
+    .789a↩     .
+    .bcd       .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  assume-console [
+    left-click 5, 1
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .cd        .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # make sure we adjusted cursor-row
+  memory-should-contain [
+    10 <- 3  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+]
+
+# adjusting cursor row at the top of the screen
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-4 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # first line starts out wrapping
+  s:text <- new [1234567
+89]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .1234↩     .
+    .567       .
+    .89        .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # position cursor on second screen line (after the wrap) and hit ctrl-u
+  assume-console [
+    left-click 2, 1
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .67        .
+    .89        .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # cursor moves up to screen line 1
+  memory-should-contain [
+    10 <- 1  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+]
+
+# screen begins part-way through a wrapping line
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-5 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+345678
+9]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  # position the '78' line at the top of the screen
+  assume-console [
+    left-click 4, 1  # on '8'
+    press ctrl-t
+  ]
+  editor-event-loop screen, console, e
+  screen-should-contain [
+    .          .
+    .78        .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  assume-console [
+    left-click 1, 1
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  # make sure we updated top-of-screen correctly
+  screen-should-contain [
+    .          .
+    .8         .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  memory-should-contain [
+    10 <- 1  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+  # the entire line is deleted, even the part not shown on screen
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .2         .
+    .8         .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+]
+
+# screen begins part-way through a line wrapping twice (taking up 3 screen lines)
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-6 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+3456789abcd
+e]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  # position the 'bcd' line at the top of the screen
+  assume-console [
+    left-click 4, 1  # on '8'
+    press ctrl-t
+    press ctrl-s  # now on 'c'
+  ]
+  editor-event-loop screen, console, e
+  screen-should-contain [
+    .          .
+    .bcd       .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  assume-console [
+    left-click 1, 1
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  # make sure we updated top-of-screen correctly
+  screen-should-contain [
+    .          .
+    .cd        .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  memory-should-contain [
+    10 <- 1  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+  # the entire line is deleted, even the part not shown on screen
+  assume-console [
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    .2         .
+    .cd        .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
 ]
 
 # ctrl-k - delete text from cursor to end of line (but not the newline)

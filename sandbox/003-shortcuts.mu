@@ -1899,6 +1899,15 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
   *editor <- put *editor, before-cursor:offset, before-cursor
   left:num <- get *editor, left:offset
   *editor <- put *editor, cursor-column:offset, left
+  # if the line wrapped before, we may need to adjust cursor-row as well
+  right:num <- get *editor, right:offset
+  width:num <- subtract right, left
+  num-deleted:num <- length result
+  cursor-row-adjustment:num <- divide-with-remainder num-deleted, width
+  return-unless cursor-row-adjustment
+  cursor-row:num <- get *editor, cursor-row:offset
+  cursor-row <- subtract cursor-row, cursor-row-adjustment
+  put *editor, cursor-row:offset, cursor-row
 ]
 
 def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
@@ -2080,6 +2089,104 @@ scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u [
     .          .
   ]
   check-trace-count-for-label 45, [print-character]
+]
+
+# sometimes hitting ctrl-u needs to adjust the cursor row
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-2 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+345678
+9]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .3456↩     .
+    .78        .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # position cursor on screen line after the wrap and hit ctrl-u
+  assume-console [
+    left-click 4, 1  # on '8'
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .8         .
+    .9         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # cursor moves up one screen line
+  memory-should-contain [
+    10 <- 3  # cursor-row
+    11 <- 0  # cursor-column
+  ]
+]
+
+# line wrapping twice (taking up 3 screen lines)
+scenario editor-deletes-to-start-of-wrapped-line-with-ctrl-u-3 [
+  local-scope
+  assume-screen 10/width, 10/height
+  # third line starts out wrapping
+  s:text <- new [1
+2
+3456789abcd
+e]
+  e:&:editor <- new-editor s, 0/left, 5/right
+  editor-render screen, e
+  assume-console [
+    left-click 4, 1  # on '8'
+  ]
+  editor-event-loop screen, console, e
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .3456↩     .
+    .789a↩     .
+    .bcd       .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  assume-console [
+    left-click 5, 1
+    press ctrl-u
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .1         .
+    .2         .
+    .cd        .
+    .e         .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  # make sure we adjusted cursor-row
+  memory-should-contain [
+    10 <- 3  # cursor-row
+    11 <- 0  # cursor-column
+  ]
 ]
 
 # ctrl-k - delete text from cursor to end of line (but not the newline)
