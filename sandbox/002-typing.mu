@@ -874,12 +874,16 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   screen-height:num <- screen-height screen
+  at-start-of-wrapped-line?:bool <- at-start-of-wrapped-line? editor
   # insert newline
   insert 10/newline, before-cursor
   before-cursor <- next before-cursor
   *editor <- put *editor, before-cursor:offset, before-cursor
-  cursor-row <- add cursor-row, 1
-  *editor <- put *editor, cursor-row:offset, cursor-row
+  {
+    break-if at-start-of-wrapped-line?
+    cursor-row <- add cursor-row, 1
+    *editor <- put *editor, cursor-row:offset, cursor-row
+  }
   cursor-column <- copy left
   *editor <- put *editor, cursor-column:offset, cursor-column
   # maybe scroll
@@ -904,6 +908,24 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
     i <- add i, 1
     loop
   }
+]
+
+def at-start-of-wrapped-line? editor:&:editor -> result:bool [
+  local-scope
+  load-ingredients
+  left:num <- get *editor, left:offset
+  cursor-column:num <- get *editor, cursor-column:offset
+  cursor-at-left?:bool <- equal cursor-column, left
+  return-unless cursor-at-left?, 0/false
+  before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
+  before-before-cursor:&:duplex-list:char <- prev before-cursor
+  return-unless before-before-cursor, 0/false  # cursor is at start of editor
+  char-before-cursor:char <- get *before-cursor, value:offset
+  cursor-after-newline?:bool <- equal char-before-cursor, 10/newline
+  return-if cursor-after-newline?, 0/false
+  # if cursor is at left margin and not at start, but previous character is not a newline,
+  # then we're at start of a wrapped line
+  return 1/true
 ]
 
 # takes a pointer 'curr' into the doubly-linked list and its sentinel, counts
@@ -983,6 +1005,39 @@ scenario editor-clears-previous-line-completely-after-inserting-newline [
     .abcd↩     .
     .e         .
     .┈┈┈┈┈     .
+  ]
+]
+
+scenario editor-splits-wrapped-line-after-inserting-newline [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [abcdef], 0/left, 5/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .abcd↩     .
+    .ef        .
+    .┈┈┈┈┈     .
+    .          .
+  ]
+  assume-console [
+    left-click 2, 0
+    press enter
+  ]
+  run [
+    editor-event-loop screen, console, e
+    10:num/raw <- get *e, cursor-row:offset
+    11:num/raw <- get *e, cursor-column:offset
+  ]
+  screen-should-contain [
+    .          .
+    .abcd      .
+    .ef        .
+    .┈┈┈┈┈     .
+  ]
+  memory-should-contain [
+    10 <- 2  # cursor-row
+    11 <- 0  # cursor-column
   ]
 ]
 
