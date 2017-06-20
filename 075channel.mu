@@ -160,18 +160,6 @@ def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
 # todo: create a notion of iterator and iterable so we can read/write whole
 # aggregates (arrays, lists, ..) of _elems at once.
 
-def clear in:&:source:_elem -> in:&:source:_elem [
-  local-scope
-  load-ingredients
-  chan:&:channel:_elem <- get *in, chan:offset
-  {
-    empty?:bool <- channel-empty? chan
-    break-if empty?
-    _, _, in <- read in
-    loop
-  }
-]
-
 scenario channel-initialization [
   run [
     local-scope
@@ -319,6 +307,18 @@ scenario channel-clear [
   memory-should-contain [
     10 <- 1  # after the call to 'clear', the channel should be empty
   ]
+]
+
+def clear in:&:source:_elem -> in:&:source:_elem [
+  local-scope
+  load-ingredients
+  chan:&:channel:_elem <- get *in, chan:offset
+  {
+    empty?:bool <- channel-empty? chan
+    break-if empty?
+    _, _, in <- read in
+    loop
+  }
 ]
 
 ## cancelling channels
