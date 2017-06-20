@@ -105,7 +105,7 @@ if ('onhashchange' in window) {
 <span id="L43" class="LineNr"> 43 </span>
 <span id="L44" class="LineNr"> 44 </span><span class="muData">container</span> <a href='070table.mu.html#L44'>table</a>:_key:_value [
 <span id="L45" class="LineNr"> 45 </span>  length:num
-<span id="L46" class="LineNr"> 46 </span>  <a href='075channel.mu.html#L379'>capacity</a>:num
+<span id="L46" class="LineNr"> 46 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num
 <span id="L47" class="LineNr"> 47 </span>  data:&amp;:@:<a href='070table.mu.html#L50'>table-row</a>:_key:_value
 <span id="L48" class="LineNr"> 48 </span>]
 <span id="L49" class="LineNr"> 49 </span>
@@ -115,12 +115,12 @@ if ('onhashchange' in window) {
 <span id="L53" class="LineNr"> 53 </span>  value:_value
 <span id="L54" class="LineNr"> 54 </span>]
 <span id="L55" class="LineNr"> 55 </span>
-<span id="L56" class="LineNr"> 56 </span><span class="muRecipe">def</span> <a href='070table.mu.html#L56'>new-table</a> <a href='075channel.mu.html#L379'>capacity</a>:num<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='070table.mu.html#L44'>table</a>:_key:_value [
+<span id="L56" class="LineNr"> 56 </span><span class="muRecipe">def</span> <a href='070table.mu.html#L56'>new-table</a> <a href='075channel.mu.html#L399'>capacity</a>:num<span class="muRecipe"> -&gt; </span>result:&amp;:<a href='070table.mu.html#L44'>table</a>:_key:_value [
 <span id="L57" class="LineNr"> 57 </span>  <span class="Constant">local-scope</span>
 <span id="L58" class="LineNr"> 58 </span>  <span class="Constant">load-ingredients</span>
 <span id="L59" class="LineNr"> 59 </span>  result <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table _key _value): type<span class="Delimiter">}</span>
-<span id="L60" class="LineNr"> 60 </span>  data:&amp;:@:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table-row _key _value): type<span class="Delimiter">}</span>, <a href='075channel.mu.html#L379'>capacity</a>
-<span id="L61" class="LineNr"> 61 </span>  *result <span class="Special">&lt;-</span> merge <span class="Constant">0/length</span>, <a href='075channel.mu.html#L379'>capacity</a>, data
+<span id="L60" class="LineNr"> 60 </span>  data:&amp;:@:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> new <span class="Delimiter">{</span>(table-row _key _value): type<span class="Delimiter">}</span>, <a href='075channel.mu.html#L399'>capacity</a>
+<span id="L61" class="LineNr"> 61 </span>  *result <span class="Special">&lt;-</span> merge <span class="Constant">0/length</span>, <a href='075channel.mu.html#L399'>capacity</a>, data
 <span id="L62" class="LineNr"> 62 </span>]
 <span id="L63" class="LineNr"> 63 </span>
 <span id="L64" class="LineNr"> 64 </span><span class="Comment"># todo: tag results as /required so that call-sites are forbidden from ignoring them</span>
@@ -130,8 +130,8 @@ if ('onhashchange' in window) {
 <span id="L68" class="LineNr"> 68 </span>  <span class="Constant">load-ingredients</span>
 <span id="L69" class="LineNr"> 69 </span>  hash:num <span class="Special">&lt;-</span> hash key
 <span id="L70" class="LineNr"> 70 </span>  hash <span class="Special">&lt;-</span> <a href='070table.mu.html#L103'>abs</a> hash
-<span id="L71" class="LineNr"> 71 </span>  <a href='075channel.mu.html#L379'>capacity</a>:num <span class="Special">&lt;-</span> get *table, <span class="Constant"><a href='075channel.mu.html#L379'>capacity</a>:offset</span>
-<span id="L72" class="LineNr"> 72 </span>  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, <a href='075channel.mu.html#L379'>capacity</a>
+<span id="L71" class="LineNr"> 71 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num <span class="Special">&lt;-</span> get *table, <span class="Constant"><a href='075channel.mu.html#L399'>capacity</a>:offset</span>
+<span id="L72" class="LineNr"> 72 </span>  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, <a href='075channel.mu.html#L399'>capacity</a>
 <span id="L73" class="LineNr"> 73 </span>  hash-key <span class="Special">&lt;-</span> <a href='070table.mu.html#L103'>abs</a> hash-key  <span class="Comment"># in case hash overflows from a double into a negative integer inside 'divide-with-remainder' above</span>
 <span id="L74" class="LineNr"> 74 </span>  table-data:&amp;:@:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
 <span id="L75" class="LineNr"> 75 </span>  x:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> index *table-data, hash-key
@@ -147,8 +147,8 @@ if ('onhashchange' in window) {
 <span id="L85" class="LineNr"> 85 </span>  <span class="Constant">load-ingredients</span>
 <span id="L86" class="LineNr"> 86 </span>  hash:num <span class="Special">&lt;-</span> hash key
 <span id="L87" class="LineNr"> 87 </span>  hash <span class="Special">&lt;-</span> <a href='070table.mu.html#L103'>abs</a> hash
-<span id="L88" class="LineNr"> 88 </span>  <a href='075channel.mu.html#L379'>capacity</a>:num <span class="Special">&lt;-</span> get *table, <span class="Constant"><a href='075channel.mu.html#L379'>capacity</a>:offset</span>
-<span id="L89" class="LineNr"> 89 </span>  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, <a href='075channel.mu.html#L379'>capacity</a>
+<span id="L88" class="LineNr"> 88 </span>  <a href='075channel.mu.html#L399'>capacity</a>:num <span class="Special">&lt;-</span> get *table, <span class="Constant"><a href='075channel.mu.html#L399'>capacity</a>:offset</span>
+<span id="L89" class="LineNr"> 89 </span>  _, hash-key:num <span class="Special">&lt;-</span> divide-with-remainder hash, <a href='075channel.mu.html#L399'>capacity</a>
 <span id="L90" class="LineNr"> 90 </span>  hash-key <span class="Special">&lt;-</span> <a href='070table.mu.html#L103'>abs</a> hash-key  <span class="Comment"># in case hash overflows from a double into a negative integer inside 'divide-with-remainder' above</span>
 <span id="L91" class="LineNr"> 91 </span>  table-data:&amp;:@:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> get *table, <span class="Constant">data:offset</span>
 <span id="L92" class="LineNr"> 92 </span>  x:<a href='070table.mu.html#L50'>table-row</a>:_key:_value <span class="Special">&lt;-</span> index *table-data, hash-key
