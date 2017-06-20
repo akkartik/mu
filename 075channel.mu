@@ -32,8 +32,8 @@ container channel:_elem [
   first-full:num  # for write
   first-free:num  # for read
   # A circular buffer contains values from index first-full up to (but not
-  # including) index first-empty. The reader always modifies it at first-full,
-  # while the writer always modifies it at first-empty.
+  # including) index first-free. The reader always modifies it at first-full,
+  # while the writer always modifies it at first-free.
   data:&:@:_elem
 ]
 
@@ -63,6 +63,7 @@ def new-channel capacity:num -> in:&:source:_elem, out:&:sink:_elem [
   *out <- put *out, chan:offset, result
 ]
 
+# write a value to a channel
 def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   local-scope
   load-ingredients
@@ -108,6 +109,7 @@ def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   reset lock
 ]
 
+# read a value from a channel
 def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   local-scope
   load-ingredients
@@ -166,6 +168,7 @@ def clear in:&:source:_elem -> in:&:source:_elem [
     empty?:bool <- channel-empty? chan
     break-if empty?
     _, _, in <- read in
+    loop
   }
 ]
 
@@ -301,6 +304,23 @@ scenario channel-read-not-full [
   ]
 ]
 
+scenario channel-clear [
+  local-scope
+  # create a channel with a few items
+  source:&:source:num, sink:&:sink:num <- new-channel 3/capacity
+  chan:&:channel:num <- get *sink, chan:offset
+  write sink, 30
+  write sink, 31
+  write sink, 32
+  run [
+    clear source
+    10:bool/raw <- channel-empty? chan
+  ]
+  memory-should-contain [
+    10 <- 1  # after the call to 'clear', the channel should be empty
+  ]
+]
+
 ## cancelling channels
 
 # every channel comes with a boolean signifying if it's been closed
@@ -346,7 +366,7 @@ after <channel-read-empty> [
 
 ## helpers
 
-# An empty channel has first-empty and first-full both at the same value.
+# An empty channel has first-free and first-full both at the same value.
 def channel-empty? chan:&:channel:_elem -> result:bool [
   local-scope
   load-ingredients
@@ -356,8 +376,8 @@ def channel-empty? chan:&:channel:_elem -> result:bool [
   result <- equal full, free
 ]
 
-# A full channel has first-empty just before first-full, wasting one slot.
-# (Other alternatives: https://en.wikipedia.org/wiki/Circular_buffer#Full_.2F_Empty_Buffer_Distinction)
+# A full channel has first-free just before first-full, wasting one slot.
+# (Other alternatives: https://www.snellman.net/blog/archive/2016-12-13-ring-buffers)
 def channel-full? chan:&:channel:_elem -> result:bool [
   local-scope
   load-ingredients
