@@ -231,6 +231,7 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   local-scope
   load-ingredients
   trace 11, [app], [render sandbox side]
+  old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   row:num, column:num <- copy 1, 0
   left:num <- get *current-sandbox, left:offset
@@ -249,6 +250,8 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   sandbox:&:sandbox <- get *env, sandbox:offset
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from, 0, env
   clear-rest-of-screen screen, row, left, right
+  #
+  assert-no-scroll screen, old-top-idx
 ]
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [

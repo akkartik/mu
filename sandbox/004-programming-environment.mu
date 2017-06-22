@@ -197,7 +197,6 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   local-scope
   load-ingredients
   trace 10, [app], [render all]
-  old-top-idx:num <- save-top-idx screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -213,14 +212,14 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   #
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env
-  #
-  assert-no-scroll screen, old-top-idx
 ]
 
 # replaced in a later layer
 def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
+  trace 11, [app], [render sandboxes]
+  old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
@@ -231,6 +230,8 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
   draw-horizontal screen, row, left, right
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
+  #
+  assert-no-scroll screen, old-top-idx
 ]
 
 def update-cursor screen:&:screen, current-sandbox:&:editor, env:&:environment -> screen:&:screen [

@@ -403,7 +403,6 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   local-scope
   load-ingredients
   trace 10, [app], [render all]
-  old-top-idx:num <- save-top-idx screen
   # top menu
   trace 11, [app], [render top menu]
   width:num <- screen-width screen
@@ -427,14 +426,13 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
   screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
-  #
-  assert-no-scroll screen, old-top-idx
 ]
 
 def render-recipes screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
   load-ingredients
   trace 11, [app], [render recipes]
+  old-top-idx:num <- save-top-idx screen
   recipes:&:editor <- get *env, recipes:offset
   # render recipes
   left:num <- get *recipes, left:offset
@@ -447,6 +445,8 @@ def render-recipes screen:&:screen, env:&:environment, render-editor:render-reci
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
+  #
+  assert-no-scroll screen, old-top-idx
 ]
 
 # replaced in a later layer
@@ -454,6 +454,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
   local-scope
   load-ingredients
   trace 11, [app], [render sandboxes]
+  old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   left:num <- get *current-sandbox, left:offset
   right:num <- get *current-sandbox, right:offset
@@ -464,6 +465,8 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
   draw-horizontal screen, row, left, right
   row <- add row, 1
   clear-screen-from screen, row, left, left, right
+  #
+  assert-no-scroll screen, old-top-idx
 ]
 
 def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, sandbox-in-focus?:bool, env:&:environment -> screen:&:screen [
