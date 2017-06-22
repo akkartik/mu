@@ -261,8 +261,9 @@ void check_screen(const string& expected_contents, const int color) {
   int screen_height = get_or_insert(Memory, screen_location+height_offset);
   raw_string_stream cursor(expected_contents);
   // todo: too-long expected_contents should fail
-  int addr = screen_data_start+/*skip length*/1;
-  for (int row = 0;  row < screen_height;  ++row) {
+  int top_index_offset = find_element_name(get(Type_ordinal, "screen"), "top-idx", "");
+  int top_index = get_or_insert(Memory, screen_location+top_index_offset);
+  for (int i=0, row=top_index/screen_width;  i < screen_height;  ++i, row=(row+1)%screen_height) {
     cursor.skip_whitespace_and_comments();
     if (cursor.at_end()) break;
     if (cursor.get() != '.') {
@@ -270,6 +271,7 @@ void check_screen(const string& expected_contents, const int color) {
       if (!Scenario_testing_scenario) Passed = false;
       return;
     }
+    int addr = screen_data_start+/*length*/1+row*screen_width* /*size of screen-cell*/2;
     for (int column = 0;  column < screen_width;  ++column, addr+= /*size of screen-cell*/2) {
       const int cell_color_offset = 1;
       uint32_t curr = cursor.get();
@@ -393,9 +395,11 @@ void dump_screen() {
   int screen_data_location = screen_location+data_offset;  // type: address:array:character
   int screen_data_start = get_or_insert(Memory, screen_data_location) + /*skip refcount*/1;  // type: array:character
   assert(get_or_insert(Memory, screen_data_start) == screen_width*screen_height);
-  int curr = screen_data_start+1;  // skip length
-  for (int row = 0;  row < screen_height;  ++row) {
+  int top_index_offset = find_element_name(get(Type_ordinal, "screen"), "top-idx", "");
+  int top_index = get_or_insert(Memory, screen_location+top_index_offset);
+  for (int i=0, row=top_index/screen_width;  i < screen_height;  ++i, row=(row+1)%screen_height) {
     cerr << '.';
+    int curr = screen_data_start+/*length*/1+row*screen_width* /*size of screen-cell*/2;
     for (int col = 0;  col < screen_width;  ++col) {
       if (get_or_insert(Memory, curr))
         cerr << to_unicode(static_cast<uint32_t>(get_or_insert(Memory, curr)));
