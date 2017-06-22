@@ -191,7 +191,7 @@ after <render-sandbox-response> [
     break-unless expected-response  # fall-through to print in grey
     response-is-expected?:bool <- equal expected-response, sandbox-response
     {
-      break-if response-is-expected?:bool
+      break-if response-is-expected?
       row, screen <- render-text screen, sandbox-response, left, right, 1/red, row
     }
     {

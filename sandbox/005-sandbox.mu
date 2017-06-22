@@ -258,7 +258,7 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
   return-unless sandbox
   screen-height:num <- screen-height screen
   at-bottom?:bool <- greater-or-equal row, screen-height
-  return-if at-bottom?:bool
+  return-if at-bottom?
   hidden?:bool <- lesser-than idx, render-from
   {
     break-if hidden?

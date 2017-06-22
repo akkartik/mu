@@ -158,7 +158,7 @@ def print-board screen:&:screen, board:board -> screen:&:screen [
     col:num <- copy 0
     {
       done?:bool <- equal col:num, 8
-      break-if done?:bool
+      break-if done?
       f:&:@:char <- index *board, col
       c:char <- index *f, row
       print screen, c
@@ -251,8 +251,8 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool,
   error? <- expect-from-channel stdin, 45/dash, screen
   return-if error?, 0/dummy, 0/quit
   to-file:num, quit?, error? <- read-file stdin, screen
-  return-if quit?:bool, 0/dummy
-  return-if error?:bool, 0/dummy
+  return-if quit?, 0/dummy
+  return-if error?, 0/dummy
   *result <- put *result, to-file:offset, to-file
   to-rank:num, quit?, error? <- read-rank stdin, screen
   return-if quit?, 0/dummy

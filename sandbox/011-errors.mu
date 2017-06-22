@@ -84,7 +84,7 @@ def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:s
   *sandbox <- put *sandbox, trace:offset, trace
   {
     break-if errors
-    break-if completed?:bool
+    break-if completed?
     errors <- new [took too long!
 ]
     *sandbox <- put *sandbox, errors:offset, errors
