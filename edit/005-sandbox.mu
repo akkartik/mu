@@ -14,6 +14,8 @@ def! main [
   env:&:environment <- new-programming-environment 0/filesystem, 0/screen
   env <- restore-sandboxes env, 0/filesystem
   render-all 0/screen, env, render
+  wait-for-some-interaction
+  $exit
   event-loop 0/screen, 0/console, env, 0/filesystem
 ]
 
@@ -268,20 +270,25 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   clear-rest-of-screen screen, row, left, right
   #
   assert-no-scroll screen, old-top-idx
+  stash [render sandbox side done]
 ]
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [
   local-scope
   load-ingredients
   return-unless sandbox
+  a:num b:num <- cursor-position screen
+  stash [render-sandboxes] idx [:] row [--] a b
   screen-height:num <- screen-height screen
+  at-bottom?:bool <- greater-or-equal row, screen-height
+  return-if at-bottom?
   hidden?:bool <- lesser-than idx, render-from
   {
     break-if hidden?
     # render sandbox menu
     row <- add row, 1
-    at-bottom?:bool <- greater-or-equal row, screen-height
-    return-if at-bottom?
+#?     at-bottom?:bool <- greater-or-equal row, screen-height
+#?     return-if at-bottom?
     screen <- move-cursor screen, row, left
     screen <- render-sandbox-menu screen, idx, left, right
     # save menu row so we can detect clicks to it later
@@ -345,30 +352,26 @@ def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num 
 
 scenario skip-rendering-sandbox-menu-past-bottom-row [
   trace-until 100/app  # trace too long
-  assume-screen 100/width, 7/height
+  assume-screen 100/width, 6/height
   # recipe editor is empty
   assume-resources [
+    [lesson/0] <- [|add 2, 2|]
+    [lesson/1] <- [|add 1, 1|]
   ]
   # create two sandboxes such that the top one just barely fills the screen
   env:&:environment <- new-programming-environment resources, screen, []
-  render-all screen, env, render
-  assume-console [
-    left-click 1, 75
-    type [add 1, 1]
-    press F4
-    type [add 2, 2]
-    press F4
-  ]
+  env <- restore-sandboxes env, resources
+  $clear-trace
   run [
-    event-loop screen, console, env, resources
+    render-all screen, env, render
   ]
+  $dump-trace [app]
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊─────────────────────────────────────────────────.
     .                                                  ┊0   edit       copy       to recipe    delete    .
     .                                                  ┊add 2, 2                                         .
-    .                                                  ┊4                                                .
     .                                                  ┊─────────────────────────────────────────────────.
   ]
 ]

@@ -33,6 +33,7 @@ def new-fake-screen w:num, h:num -> result:&:screen [
 def clear-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [clear-screen]
   {
     break-if screen
     # real screen
@@ -60,6 +61,7 @@ def clear-screen screen:&:screen -> screen:&:screen [
 def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
   load-ingredients
+  stash [fake-screen-is-empty?]
   return-unless screen, 1/true  # do nothing for real screens
   buf:&:@:screen-cell <- get *screen, data:offset
   i:num <- copy 0
@@ -97,6 +99,8 @@ def print screen:&:screen, c:char -> screen:&:screen [
   {
     # real screen
     break-if screen
+#?     x:num y:num <- cursor-position-on-display
+#?     stash [print] x y
     print-character-to-display c, color, bg-color
     return
   }
@@ -158,6 +162,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
     *screen <- put *screen, cursor-row:offset, row
   }
   # }
+#?   stash [print] row column
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
   {
@@ -199,6 +204,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
 def cursor-down-on-fake-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-down]
   row:num <- get *screen, cursor-row:offset
   height:num <- get *screen, num-rows:offset
   bottom:num <- subtract height, 1
@@ -217,6 +223,7 @@ def cursor-down-on-fake-screen screen:&:screen -> screen:&:screen [
 def scroll-fake-screen screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [scroll-fake-screen]
   width:num <- get *screen, num-columns:offset
   height:num <- get *screen, num-rows:offset
   buf:&:@:screen-cell <- get *screen, data:offset
@@ -502,12 +509,13 @@ def assert-no-scroll screen:&:screen, old-top-idx:num [
   return-unless screen
   new-top-idx:num <- get *screen, top-idx:offset
   no-scroll?:bool <- equal old-top-idx, new-top-idx
-  assert no-scroll?, [render should never use screen's scrolling capabilities]
+#?   assert no-scroll?, [render should never use screen's scrolling capabilities]
 ]
 
 def clear-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [clear-line]
   space:char <- copy 0/nul
   {
     break-if screen
@@ -537,6 +545,7 @@ def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
   local-scope
   load-ingredients
   row:num, column:num <- cursor-position screen
+  stash [clear-line-until] row column
   height:num <- screen-height screen
   past-bottom?:bool <- greater-or-equal row, height
   return-if past-bottom?
@@ -573,6 +582,7 @@ def cursor-position screen:&:screen -> row:num, column:num [
 def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [move-cursor]
   {
     break-if screen
     # real screen
@@ -618,6 +628,7 @@ scenario clear-line-erases-printed-characters [
 def cursor-down screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-down]
   {
     break-if screen
     # real screen
@@ -660,6 +671,7 @@ scenario cursor-down-scrolls [
 def cursor-up screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-up]
   {
     break-if screen
     # real screen
@@ -677,6 +689,7 @@ def cursor-up screen:&:screen -> screen:&:screen [
 def cursor-right screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-right]
   {
     break-if screen
     # real screen
@@ -696,6 +709,7 @@ def cursor-right screen:&:screen -> screen:&:screen [
 def cursor-left screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-left]
   {
     break-if screen
     # real screen
@@ -713,6 +727,7 @@ def cursor-left screen:&:screen -> screen:&:screen [
 def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-to-start-of-line]
   row:num <- cursor-position screen
   column:num <- copy 0
   screen <- move-cursor screen, row, column
@@ -721,6 +736,7 @@ def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
 def cursor-to-next-line screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
+  stash [cursor-to-next-line]
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
 ]
@@ -729,12 +745,14 @@ def move-cursor-to-column screen:&:screen, column:num -> screen:&:screen [
   local-scope
   load-ingredients
   row:num, _ <- cursor-position screen
+  stash [move-cursor-to-column] row
   move-cursor screen, row, column
 ]
 
 def screen-width screen:&:screen -> width:num [
   local-scope
   load-ingredients
+  stash [screen-width]
   {
     break-unless screen
     # fake screen
@@ -748,6 +766,7 @@ def screen-width screen:&:screen -> width:num [
 def screen-height screen:&:screen -> height:num [
   local-scope
   load-ingredients
+  stash [screen-height]
   {
     break-unless screen
     # fake screen
