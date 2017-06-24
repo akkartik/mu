@@ -1017,7 +1017,8 @@ def move-to-previous-line editor:&:editor -> go-render?:bool, editor:&:editor [
     curr:&:duplex-list:char <- copy before-cursor
     old:&:duplex-list:char <- copy curr
     {
-      break-unless cursor-column
+      at-left?:bool <- equal cursor-column, left
+      break-if at-left?
       curr <- before-previous-screen-line curr, editor
       no-motion?:bool <- equal curr, old
       return-if no-motion?
@@ -1134,7 +1135,7 @@ def]
   ]
 ]
 
-scenario editor-moves-to-previous-line-from-left-margin [
+scenario editor-moves-to-previous-line-from-zero-margin [
   local-scope
   assume-screen 10/width, 5/height
   # start out with three lines
@@ -1171,6 +1172,46 @@ ghi]
     .0def      .
     .ghi       .
     .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
+scenario editor-moves-to-previous-line-from-left-margin [
+  local-scope
+  assume-screen 10/width, 5/height
+  # start out with three lines
+  s:text <- new [abc
+def
+ghi]
+  e:&:editor <- new-editor s, 1/left, 10/right
+  editor-render screen, e
+  $clear-trace
+  # click on the third line and hit up-arrow, so you end up just after a newline
+  assume-console [
+    left-click 3, 1
+    press up-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+    3:num/raw <- get *e, cursor-row:offset
+    4:num/raw <- get *e, cursor-column:offset
+  ]
+  memory-should-contain [
+    3 <- 2
+    4 <- 1
+  ]
+  check-trace-count-for-label 0, [print-character]
+  assume-console [
+    type [0]
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  screen-should-contain [
+    .          .
+    . abc      .
+    . 0def     .
+    . ghi      .
+    . ┈┈┈┈┈┈┈┈┈.
   ]
 ]
 
