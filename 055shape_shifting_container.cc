@@ -617,6 +617,7 @@ void test_container_sizes_recursive_shape_shifting_container() {
 
 :(before "End compute_container_address_offsets Non-atom Special-cases")
 const type_tree* root = get_base_type(type);
+if (!contains_key(Type, root->value)) return;  // error raised elsewhere
 type_info& info = get(Type, root->value);
 if (info.kind == CONTAINER) {
   compute_container_address_offsets(info, type, location_for_error_messages);
@@ -680,6 +681,14 @@ def main [
   x:address:foo:num <- new {(foo num): type}
 ]
 # no crash
+
+:(scenario typos_in_recipes)
+% Hide_errors = true;
+def foo [
+  local-scope
+  x:adress:array:number <- copy 0  # typo
+]
+# shouldn't crash
 
 //:: 'merge' on shape-shifting containers
 
