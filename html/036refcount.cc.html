@@ -1087,60 +1087,62 @@ if ('onhashchange' in window) {
 <span id="L1022" class="LineNr">1022 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L1023" class="LineNr">1023 </span>  <span class="Comment">// End is_mu_container(type) Special-cases</span>
 <span id="L1024" class="LineNr">1024 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span id="L1025" class="LineNr">1025 </span>  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-<span id="L1026" class="LineNr">1026 </span>  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == <a href='010vm.cc.html#L173'>CONTAINER</a><span class="Delimiter">;</span>
-<span id="L1027" class="LineNr">1027 </span><span class="Delimiter">}</span>
-<span id="L1028" class="LineNr">1028 </span>
-<span id="L1029" class="LineNr">1029 </span><span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1030" class="LineNr">1030 </span>  <span class="Identifier">return</span> is_mu_exclusive_container<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-<span id="L1031" class="LineNr">1031 </span><span class="Delimiter">}</span>
-<span id="L1032" class="LineNr">1032 </span><span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1033" class="LineNr">1033 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span id="L1034" class="LineNr">1034 </span>  <span class="Comment">// End is_mu_exclusive_container(type) Special-cases</span>
-<span id="L1035" class="LineNr">1035 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
-<span id="L1036" class="LineNr">1036 </span>  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
-<span id="L1037" class="LineNr">1037 </span>  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == <a href='010vm.cc.html#L174'>EXCLUSIVE_CONTAINER</a><span class="Delimiter">;</span>
-<span id="L1038" class="LineNr">1038 </span><span class="Delimiter">}</span>
-<span id="L1039" class="LineNr">1039 </span>
-<span id="L1040" class="LineNr">1040 </span><span class="SalientComment">//:: Counters for trying to understand where Mu programs are spending time</span>
-<span id="L1041" class="LineNr">1041 </span><span class="SalientComment">//:: updating refcounts.</span>
-<span id="L1042" class="LineNr">1042 </span>
-<span id="L1043" class="LineNr">1043 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
-<span id="L1044" class="LineNr">1044 </span><span class="Normal">int</span> Total_refcount_updates = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L1045" class="LineNr">1045 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;<span class="Comment">/*</span><span class="Comment">step index</span><span class="Comment">*/</span><span class="Normal">int</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">num refcount updates</span><span class="Comment">*/</span><span class="Normal">int</span>&gt; &gt; Num_refcount_updates<span class="Delimiter">;</span>
-<span id="L1046" class="LineNr">1046 </span><span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
-<span id="L1047" class="LineNr">1047 </span><span class="Normal">int</span> initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
-<span id="L1048" class="LineNr">1048 </span><span class="Delimiter">:(before &quot;End Running One Instruction&quot;)</span>
-<span id="L1049" class="LineNr">1049 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Run_profiler<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1050" class="LineNr">1050 </span>  Num_refcount_updates[current_call<span class="Delimiter">().</span>running_recipe][current_call<span class="Delimiter">().</span>running_step_index]
-<span id="L1051" class="LineNr">1051 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
-<span id="L1052" class="LineNr">1052 </span>  initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
-<span id="L1053" class="LineNr">1053 </span><span class="Delimiter">}</span>
-<span id="L1054" class="LineNr">1054 </span><span class="Delimiter">:(before &quot;End Non-primitive Call(caller_frame)&quot;)</span>
-<span id="L1055" class="LineNr">1055 </span>Num_refcount_updates[caller_frame<span class="Delimiter">.</span>running_recipe][caller_frame<span class="Delimiter">.</span>running_step_index]
-<span id="L1056" class="LineNr">1056 </span>  <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
-<span id="L1057" class="LineNr">1057 </span>initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
-<span id="L1058" class="LineNr">1058 </span><span class="Delimiter">:(after &quot;Starting Reply&quot;)</span>
-<span id="L1059" class="LineNr">1059 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Run_profiler<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1060" class="LineNr">1060 </span>  Num_refcount_updates[current_call<span class="Delimiter">().</span>running_recipe][current_call<span class="Delimiter">().</span>running_step_index]
-<span id="L1061" class="LineNr">1061 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
-<span id="L1062" class="LineNr">1062 </span>  initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
-<span id="L1063" class="LineNr">1063 </span><span class="Delimiter">}</span>
-<span id="L1064" class="LineNr">1064 </span><span class="Delimiter">:(before &quot;End dump_profile&quot;)</span>
-<span id="L1065" class="LineNr">1065 </span>fout<span class="Delimiter">.</span>open<span class="Delimiter">(</span><span class="Constant">&quot;profile.refcounts&quot;</span><span class="Delimiter">);</span>
-<span id="L1066" class="LineNr">1066 </span><span class="Normal">if</span> <span class="Delimiter">(</span>fout<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1067" class="LineNr">1067 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Recipe<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
-<span id="L1068" class="LineNr">1068 </span>  <span class="Conceal">¦</span> <a href='036refcount.cc.html#L1072'>dump_recipe_profile</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">,</span> fout<span class="Delimiter">);</span>
-<span id="L1069" class="LineNr">1069 </span><span class="Delimiter">}</span>
-<span id="L1070" class="LineNr">1070 </span>fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
-<span id="L1071" class="LineNr">1071 </span><span class="Delimiter">:(code)</span>
-<span id="L1072" class="LineNr">1072 </span><span class="Normal">void</span> <a href='036refcount.cc.html#L1072'>dump_recipe_profile</a><span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> ridx<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; r<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1073" class="LineNr">1073 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L1074" class="LineNr">1074 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L1075" class="LineNr">1075 </span>  <span class="Conceal">¦</span> out &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">6</span><span class="Delimiter">)</span> &lt;&lt; Num_refcount_updates[ridx][i] &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L1076" class="LineNr">1076 </span>  <span class="Delimiter">}</span>
-<span id="L1077" class="LineNr">1077 </span>  out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
-<span id="L1078" class="LineNr">1078 </span><span class="Delimiter">}</span>
+<span id="L1025" class="LineNr">1025 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+<span id="L1026" class="LineNr">1026 </span>  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+<span id="L1027" class="LineNr">1027 </span>  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == <a href='010vm.cc.html#L173'>CONTAINER</a><span class="Delimiter">;</span>
+<span id="L1028" class="LineNr">1028 </span><span class="Delimiter">}</span>
+<span id="L1029" class="LineNr">1029 </span>
+<span id="L1030" class="LineNr">1030 </span><span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1031" class="LineNr">1031 </span>  <span class="Identifier">return</span> is_mu_exclusive_container<span class="Delimiter">(</span>r<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span id="L1032" class="LineNr">1032 </span><span class="Delimiter">}</span>
+<span id="L1033" class="LineNr">1033 </span><span class="Normal">bool</span> is_mu_exclusive_container<span class="Delimiter">(</span><span class="Normal">const</span> type_tree* type<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1034" class="LineNr">1034 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!type<span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span id="L1035" class="LineNr">1035 </span>  <span class="Comment">// End is_mu_exclusive_container(type) Special-cases</span>
+<span id="L1036" class="LineNr">1036 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>type<span class="Delimiter">-&gt;</span>value == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>
+<span id="L1037" class="LineNr">1037 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">))</span> <span class="Identifier">return</span> <span class="Constant">false</span><span class="Delimiter">;</span>  <span class="Comment">// error raised elsewhere</span>
+<span id="L1038" class="LineNr">1038 </span>  type_info&amp; info = get<span class="Delimiter">(</span>Type<span class="Delimiter">,</span> type<span class="Delimiter">-&gt;</span>value<span class="Delimiter">);</span>
+<span id="L1039" class="LineNr">1039 </span>  <span class="Identifier">return</span> info<span class="Delimiter">.</span>kind == <a href='010vm.cc.html#L174'>EXCLUSIVE_CONTAINER</a><span class="Delimiter">;</span>
+<span id="L1040" class="LineNr">1040 </span><span class="Delimiter">}</span>
+<span id="L1041" class="LineNr">1041 </span>
+<span id="L1042" class="LineNr">1042 </span><span class="SalientComment">//:: Counters for trying to understand where Mu programs are spending time</span>
+<span id="L1043" class="LineNr">1043 </span><span class="SalientComment">//:: updating refcounts.</span>
+<span id="L1044" class="LineNr">1044 </span>
+<span id="L1045" class="LineNr">1045 </span><span class="Delimiter">:(before &quot;End Globals&quot;)</span>
+<span id="L1046" class="LineNr">1046 </span><span class="Normal">int</span> Total_refcount_updates = <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L1047" class="LineNr">1047 </span>map&lt;recipe_ordinal<span class="Delimiter">,</span> map&lt;<span class="Comment">/*</span><span class="Comment">step index</span><span class="Comment">*/</span><span class="Normal">int</span><span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">num refcount updates</span><span class="Comment">*/</span><span class="Normal">int</span>&gt; &gt; Num_refcount_updates<span class="Delimiter">;</span>
+<span id="L1048" class="LineNr">1048 </span><span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
+<span id="L1049" class="LineNr">1049 </span><span class="Normal">int</span> initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
+<span id="L1050" class="LineNr">1050 </span><span class="Delimiter">:(before &quot;End Running One Instruction&quot;)</span>
+<span id="L1051" class="LineNr">1051 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Run_profiler<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1052" class="LineNr">1052 </span>  Num_refcount_updates[current_call<span class="Delimiter">().</span>running_recipe][current_call<span class="Delimiter">().</span>running_step_index]
+<span id="L1053" class="LineNr">1053 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
+<span id="L1054" class="LineNr">1054 </span>  initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
+<span id="L1055" class="LineNr">1055 </span><span class="Delimiter">}</span>
+<span id="L1056" class="LineNr">1056 </span><span class="Delimiter">:(before &quot;End Non-primitive Call(caller_frame)&quot;)</span>
+<span id="L1057" class="LineNr">1057 </span>Num_refcount_updates[caller_frame<span class="Delimiter">.</span>running_recipe][caller_frame<span class="Delimiter">.</span>running_step_index]
+<span id="L1058" class="LineNr">1058 </span>  <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
+<span id="L1059" class="LineNr">1059 </span>initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
+<span id="L1060" class="LineNr">1060 </span><span class="Delimiter">:(after &quot;Starting Reply&quot;)</span>
+<span id="L1061" class="LineNr">1061 </span><span class="Normal">if</span> <span class="Delimiter">(</span>Run_profiler<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1062" class="LineNr">1062 </span>  Num_refcount_updates[current_call<span class="Delimiter">().</span>running_recipe][current_call<span class="Delimiter">().</span>running_step_index]
+<span id="L1063" class="LineNr">1063 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> += <span class="Delimiter">(</span>Total_refcount_updates - initial_num_refcount_updates<span class="Delimiter">);</span>
+<span id="L1064" class="LineNr">1064 </span>  initial_num_refcount_updates = Total_refcount_updates<span class="Delimiter">;</span>
+<span id="L1065" class="LineNr">1065 </span><span class="Delimiter">}</span>
+<span id="L1066" class="LineNr">1066 </span><span class="Delimiter">:(before &quot;End dump_profile&quot;)</span>
+<span id="L1067" class="LineNr">1067 </span>fout<span class="Delimiter">.</span>open<span class="Delimiter">(</span><span class="Constant">&quot;profile.refcounts&quot;</span><span class="Delimiter">);</span>
+<span id="L1068" class="LineNr">1068 </span><span class="Normal">if</span> <span class="Delimiter">(</span>fout<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1069" class="LineNr">1069 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;recipe_ordinal<span class="Delimiter">,</span> recipe&gt;::iterator p = Recipe<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != Recipe<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span>
+<span id="L1070" class="LineNr">1070 </span>  <span class="Conceal">¦</span> <a href='036refcount.cc.html#L1074'>dump_recipe_profile</a><span class="Delimiter">(</span>p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">,</span> fout<span class="Delimiter">);</span>
+<span id="L1071" class="LineNr">1071 </span><span class="Delimiter">}</span>
+<span id="L1072" class="LineNr">1072 </span>fout<span class="Delimiter">.</span>close<span class="Delimiter">();</span>
+<span id="L1073" class="LineNr">1073 </span><span class="Delimiter">:(code)</span>
+<span id="L1074" class="LineNr">1074 </span><span class="Normal">void</span> <a href='036refcount.cc.html#L1074'>dump_recipe_profile</a><span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> ridx<span class="Delimiter">,</span> <span class="Normal">const</span> recipe&amp; r<span class="Delimiter">,</span> ostream&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1075" class="LineNr">1075 </span>  out &lt;&lt; <span class="Constant">&quot;recipe &quot;</span> &lt;&lt; r<span class="Delimiter">.</span>name &lt;&lt; <span class="Constant">&quot; [</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L1076" class="LineNr">1076 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> i = <span class="Constant">0</span><span class="Delimiter">;</span>  i &lt; <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">);</span>  ++i<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L1077" class="LineNr">1077 </span>  <span class="Conceal">¦</span> out &lt;&lt; std::setw<span class="Delimiter">(</span><span class="Constant">6</span><span class="Delimiter">)</span> &lt;&lt; Num_refcount_updates[ridx][i] &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>r<span class="Delimiter">.</span>steps<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L1078" class="LineNr">1078 </span>  <span class="Delimiter">}</span>
+<span id="L1079" class="LineNr">1079 </span>  out &lt;&lt; <span class="Constant">&quot;]</span><span class="cSpecial">\n\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L1080" class="LineNr">1080 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
