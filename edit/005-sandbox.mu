@@ -267,7 +267,7 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from
   clear-rest-of-screen screen, row, left, right
   #
-#?   assert-no-scroll screen, old-top-idx
+  assert-no-scroll screen, old-top-idx
 ]
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [
@@ -275,13 +275,13 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
   load-ingredients
   return-unless sandbox
   screen-height:num <- screen-height screen
-  at-bottom?:bool <- greater-or-equal row, screen-height
-  return-if at-bottom?
   hidden?:bool <- lesser-than idx, render-from
   {
     break-if hidden?
     # render sandbox menu
     row <- add row, 1
+    at-bottom?:bool <- greater-or-equal row, screen-height
+    return-if at-bottom?
     screen <- move-cursor screen, row, left
     screen <- render-sandbox-menu screen, idx, left, right
     # save menu row so we can detect clicks to it later
