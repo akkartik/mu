@@ -251,7 +251,7 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   row, screen <- render-sandboxes screen, sandbox, left, right, row, render-from, 0, env
   clear-rest-of-screen screen, row, left, right
   #
-  assert-no-scroll screen, old-top-idx
+#?   assert-no-scroll screen, old-top-idx
 ]
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [
@@ -324,6 +324,30 @@ def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num 
   clear-line-until screen, copy-button-right, 58/background-green
   print screen, [delete], 232/black, 52/background-red
   clear-line-until screen, right, 52/background-red
+]
+
+scenario skip-rendering-sandbox-menu-past-bottom-row [
+  trace-until 100/app  # trace too long
+  assume-screen 50/width, 6/height
+  # recipes.mu is empty
+  assume-resources [
+    [lesson/0] <- [|add 2, 2|]
+    [lesson/1] <- [|add 1, 1|]
+  ]
+  # create two sandboxes such that the top one just barely fills the screen
+  env:&:environment <- new-programming-environment resources, screen, []
+  env <- restore-sandboxes env, resources
+  run [
+    render-all screen, env, render
+  ]
+  screen-should-contain [
+    .                               run (F4)           .
+    .                                                  .
+    .──────────────────────────────────────────────────.
+    .0   edit           copy           delete          .
+    .add 2, 2                                          .
+    .──────────────────────────────────────────────────.
+  ]
 ]
 
 # divide up the menu bar for a sandbox into 3 segments, for edit/copy/delete buttons
