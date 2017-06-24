@@ -207,7 +207,7 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
 def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
   local-scope
   load-ingredients
-  stash [clear-screen-from] row column [between] left [and] right
+#?   stash [clear-screen-from] row column [between] left [and] right
   # if it's the real screen, use the optimized primitive
   {
     break-if screen
@@ -218,7 +218,7 @@ def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num 
   screen <- move-cursor screen, row, column
   clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
-  screen <- move-cursor screen, row, column
+#?   screen <- move-cursor screen, row, column
 ]
 
 def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen:&:screen [

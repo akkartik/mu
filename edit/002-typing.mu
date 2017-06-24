@@ -1116,11 +1116,11 @@ after <handle-special-key> [
 def draw-horizontal screen:&:screen, row:num, x:num, right:num -> screen:&:screen [
   local-scope
   load-ingredients
-  a:num, b:num <- cursor-position screen
-  stash [draw-horizontal] row [--] a b
+#?   a:num, b:num <- cursor-position screen
+#?   stash [draw-horizontal] row [--] a b
   height:num <- screen-height screen
   past-bottom?:bool <- greater-or-equal row, height
-  stash [  past-bottom?] past-bottom?
+#?   stash [  past-bottom?] past-bottom?
   return-if past-bottom?
   style:char, style-found?:bool <- next-ingredient
   {
@@ -1138,18 +1138,18 @@ def draw-horizontal screen:&:screen, row:num, x:num, right:num -> screen:&:scree
     break-if bg-color-found?
     bg-color <- copy 0/black
   }
-  stash [aa] x
+#?   stash [aa] x
   screen <- move-cursor screen, row, x
   {
     continue?:bool <- lesser-or-equal x, right  # right is inclusive, to match editor semantics
     break-unless continue?
-  a b <- cursor-position screen
-  stash [bb] x [--] a b
+#?   a b <- cursor-position screen
+#?   stash [bb] x [--] a b
     print screen, style, color, bg-color
-  a b <- cursor-position screen
-  stash [cc] x [--] a b
+#?   a b <- cursor-position screen
+#?   stash [cc] x [--] a b
     x <- add x, 1
     loop
   }
-  stash [draw-horizontal done]
+#?   stash [draw-horizontal done]
 ]

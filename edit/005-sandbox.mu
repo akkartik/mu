@@ -270,15 +270,15 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
   clear-rest-of-screen screen, row, left, right
   #
   assert-no-scroll screen, old-top-idx
-  stash [render sandbox side done]
+#?   stash [render sandbox side done]
 ]
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [
   local-scope
   load-ingredients
   return-unless sandbox
-  a:num b:num <- cursor-position screen
-  stash [render-sandboxes] idx [:] row [--] a b
+#?   a:num b:num <- cursor-position screen
+#?   stash [render-sandboxes] idx [:] row [--] a b
   screen-height:num <- screen-height screen
   at-bottom?:bool <- greater-or-equal row, screen-height
   return-if at-bottom?
@@ -361,11 +361,11 @@ scenario skip-rendering-sandbox-menu-past-bottom-row [
   # create two sandboxes such that the top one just barely fills the screen
   env:&:environment <- new-programming-environment resources, screen, []
   env <- restore-sandboxes env, resources
-  $clear-trace
+#?   $clear-trace
   run [
     render-all screen, env, render
   ]
-  $dump-trace [app]
+#?   $dump-trace [app]
   screen-should-contain [
     .                                                                                 run (F4)           .
     .                                                  ┊                                                 .

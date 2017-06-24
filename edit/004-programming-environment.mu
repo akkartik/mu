@@ -447,7 +447,7 @@ def render-recipes screen:&:screen, env:&:environment, render-editor:render-reci
   clear-screen-from screen, row, left, left, right
   #
   assert-no-scroll screen, old-top-idx
-  stash [render recipes done]
+#?   stash [render recipes done]
 ]
 
 # replaced in a later layer
@@ -468,7 +468,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
   clear-screen-from screen, row, left, left, right
   #
   assert-no-scroll screen, old-top-idx
-  stash [render sandbox side0 done]
+#?   stash [render sandbox side0 done]
 ]
 
 def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, sandbox-in-focus?:bool, env:&:environment -> screen:&:screen [
