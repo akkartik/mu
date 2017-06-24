@@ -1,16 +1,5 @@
 # Wrappers around print primitives that take a 'screen' object and are thus
 # easier to test.
-#
-# Screen objects are intended to exactly mimic the behavior of traditional
-# terminals. Moving a cursor too far write wraps it to the next line,
-# scrolling if necessary. The details are subtle:
-#
-# a) Rows can take unbounded values, and such values are preserved rather than
-# clamped or wrapped around.
-#
-# b) If you print to a square (row, right) on the right margin, the cursor
-# position depends on whether 'row' is in range. If it is, the new cursor
-# position is (row+1, 0). If it isn't, the new cursor position is (row, 0).
 
 container screen [
   num-rows:num
@@ -18,7 +7,6 @@ container screen [
   cursor-row:num
   cursor-column:num
   data:&:@:screen-cell  # capacity num-rows*num-columns
-  pending-scroll?:bool
   top-idx:num  # index inside data that corresponds to top-left of screen
                # modified on scroll, wrapping around to the top of data
 ]
@@ -26,32 +14,6 @@ container screen [
 container screen-cell [
   contents:char
   color:num
-]
-
-def main [
-  local-scope
-  open-console
-  clear-screen
-  print 0/screen [a]
-#?   a:char <- copy 97
-#?   i:num <- copy 0
-#?   {
-#?     done?:bool <- greater-or-equal i, 6
-#?     break-if done?
-#?     move-cursor 0/screen i, 2527
-#?     print 0/screen a
-#?     a <- add a, 1
-#?     i <- add i, 1
-#?     loop
-#?   }
-  move-cursor 0/screen 5, 2527
-  a:num b:num <- cursor-position 0/screen
-  print 0/screen [f]
-  c:num d:num <- cursor-position 0/screen
-  wait-for-some-interaction
-  close-console
-  $print a [ ] b 10/newline
-  $print c [ ] d 10/newline
 ]
 
 def new-fake-screen w:num, h:num -> result:&:screen [
@@ -64,7 +26,7 @@ def new-fake-screen w:num, h:num -> result:&:screen [
   assert non-zero-height?, [screen can't have zero height]
   bufsize:num <- multiply w, h
   data:&:@:screen-cell <- new screen-cell:type, bufsize
-  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data, 0/pending-scroll?, 0/top-idx
+  *result <- merge h/num-rows, w/num-columns, 0/cursor-row, 0/cursor-column, data, 0/top-idx
   result <- clear-screen result
 ]
 
@@ -137,8 +99,6 @@ def print screen:&:screen, c:char -> screen:&:screen [
   {
     # real screen
     break-if screen
-#?     x:num y:num <- cursor-position-on-display
-#?     stash [print] x y
     print-character-to-display c, color, bg-color
     return
   }
@@ -188,13 +148,9 @@ def print screen:&:screen, c:char -> screen:&:screen [
   {
     at-bottom?:bool <- equal row, height
     break-unless at-bottom?
-    $dump-screen
-    $print [scroll1] 10/newline
     scroll-fake-screen screen
     row <- subtract height, 1
     *screen <- put *screen, cursor-row:offset, row
-    *screen <- put *screen, pending-scroll?:offset, 0/false
-    $dump-screen
   }
   # if row is below bottom margin (error), reset to bottom margin
   {
@@ -204,18 +160,6 @@ def print screen:&:screen, c:char -> screen:&:screen [
     *screen <- put *screen, cursor-row:offset, row
   }
   # }
-  # if there's a pending scroll, perform it
-  {
-    pending-scroll?:bool <- get *screen, pending-scroll?:offset
-#?     $print pending-scroll? 10/newline
-    break-unless pending-scroll?
-    $print [scroll2] 10/newline
-    $dump-screen
-    scroll-fake-screen screen
-    *screen <- put *screen, pending-scroll?:offset, 0/false
-    $dump-screen
-  }
-#?   stash [print] row column
 #?     $print [print-character (], row, [, ], column, [): ], c, 10/newline
   # special-case: newline
   {
@@ -248,23 +192,9 @@ def print screen:&:screen, c:char -> screen:&:screen [
   index:num <- data-index row, column, width, height, top-idx
   cursor:screen-cell <- merge c, color
   *buf <- put-index *buf, index, cursor
-  # move cursor to next character, wrapping as necessary
-  # however, don't scroll just yet
+  # move cursor to next character
   # (but don't bother making it valid; we'll do that before the next print)
   column <- add column, 1
-  {
-    past-right?:bool <- greater-or-equal column, width
-    break-unless past-right?
-    column <- copy 0
-    row <- add row, 1
-    past-bottom?:bool <- greater-or-equal row, height
-    break-unless past-bottom?
-    # queue up a scroll
-    $print [pending scroll] 10/newline
-    *screen <- put *screen, pending-scroll?:offset, 1/true
-    row <- subtract row, 1  # update cursor as if scroll already happened
-  }
-  *screen <- put *screen, cursor-row:offset, row
   *screen <- put *screen, cursor-column:offset, column
 ]
 
@@ -576,7 +506,7 @@ def assert-no-scroll screen:&:screen, old-top-idx:num [
   return-unless screen
   new-top-idx:num <- get *screen, top-idx:offset
   no-scroll?:bool <- equal old-top-idx, new-top-idx
-#?   assert no-scroll?, [render should never use screen's scrolling capabilities]
+  assert no-scroll?, [render should never use screen's scrolling capabilities]
 ]
 
 def clear-line screen:&:screen -> screen:&:screen [
@@ -659,8 +589,6 @@ def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen 
   # fake screen
   *screen <- put *screen, cursor-row:offset, new-row
   *screen <- put *screen, cursor-column:offset, new-column
-  $print [move cursor ] new-row [ ] new-column 10/newline
-  *screen <- put *screen, pending-scroll?:offset, 0/false
 ]
 
 scenario clear-line-erases-printed-characters [

@@ -218,7 +218,6 @@ def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num 
   screen <- move-cursor screen, row, column
   clear-line-until screen, right
   clear-rest-of-screen screen, row, left, right
-#?   screen <- move-cursor screen, row, column
 ]
 
 def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen:&:screen [
