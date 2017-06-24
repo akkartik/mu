@@ -455,14 +455,16 @@ scenario print-character-at-bottom-right [
     10:num/raw <- get *fake-screen, cursor-row:offset
     11:num/raw <- get *fake-screen, cursor-column:offset
     12:num/raw <- get *fake-screen, top-idx:offset
+    13:num/raw <- get *fake-screen, pending-scroll?:offset
     cell:&:@:screen-cell <- get *fake-screen, data:offset
     20:@:screen-cell/raw <- copy *cell
   ]
-  # cursor column overflows the screen but is not wrapped yet
+  # cursor column wraps but the screen doesn't scroll yet
   memory-should-contain [
     10 <- 1  # cursor row
-    11 <- 2  # cursor column -- outside screen
+    11 <- 0  # cursor column -- outside screen
     12 <- 0  # top-idx -- not yet scrolled
+    13 <- 1  # pending-scroll?
     20 <- 4  # screen size (width*height)
     21 <- 97  # 'a'
     22 <- 7  # white
@@ -604,7 +606,7 @@ def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen 
     width:num <- get *screen, num-columns:offset
     scroll?:bool <- greater-or-equal new-column, width
     break-if scroll?
-#?     stash [resetting pending-scroll]
+#?     stash [resetting pending-scroll?]
     *screen <- put *screen, pending-scroll?:offset, 0/false
   }
 ]
