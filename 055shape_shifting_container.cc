@@ -670,6 +670,17 @@ void test_container_address_offsets_in_nested_shape_shifting_container() {
   CHECK_EQ((++offset_info.begin())->payload_type->name, "number");
 }
 
+:(scenario typos_in_container_definitions)
+% Hide_errors = true;
+container foo:_t [
+  x:adress:_t  # typo
+]
+def main [
+  local-scope
+  x:address:foo:num <- new {(foo num): type}
+]
+# no crash
+
 //:: 'merge' on shape-shifting containers
 
 :(scenario merge_check_shape_shifting_container_containing_exclusive_container)

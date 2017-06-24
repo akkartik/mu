@@ -1022,6 +1022,7 @@ bool is_mu_container(const type_tree* type) {
   if (!type) return false;
   // End is_mu_container(type) Special-cases
   if (type->value == 0) return false;
+  if (!contains_key(Type, type->value)) return false;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   return info.kind == CONTAINER;
 }
@@ -1033,6 +1034,7 @@ bool is_mu_exclusive_container(const type_tree* type) {
   if (!type) return false;
   // End is_mu_exclusive_container(type) Special-cases
   if (type->value == 0) return false;
+  if (!contains_key(Type, type->value)) return false;  // error raised elsewhere
   type_info& info = get(Type, type->value);
   return info.kind == EXCLUSIVE_CONTAINER;
 }
