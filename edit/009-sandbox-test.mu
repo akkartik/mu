@@ -95,7 +95,7 @@ container sandbox [
 # include expected response when saving or restoring a sandbox
 before <end-save-sandbox> [
   {
-    expected-response:text <- get *curr, expected-response:offset
+    expected-response:text <- get *sandbox, expected-response:offset
     break-unless expected-response
     filename <- append filename, [.out]
     resources <- dump resources, filename, expected-response
@@ -126,20 +126,18 @@ after <global-touch> [
     below-sandbox-editor?:bool <- greater-or-equal click-row, first-sandbox-begins
     break-unless below-sandbox-editor?
     # identify the sandbox whose output is being clicked on
-    sandbox:&:sandbox <- find-click-in-sandbox-output env, click-row
+    sandbox:&:sandbox, sandbox-index:num <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
-    screen <- update-status screen, [updating...      ], 245/grey
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
-    save-sandboxes env, resources
+    save-sandbox resources, sandbox, sandbox-index
     screen <- render-sandbox-side screen, env, render
-    screen <- update-status screen, [                 ], 245/grey
     screen <- update-cursor screen, recipes, current-sandbox, sandbox-in-focus?, env
     loop +next-event
   }
 ]
 
-def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:sandbox [
+def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:sandbox, sandbox-index:num [
   local-scope
   load-ingredients
   # assert click-row >= sandbox.starting-row-on-screen
@@ -148,6 +146,7 @@ def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:s
   clicked-on-sandboxes?:bool <- greater-or-equal click-row, start
   assert clicked-on-sandboxes?, [extract-sandbox called on click to sandbox editor]
   # while click-row < sandbox.next-sandbox.starting-row-on-screen
+  sandbox-index <- copy 0
   {
     next-sandbox:&:sandbox <- get *sandbox, next-sandbox:offset
     break-unless next-sandbox
@@ -155,14 +154,15 @@ def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:s
     found?:bool <- lesser-than click-row, next-start
     break-if found?
     sandbox <- copy next-sandbox
+    sandbox-index <- add sandbox-index, 1
     loop
   }
   # return sandbox if click is in its output region
   response-starting-row:num <- get *sandbox, response-starting-row-on-screen:offset
-  return-unless response-starting-row, 0/no-click-in-sandbox-output
+  return-unless response-starting-row, 0/no-click-in-sandbox-output, 0/sandbox-index
   click-in-response?:bool <- greater-or-equal click-row, response-starting-row
-  return-unless click-in-response?, 0/no-click-in-sandbox-output
-  return sandbox
+  return-unless click-in-response?, 0/no-click-in-sandbox-output, 0/sandbox-index
+  return sandbox, sandbox-index
 ]
 
 def toggle-expected-response sandbox:&:sandbox -> sandbox:&:sandbox [

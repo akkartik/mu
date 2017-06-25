@@ -217,14 +217,20 @@ def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resou
   idx:num <- copy 0
   {
     break-unless curr
-    data:text <- get *curr, data:offset
-    filename:text <- append [lesson/], idx
-    resources <- dump resources, filename, data
-    <end-save-sandbox>
+    resources <- save-sandbox resources, curr, idx
     idx <- add idx, 1
     curr <- get *curr, next-sandbox:offset
     loop
   }
+]
+
+def save-sandbox resources:&:resources, sandbox:&:sandbox, sandbox-index:num -> resources:&:resources [
+  local-scope
+  load-ingredients
+  data:text <- get *sandbox, data:offset
+  filename:text <- append [lesson/], sandbox-index
+  resources <- dump resources, filename, data
+  <end-save-sandbox>
 ]
 
 def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
