@@ -130,10 +130,12 @@ after <global-touch> [
     # identify the sandbox whose output is being clicked on
     sandbox:&:sandbox <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
+    screen <- update-status screen, [updating...      ], 245/grey
     # toggle its expected-response, and save session
     sandbox <- toggle-expected-response sandbox
     save-sandboxes env, resources
     screen <- render-sandbox-side screen, env, render
+    screen <- update-status screen, [                 ], 245/grey
     screen <- update-cursor screen, current-sandbox, env
     loop +next-event
   }
