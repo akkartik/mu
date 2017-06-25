@@ -3,6 +3,7 @@
 
 set -e
 
+# convert a single file to html
 process() {
   vim -c "set number" -c TOhtml -c write -c qall $1
 
@@ -36,44 +37,54 @@ process() {
   mv -i $1.html html/`dirname $1`
 }
 
-if [ $# -gt 0 ]
-then
-  for f in $*
+( cd linkify; build; )
+
+  rm html/*.cc.html
+  for f in *.cc
   do
     process $f
   done
-  exit 0
-fi
-
-rm html/*.html html/edit/*.html
-
-for f in *.cc *.mu edit/*.mu
-do
-  process $f
-done
-
-if which ctags >&/dev/null
-then
-  ( cd linkify; build; )
-  ctags -x *.cc  |grep -v "^operator \| member \| variable "  > cpp.tags
-  linkify/linkify cpp.tags html/*.cc.html
-  rm cpp.tags
-  ctags -x [0-9]*.mu  > mu.tags
-  linkify/linkify mu.tags html/[0-9]*.mu.html
-  for f in [a-zA-Z]*.mu
-  do
-    ctags -x [0-9]*.mu $f  > mu.tags
-    linkify/linkify mu.tags html/$f.html
-  done
-  rm mu.tags
-  ( cd edit
-    ctags -x ../[0-9]*.mu *.mu  > mu.tags
-    ../linkify/linkify mu.tags ../html/edit/*.mu.html
-    rm mu.tags
-  )
-  ( cd linkify; clean; )
-  for f in html/*.html html/edit/*.html
+  ctags -x *.cc  |grep -v "^operator \| member \| variable "  > /tmp/tags
+  linkify/linkify /tmp/tags html/*.cc.html
+  for f in html/*.cc.html
   do
     mv $f.out $f
   done
-fi
+
+  rm html/[0-9]*.mu.html
+  for f in [0-9]*.mu
+  do
+    process $f
+  done
+  ctags -x [0-9]*.mu  > /tmp/tags
+  linkify/linkify /tmp/tags html/[0-9]*.mu.html
+  for f in html/[0-9]*.mu.html
+  do
+    mv $f.out $f
+  done
+
+  for f in [a-zA-Z]*.mu
+  do
+    rm html/$f.html
+    process $f
+    ctags -x [0-9]*.mu $f  > /tmp/tags
+    linkify/linkify /tmp/tags html/$f.html
+    mv html/$f.html.out html/$f.html
+  done
+
+  rm html/edit/*.html
+  for f in edit/*.mu
+  do
+    process $f
+  done
+  ( cd edit
+    ctags -x ../[0-9]*.mu *.mu  > /tmp/tags
+  )
+  linkify/linkify /tmp/tags html/edit/*.mu.html
+  for f in html/edit/*.mu.html
+  do
+    mv $f.out $f
+  done
+
+rm /tmp/tags
+( cd linkify; clean; )
