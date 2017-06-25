@@ -1360,44 +1360,42 @@ def move-to-next-line editor:&:editor, screen-height:num -> go-render?:bool, edi
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   last-line:num <- subtract screen-height, 1
+  break-unless before-cursor, +try-to-scroll
+  next:&:duplex-list:char <- next before-cursor
+  break-unless next, +try-to-scroll
   already-at-bottom?:bool <- greater-or-equal cursor-row, last-line
   {
     # if cursor not at bottom, move it
     break-if already-at-bottom?
-    # scan to start of next line, then to right column or until end of line
-    max:num <- subtract right, left
-    next-line:&:duplex-list:char <- before-start-of-next-line before-cursor, max
-    {
-      # already at end of buffer? try to scroll up (so we can see more
-      # warnings or sandboxes below)
-      no-motion?:bool <- equal next-line, before-cursor
-      break-unless no-motion?
-      scroll?:bool <- greater-than cursor-row, 1
-      break-if scroll?, +try-to-scroll
-      return 0/don't-render
-    }
-    cursor-row <- add cursor-row, 1
-    *editor <- put *editor, cursor-row:offset, cursor-row
-    before-cursor <- copy next-line
-    *editor <- put *editor, before-cursor:offset, before-cursor
     target-column:num <- copy cursor-column
-    cursor-column <- copy left
-    *editor <- put *editor, cursor-column:offset, cursor-column
+    # scan to start of next line
     {
-      done?:bool <- greater-or-equal cursor-column, target-column
+      next:&:duplex-list:char <- next before-cursor
+      break-unless next
+      done?:bool <- greater-or-equal cursor-column, right
       break-if done?
-      curr:&:duplex-list:char <- next before-cursor
-      break-unless curr
-      currc:char <- get *curr, value:offset
-      at-newline?:bool <- equal currc, 10/newline
-      break-if at-newline?
-      #
-      before-cursor <- copy curr
-      *editor <- put *editor, before-cursor:offset, before-cursor
       cursor-column <- add cursor-column, 1
-      *editor <- put *editor, cursor-column:offset, cursor-column
+      before-cursor <- copy next
+      c:char <- get *next, value:offset
+      at-newline?:bool <- equal c, 10/newline
+      break-if at-newline?
       loop
     }
+    break-unless next  # at bottom of editor; scroll
+    cursor-row <- add cursor-row, 1
+    cursor-column <- copy left
+    {
+      next:&:duplex-list:char <- next before-cursor
+      break-unless next
+      done?:bool <- greater-or-equal cursor-column, target-column
+      break-if done?
+      cursor-column <- add cursor-column, 1
+      before-cursor <- copy next
+      loop
+    }
+    *editor <- put *editor, before-cursor:offset, before-cursor
+    *editor <- put *editor, cursor-column:offset, cursor-column
+    *editor <- put *editor, cursor-row:offset, cursor-row
     return 0/don't-render
   }
   +try-to-scroll
@@ -1439,6 +1437,35 @@ de]
     .de0       .
     .┈┈┈┈┈┈┈┈┈┈.
     .          .
+  ]
+]
+
+scenario editor-moves-down-within-wrapped-line [
+  local-scope
+  assume-screen 10/width, 5/height
+  e:&:editor <- new-editor [abcdefghijklmno], 0/left, 10/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .abcdefghi↩.
+    .jklmno    .
+    .┈┈┈┈┈┈┈┈┈┈.
+    .          .
+  ]
+  # position cursor on first screen line, but past end of second screen line
+  assume-console [
+    left-click 1, 8
+    press down-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+    3:num/raw <- get *e, cursor-row:offset
+    4:num/raw <- get *e, cursor-column:offset
+  ]
+  # cursor should be at end of second screen line
+  memory-should-contain [
+    3 <- 2
+    4 <- 6
   ]
 ]
 
