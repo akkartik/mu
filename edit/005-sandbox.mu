@@ -754,60 +754,6 @@ scenario cursor-down-in-recipe-editor [
   ]
 ]
 
-# we'll not use the recipe-editor's 'bottom' element directly, because later
-# layers will add other stuff to the left side below the editor (error messages)
-
-container environment [
-  recipe-bottom:num
-]
-
-after <render-recipe-components-end> [
-  *env <- put *env, recipe-bottom:offset, row
-]
-
-after <global-keypress> [
-  {
-    break-if sandbox-in-focus?
-    down-arrow?:bool <- equal k, 65516/down-arrow
-    break-unless down-arrow?
-    recipe-editor:&:editor <- get *env, recipes:offset
-    recipe-cursor-row:num <- get *recipe-editor, cursor-row:offset
-    recipe-editor-bottom:num <- get *recipe-editor, bottom:offset
-    at-bottom-of-editor?:bool <- greater-or-equal recipe-cursor-row, recipe-editor-bottom
-    break-unless at-bottom-of-editor?
-    more-to-scroll?:bool <- more-to-scroll? env, screen
-    break-if more-to-scroll?
-    loop +next-event
-  }
-  {
-    break-if sandbox-in-focus?
-    page-down?:bool <- equal k, 65518/page-down
-    break-unless page-down?
-    more-to-scroll?:bool <- more-to-scroll? env, screen
-    break-if more-to-scroll?
-    loop +next-event
-  }
-]
-
-after <global-type> [
-  {
-    break-if sandbox-in-focus?
-    page-down?:bool <- equal k, 6/ctrl-f
-    break-unless page-down?
-    more-to-scroll?:bool <- more-to-scroll? env, screen
-    break-if more-to-scroll?
-    loop +next-event
-  }
-]
-
-def more-to-scroll? env:&:environment, screen:&:screen -> result:bool [
-  local-scope
-  load-ingredients
-  recipe-bottom:num <- get *env, recipe-bottom:offset
-  height:num <- screen-height screen
-  result <- greater-or-equal recipe-bottom, height
-]
-
 scenario scrolling-down-past-bottom-of-recipe-editor-2 [
   local-scope
   trace-until 100/app

@@ -1360,9 +1360,31 @@ def move-to-next-line editor:&:editor, screen-height:num -> go-render?:bool, edi
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
   last-line:num <- subtract screen-height, 1
-  break-unless before-cursor, +try-to-scroll
+  bottom:num <- get *editor, bottom:offset
+  at-bottom-of-screen?:bool <- greater-or-equal bottom, last-line
+  {
+    break-if before-cursor
+    {
+      break-if at-bottom-of-screen?
+      return 0/don't-render
+    }
+    {
+      break-unless at-bottom-of-screen?
+      jump +try-to-scroll
+    }
+  }
   next:&:duplex-list:char <- next before-cursor
-  break-unless next, +try-to-scroll
+  {
+    break-if next
+    {
+      break-if at-bottom-of-screen?
+      return 0/don't-render
+    }
+    {
+      break-unless at-bottom-of-screen?
+      jump +try-to-scroll
+    }
+  }
   already-at-bottom?:bool <- greater-or-equal cursor-row, last-line
   {
     # if cursor not at bottom, move it
@@ -1381,7 +1403,17 @@ def move-to-next-line editor:&:editor, screen-height:num -> go-render?:bool, edi
       break-if at-newline?
       loop
     }
-    break-unless next  # at bottom of editor; scroll
+    {
+      break-if next
+      {
+        break-if at-bottom-of-screen?
+        return 0/don't-render
+      }
+      {
+        break-unless at-bottom-of-screen?
+        jump +try-to-scroll
+      }
+    }
     cursor-row <- add cursor-row, 1
     cursor-column <- copy left
     {
@@ -3012,51 +3044,10 @@ de]
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
-  # screen should scroll, moving cursor to end of text
+  # no change
   memory-should-contain [
-    3 <- 1
-    4 <- 2
-  ]
-  assume-console [
-    type [0]
-  ]
-  run [
-    editor-event-loop screen, console, e
-  ]
-  screen-should-contain [
-    .          .
-    .de0       .
-    .┈┈┈┈┈┈┈┈┈┈.
-    .          .
-  ]
-  # try to move down again
-  $clear-trace
-  assume-console [
-    left-click 2, 0
-    press down-arrow
-  ]
-  run [
-    editor-event-loop screen, console, e
-    3:num/raw <- get *e, cursor-row:offset
-    4:num/raw <- get *e, cursor-column:offset
-  ]
-  # screen stops scrolling because cursor is already at top
-  memory-should-contain [
-    3 <- 1
-    4 <- 3
-  ]
-  check-trace-count-for-label 0, [print-character]
-  assume-console [
-    type [1]
-  ]
-  run [
-    editor-event-loop screen, console, e
-  ]
-  screen-should-contain [
-    .          .
-    .de01      .
-    .┈┈┈┈┈┈┈┈┈┈.
-    .          .
+    3 <- 2
+    4 <- 0
   ]
 ]
 
