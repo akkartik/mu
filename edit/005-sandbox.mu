@@ -169,13 +169,14 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     sandbox-count:num <- get *env, number-of-sandboxes:offset
     sandbox-count <- add sandbox-count, 1
     *env <- put *env, number-of-sandboxes:offset, sandbox-count
+    # save all sandboxes
+    # needs to be before running them, in case we die when running
+    save-sandboxes env, resources
     # clear sandbox editor
     init:&:duplex-list:char <- push 167/§, 0/tail
     *current-sandbox <- put *current-sandbox, data:offset, init
     *current-sandbox <- put *current-sandbox, top-of-screen:offset, init
   }
-  # save all sandboxes before running, just in case we die when running
-  save-sandboxes env, resources
   # run all sandboxes
   curr:&:sandbox <- get *env, sandbox:offset
   idx:num <- copy 0
@@ -226,6 +227,7 @@ def update-status screen:&:screen, msg:text, color:num -> screen:&:screen [
 def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resources [
   local-scope
   load-ingredients
+  trace 11, [app], [save sandboxes]
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   # first clear previous versions, in case we deleted some sandbox
   $system [rm lesson/[0-9]* >/dev/null 2>/dev/null]  # some shells can't handle '>&'
@@ -608,11 +610,16 @@ scenario run-updates-results [
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]
+  # the new sandbox should be saved to disk
+  trace-should-contain [
+    app: save sandboxes
+  ]
   # no need to update editor
   trace-should-not-contain [
     app: render recipes
   ]
   # make a change (incrementing one of the args to 'add'), then rerun
+  $clear-trace
   assume-console [
     left-click 4, 28  # one past the value of the second arg
     press backspace
@@ -634,6 +641,10 @@ scenario run-updates-results [
     .                                                  ┊                                                 .
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
+  ]
+  # no need to save sandboxes all over again
+  trace-should-not-contain [
+    app: save sandboxes
   ]
 ]
 
