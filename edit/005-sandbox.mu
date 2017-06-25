@@ -945,42 +945,6 @@ def previous-sandbox env:&:environment, in:&:sandbox -> out:&:sandbox [
   return curr
 ]
 
-scenario scrolling-down-past-bottom-on-recipe-side [
-  local-scope
-  trace-until 100/app  # trace too long
-  assume-screen 100/width, 10/height
-  # initialize sandbox side and create a sandbox
-  assume-resources [
-    [lesson/recipes.mu] <- [
-      ||  # file containing just a newline
-    ]
-  ]
-  # create a sandbox
-  env:&:environment <- new-programming-environment resources, screen, [add 2, 2]
-  render-all screen, env, render
-  assume-console [
-    press F4
-  ]
-  event-loop screen, console, env, resources
-  # hit 'down' in recipe editor
-  assume-console [
-    press page-down
-  ]
-  run [
-    event-loop screen, console, env, resources
-    cursor:char <- copy 9251/␣
-    print screen, cursor
-  ]
-  # cursor doesn't move when the end is already on-screen
-  screen-should-contain [
-    .                                                                                 run (F4)           .
-    .␣                                                 ┊                                                 .
-    .                                                  ┊─────────────────────────────────────────────────.
-    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊0   edit       copy       to recipe    delete    .
-    .                                                  ┊add 2, 2                                         .
-  ]
-]
-
 scenario scrolling-through-multiple-sandboxes [
   local-scope
   trace-until 100/app  # trace too long

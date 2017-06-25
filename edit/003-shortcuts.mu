@@ -2930,6 +2930,38 @@ cdef]
   ]
 ]
 
+scenario editor-stops-scrolling-once-bottom-is-visible [
+  local-scope
+  # screen has 1 line for menu + 3 lines
+  assume-screen 10/width, 4/height
+  # initialize editor with 2 lines
+  s:text <- new [a
+b]
+  e:&:editor <- new-editor s, 0/left, 10/right
+  editor-render screen, e
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+  # position cursor at last line, then try to move further down
+  assume-console [
+    left-click 3, 0
+    press down-arrow
+  ]
+  run [
+    editor-event-loop screen, console, e
+  ]
+  # no change since the bottom border was already visible
+  screen-should-contain [
+    .          .
+    .a         .
+    .b         .
+    .┈┈┈┈┈┈┈┈┈┈.
+  ]
+]
+
 scenario editor-scrolls-down-on-newline [
   local-scope
   assume-screen 5/width, 4/height
