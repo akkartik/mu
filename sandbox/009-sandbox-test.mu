@@ -30,6 +30,7 @@ scenario sandbox-click-on-result-toggles-color-to-green [
     .                                                  .
   ]
   # click on the '4' in the result
+  $clear-trace
   assume-console [
     left-click 5, 21
   ]
@@ -46,6 +47,8 @@ scenario sandbox-click-on-result-toggles-color-to-green [
     .4                                                 .
     .                                                  .
   ]
+  # don't render entire sandbox side
+  check-trace-count-for-label-lesser-than 250, [print-character]  # say 5 sandbox lines
   # cursor should remain unmoved
   run [
     cursor:char <- copy 9251/␣
@@ -130,10 +133,19 @@ after <global-touch> [
     # identify the sandbox whose output is being clicked on
     sandbox:&:sandbox, sandbox-index:num <- find-click-in-sandbox-output env, click-row
     break-unless sandbox
-    # toggle its expected-response, and save session
+    # update it
     sandbox <- toggle-expected-response sandbox
+    # minimal update to disk
     save-sandbox resources, sandbox, sandbox-index
-    screen <- render-sandbox-side screen, env, render
+    # minimal update to screen
+    sandbox-right-margin:num <- get *current-sandbox, right:offset
+    row:num <- render-sandbox-response screen, sandbox, sandbox-left-margin, sandbox-right-margin
+    {
+      height:num <- screen-height screen
+      at-bottom?:bool <- greater-or-equal row, height
+      break-if at-bottom?
+      draw-horizontal screen, row, sandbox-left-margin, sandbox-right-margin
+    }
     screen <- update-cursor screen, current-sandbox, env
     loop +next-event
   }
@@ -189,18 +201,30 @@ after <render-sandbox-response> [
   {
     break-unless sandbox-response
     *sandbox <- put *sandbox, response-starting-row-on-screen:offset, row
-    expected-response:text <- get *sandbox, expected-response:offset
-    break-unless expected-response  # fall-through to print in grey
-    response-is-expected?:bool <- equal expected-response, sandbox-response
-    {
-      break-if response-is-expected?
-      row, screen <- render-text screen, sandbox-response, left, right, 1/red, row
-    }
-    {
-      break-unless response-is-expected?:bool
-      row, screen <- render-text screen, sandbox-response, left, right, 2/green, row
-    }
+    row <- render-sandbox-response screen, sandbox, left, right
     jump +render-sandbox-end
+  }
+]
+
+def render-sandbox-response screen:&:screen, sandbox:&:sandbox, left:num, right:num -> row:num, screen:&:screen [
+  local-scope
+  load-ingredients
+  sandbox-response:text <- get *sandbox, response:offset
+  expected-response:text <- get *sandbox, expected-response:offset
+  row:num <- get *sandbox response-starting-row-on-screen:offset
+  {
+    break-if expected-response
+    row <- render-text screen, sandbox-response, left, right, 245/grey, row
+    return
+  }
+  response-is-expected?:bool <- equal expected-response, sandbox-response
+  {
+    break-if response-is-expected?
+    row <- render-text screen, sandbox-response, left, right, 1/red, row
+  }
+  {
+    break-unless response-is-expected?:bool
+    row <- render-text screen, sandbox-response, left, right, 2/green, row
   }
 ]
 
