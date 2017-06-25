@@ -353,7 +353,7 @@ if ('onhashchange' in window) {
 <span id="L290" class="LineNr"> 290 </span>  <span class="Conceal">¦</span> row <span class="Special">&lt;-</span> add row,<span class="Constant"> 1</span>
 <span id="L291" class="LineNr"> 291 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, row, left
 <span id="L292" class="LineNr"> 292 </span>  <span class="Conceal">¦</span> sandbox-data:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">data:offset</span>
-<span id="L293" class="LineNr"> 293 </span>  <span class="Conceal">¦</span> row, <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L1997'>render-code</a> <a href='../081print.mu.html#L16'>screen</a>, sandbox-data, left, right, row
+<span id="L293" class="LineNr"> 293 </span>  <span class="Conceal">¦</span> row, <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L2055'>render-code</a> <a href='../081print.mu.html#L16'>screen</a>, sandbox-data, left, right, row
 <span id="L294" class="LineNr"> 294 </span>  <span class="Conceal">¦</span> *sandbox <span class="Special">&lt;-</span> put *sandbox, <span class="Constant">code-ending-row-on-screen:offset</span>, row
 <span id="L295" class="LineNr"> 295 </span>  <span class="Conceal">¦</span> <span class="Comment"># render sandbox warnings, screen or response, in that order</span>
 <span id="L296" class="LineNr"> 296 </span>  <span class="Conceal">¦</span> sandbox-response:text <span class="Special">&lt;-</span> get *sandbox, <span class="Constant">response:offset</span>
@@ -817,521 +817,431 @@ if ('onhashchange' in window) {
 <span id="L754" class="LineNr"> 754 </span>  ]
 <span id="L755" class="LineNr"> 755 </span>]
 <span id="L756" class="LineNr"> 756 </span>
-<span id="L757" class="LineNr"> 757 </span><span class="Comment"># we'll not use the recipe-editor's 'bottom' element directly, because later</span>
-<span id="L758" class="LineNr"> 758 </span><span class="Comment"># layers will add other stuff to the left side below the editor (error messages)</span>
-<span id="L759" class="LineNr"> 759 </span>
-<span id="L760" class="LineNr"> 760 </span><span class="muData">container</span> environment [
-<span id="L761" class="LineNr"> 761 </span>  recipe-bottom:num
-<span id="L762" class="LineNr"> 762 </span>]
-<span id="L763" class="LineNr"> 763 </span>
-<span id="L764" class="LineNr"> 764 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L443'>&lt;render-recipe-components-end&gt;</a></span> [
-<span id="L765" class="LineNr"> 765 </span>  *env <span class="Special">&lt;-</span> put *env, <span class="Constant">recipe-bottom:offset</span>, row
-<span id="L766" class="LineNr"> 766 </span>]
-<span id="L767" class="LineNr"> 767 </span>
-<span id="L768" class="LineNr"> 768 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span> [
-<span id="L769" class="LineNr"> 769 </span>  <span class="Delimiter">{</span>
-<span id="L770" class="LineNr"> 770 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
-<span id="L771" class="LineNr"> 771 </span>  <span class="Conceal">¦</span> down-arrow?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65516/down-arrow</span>
-<span id="L772" class="LineNr"> 772 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> down-arrow?
-<span id="L773" class="LineNr"> 773 </span>  <span class="Conceal">¦</span> recipe-editor:&amp;:editor <span class="Special">&lt;-</span> get *env, <span class="Constant">recipes:offset</span>
-<span id="L774" class="LineNr"> 774 </span>  <span class="Conceal">¦</span> recipe-cursor-row:num <span class="Special">&lt;-</span> get *recipe-editor, <span class="Constant">cursor-row:offset</span>
-<span id="L775" class="LineNr"> 775 </span>  <span class="Conceal">¦</span> recipe-editor-bottom:num <span class="Special">&lt;-</span> get *recipe-editor, <span class="Constant">bottom:offset</span>
-<span id="L776" class="LineNr"> 776 </span>  <span class="Conceal">¦</span> at-bottom-of-editor?:bool <span class="Special">&lt;-</span> greater-or-equal recipe-cursor-row, recipe-editor-bottom
-<span id="L777" class="LineNr"> 777 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-bottom-of-editor?
-<span id="L778" class="LineNr"> 778 </span>  <span class="Conceal">¦</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>:bool <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a> env, <a href='../081print.mu.html#L16'>screen</a>
-<span id="L779" class="LineNr"> 779 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>
-<span id="L780" class="LineNr"> 780 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L781" class="LineNr"> 781 </span>  <span class="Delimiter">}</span>
-<span id="L782" class="LineNr"> 782 </span>  <span class="Delimiter">{</span>
-<span id="L783" class="LineNr"> 783 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
-<span id="L784" class="LineNr"> 784 </span>  <span class="Conceal">¦</span> page-down?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65518/page-down</span>
-<span id="L785" class="LineNr"> 785 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-down?
-<span id="L786" class="LineNr"> 786 </span>  <span class="Conceal">¦</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>:bool <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a> env, <a href='../081print.mu.html#L16'>screen</a>
-<span id="L787" class="LineNr"> 787 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>
-<span id="L788" class="LineNr"> 788 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L789" class="LineNr"> 789 </span>  <span class="Delimiter">}</span>
-<span id="L790" class="LineNr"> 790 </span>]
-<span id="L791" class="LineNr"> 791 </span>
-<span id="L792" class="LineNr"> 792 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L67'>&lt;global-type&gt;</a></span> [
-<span id="L793" class="LineNr"> 793 </span>  <span class="Delimiter">{</span>
-<span id="L794" class="LineNr"> 794 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> sandbox-in-focus?
-<span id="L795" class="LineNr"> 795 </span>  <span class="Conceal">¦</span> page-down?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">6/ctrl-f</span>
-<span id="L796" class="LineNr"> 796 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-down?
-<span id="L797" class="LineNr"> 797 </span>  <span class="Conceal">¦</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>:bool <span class="Special">&lt;-</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a> env, <a href='../081print.mu.html#L16'>screen</a>
-<span id="L798" class="LineNr"> 798 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a>
-<span id="L799" class="LineNr"> 799 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L800" class="LineNr"> 800 </span>  <span class="Delimiter">}</span>
-<span id="L801" class="LineNr"> 801 </span>]
-<span id="L802" class="LineNr"> 802 </span>
-<span id="L803" class="LineNr"> 803 </span><span class="muRecipe">def</span> <a href='005-sandbox.mu.html#L803'>more-to-scroll?</a> env:&amp;:environment, <a href='../081print.mu.html#L16'>screen</a>:&amp;:<a href='../081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>result:bool [
-<span id="L804" class="LineNr"> 804 </span>  <span class="Constant">local-scope</span>
-<span id="L805" class="LineNr"> 805 </span>  <span class="Constant">load-ingredients</span>
-<span id="L806" class="LineNr"> 806 </span>  recipe-bottom:num <span class="Special">&lt;-</span> get *env, <span class="Constant">recipe-bottom:offset</span>
-<span id="L807" class="LineNr"> 807 </span>  height:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L782'>screen-height</a> <a href='../081print.mu.html#L16'>screen</a>
-<span id="L808" class="LineNr"> 808 </span>  result <span class="Special">&lt;-</span> greater-or-equal recipe-bottom, height
-<span id="L809" class="LineNr"> 809 </span>]
-<span id="L810" class="LineNr"> 810 </span>
-<span id="L811" class="LineNr"> 811 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-recipe-editor-2 [
-<span id="L812" class="LineNr"> 812 </span>  <span class="Constant">local-scope</span>
-<span id="L813" class="LineNr"> 813 </span>  trace-until <span class="Constant">100/app</span>
-<span id="L814" class="LineNr"> 814 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L815" class="LineNr"> 815 </span>  assume-resources [
-<span id="L816" class="LineNr"> 816 </span>  ]
-<span id="L817" class="LineNr"> 817 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L818" class="LineNr"> 818 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L819" class="LineNr"> 819 </span>  assume-console [
-<span id="L820" class="LineNr"> 820 </span>  <span class="Conceal">¦</span> <span class="Comment"># add a line</span>
-<span id="L821" class="LineNr"> 821 </span>  <span class="Conceal">¦</span> press enter
-<span id="L822" class="LineNr"> 822 </span>  <span class="Conceal">¦</span> <span class="Comment"># cursor back to top line</span>
-<span id="L823" class="LineNr"> 823 </span>  <span class="Conceal">¦</span> press up-arrow
-<span id="L824" class="LineNr"> 824 </span>  <span class="Conceal">¦</span> <span class="Comment"># try to scroll</span>
-<span id="L825" class="LineNr"> 825 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>  <span class="Comment"># or ctrl-f</span>
-<span id="L826" class="LineNr"> 826 </span>  ]
-<span id="L827" class="LineNr"> 827 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L828" class="LineNr"> 828 </span>  <span class="Comment"># no scroll, and cursor remains at top line</span>
-<span id="L829" class="LineNr"> 829 </span>  screen-should-contain [
-<span id="L830" class="LineNr"> 830 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L831" class="LineNr"> 831 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L832" class="LineNr"> 832 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L833" class="LineNr"> 833 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
-<span id="L834" class="LineNr"> 834 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L835" class="LineNr"> 835 </span>  ]
-<span id="L836" class="LineNr"> 836 </span>]
-<span id="L837" class="LineNr"> 837 </span>
-<span id="L838" class="LineNr"> 838 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-recipe-editor-3 [
-<span id="L839" class="LineNr"> 839 </span>  <span class="Constant">local-scope</span>
-<span id="L840" class="LineNr"> 840 </span>  trace-until <span class="Constant">100/app</span>
-<span id="L841" class="LineNr"> 841 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L842" class="LineNr"> 842 </span>  assume-resources [
-<span id="L843" class="LineNr"> 843 </span>  ]
-<span id="L844" class="LineNr"> 844 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[ab</span>
-<span id="L845" class="LineNr"> 845 </span><span class="Constant">cd]</span>
-<span id="L846" class="LineNr"> 846 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L847" class="LineNr"> 847 </span>  assume-console [
-<span id="L848" class="LineNr"> 848 </span>  <span class="Conceal">¦</span> <span class="Comment"># add a line</span>
-<span id="L849" class="LineNr"> 849 </span>  <span class="Conceal">¦</span> press enter
-<span id="L850" class="LineNr"> 850 </span>  <span class="Conceal">¦</span> <span class="Comment"># switch to sandbox</span>
-<span id="L851" class="LineNr"> 851 </span>  <span class="Conceal">¦</span> press ctrl-n
-<span id="L852" class="LineNr"> 852 </span>  <span class="Conceal">¦</span> <span class="Comment"># move cursor</span>
-<span id="L853" class="LineNr"> 853 </span>  <span class="Conceal">¦</span> press down-arrow
-<span id="L854" class="LineNr"> 854 </span>  ]
-<span id="L855" class="LineNr"> 855 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L856" class="LineNr"> 856 </span>  cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L857" class="LineNr"> 857 </span>  print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L858" class="LineNr"> 858 </span>  <span class="Comment"># no scroll on recipe side, cursor moves on sandbox side</span>
-<span id="L859" class="LineNr"> 859 </span>  screen-should-contain [
-<span id="L860" class="LineNr"> 860 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L861" class="LineNr"> 861 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎ab                                               .</span>
-<span id="L862" class="LineNr"> 862 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣d                                               .</span>
-<span id="L863" class="LineNr"> 863 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L864" class="LineNr"> 864 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L865" class="LineNr"> 865 </span>  ]
-<span id="L866" class="LineNr"> 866 </span>]
-<span id="L867" class="LineNr"> 867 </span>
-<span id="L868" class="LineNr"> 868 </span><span class="Comment"># scrolling through sandboxes</span>
-<span id="L869" class="LineNr"> 869 </span>
-<span id="L870" class="LineNr"> 870 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-sandbox-editor [
-<span id="L871" class="LineNr"> 871 </span>  <span class="Constant">local-scope</span>
-<span id="L872" class="LineNr"> 872 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L873" class="LineNr"> 873 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L874" class="LineNr"> 874 </span>  <span class="Comment"># initialize</span>
-<span id="L875" class="LineNr"> 875 </span>  assume-resources [
-<span id="L876" class="LineNr"> 876 </span>  ]
-<span id="L877" class="LineNr"> 877 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[add 2, 2]</span>
-<span id="L878" class="LineNr"> 878 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L879" class="LineNr"> 879 </span>  assume-console [
-<span id="L880" class="LineNr"> 880 </span>  <span class="Conceal">¦</span> <span class="Comment"># create a sandbox</span>
-<span id="L881" class="LineNr"> 881 </span>  <span class="Conceal">¦</span> press F4
-<span id="L882" class="LineNr"> 882 </span>  ]
-<span id="L883" class="LineNr"> 883 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L884" class="LineNr"> 884 </span>  screen-should-contain [
-<span id="L885" class="LineNr"> 885 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L886" class="LineNr"> 886 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L887" class="LineNr"> 887 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L888" class="LineNr"> 888 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L889" class="LineNr"> 889 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L890" class="LineNr"> 890 </span>  ]
-<span id="L891" class="LineNr"> 891 </span>  <span class="Comment"># switch to sandbox window and hit 'page-down'</span>
-<span id="L892" class="LineNr"> 892 </span>  assume-console [
-<span id="L893" class="LineNr"> 893 </span>  <span class="Conceal">¦</span> press ctrl-n
-<span id="L894" class="LineNr"> 894 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L895" class="LineNr"> 895 </span>  ]
-<span id="L896" class="LineNr"> 896 </span>  run [
-<span id="L897" class="LineNr"> 897 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L898" class="LineNr"> 898 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L899" class="LineNr"> 899 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L900" class="LineNr"> 900 </span>  ]
-<span id="L901" class="LineNr"> 901 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
-<span id="L902" class="LineNr"> 902 </span>  <span class="Comment"># cursor moves to first sandbox</span>
-<span id="L903" class="LineNr"> 903 </span>  screen-should-contain [
-<span id="L904" class="LineNr"> 904 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L905" class="LineNr"> 905 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L906" class="LineNr"> 906 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit       copy       to recipe    delete    .</span>
-<span id="L907" class="LineNr"> 907 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L908" class="LineNr"> 908 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L909" class="LineNr"> 909 </span>  ]
-<span id="L910" class="LineNr"> 910 </span>  <span class="Comment"># hit 'page-up'</span>
-<span id="L911" class="LineNr"> 911 </span>  assume-console [
-<span id="L912" class="LineNr"> 912 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3764'>page-up</a>
-<span id="L913" class="LineNr"> 913 </span>  ]
-<span id="L914" class="LineNr"> 914 </span>  run [
-<span id="L915" class="LineNr"> 915 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L916" class="LineNr"> 916 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L917" class="LineNr"> 917 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L918" class="LineNr"> 918 </span>  ]
-<span id="L919" class="LineNr"> 919 </span>  <span class="Comment"># sandbox editor displays again, cursor is in editor</span>
-<span id="L920" class="LineNr"> 920 </span>  screen-should-contain [
-<span id="L921" class="LineNr"> 921 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L922" class="LineNr"> 922 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
-<span id="L923" class="LineNr"> 923 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L924" class="LineNr"> 924 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L925" class="LineNr"> 925 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L926" class="LineNr"> 926 </span>  ]
+<span id="L757" class="LineNr"> 757 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-recipe-editor-2 [
+<span id="L758" class="LineNr"> 758 </span>  <span class="Constant">local-scope</span>
+<span id="L759" class="LineNr"> 759 </span>  trace-until <span class="Constant">100/app</span>
+<span id="L760" class="LineNr"> 760 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L761" class="LineNr"> 761 </span>  assume-resources [
+<span id="L762" class="LineNr"> 762 </span>  ]
+<span id="L763" class="LineNr"> 763 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
+<span id="L764" class="LineNr"> 764 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L765" class="LineNr"> 765 </span>  assume-console [
+<span id="L766" class="LineNr"> 766 </span>  <span class="Conceal">¦</span> <span class="Comment"># add a line</span>
+<span id="L767" class="LineNr"> 767 </span>  <span class="Conceal">¦</span> press enter
+<span id="L768" class="LineNr"> 768 </span>  <span class="Conceal">¦</span> <span class="Comment"># cursor back to top line</span>
+<span id="L769" class="LineNr"> 769 </span>  <span class="Conceal">¦</span> press up-arrow
+<span id="L770" class="LineNr"> 770 </span>  <span class="Conceal">¦</span> <span class="Comment"># try to scroll</span>
+<span id="L771" class="LineNr"> 771 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>  <span class="Comment"># or ctrl-f</span>
+<span id="L772" class="LineNr"> 772 </span>  ]
+<span id="L773" class="LineNr"> 773 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L774" class="LineNr"> 774 </span>  <span class="Comment"># no scroll, and cursor remains at top line</span>
+<span id="L775" class="LineNr"> 775 </span>  screen-should-contain [
+<span id="L776" class="LineNr"> 776 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L777" class="LineNr"> 777 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L778" class="LineNr"> 778 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L779" class="LineNr"> 779 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎                                                 .</span>
+<span id="L780" class="LineNr"> 780 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L781" class="LineNr"> 781 </span>  ]
+<span id="L782" class="LineNr"> 782 </span>]
+<span id="L783" class="LineNr"> 783 </span>
+<span id="L784" class="LineNr"> 784 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-recipe-editor-3 [
+<span id="L785" class="LineNr"> 785 </span>  <span class="Constant">local-scope</span>
+<span id="L786" class="LineNr"> 786 </span>  trace-until <span class="Constant">100/app</span>
+<span id="L787" class="LineNr"> 787 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L788" class="LineNr"> 788 </span>  assume-resources [
+<span id="L789" class="LineNr"> 789 </span>  ]
+<span id="L790" class="LineNr"> 790 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[ab</span>
+<span id="L791" class="LineNr"> 791 </span><span class="Constant">cd]</span>
+<span id="L792" class="LineNr"> 792 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L793" class="LineNr"> 793 </span>  assume-console [
+<span id="L794" class="LineNr"> 794 </span>  <span class="Conceal">¦</span> <span class="Comment"># add a line</span>
+<span id="L795" class="LineNr"> 795 </span>  <span class="Conceal">¦</span> press enter
+<span id="L796" class="LineNr"> 796 </span>  <span class="Conceal">¦</span> <span class="Comment"># switch to sandbox</span>
+<span id="L797" class="LineNr"> 797 </span>  <span class="Conceal">¦</span> press ctrl-n
+<span id="L798" class="LineNr"> 798 </span>  <span class="Conceal">¦</span> <span class="Comment"># move cursor</span>
+<span id="L799" class="LineNr"> 799 </span>  <span class="Conceal">¦</span> press down-arrow
+<span id="L800" class="LineNr"> 800 </span>  ]
+<span id="L801" class="LineNr"> 801 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L802" class="LineNr"> 802 </span>  cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L803" class="LineNr"> 803 </span>  print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L804" class="LineNr"> 804 </span>  <span class="Comment"># no scroll on recipe side, cursor moves on sandbox side</span>
+<span id="L805" class="LineNr"> 805 </span>  screen-should-contain [
+<span id="L806" class="LineNr"> 806 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L807" class="LineNr"> 807 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎ab                                               .</span>
+<span id="L808" class="LineNr"> 808 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣d                                               .</span>
+<span id="L809" class="LineNr"> 809 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L810" class="LineNr"> 810 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L811" class="LineNr"> 811 </span>  ]
+<span id="L812" class="LineNr"> 812 </span>]
+<span id="L813" class="LineNr"> 813 </span>
+<span id="L814" class="LineNr"> 814 </span><span class="Comment"># scrolling through sandboxes</span>
+<span id="L815" class="LineNr"> 815 </span>
+<span id="L816" class="LineNr"> 816 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-of-sandbox-editor [
+<span id="L817" class="LineNr"> 817 </span>  <span class="Constant">local-scope</span>
+<span id="L818" class="LineNr"> 818 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L819" class="LineNr"> 819 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L820" class="LineNr"> 820 </span>  <span class="Comment"># initialize</span>
+<span id="L821" class="LineNr"> 821 </span>  assume-resources [
+<span id="L822" class="LineNr"> 822 </span>  ]
+<span id="L823" class="LineNr"> 823 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[add 2, 2]</span>
+<span id="L824" class="LineNr"> 824 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L825" class="LineNr"> 825 </span>  assume-console [
+<span id="L826" class="LineNr"> 826 </span>  <span class="Conceal">¦</span> <span class="Comment"># create a sandbox</span>
+<span id="L827" class="LineNr"> 827 </span>  <span class="Conceal">¦</span> press F4
+<span id="L828" class="LineNr"> 828 </span>  ]
+<span id="L829" class="LineNr"> 829 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L830" class="LineNr"> 830 </span>  screen-should-contain [
+<span id="L831" class="LineNr"> 831 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L832" class="LineNr"> 832 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L833" class="LineNr"> 833 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L834" class="LineNr"> 834 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L835" class="LineNr"> 835 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L836" class="LineNr"> 836 </span>  ]
+<span id="L837" class="LineNr"> 837 </span>  <span class="Comment"># switch to sandbox window and hit 'page-down'</span>
+<span id="L838" class="LineNr"> 838 </span>  assume-console [
+<span id="L839" class="LineNr"> 839 </span>  <span class="Conceal">¦</span> press ctrl-n
+<span id="L840" class="LineNr"> 840 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
+<span id="L841" class="LineNr"> 841 </span>  ]
+<span id="L842" class="LineNr"> 842 </span>  run [
+<span id="L843" class="LineNr"> 843 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L844" class="LineNr"> 844 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L845" class="LineNr"> 845 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L846" class="LineNr"> 846 </span>  ]
+<span id="L847" class="LineNr"> 847 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
+<span id="L848" class="LineNr"> 848 </span>  <span class="Comment"># cursor moves to first sandbox</span>
+<span id="L849" class="LineNr"> 849 </span>  screen-should-contain [
+<span id="L850" class="LineNr"> 850 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L851" class="LineNr"> 851 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L852" class="LineNr"> 852 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit       copy       to recipe    delete    .</span>
+<span id="L853" class="LineNr"> 853 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L854" class="LineNr"> 854 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L855" class="LineNr"> 855 </span>  ]
+<span id="L856" class="LineNr"> 856 </span>  <span class="Comment"># hit 'page-up'</span>
+<span id="L857" class="LineNr"> 857 </span>  assume-console [
+<span id="L858" class="LineNr"> 858 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3813'>page-up</a>
+<span id="L859" class="LineNr"> 859 </span>  ]
+<span id="L860" class="LineNr"> 860 </span>  run [
+<span id="L861" class="LineNr"> 861 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L862" class="LineNr"> 862 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L863" class="LineNr"> 863 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L864" class="LineNr"> 864 </span>  ]
+<span id="L865" class="LineNr"> 865 </span>  <span class="Comment"># sandbox editor displays again, cursor is in editor</span>
+<span id="L866" class="LineNr"> 866 </span>  screen-should-contain [
+<span id="L867" class="LineNr"> 867 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L868" class="LineNr"> 868 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
+<span id="L869" class="LineNr"> 869 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L870" class="LineNr"> 870 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L871" class="LineNr"> 871 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L872" class="LineNr"> 872 </span>  ]
+<span id="L873" class="LineNr"> 873 </span>]
+<span id="L874" class="LineNr"> 874 </span>
+<span id="L875" class="LineNr"> 875 </span><span class="Comment"># page-down on sandbox side updates render-from to scroll sandboxes</span>
+<span id="L876" class="LineNr"> 876 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span> [
+<span id="L877" class="LineNr"> 877 </span>  <span class="Delimiter">{</span>
+<span id="L878" class="LineNr"> 878 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
+<span id="L879" class="LineNr"> 879 </span>  <span class="Conceal">¦</span> page-down?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65518/page-down</span>
+<span id="L880" class="LineNr"> 880 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-down?
+<span id="L881" class="LineNr"> 881 </span>  <span class="Conceal">¦</span> sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<span id="L882" class="LineNr"> 882 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox
+<span id="L883" class="LineNr"> 883 </span>  <span class="Conceal">¦</span> <span class="Comment"># slide down if possible</span>
+<span id="L884" class="LineNr"> 884 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
+<span id="L885" class="LineNr"> 885 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
+<span id="L886" class="LineNr"> 886 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> number-of-sandboxes:num <span class="Special">&lt;-</span> get *env, <span class="Constant">number-of-sandboxes:offset</span>
+<span id="L887" class="LineNr"> 887 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> max:num <span class="Special">&lt;-</span> subtract number-of-sandboxes,<span class="Constant"> 1</span>
+<span id="L888" class="LineNr"> 888 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-end?:bool <span class="Special">&lt;-</span> greater-or-equal render-from, max
+<span id="L889" class="LineNr"> 889 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop-if</span> at-end?, <span class="Constant">+next-event</span>  <span class="Comment"># render nothing</span>
+<span id="L890" class="LineNr"> 890 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-from <span class="Special">&lt;-</span> add render-from,<span class="Constant"> 1</span>
+<span id="L891" class="LineNr"> 891 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
+<span id="L892" class="LineNr"> 892 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L893" class="LineNr"> 893 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L894" class="LineNr"> 894 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L472'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L895" class="LineNr"> 895 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L896" class="LineNr"> 896 </span>  <span class="Delimiter">}</span>
+<span id="L897" class="LineNr"> 897 </span>]
+<span id="L898" class="LineNr"> 898 </span>
+<span id="L899" class="LineNr"> 899 </span><span class="Comment"># update-cursor takes render-from into account</span>
+<span id="L900" class="LineNr"> 900 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L475'>&lt;update-cursor-special-cases&gt;</a></span> [
+<span id="L901" class="LineNr"> 901 </span>  <span class="Delimiter">{</span>
+<span id="L902" class="LineNr"> 902 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
+<span id="L903" class="LineNr"> 903 </span>  <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
+<span id="L904" class="LineNr"> 904 </span>  <span class="Conceal">¦</span> scrolling?:bool <span class="Special">&lt;-</span> greater-or-equal render-from,<span class="Constant"> 0</span>
+<span id="L905" class="LineNr"> 905 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> scrolling?
+<span id="L906" class="LineNr"> 906 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
+<span id="L907" class="LineNr"> 907 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">2/row</span>, cursor-column  <span class="Comment"># highlighted sandbox will always start at row 2</span>
+<span id="L908" class="LineNr"> 908 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
+<span id="L909" class="LineNr"> 909 </span>  <span class="Delimiter">}</span>
+<span id="L910" class="LineNr"> 910 </span>]
+<span id="L911" class="LineNr"> 911 </span>
+<span id="L912" class="LineNr"> 912 </span><span class="Comment"># 'page-up' on sandbox side is like 'page-down': updates render-from when necessary</span>
+<span id="L913" class="LineNr"> 913 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span> [
+<span id="L914" class="LineNr"> 914 </span>  <span class="Delimiter">{</span>
+<span id="L915" class="LineNr"> 915 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
+<span id="L916" class="LineNr"> 916 </span>  <span class="Conceal">¦</span> page-up?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65519/page-up</span>
+<span id="L917" class="LineNr"> 917 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-up?
+<span id="L918" class="LineNr"> 918 </span>  <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
+<span id="L919" class="LineNr"> 919 </span>  <span class="Conceal">¦</span> at-beginning?:bool <span class="Special">&lt;-</span> equal render-from,<span class="Constant"> -1</span>
+<span id="L920" class="LineNr"> 920 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-beginning?
+<span id="L921" class="LineNr"> 921 </span>  <span class="Conceal">¦</span> render-from <span class="Special">&lt;-</span> subtract render-from,<span class="Constant"> 1</span>
+<span id="L922" class="LineNr"> 922 </span>  <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
+<span id="L923" class="LineNr"> 923 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L924" class="LineNr"> 924 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L472'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
+<span id="L925" class="LineNr"> 925 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
+<span id="L926" class="LineNr"> 926 </span>  <span class="Delimiter">}</span>
 <span id="L927" class="LineNr"> 927 </span>]
 <span id="L928" class="LineNr"> 928 </span>
-<span id="L929" class="LineNr"> 929 </span><span class="Comment"># page-down on sandbox side updates render-from to scroll sandboxes</span>
-<span id="L930" class="LineNr"> 930 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span> [
-<span id="L931" class="LineNr"> 931 </span>  <span class="Delimiter">{</span>
-<span id="L932" class="LineNr"> 932 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
-<span id="L933" class="LineNr"> 933 </span>  <span class="Conceal">¦</span> page-down?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65518/page-down</span>
-<span id="L934" class="LineNr"> 934 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-down?
-<span id="L935" class="LineNr"> 935 </span>  <span class="Conceal">¦</span> sandbox:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L936" class="LineNr"> 936 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox
-<span id="L937" class="LineNr"> 937 </span>  <span class="Conceal">¦</span> <span class="Comment"># slide down if possible</span>
-<span id="L938" class="LineNr"> 938 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L939" class="LineNr"> 939 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
-<span id="L940" class="LineNr"> 940 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> number-of-sandboxes:num <span class="Special">&lt;-</span> get *env, <span class="Constant">number-of-sandboxes:offset</span>
-<span id="L941" class="LineNr"> 941 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> max:num <span class="Special">&lt;-</span> subtract number-of-sandboxes,<span class="Constant"> 1</span>
-<span id="L942" class="LineNr"> 942 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-end?:bool <span class="Special">&lt;-</span> greater-or-equal render-from, max
-<span id="L943" class="LineNr"> 943 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop-if</span> at-end?, <span class="Constant">+next-event</span>  <span class="Comment"># render nothing</span>
-<span id="L944" class="LineNr"> 944 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> render-from <span class="Special">&lt;-</span> add render-from,<span class="Constant"> 1</span>
-<span id="L945" class="LineNr"> 945 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
-<span id="L946" class="LineNr"> 946 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L947" class="LineNr"> 947 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L948" class="LineNr"> 948 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L472'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L949" class="LineNr"> 949 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L950" class="LineNr"> 950 </span>  <span class="Delimiter">}</span>
-<span id="L951" class="LineNr"> 951 </span>]
-<span id="L952" class="LineNr"> 952 </span>
-<span id="L953" class="LineNr"> 953 </span><span class="Comment"># update-cursor takes render-from into account</span>
-<span id="L954" class="LineNr"> 954 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L475'>&lt;update-cursor-special-cases&gt;</a></span> [
-<span id="L955" class="LineNr"> 955 </span>  <span class="Delimiter">{</span>
-<span id="L956" class="LineNr"> 956 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
-<span id="L957" class="LineNr"> 957 </span>  <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
-<span id="L958" class="LineNr"> 958 </span>  <span class="Conceal">¦</span> scrolling?:bool <span class="Special">&lt;-</span> greater-or-equal render-from,<span class="Constant"> 0</span>
-<span id="L959" class="LineNr"> 959 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> scrolling?
-<span id="L960" class="LineNr"> 960 </span>  <span class="Conceal">¦</span> cursor-column:num <span class="Special">&lt;-</span> get *current-sandbox, <span class="Constant">left:offset</span>
-<span id="L961" class="LineNr"> 961 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">2/row</span>, cursor-column  <span class="Comment"># highlighted sandbox will always start at row 2</span>
-<span id="L962" class="LineNr"> 962 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span>
-<span id="L963" class="LineNr"> 963 </span>  <span class="Delimiter">}</span>
-<span id="L964" class="LineNr"> 964 </span>]
-<span id="L965" class="LineNr"> 965 </span>
-<span id="L966" class="LineNr"> 966 </span><span class="Comment"># 'page-up' on sandbox side is like 'page-down': updates render-from when necessary</span>
-<span id="L967" class="LineNr"> 967 </span><span class="muRecipe">after</span> <span class="Constant"><a href='004-programming-environment.mu.html#L62'>&lt;global-keypress&gt;</a></span> [
-<span id="L968" class="LineNr"> 968 </span>  <span class="Delimiter">{</span>
-<span id="L969" class="LineNr"> 969 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> sandbox-in-focus?
-<span id="L970" class="LineNr"> 970 </span>  <span class="Conceal">¦</span> page-up?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65519/page-up</span>
-<span id="L971" class="LineNr"> 971 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> page-up?
-<span id="L972" class="LineNr"> 972 </span>  <span class="Conceal">¦</span> render-from:num <span class="Special">&lt;-</span> get *env, <span class="Constant">render-from:offset</span>
-<span id="L973" class="LineNr"> 973 </span>  <span class="Conceal">¦</span> at-beginning?:bool <span class="Special">&lt;-</span> equal render-from,<span class="Constant"> -1</span>
-<span id="L974" class="LineNr"> 974 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-beginning?
-<span id="L975" class="LineNr"> 975 </span>  <span class="Conceal">¦</span> render-from <span class="Special">&lt;-</span> subtract render-from,<span class="Constant"> 1</span>
-<span id="L976" class="LineNr"> 976 </span>  <span class="Conceal">¦</span> *env <span class="Special">&lt;-</span> put *env, <span class="Constant">render-from:offset</span>, render-from
-<span id="L977" class="LineNr"> 977 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> render-sandbox-side <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L978" class="LineNr"> 978 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L472'>update-cursor</a> <a href='../081print.mu.html#L16'>screen</a>, recipes, current-sandbox, sandbox-in-focus?, env
-<span id="L979" class="LineNr"> 979 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span> <span class="Constant">+next-event</span>
-<span id="L980" class="LineNr"> 980 </span>  <span class="Delimiter">}</span>
-<span id="L981" class="LineNr"> 981 </span>]
-<span id="L982" class="LineNr"> 982 </span>
-<span id="L983" class="LineNr"> 983 </span><span class="Comment"># sandbox belonging to 'env' whose next-sandbox is 'in'</span>
-<span id="L984" class="LineNr"> 984 </span><span class="Comment"># return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
-<span id="L985" class="LineNr"> 985 </span><span class="muRecipe">def</span> <a href='005-sandbox.mu.html#L985'>previous-sandbox</a> env:&amp;:environment, in:&amp;:sandbox<span class="muRecipe"> -&gt; </span>out:&amp;:sandbox [
-<span id="L986" class="LineNr"> 986 </span>  <span class="Constant">local-scope</span>
-<span id="L987" class="LineNr"> 987 </span>  <span class="Constant">load-ingredients</span>
-<span id="L988" class="LineNr"> 988 </span>  curr:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
-<span id="L989" class="LineNr"> 989 </span>  <span class="muControl">return-unless</span> curr, <span class="Constant">0/nil</span>
-<span id="L990" class="LineNr"> 990 </span>  <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:sandbox <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
-<span id="L991" class="LineNr"> 991 </span>  <span class="Delimiter">{</span>
-<span id="L992" class="LineNr"> 992 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>, <span class="Constant">0/nil</span>
-<span id="L993" class="LineNr"> 993 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L29'>next</a>, in
-<span id="L994" class="LineNr"> 994 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> found?
-<span id="L995" class="LineNr"> 995 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
-<span id="L996" class="LineNr"> 996 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a> <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
-<span id="L997" class="LineNr"> 997 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
-<span id="L998" class="LineNr"> 998 </span>  <span class="Delimiter">}</span>
-<span id="L999" class="LineNr"> 999 </span>  <span class="muControl">return</span> curr
-<span id="L1000" class="LineNr">1000 </span>]
-<span id="L1001" class="LineNr">1001 </span>
-<span id="L1002" class="LineNr">1002 </span><span class="muScenario">scenario</span> scrolling-down-past-bottom-on-recipe-side [
-<span id="L1003" class="LineNr">1003 </span>  <span class="Constant">local-scope</span>
-<span id="L1004" class="LineNr">1004 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L1005" class="LineNr">1005 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L1006" class="LineNr">1006 </span>  <span class="Comment"># initialize sandbox side and create a sandbox</span>
-<span id="L1007" class="LineNr">1007 </span>  assume-resources [
-<span id="L1008" class="LineNr">1008 </span>  <span class="Conceal">¦</span> <span class="Constant">[lesson/recipes.mu]</span> <span class="Special">&lt;-</span> [
-<span id="L1009" class="LineNr">1009 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Constant">||</span>  <span class="Comment"># file containing just a newline</span>
-<span id="L1010" class="LineNr">1010 </span>  <span class="Conceal">¦</span> ]
-<span id="L1011" class="LineNr">1011 </span>  ]
-<span id="L1012" class="LineNr">1012 </span>  <span class="Comment"># create a sandbox</span>
-<span id="L1013" class="LineNr">1013 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[add 2, 2]</span>
-<span id="L1014" class="LineNr">1014 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L1015" class="LineNr">1015 </span>  assume-console [
-<span id="L1016" class="LineNr">1016 </span>  <span class="Conceal">¦</span> press F4
-<span id="L1017" class="LineNr">1017 </span>  ]
-<span id="L1018" class="LineNr">1018 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1019" class="LineNr">1019 </span>  <span class="Comment"># hit 'down' in recipe editor</span>
+<span id="L929" class="LineNr"> 929 </span><span class="Comment"># sandbox belonging to 'env' whose next-sandbox is 'in'</span>
+<span id="L930" class="LineNr"> 930 </span><span class="Comment"># return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox</span>
+<span id="L931" class="LineNr"> 931 </span><span class="muRecipe">def</span> <a href='005-sandbox.mu.html#L931'>previous-sandbox</a> env:&amp;:environment, in:&amp;:sandbox<span class="muRecipe"> -&gt; </span>out:&amp;:sandbox [
+<span id="L932" class="LineNr"> 932 </span>  <span class="Constant">local-scope</span>
+<span id="L933" class="LineNr"> 933 </span>  <span class="Constant">load-ingredients</span>
+<span id="L934" class="LineNr"> 934 </span>  curr:&amp;:sandbox <span class="Special">&lt;-</span> get *env, <span class="Constant">sandbox:offset</span>
+<span id="L935" class="LineNr"> 935 </span>  <span class="muControl">return-unless</span> curr, <span class="Constant">0/nil</span>
+<span id="L936" class="LineNr"> 936 </span>  <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:sandbox <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
+<span id="L937" class="LineNr"> 937 </span>  <span class="Delimiter">{</span>
+<span id="L938" class="LineNr"> 938 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>, <span class="Constant">0/nil</span>
+<span id="L939" class="LineNr"> 939 </span>  <span class="Conceal">¦</span> found?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L29'>next</a>, in
+<span id="L940" class="LineNr"> 940 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> found?
+<span id="L941" class="LineNr"> 941 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L942" class="LineNr"> 942 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a> <span class="Special">&lt;-</span> get *curr, <span class="Constant">next-sandbox:offset</span>
+<span id="L943" class="LineNr"> 943 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L944" class="LineNr"> 944 </span>  <span class="Delimiter">}</span>
+<span id="L945" class="LineNr"> 945 </span>  <span class="muControl">return</span> curr
+<span id="L946" class="LineNr"> 946 </span>]
+<span id="L947" class="LineNr"> 947 </span>
+<span id="L948" class="LineNr"> 948 </span><span class="muScenario">scenario</span> scrolling-through-multiple-sandboxes [
+<span id="L949" class="LineNr"> 949 </span>  <span class="Constant">local-scope</span>
+<span id="L950" class="LineNr"> 950 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L951" class="LineNr"> 951 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L952" class="LineNr"> 952 </span>  <span class="Comment"># initialize environment</span>
+<span id="L953" class="LineNr"> 953 </span>  assume-resources [
+<span id="L954" class="LineNr"> 954 </span>  ]
+<span id="L955" class="LineNr"> 955 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
+<span id="L956" class="LineNr"> 956 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L957" class="LineNr"> 957 </span>  <span class="Comment"># create 2 sandboxes</span>
+<span id="L958" class="LineNr"> 958 </span>  assume-console [
+<span id="L959" class="LineNr"> 959 </span>  <span class="Conceal">¦</span> press ctrl-n
+<span id="L960" class="LineNr"> 960 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 2, 2]</span>
+<span id="L961" class="LineNr"> 961 </span>  <span class="Conceal">¦</span> press F4
+<span id="L962" class="LineNr"> 962 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 1, 1]</span>
+<span id="L963" class="LineNr"> 963 </span>  <span class="Conceal">¦</span> press F4
+<span id="L964" class="LineNr"> 964 </span>  ]
+<span id="L965" class="LineNr"> 965 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L966" class="LineNr"> 966 </span>  cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L967" class="LineNr"> 967 </span>  print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L968" class="LineNr"> 968 </span>  screen-should-contain [
+<span id="L969" class="LineNr"> 969 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L970" class="LineNr"> 970 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
+<span id="L971" class="LineNr"> 971 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L972" class="LineNr"> 972 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L973" class="LineNr"> 973 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L974" class="LineNr"> 974 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L975" class="LineNr"> 975 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L976" class="LineNr"> 976 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
+<span id="L977" class="LineNr"> 977 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L978" class="LineNr"> 978 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L979" class="LineNr"> 979 </span>  ]
+<span id="L980" class="LineNr"> 980 </span>  <span class="Comment"># hit 'page-down'</span>
+<span id="L981" class="LineNr"> 981 </span>  assume-console [
+<span id="L982" class="LineNr"> 982 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
+<span id="L983" class="LineNr"> 983 </span>  ]
+<span id="L984" class="LineNr"> 984 </span>  run [
+<span id="L985" class="LineNr"> 985 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L986" class="LineNr"> 986 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L987" class="LineNr"> 987 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L988" class="LineNr"> 988 </span>  ]
+<span id="L989" class="LineNr"> 989 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
+<span id="L990" class="LineNr"> 990 </span>  <span class="Comment"># cursor moves to first sandbox</span>
+<span id="L991" class="LineNr"> 991 </span>  screen-should-contain [
+<span id="L992" class="LineNr"> 992 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L993" class="LineNr"> 993 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L994" class="LineNr"> 994 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit       copy       to recipe    delete    .</span>
+<span id="L995" class="LineNr"> 995 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L996" class="LineNr"> 996 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L997" class="LineNr"> 997 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L998" class="LineNr"> 998 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
+<span id="L999" class="LineNr"> 999 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1000" class="LineNr">1000 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1001" class="LineNr">1001 </span>  ]
+<span id="L1002" class="LineNr">1002 </span>  <span class="Comment"># hit 'page-down' again</span>
+<span id="L1003" class="LineNr">1003 </span>  assume-console [
+<span id="L1004" class="LineNr">1004 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
+<span id="L1005" class="LineNr">1005 </span>  ]
+<span id="L1006" class="LineNr">1006 </span>  run [
+<span id="L1007" class="LineNr">1007 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1008" class="LineNr">1008 </span>  ]
+<span id="L1009" class="LineNr">1009 </span>  <span class="Comment"># just second sandbox displayed</span>
+<span id="L1010" class="LineNr">1010 </span>  screen-should-contain [
+<span id="L1011" class="LineNr">1011 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1012" class="LineNr">1012 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1013" class="LineNr">1013 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit       copy       to recipe    delete    .</span>
+<span id="L1014" class="LineNr">1014 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1015" class="LineNr">1015 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1016" class="LineNr">1016 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1017" class="LineNr">1017 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1018" class="LineNr">1018 </span>  ]
+<span id="L1019" class="LineNr">1019 </span>  <span class="Comment"># hit 'page-down' again</span>
 <span id="L1020" class="LineNr">1020 </span>  assume-console [
-<span id="L1021" class="LineNr">1021 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
+<span id="L1021" class="LineNr">1021 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
 <span id="L1022" class="LineNr">1022 </span>  ]
 <span id="L1023" class="LineNr">1023 </span>  run [
 <span id="L1024" class="LineNr">1024 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1025" class="LineNr">1025 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L1026" class="LineNr">1026 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L1027" class="LineNr">1027 </span>  ]
-<span id="L1028" class="LineNr">1028 </span>  <span class="Comment"># cursor doesn't move when the end is already on-screen</span>
-<span id="L1029" class="LineNr">1029 </span>  screen-should-contain [
-<span id="L1030" class="LineNr">1030 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1031" class="LineNr">1031 </span>  <span class="Conceal">¦</span><span class="Constant"> .␣                                                 ╎                                                 .</span>
-<span id="L1032" class="LineNr">1032 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1033" class="LineNr">1033 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1034" class="LineNr">1034 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1025" class="LineNr">1025 </span>  ]
+<span id="L1026" class="LineNr">1026 </span>  <span class="Comment"># no change</span>
+<span id="L1027" class="LineNr">1027 </span>  screen-should-contain [
+<span id="L1028" class="LineNr">1028 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1029" class="LineNr">1029 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1030" class="LineNr">1030 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit       copy       to recipe    delete    .</span>
+<span id="L1031" class="LineNr">1031 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1032" class="LineNr">1032 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1033" class="LineNr">1033 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1034" class="LineNr">1034 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
 <span id="L1035" class="LineNr">1035 </span>  ]
-<span id="L1036" class="LineNr">1036 </span>]
-<span id="L1037" class="LineNr">1037 </span>
-<span id="L1038" class="LineNr">1038 </span><span class="muScenario">scenario</span> scrolling-through-multiple-sandboxes [
-<span id="L1039" class="LineNr">1039 </span>  <span class="Constant">local-scope</span>
-<span id="L1040" class="LineNr">1040 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L1041" class="LineNr">1041 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L1042" class="LineNr">1042 </span>  <span class="Comment"># initialize environment</span>
-<span id="L1043" class="LineNr">1043 </span>  assume-resources [
-<span id="L1044" class="LineNr">1044 </span>  ]
-<span id="L1045" class="LineNr">1045 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L1046" class="LineNr">1046 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L1047" class="LineNr">1047 </span>  <span class="Comment"># create 2 sandboxes</span>
-<span id="L1048" class="LineNr">1048 </span>  assume-console [
-<span id="L1049" class="LineNr">1049 </span>  <span class="Conceal">¦</span> press ctrl-n
-<span id="L1050" class="LineNr">1050 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 2, 2]</span>
-<span id="L1051" class="LineNr">1051 </span>  <span class="Conceal">¦</span> press F4
-<span id="L1052" class="LineNr">1052 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 1, 1]</span>
-<span id="L1053" class="LineNr">1053 </span>  <span class="Conceal">¦</span> press F4
+<span id="L1036" class="LineNr">1036 </span>  <span class="Comment"># hit 'page-up'</span>
+<span id="L1037" class="LineNr">1037 </span>  assume-console [
+<span id="L1038" class="LineNr">1038 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3813'>page-up</a>
+<span id="L1039" class="LineNr">1039 </span>  ]
+<span id="L1040" class="LineNr">1040 </span>  run [
+<span id="L1041" class="LineNr">1041 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1042" class="LineNr">1042 </span>  ]
+<span id="L1043" class="LineNr">1043 </span>  <span class="Comment"># back to displaying both sandboxes without editor</span>
+<span id="L1044" class="LineNr">1044 </span>  screen-should-contain [
+<span id="L1045" class="LineNr">1045 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1046" class="LineNr">1046 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1047" class="LineNr">1047 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1048" class="LineNr">1048 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1049" class="LineNr">1049 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1050" class="LineNr">1050 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1051" class="LineNr">1051 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
+<span id="L1052" class="LineNr">1052 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1053" class="LineNr">1053 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
 <span id="L1054" class="LineNr">1054 </span>  ]
-<span id="L1055" class="LineNr">1055 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1056" class="LineNr">1056 </span>  cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L1057" class="LineNr">1057 </span>  print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L1058" class="LineNr">1058 </span>  screen-should-contain [
-<span id="L1059" class="LineNr">1059 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1060" class="LineNr">1060 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
-<span id="L1061" class="LineNr">1061 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L1062" class="LineNr">1062 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1063" class="LineNr">1063 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1064" class="LineNr">1064 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1065" class="LineNr">1065 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1066" class="LineNr">1066 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1067" class="LineNr">1067 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1068" class="LineNr">1068 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L1069" class="LineNr">1069 </span>  ]
-<span id="L1070" class="LineNr">1070 </span>  <span class="Comment"># hit 'page-down'</span>
-<span id="L1071" class="LineNr">1071 </span>  assume-console [
-<span id="L1072" class="LineNr">1072 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L1073" class="LineNr">1073 </span>  ]
-<span id="L1074" class="LineNr">1074 </span>  run [
-<span id="L1075" class="LineNr">1075 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1076" class="LineNr">1076 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L1077" class="LineNr">1077 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L1078" class="LineNr">1078 </span>  ]
-<span id="L1079" class="LineNr">1079 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
-<span id="L1080" class="LineNr">1080 </span>  <span class="Comment"># cursor moves to first sandbox</span>
-<span id="L1081" class="LineNr">1081 </span>  screen-should-contain [
-<span id="L1082" class="LineNr">1082 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1083" class="LineNr">1083 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1084" class="LineNr">1084 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎␣   edit       copy       to recipe    delete    .</span>
-<span id="L1085" class="LineNr">1085 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1086" class="LineNr">1086 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1087" class="LineNr">1087 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1088" class="LineNr">1088 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1089" class="LineNr">1089 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1090" class="LineNr">1090 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L1091" class="LineNr">1091 </span>  ]
-<span id="L1092" class="LineNr">1092 </span>  <span class="Comment"># hit 'page-down' again</span>
-<span id="L1093" class="LineNr">1093 </span>  assume-console [
-<span id="L1094" class="LineNr">1094 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L1095" class="LineNr">1095 </span>  ]
-<span id="L1096" class="LineNr">1096 </span>  run [
-<span id="L1097" class="LineNr">1097 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1055" class="LineNr">1055 </span>  <span class="Comment"># hit 'page-up' again</span>
+<span id="L1056" class="LineNr">1056 </span>  assume-console [
+<span id="L1057" class="LineNr">1057 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3813'>page-up</a>
+<span id="L1058" class="LineNr">1058 </span>  ]
+<span id="L1059" class="LineNr">1059 </span>  run [
+<span id="L1060" class="LineNr">1060 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1061" class="LineNr">1061 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L1062" class="LineNr">1062 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L1063" class="LineNr">1063 </span>  ]
+<span id="L1064" class="LineNr">1064 </span>  <span class="Comment"># back to displaying both sandboxes as well as editor</span>
+<span id="L1065" class="LineNr">1065 </span>  screen-should-contain [
+<span id="L1066" class="LineNr">1066 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1067" class="LineNr">1067 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
+<span id="L1068" class="LineNr">1068 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L1069" class="LineNr">1069 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1070" class="LineNr">1070 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1071" class="LineNr">1071 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1072" class="LineNr">1072 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1073" class="LineNr">1073 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
+<span id="L1074" class="LineNr">1074 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1075" class="LineNr">1075 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1076" class="LineNr">1076 </span>  ]
+<span id="L1077" class="LineNr">1077 </span>  <span class="Comment"># hit 'page-up' again</span>
+<span id="L1078" class="LineNr">1078 </span>  assume-console [
+<span id="L1079" class="LineNr">1079 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3813'>page-up</a>
+<span id="L1080" class="LineNr">1080 </span>  ]
+<span id="L1081" class="LineNr">1081 </span>  run [
+<span id="L1082" class="LineNr">1082 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1083" class="LineNr">1083 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
+<span id="L1084" class="LineNr">1084 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
+<span id="L1085" class="LineNr">1085 </span>  ]
+<span id="L1086" class="LineNr">1086 </span>  <span class="Comment"># no change</span>
+<span id="L1087" class="LineNr">1087 </span>  screen-should-contain [
+<span id="L1088" class="LineNr">1088 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1089" class="LineNr">1089 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
+<span id="L1090" class="LineNr">1090 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L1091" class="LineNr">1091 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1092" class="LineNr">1092 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1093" class="LineNr">1093 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1094" class="LineNr">1094 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1095" class="LineNr">1095 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
+<span id="L1096" class="LineNr">1096 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
+<span id="L1097" class="LineNr">1097 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
 <span id="L1098" class="LineNr">1098 </span>  ]
-<span id="L1099" class="LineNr">1099 </span>  <span class="Comment"># just second sandbox displayed</span>
-<span id="L1100" class="LineNr">1100 </span>  screen-should-contain [
-<span id="L1101" class="LineNr">1101 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1102" class="LineNr">1102 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1103" class="LineNr">1103 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1104" class="LineNr">1104 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1105" class="LineNr">1105 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L1106" class="LineNr">1106 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1107" class="LineNr">1107 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1108" class="LineNr">1108 </span>  ]
-<span id="L1109" class="LineNr">1109 </span>  <span class="Comment"># hit 'page-down' again</span>
-<span id="L1110" class="LineNr">1110 </span>  assume-console [
-<span id="L1111" class="LineNr">1111 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L1112" class="LineNr">1112 </span>  ]
-<span id="L1113" class="LineNr">1113 </span>  run [
-<span id="L1114" class="LineNr">1114 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1099" class="LineNr">1099 </span>]
+<span id="L1100" class="LineNr">1100 </span>
+<span id="L1101" class="LineNr">1101 </span><span class="muScenario">scenario</span> scrolling-manages-sandbox-index-correctly [
+<span id="L1102" class="LineNr">1102 </span>  <span class="Constant">local-scope</span>
+<span id="L1103" class="LineNr">1103 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
+<span id="L1104" class="LineNr">1104 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
+<span id="L1105" class="LineNr">1105 </span>  <span class="Comment"># initialize environment</span>
+<span id="L1106" class="LineNr">1106 </span>  assume-resources [
+<span id="L1107" class="LineNr">1107 </span>  ]
+<span id="L1108" class="LineNr">1108 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
+<span id="L1109" class="LineNr">1109 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
+<span id="L1110" class="LineNr">1110 </span>  <span class="Comment"># create a sandbox</span>
+<span id="L1111" class="LineNr">1111 </span>  assume-console [
+<span id="L1112" class="LineNr">1112 </span>  <span class="Conceal">¦</span> press ctrl-n
+<span id="L1113" class="LineNr">1113 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 1, 1]</span>
+<span id="L1114" class="LineNr">1114 </span>  <span class="Conceal">¦</span> press F4
 <span id="L1115" class="LineNr">1115 </span>  ]
-<span id="L1116" class="LineNr">1116 </span>  <span class="Comment"># no change</span>
+<span id="L1116" class="LineNr">1116 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
 <span id="L1117" class="LineNr">1117 </span>  screen-should-contain [
 <span id="L1118" class="LineNr">1118 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1119" class="LineNr">1119 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1120" class="LineNr">1120 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1121" class="LineNr">1121 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1122" class="LineNr">1122 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L1123" class="LineNr">1123 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1124" class="LineNr">1124 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1125" class="LineNr">1125 </span>  ]
-<span id="L1126" class="LineNr">1126 </span>  <span class="Comment"># hit 'page-up'</span>
-<span id="L1127" class="LineNr">1127 </span>  assume-console [
-<span id="L1128" class="LineNr">1128 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3764'>page-up</a>
-<span id="L1129" class="LineNr">1129 </span>  ]
-<span id="L1130" class="LineNr">1130 </span>  run [
-<span id="L1131" class="LineNr">1131 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1132" class="LineNr">1132 </span>  ]
-<span id="L1133" class="LineNr">1133 </span>  <span class="Comment"># back to displaying both sandboxes without editor</span>
-<span id="L1134" class="LineNr">1134 </span>  screen-should-contain [
-<span id="L1135" class="LineNr">1135 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1136" class="LineNr">1136 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1137" class="LineNr">1137 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1138" class="LineNr">1138 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1139" class="LineNr">1139 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1140" class="LineNr">1140 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1141" class="LineNr">1141 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1142" class="LineNr">1142 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1143" class="LineNr">1143 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1119" class="LineNr">1119 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1120" class="LineNr">1120 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L1121" class="LineNr">1121 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1122" class="LineNr">1122 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1123" class="LineNr">1123 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1124" class="LineNr">1124 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1125" class="LineNr">1125 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1126" class="LineNr">1126 </span>  ]
+<span id="L1127" class="LineNr">1127 </span>  <span class="Comment"># hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable</span>
+<span id="L1128" class="LineNr">1128 </span>  assume-console [
+<span id="L1129" class="LineNr">1129 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
+<span id="L1130" class="LineNr">1130 </span>  ]
+<span id="L1131" class="LineNr">1131 </span>  run [
+<span id="L1132" class="LineNr">1132 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1133" class="LineNr">1133 </span>  ]
+<span id="L1134" class="LineNr">1134 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
+<span id="L1135" class="LineNr">1135 </span>  <span class="Comment"># cursor moves to first sandbox</span>
+<span id="L1136" class="LineNr">1136 </span>  screen-should-contain [
+<span id="L1137" class="LineNr">1137 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1138" class="LineNr">1138 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1139" class="LineNr">1139 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1140" class="LineNr">1140 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1141" class="LineNr">1141 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1142" class="LineNr">1142 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1143" class="LineNr">1143 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
 <span id="L1144" class="LineNr">1144 </span>  ]
 <span id="L1145" class="LineNr">1145 </span>  <span class="Comment"># hit 'page-up' again</span>
 <span id="L1146" class="LineNr">1146 </span>  assume-console [
-<span id="L1147" class="LineNr">1147 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3764'>page-up</a>
+<span id="L1147" class="LineNr">1147 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3813'>page-up</a>
 <span id="L1148" class="LineNr">1148 </span>  ]
 <span id="L1149" class="LineNr">1149 </span>  run [
 <span id="L1150" class="LineNr">1150 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1151" class="LineNr">1151 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L1152" class="LineNr">1152 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L1153" class="LineNr">1153 </span>  ]
-<span id="L1154" class="LineNr">1154 </span>  <span class="Comment"># back to displaying both sandboxes as well as editor</span>
-<span id="L1155" class="LineNr">1155 </span>  screen-should-contain [
-<span id="L1156" class="LineNr">1156 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1157" class="LineNr">1157 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
-<span id="L1158" class="LineNr">1158 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L1159" class="LineNr">1159 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1160" class="LineNr">1160 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1161" class="LineNr">1161 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1162" class="LineNr">1162 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1163" class="LineNr">1163 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1164" class="LineNr">1164 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1165" class="LineNr">1165 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
+<span id="L1151" class="LineNr">1151 </span>  ]
+<span id="L1152" class="LineNr">1152 </span>  <span class="Comment"># back to displaying both sandboxes as well as editor</span>
+<span id="L1153" class="LineNr">1153 </span>  screen-should-contain [
+<span id="L1154" class="LineNr">1154 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1155" class="LineNr">1155 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1156" class="LineNr">1156 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
+<span id="L1157" class="LineNr">1157 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1158" class="LineNr">1158 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1159" class="LineNr">1159 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1160" class="LineNr">1160 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1161" class="LineNr">1161 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1162" class="LineNr">1162 </span>  ]
+<span id="L1163" class="LineNr">1163 </span>  <span class="Comment"># hit 'page-down'</span>
+<span id="L1164" class="LineNr">1164 </span>  assume-console [
+<span id="L1165" class="LineNr">1165 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3590'>page-down</a>
 <span id="L1166" class="LineNr">1166 </span>  ]
-<span id="L1167" class="LineNr">1167 </span>  <span class="Comment"># hit 'page-up' again</span>
-<span id="L1168" class="LineNr">1168 </span>  assume-console [
-<span id="L1169" class="LineNr">1169 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3764'>page-up</a>
-<span id="L1170" class="LineNr">1170 </span>  ]
-<span id="L1171" class="LineNr">1171 </span>  run [
-<span id="L1172" class="LineNr">1172 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1173" class="LineNr">1173 </span>  <span class="Conceal">¦</span> cursor:char <span class="Special">&lt;-</span> copy <span class="Constant">9251/␣</span>
-<span id="L1174" class="LineNr">1174 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, cursor
-<span id="L1175" class="LineNr">1175 </span>  ]
-<span id="L1176" class="LineNr">1176 </span>  <span class="Comment"># no change</span>
-<span id="L1177" class="LineNr">1177 </span>  screen-should-contain [
-<span id="L1178" class="LineNr">1178 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1179" class="LineNr">1179 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎␣                                                .</span>
-<span id="L1180" class="LineNr">1180 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L1181" class="LineNr">1181 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1182" class="LineNr">1182 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1183" class="LineNr">1183 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1184" class="LineNr">1184 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1185" class="LineNr">1185 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎1   edit       copy       to recipe    delete    .</span>
-<span id="L1186" class="LineNr">1186 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 2, 2                                         .</span>
-<span id="L1187" class="LineNr">1187 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎4                                                .</span>
-<span id="L1188" class="LineNr">1188 </span>  ]
-<span id="L1189" class="LineNr">1189 </span>]
-<span id="L1190" class="LineNr">1190 </span>
-<span id="L1191" class="LineNr">1191 </span><span class="muScenario">scenario</span> scrolling-manages-sandbox-index-correctly [
-<span id="L1192" class="LineNr">1192 </span>  <span class="Constant">local-scope</span>
-<span id="L1193" class="LineNr">1193 </span>  trace-until <span class="Constant">100/app</span>  <span class="Comment"># trace too long</span>
-<span id="L1194" class="LineNr">1194 </span>  assume-screen <span class="Constant">100/width</span>, <span class="Constant">10/height</span>
-<span id="L1195" class="LineNr">1195 </span>  <span class="Comment"># initialize environment</span>
-<span id="L1196" class="LineNr">1196 </span>  assume-resources [
-<span id="L1197" class="LineNr">1197 </span>  ]
-<span id="L1198" class="LineNr">1198 </span>  env:&amp;:environment <span class="Special">&lt;-</span> <a href='004-programming-environment.mu.html#L21'>new-programming-environment</a> <a href='../088file.mu.html#L11'>resources</a>, <a href='../081print.mu.html#L16'>screen</a>, <span class="Constant">[]</span>
-<span id="L1199" class="LineNr">1199 </span>  <a href='004-programming-environment.mu.html#L402'>render-all</a> <a href='../081print.mu.html#L16'>screen</a>, env, <a href='001-editor.mu.html#L107'>render</a>
-<span id="L1200" class="LineNr">1200 </span>  <span class="Comment"># create a sandbox</span>
-<span id="L1201" class="LineNr">1201 </span>  assume-console [
-<span id="L1202" class="LineNr">1202 </span>  <span class="Conceal">¦</span> press ctrl-n
-<span id="L1203" class="LineNr">1203 </span>  <span class="Conceal">¦</span> type <span class="Constant">[add 1, 1]</span>
-<span id="L1204" class="LineNr">1204 </span>  <span class="Conceal">¦</span> press F4
-<span id="L1205" class="LineNr">1205 </span>  ]
-<span id="L1206" class="LineNr">1206 </span>  <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1207" class="LineNr">1207 </span>  screen-should-contain [
-<span id="L1208" class="LineNr">1208 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1209" class="LineNr">1209 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1210" class="LineNr">1210 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L1211" class="LineNr">1211 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1212" class="LineNr">1212 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1213" class="LineNr">1213 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1214" class="LineNr">1214 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1215" class="LineNr">1215 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1216" class="LineNr">1216 </span>  ]
-<span id="L1217" class="LineNr">1217 </span>  <span class="Comment"># hit 'page-down' and 'page-up' a couple of times. sandbox index should be stable</span>
-<span id="L1218" class="LineNr">1218 </span>  assume-console [
-<span id="L1219" class="LineNr">1219 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L1220" class="LineNr">1220 </span>  ]
-<span id="L1221" class="LineNr">1221 </span>  run [
-<span id="L1222" class="LineNr">1222 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1223" class="LineNr">1223 </span>  ]
-<span id="L1224" class="LineNr">1224 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
-<span id="L1225" class="LineNr">1225 </span>  <span class="Comment"># cursor moves to first sandbox</span>
-<span id="L1226" class="LineNr">1226 </span>  screen-should-contain [
-<span id="L1227" class="LineNr">1227 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1228" class="LineNr">1228 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1229" class="LineNr">1229 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1230" class="LineNr">1230 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1231" class="LineNr">1231 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1232" class="LineNr">1232 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1233" class="LineNr">1233 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1234" class="LineNr">1234 </span>  ]
-<span id="L1235" class="LineNr">1235 </span>  <span class="Comment"># hit 'page-up' again</span>
-<span id="L1236" class="LineNr">1236 </span>  assume-console [
-<span id="L1237" class="LineNr">1237 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3764'>page-up</a>
-<span id="L1238" class="LineNr">1238 </span>  ]
-<span id="L1239" class="LineNr">1239 </span>  run [
-<span id="L1240" class="LineNr">1240 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1241" class="LineNr">1241 </span>  ]
-<span id="L1242" class="LineNr">1242 </span>  <span class="Comment"># back to displaying both sandboxes as well as editor</span>
-<span id="L1243" class="LineNr">1243 </span>  screen-should-contain [
-<span id="L1244" class="LineNr">1244 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1245" class="LineNr">1245 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1246" class="LineNr">1246 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎─────────────────────────────────────────────────.</span>
-<span id="L1247" class="LineNr">1247 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1248" class="LineNr">1248 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1249" class="LineNr">1249 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1250" class="LineNr">1250 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1251" class="LineNr">1251 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1252" class="LineNr">1252 </span>  ]
-<span id="L1253" class="LineNr">1253 </span>  <span class="Comment"># hit 'page-down'</span>
-<span id="L1254" class="LineNr">1254 </span>  assume-console [
-<span id="L1255" class="LineNr">1255 </span>  <span class="Conceal">¦</span> press <a href='003-shortcuts.mu.html#L3541'>page-down</a>
-<span id="L1256" class="LineNr">1256 </span>  ]
-<span id="L1257" class="LineNr">1257 </span>  run [
-<span id="L1258" class="LineNr">1258 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
-<span id="L1259" class="LineNr">1259 </span>  ]
-<span id="L1260" class="LineNr">1260 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
-<span id="L1261" class="LineNr">1261 </span>  <span class="Comment"># cursor moves to first sandbox</span>
-<span id="L1262" class="LineNr">1262 </span>  screen-should-contain [
-<span id="L1263" class="LineNr">1263 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
-<span id="L1264" class="LineNr">1264 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1265" class="LineNr">1265 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
-<span id="L1266" class="LineNr">1266 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
-<span id="L1267" class="LineNr">1267 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
-<span id="L1268" class="LineNr">1268 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
-<span id="L1269" class="LineNr">1269 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
-<span id="L1270" class="LineNr">1270 </span>  ]
-<span id="L1271" class="LineNr">1271 </span>]
+<span id="L1167" class="LineNr">1167 </span>  run [
+<span id="L1168" class="LineNr">1168 </span>  <span class="Conceal">¦</span> <a href='004-programming-environment.mu.html#L39'>event-loop</a> <a href='../081print.mu.html#L16'>screen</a>, <a href='../084console.mu.html#L23'>console</a>, env, <a href='../088file.mu.html#L11'>resources</a>
+<span id="L1169" class="LineNr">1169 </span>  ]
+<span id="L1170" class="LineNr">1170 </span>  <span class="Comment"># sandbox editor hidden; first sandbox displayed</span>
+<span id="L1171" class="LineNr">1171 </span>  <span class="Comment"># cursor moves to first sandbox</span>
+<span id="L1172" class="LineNr">1172 </span>  screen-should-contain [
+<span id="L1173" class="LineNr">1173 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                                                 run (F4)           .</span>
+<span id="L1174" class="LineNr">1174 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1175" class="LineNr">1175 </span>  <span class="Conceal">¦</span><span class="Constant"> .╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╎0   edit       copy       to recipe    delete    .</span>
+<span id="L1176" class="LineNr">1176 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎add 1, 1                                         .</span>
+<span id="L1177" class="LineNr">1177 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎2                                                .</span>
+<span id="L1178" class="LineNr">1178 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎─────────────────────────────────────────────────.</span>
+<span id="L1179" class="LineNr">1179 </span>  <span class="Conceal">¦</span><span class="Constant"> .                                                  ╎                                                 .</span>
+<span id="L1180" class="LineNr">1180 </span>  ]
+<span id="L1181" class="LineNr">1181 </span>]
 </pre>
 </body>
 </html>
