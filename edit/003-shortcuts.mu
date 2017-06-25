@@ -393,7 +393,6 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, delete
     at-right?:bool <- greater-or-equal curr-column, screen-width
     return-if at-right?, 1/go-render
     break-unless curr
-    # newline? done.
     currc:char <- get *curr, value:offset
     at-newline?:bool <- equal currc, 10/newline
     break-if at-newline?
@@ -2683,7 +2682,7 @@ scenario editor-deletes-to-end-of-wrapped-line-with-ctrl-k [
   check-trace-count-for-label 16, [print-character]
 ]
 
-# cursor-down can scroll if necessary
+# scroll down if necessary
 
 scenario editor-can-scroll-down-using-arrow-keys [
   local-scope
@@ -2732,10 +2731,10 @@ after <scroll-down> [
   return-if no-movement?, 0/don't-render
 ]
 
-# takes a pointer into the doubly-linked list, scans ahead at most 'max'
-# positions until the next newline
-# returns original if no next newline
-# beware: never return null pointer.
+# Takes a pointer into the doubly-linked list, scans ahead at most 'max'
+# positions until the next newline.
+# Returns original if no next newline.
+# Beware: never return null pointer.
 def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:duplex-list:char [
   local-scope
   load-ingredients
@@ -3066,7 +3065,7 @@ g]
   ]
 ]
 
-# cursor-up can scroll if necessary
+# scroll up if necessary
 
 scenario editor-can-scroll-up-using-arrow-keys [
   local-scope
@@ -3112,10 +3111,10 @@ after <scroll-up> [
   return-if no-movement?, 0/don't-render
 ]
 
-# takes a pointer into the doubly-linked list, scans back to before start of
-# previous *wrapped* line
-# returns original if no next newline
-# beware: never return null pointer
+# Takes a pointer into the doubly-linked list, scans back to before start of
+# previous *wrapped* line.
+# Returns original if no next newline.
+# Beware: never return null pointer.
 def before-previous-screen-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
   local-scope
   load-ingredients
