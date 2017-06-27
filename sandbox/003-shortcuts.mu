@@ -390,7 +390,6 @@ def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, delete
     at-right?:bool <- greater-or-equal curr-column, screen-width
     return-if at-right?, 1/go-render
     break-unless curr
-    # newline? done.
     currc:char <- get *curr, value:offset
     at-newline?:bool <- equal currc, 10/newline
     break-if at-newline?
@@ -1332,7 +1331,7 @@ after <handle-special-key> [
     move-to-next-line?:bool <- equal k, 65516/down-arrow
     break-unless move-to-next-line?
     <move-cursor-begin>
-    editor <- move-to-next-line editor, screen-height
+    move-to-next-line editor, screen-height
     undo-coalesce-tag:num <- copy 4/down-arrow
     <move-cursor-end>
     return
@@ -1376,6 +1375,9 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor [
     {
       next:&:duplex-list:char <- next before-cursor
       break-unless next
+      c:char <- get *next, value:offset
+      at-newline?:bool <- equal c, 10/newline
+      break-if at-newline?
       done?:bool <- greater-or-equal cursor-column, target-column
       break-if done?
       cursor-column <- add cursor-column, 1
@@ -1390,13 +1392,16 @@ def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor [
 scenario editor-adjusts-column-at-next-line [
   local-scope
   assume-screen 10/width, 5/height
-  s:text <- new [abc
-de]
+  # second line is shorter than first
+  s:text <- new [abcde
+fg
+hi]
   e:&:editor <- new-editor s, 0/left, 10/right
   editor-render screen, e
   $clear-trace
+  # move to end of first line, then press down
   assume-console [
-    left-click 1, 3
+    left-click 1, 8
     press down-arrow
   ]
   run [
@@ -1404,6 +1409,7 @@ de]
     3:num/raw <- get *e, cursor-row:offset
     4:num/raw <- get *e, cursor-column:offset
   ]
+  # cursor doesn't go vertically down, it goes to end of shorter line
   memory-should-contain [
     3 <- 2
     4 <- 2
@@ -1417,10 +1423,10 @@ de]
   ]
   screen-should-contain [
     .          .
-    .abc       .
-    .de0       .
+    .abcde     .
+    .fg0       .
+    .hi        .
     .┈┈┈┈┈┈┈┈┈┈.
-    .          .
   ]
 ]
 
