@@ -108,7 +108,7 @@ type_tree::type_tree(string name) :atom(true), name(name), value(get(Type_ordina
 :(before "End Globals")
 // Locations refer to a common 'memory'. Each location can store a number.
 map<int, double> Memory;
-:(before "End Setup")
+:(before "End Reset")
 Memory.clear();
 
 :(after "Types")
@@ -214,7 +214,7 @@ put(Recipe_ordinal, "main", Next_recipe_ordinal++);
 // End Load Recipes
 :(before "End Commandline Parsing")
 assert(Next_recipe_ordinal < 1000);  // recipes being tested didn't overflow into test space
-:(before "End Setup")
+:(before "End Reset")
 Next_recipe_ordinal = 1000;  // consistent new numbers for each test
 
 //: One final detail: tests can modify our global tables of recipes and types,
@@ -227,7 +227,7 @@ map<string, type_ordinal> Type_ordinal_snapshot;
 map<type_ordinal, type_info> Type_snapshot;
 :(before "End One-time Setup")
 save_snapshots();
-:(before "End Setup")
+:(before "End Reset")
 restore_snapshots();
 
 :(code)

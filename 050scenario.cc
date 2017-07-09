@@ -365,7 +365,7 @@ def main [
 
 :(before "End Globals")
 bool Scenario_testing_scenario = false;
-:(before "End Setup")
+:(before "End Reset")
 Scenario_testing_scenario = false;
 
 :(scenario memory_check)

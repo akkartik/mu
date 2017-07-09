@@ -34,7 +34,7 @@ $mem: 3
 :(before "End Globals")
 map<string /*label*/, recipe> Before_fragments, After_fragments;
 set<string /*label*/> Fragments_used;
-:(before "End Setup")
+:(before "End Reset")
 Before_fragments.clear();
 After_fragments.clear();
 Fragments_used.clear();

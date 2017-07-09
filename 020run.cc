@@ -48,7 +48,7 @@ struct routine {
 
 :(before "End Globals")
 routine* Current_routine = NULL;
-:(before "End Setup")
+:(before "End Reset")
 Current_routine = NULL;
 
 :(code)

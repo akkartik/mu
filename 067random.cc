@@ -30,5 +30,5 @@ case MAKE_RANDOM_NONDETERMINISTIC: {
 }
 
 // undo non-determinism in later tests
-:(before "End Setup")
+:(before "End Reset")
 srand(0);

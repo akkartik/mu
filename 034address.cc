@@ -293,7 +293,7 @@ void transform_new_to_allocate(const recipe_ordinal r) {
 extern const int Reserved_for_tests = 1000;
 int Memory_allocated_until = Reserved_for_tests;
 int Initial_memory_per_routine = 100000;
-:(before "End Setup")
+:(before "End Reset")
 Memory_allocated_until = Reserved_for_tests;
 Initial_memory_per_routine = 100000;
 :(before "End routine Fields")
@@ -357,7 +357,7 @@ int allocate(int size) {
 //? int Num_alloc = 0;
 //? int Total_free = 0;
 //? int Num_free = 0;
-//? :(before "End Setup")
+//? :(before "End Reset")
 //? if (!Memory.empty()) {
 //?   cerr << Total_alloc << "/" << Num_alloc
 //?        << " vs " << Total_free << "/" << Num_free << '\n';

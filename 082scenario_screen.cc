@@ -140,7 +140,7 @@ $error: 0
 :(before "End Globals")
 extern const int Max_variables_in_scenarios = Reserved_for_tests-100;
 int Next_predefined_global_for_scenarios = Max_variables_in_scenarios;
-:(before "End Setup")
+:(before "End Reset")
 assert(Next_predefined_global_for_scenarios < Reserved_for_tests);
 
 :(before "End Globals")

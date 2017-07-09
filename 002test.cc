@@ -36,7 +36,7 @@ bool Passed = true;  // set this to false inside any test to indicate failure
     return;  /* Currently we stop at the very first failure. */ \
   }
 
-:(before "End Setup")
+:(before "End Reset")
 Passed = true;
 
 :(before "End Commandline Parsing")

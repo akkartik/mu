@@ -770,7 +770,7 @@ void expand_type_abbreviations_in_containers(unused const recipe_ordinal r) {
 
 //: ensure scenarios are consistent by always starting new container
 //: declarations at the same type number
-:(before "End Setup")  //: for tests
+:(before "End Reset")  //: for tests
 Next_type_ordinal = 1000;
 :(before "End Test Run Initialization")
 assert(Next_type_ordinal < 1000);

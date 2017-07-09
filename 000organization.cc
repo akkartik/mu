@@ -132,5 +132,5 @@ int main(int argc, char* argv[]) {
 //: end.
 :(code)
 void reset() {
-  // End Setup
+  // End Reset
 }

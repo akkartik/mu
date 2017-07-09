@@ -372,7 +372,7 @@ def main[
 //: we'll want to disable the errors.
 :(before "End Globals")
 bool Disable_redefine_checks = false;
-:(before "End Setup")
+:(before "End Reset")
 Disable_redefine_checks = false;
 :(code)
 bool should_check_for_redefine(const string& recipe_name) {

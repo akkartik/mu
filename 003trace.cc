@@ -80,7 +80,7 @@ struct trace_line {
 bool Hide_errors = false;
 bool Dump_trace = false;
 string Dump_label = "";
-:(before "End Setup")
+:(before "End Reset")
 Hide_errors = false;
 Dump_trace = false;
 Dump_label = "";

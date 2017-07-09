@@ -77,7 +77,7 @@ case RUN_SANDBOXED: {
 bool Track_most_recent_products = false;
 int Call_depth_to_track_most_recent_products_at = 0;
 string Most_recent_products;
-:(before "End Setup")
+:(before "End Reset")
 Track_most_recent_products = false;
 Call_depth_to_track_most_recent_products_at = 0;
 Most_recent_products = "";

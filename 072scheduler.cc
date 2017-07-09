@@ -50,7 +50,7 @@ state = RUNNING;
 :(before "End Globals")
 vector<routine*> Routines;
 int Current_routine_index = 0;
-:(before "End Setup")
+:(before "End Reset")
 Scheduling_interval = 500;
 for (int i = 0;  i < SIZE(Routines);  ++i)
   delete Routines.at(i);
@@ -144,7 +144,7 @@ void run_main(int argc, char* argv[]) {
 int id;
 :(before "End Globals")
 int Next_routine_id = 1;
-:(before "End Setup")
+:(before "End Reset")
 Next_routine_id = 1;
 :(before "End routine Constructor")
 id = Next_routine_id;
