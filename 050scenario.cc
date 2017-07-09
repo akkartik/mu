@@ -163,7 +163,7 @@ if (Num_core_mu_scenarios > 0) {
 //?     cerr << '\n' << i << ": " << Scenarios.at(i).name;
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".";
-    else ++Num_failures;
+    else ++num_failures;
   }
   cerr << "\n";
 }
@@ -175,7 +175,7 @@ if (Num_core_mu_scenarios != SIZE(Scenarios)) {
 //?     cerr << '\n' << i << ": " << Scenarios.at(i).name;
     run_mu_scenario(Scenarios.at(i));
     if (Passed) cerr << ".";
-    else ++Num_failures;
+    else ++num_failures;
   }
   cerr << "\n";
 }
