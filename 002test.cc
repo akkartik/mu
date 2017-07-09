@@ -76,11 +76,10 @@ void run_test(size_t i) {
     cerr << "no test " << i << '\n';
     return;
   }
-  setup();
+  reset();
   // End Test Setup
   (*Tests[i])();
   // End Test Teardown
-  teardown();
 }
 
 bool is_integer(const string& s) {

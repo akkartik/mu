@@ -52,7 +52,10 @@ vector<routine*> Routines;
 int Current_routine_index = 0;
 :(before "End Setup")
 Scheduling_interval = 500;
+for (int i = 0;  i < SIZE(Routines);  ++i)
+  delete Routines.at(i);
 Routines.clear();
+Current_routine = NULL;
 :(replace{} "void run(const recipe_ordinal r)")
 void run(const recipe_ordinal r) {
   run(new routine(r));
@@ -113,12 +116,6 @@ string routine_label(routine* r) {
   }
   return result.str();
 }
-
-:(before "End Teardown")
-for (int i = 0;  i < SIZE(Routines);  ++i)
-  delete Routines.at(i);
-Routines.clear();
-Current_routine = NULL;
 
 //: special case for the very first routine
 :(replace{} "void run_main(int argc, char* argv[])")

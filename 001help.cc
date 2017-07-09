@@ -143,7 +143,7 @@ bool starts_with(const string& s, const string& pat) {
 //: 5. Integer overflow is guarded against at runtime using the -ftrapv flag
 //: to the compiler, supported by Clang (GCC version only works sometimes:
 //: http://stackoverflow.com/questions/20851061/how-to-make-gcc-ftrapv-work).
-:(before "atexit(teardown)")
+:(before "atexit(reset)")
 initialize_signal_handlers();  // not always necessary, but doesn't hurt
 //? cerr << INT_MAX+1 << '\n';  // test overflow
 //? assert(false);  // test SIGABRT
@@ -179,7 +179,7 @@ void dump_and_exit(int sig, unused siginfo_t* dummy1, unused void* dummy2) {
 #include <signal.h>
 
 //: For good measure we'll also enable SIGFPE.
-:(before "atexit(teardown)")
+:(before "atexit(reset)")
 feenableexcept(FE_OVERFLOW | FE_UNDERFLOW);
 //? assert(sizeof(int) == 4 && sizeof(float) == 4);
 //? //                          | exp   |  mantissa

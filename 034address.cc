@@ -358,11 +358,12 @@ int allocate(int size) {
 //? int Total_free = 0;
 //? int Num_free = 0;
 //? :(before "End Setup")
+//? if (!Memory.empty()) {
+//?   cerr << Total_alloc << "/" << Num_alloc
+//?        << " vs " << Total_free << "/" << Num_free << '\n';
+//?   cerr << SIZE(Memory) << '\n';
+//? }
 //? Total_alloc = Num_alloc = Total_free = Num_free = 0;
-//? :(before "End Teardown")
-//? cerr << Total_alloc << "/" << Num_alloc
-//?      << " vs " << Total_free << "/" << Num_free << '\n';
-//? cerr << SIZE(Memory) << '\n';
 
 :(code)
 void ensure_space(int size) {

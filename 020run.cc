@@ -208,7 +208,7 @@ save_snapshots();
 :(before "End Main")
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   // Running Main
-  setup();
+  reset();
   if (Start_tracing) {
     Trace_stream = new trace_stream;
     Save_trace = true;
@@ -216,7 +216,6 @@ if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, g
   trace(2, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
-  teardown();
 }
 :(code)
 void run_main(int argc, char* argv[]) {

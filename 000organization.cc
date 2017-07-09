@@ -111,7 +111,7 @@
 // End Globals
 
 int main(int argc, char* argv[]) {
-  atexit(teardown);
+  atexit(reset);
 
   // End One-time Setup
 
@@ -131,10 +131,6 @@ int main(int argc, char* argv[]) {
 //: Without directives or with the :(code) directive, lines get added at the
 //: end.
 :(code)
-void setup() {
+void reset() {
   // End Setup
-}
-
-void teardown() {
-  // End Teardown
 }
