@@ -62,9 +62,8 @@ case CREATE_ARRAY: {
   int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << end();
   // initialize array
-  for (int i = 1;  i <= size_of(product);  ++i) {
+  for (int i = 1;  i <= size_of(product);  ++i)
     put(Memory, base_address+i, 0);
-  }
   // no need to update product
   write_products = false;
   break;
