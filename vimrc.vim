@@ -33,7 +33,6 @@ function! HighlightTangledFile()
   syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
   highlight link muLiteral Constant
   syntax match muAssign " <- \|\<raw\>" | highlight link muAssign SpecialChar
-  syntax match muGlobal %[^ ]\+:global/[^ ,]*\|[^ ]\+:global\>% | highlight link muGlobal SpecialChar
   " common keywords
   syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
   syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
