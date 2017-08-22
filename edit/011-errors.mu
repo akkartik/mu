@@ -24,19 +24,23 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
 ]
 
 after <render-recipe-errors-on-F4> [
-  {
-    recipe-errors:text <- get *env, recipe-errors:offset
-    break-unless recipe-errors
-    recipes:&:editor <- get *env, recipes:offset
-    left:num <- get *recipes, left:offset
-    right:num <- get *recipes, right:offset
-    row:num <- get *recipes, bottom:offset
-    row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
-    # draw dotted line after recipes
-    draw-horizontal screen, row, left, right, 9480/horizontal-dotted
-    row <- add row, 1
-    clear-screen-from screen, row, left, left, right
-  }
+  screen <- render-recipe-errors env, screen
+]
+
+def render-recipe-errors env:&:environment, screen:&:screen -> screen:&:screen [
+  local-scope
+  load-ingredients
+  recipe-errors:text <- get *env, recipe-errors:offset
+  return-unless recipe-errors
+  recipes:&:editor <- get *env, recipes:offset
+  left:num <- get *recipes, left:offset
+  right:num <- get *recipes, right:offset
+  row:num <- get *recipes, bottom:offset
+  row, screen <- render-text screen, recipe-errors, left, right, 1/red, row
+  # draw dotted line after recipes
+  draw-horizontal screen, row, left, right, 9480/horizontal-dotted
+  row <- add row, 1
+  clear-screen-from screen, row, left, left, right
 ]
 
 container environment [
@@ -62,6 +66,7 @@ before <run-sandboxes-end> [
 
 after <render-sandbox-errors-on-F4> [
   {
+    recipe-errors:text <- get *env, recipe-errors:offset
     break-if recipe-errors
     error-index:num <- get *env, error-index:offset
     sandboxes-completed-successfully?:bool <- equal error-index, -1
