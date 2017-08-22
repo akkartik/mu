@@ -476,7 +476,7 @@ scenario run-shows-non-literal-get-argument-errors [
   ]
 ]
 
-scenario run-shows-errors-everytime [
+scenario run-shows-errors-every-time [
   local-scope
   trace-until 100/app  # trace too long
   assume-screen 50/width, 20/height
