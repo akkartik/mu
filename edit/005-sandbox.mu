@@ -131,11 +131,7 @@ after <global-keypress> [
     screen <- update-status screen, [running...       ], 245/grey
     error?:bool <- run-sandboxes env, resources, screen
     # we could just render-all, but we do some work to minimize the number of prints to screen
-    <render-recipe-errors-on-F4>
-    {
-      break-unless error?
-      <render-sandbox-errors-on-F4>
-    }
+    <end-run-sandboxes-on-F4>
     screen <- render-sandbox-side screen, env, render
     {
       break-if error?

@@ -23,7 +23,7 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
   errors-found? <- copy 0/false
 ]
 
-after <render-recipe-errors-on-F4> [
+before <end-run-sandboxes-on-F4> [
   screen <- render-recipe-errors env, screen
 ]
 
@@ -64,8 +64,9 @@ before <end-run-sandboxes> [
   }
 ]
 
-after <render-sandbox-errors-on-F4> [
+before <end-run-sandboxes-on-F4> [
   {
+    break-unless error?
     recipe-errors:text <- get *env, recipe-errors:offset
     break-if recipe-errors
     error-index:num <- get *env, error-index:offset
