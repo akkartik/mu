@@ -23,7 +23,15 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
   errors-found? <- copy 0/false
 ]
 
+after <begin-run-sandboxes-on-F4> [
+  old-recipe-errors:text <- get *env, recipe-errors:offset
+]
 before <end-run-sandboxes-on-F4> [
+  # if there were recipe errors before, check if we can clear them
+  {
+    break-unless old-recipe-errors
+    screen <- render-recipes screen, env, render
+  }
   screen <- render-recipe-errors env, screen
 ]
 
@@ -557,6 +565,57 @@ scenario run-shows-errors-every-time [
     .]                                                 ┊                                                 .
     .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
     .py y:num' but it hasn't been written to yet       ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+]
+
+scenario run-hides-errors [
+  local-scope
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 15/height
+  # try to run a file with an error
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  local-scope|
+      |  x:num <- copy y:num|
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
+  assume-console [
+    press F4
+  ]
+  event-loop screen, console, env, resources
+  screen-should-contain [
+    .  errors found                                                                   run (F4)           .
+    .recipe foo [                                      ┊foo                                              .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  x:num <- copy y:num                             ┊                                                 .
+    .]                                                 ┊                                                 .
+    .foo: tried to read ingredient 'y' in 'x:num <- co↩┊                                                 .
+    .py y:num' but it hasn't been written to yet       ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
+    .                                                  ┊                                                 .
+  ]
+  # fix the error, hit F4
+  assume-console [
+    left-click 3, 16
+    press ctrl-k
+    type [0]
+    press F4
+  ]
+  event-loop screen, console, env, resources
+  # no error anymore
+  screen-should-contain [
+    .                                                                                 run (F4)           .
+    .recipe foo [                                      ┊                                                 .
+    .  local-scope                                     ┊─────────────────────────────────────────────────.
+    .  x:num <- copy 0                                 ┊0   edit       copy       to recipe    delete    .
+    .]                                                 ┊foo                                              .
+    .                                                  ┊─────────────────────────────────────────────────.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
   ]

@@ -129,6 +129,7 @@ after <global-keypress> [
     do-run?:bool <- equal k, 65532/F4
     break-unless do-run?
     screen <- update-status screen, [running...       ], 245/grey
+    <begin-run-sandboxes-on-F4>
     error?:bool <- run-sandboxes env, resources, screen
     # we could just render-all, but we do some work to minimize the number of prints to screen
     <end-run-sandboxes-on-F4>
