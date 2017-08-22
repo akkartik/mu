@@ -140,11 +140,11 @@ scenario editor-can-undo-typing [
 ]
 
 # save operation to undo
-after <insert-character-begin> [
+after <begin-insert-character> [
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
   cursor-before:&:duplex-list:char <- get *editor, before-cursor:offset
 ]
-before <insert-character-end> [
+before <end-insert-character> [
   top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
@@ -176,13 +176,13 @@ before <insert-character-end> [
 ]
 
 # enter operations never coalesce with typing before or after
-after <insert-enter-begin> [
+after <begin-insert-enter> [
   cursor-row-before:num <- copy cursor-row
   cursor-column-before:num <- copy cursor-column
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
   cursor-before:&:duplex-list:char <- get *editor, before-cursor:offset
 ]
-before <insert-enter-end> [
+before <end-insert-enter> [
   top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-row:offset
@@ -718,12 +718,12 @@ ghi]
   ]
 ]
 
-after <move-cursor-begin> [
+after <begin-move-cursor> [
   cursor-row-before:num <- get *editor, cursor-row:offset
   cursor-column-before:num <- get *editor, cursor-column:offset
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
 ]
-before <move-cursor-end> [
+before <end-move-cursor> [
   top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
@@ -1616,10 +1616,10 @@ scenario editor-can-undo-and-redo-backspace [
 ]
 
 # save operation to undo
-after <backspace-character-begin> [
+after <begin-backspace-character> [
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
 ]
-before <backspace-character-end> [
+before <end-backspace-character> [
   {
     break-unless backspaced-cell  # backspace failed; don't add an undo operation
     top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
@@ -1842,10 +1842,10 @@ scenario editor-can-undo-and-redo-delete [
   ]
 ]
 
-after <delete-character-begin> [
+after <begin-delete-character> [
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
 ]
-before <delete-character-end> [
+before <end-delete-character> [
   {
     break-unless deleted-cell  # delete failed; don't add an undo operation
     top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
@@ -1968,10 +1968,10 @@ def]
   ]
 ]
 
-after <delete-to-end-of-line-begin> [
+after <begin-delete-to-end-of-line> [
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
 ]
-before <delete-to-end-of-line-end> [
+before <end-delete-to-end-of-line> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:&:duplex-list:char <- get *editor, top-of-screen:offset
@@ -2071,10 +2071,10 @@ def]
   ]
 ]
 
-after <delete-to-start-of-line-begin> [
+after <begin-delete-to-start-of-line> [
   top-before:&:duplex-list:char <- get *editor, top-of-screen:offset
 ]
-before <delete-to-start-of-line-end> [
+before <end-delete-to-start-of-line> [
   {
     break-unless deleted-cells  # delete failed; don't add an undo operation
     top-after:&:duplex-list:char <- get *editor, top-of-screen:offset

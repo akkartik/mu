@@ -139,7 +139,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
   load-ingredients
   errors-found?:bool <- update-recipes env, resources, screen
   # check contents of editor
-  <run-sandboxes-begin>
+  <begin-run-sandboxes>
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   {
     sandbox-contents:text <- editor-contents current-sandbox
@@ -174,7 +174,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
     idx <- add idx, 1
     loop
   }
-  <run-sandboxes-end>
+  <end-run-sandboxes>
   {
     break-if resources  # ignore this in tests
     $system [./snapshot_lesson]

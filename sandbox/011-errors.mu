@@ -21,7 +21,7 @@ def! update-recipes env:&:environment, resources:&:resources, screen:&:screen ->
   errors-found? <- copy 0/false
 ]
 
-before <render-components-end> [
+before <end-render-components> [
   trace 11, [app], [render status]
   recipe-errors:text <- get *env, recipe-errors:offset
   {
@@ -38,11 +38,11 @@ after <programming-environment-initialization> [
   *result <- put *result, error-index:offset, -1
 ]
 
-after <run-sandboxes-begin> [
+after <begin-run-sandboxes> [
   *env <- put *env, error-index:offset, -1
 ]
 
-before <run-sandboxes-end> [
+before <end-run-sandboxes> [
   {
     error-index:num <- get *env, error-index:offset
     sandboxes-completed-successfully?:bool <- equal error-index, -1
@@ -51,7 +51,7 @@ before <run-sandboxes-end> [
   }
 ]
 
-before <render-components-end> [
+before <end-render-components> [
   {
     break-if recipe-errors
     error-index:num <- get *env, error-index:offset

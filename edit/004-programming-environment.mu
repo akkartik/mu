@@ -420,7 +420,7 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   #
   screen <- render-recipes screen, env, render-editor
   screen <- render-sandbox-side screen, env, render-editor
-  <render-components-end>  # no early returns permitted
+  <end-render-components>  # no early returns permitted
   #
   recipes:&:editor <- get *env, recipes:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -440,7 +440,7 @@ def render-recipes screen:&:screen, env:&:environment, render-editor:render-reci
   row:num, column:num, screen <- call render-editor, screen, recipes
   clear-line-until screen, right
   row <- add row, 1
-  <render-recipe-components-end>
+  <end-render-recipe-components>
   # draw dotted line after recipes
   draw-horizontal screen, row, left, right, 9480/horizontal-dotted
   row <- add row, 1

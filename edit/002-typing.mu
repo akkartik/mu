@@ -61,10 +61,10 @@ def move-cursor editor:&:editor, screen:&:screen, t:touch-event -> in-focus?:boo
   too-far-right?:bool <- greater-than click-column, right
   return-if too-far-right?, 0/false
   # position cursor
-  <move-cursor-begin>
+  <begin-move-cursor>
   editor <- snap-cursor editor, screen, click-row, click-column
   undo-coalesce-tag:num <- copy 0/never
-  <move-cursor-end>
+  <end-move-cursor>
   # gain focus
   return 1/true
 ]
@@ -187,9 +187,9 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render
     regular-character?:bool <- greater-or-equal c, 32/space
     return-unless regular-character?, 0/don't-render
     # otherwise type it in
-    <insert-character-begin>
+    <begin-insert-character>
     go-render? <- insert-at-cursor editor, c, screen
-    <insert-character-end>
+    <end-insert-character>
     return
   }
   # special key to modify the text or move the cursor
@@ -858,9 +858,9 @@ after <handle-special-character> [
   {
     newline?:bool <- equal c, 10/newline
     break-unless newline?
-    <insert-enter-begin>
+    <begin-insert-enter>
     insert-new-line-and-indent editor, screen
-    <insert-enter-end>
+    <end-insert-enter>
     return 1/go-render
   }
 ]

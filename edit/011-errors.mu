@@ -51,11 +51,11 @@ after <programming-environment-initialization> [
   *result <- put *result, error-index:offset, -1
 ]
 
-after <run-sandboxes-begin> [
+after <begin-run-sandboxes> [
   *env <- put *env, error-index:offset, -1
 ]
 
-before <run-sandboxes-end> [
+before <end-run-sandboxes> [
   {
     error-index:num <- get *env, error-index:offset
     sandboxes-completed-successfully?:bool <- equal error-index, -1

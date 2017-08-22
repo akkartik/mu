@@ -208,7 +208,7 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
   print screen, [ run (F4) ], 255/white, 161/reddish
   #
   screen <- render-sandbox-side screen, env, render-editor
-  <render-components-end>  # no early returns permitted
+  <end-render-components>  # no early returns permitted
   #
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   screen <- update-cursor screen, current-sandbox, env

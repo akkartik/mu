@@ -52,12 +52,12 @@ after <handle-special-character> [
   {
     tab?:bool <- equal c, 9/tab
     break-unless tab?
-    <insert-character-begin>
+    <begin-insert-character>
     # todo: decompose insert-at-cursor into editor update and screen update,
     # so that 'tab' doesn't render the current line multiple times
     insert-at-cursor editor, 32/space, screen
     go-render? <- insert-at-cursor editor, 32/space, screen
-    <insert-character-end>
+    <end-insert-character>
     return
   }
 ]
@@ -96,9 +96,9 @@ after <handle-special-character> [
   {
     delete-previous-character?:bool <- equal c, 8/backspace
     break-unless delete-previous-character?
-    <backspace-character-begin>
+    <begin-backspace-character>
     go-render?:bool, backspaced-cell:&:duplex-list:char <- delete-before-cursor editor, screen
-    <backspace-character-end>
+    <end-backspace-character>
     return
   }
 ]
@@ -360,9 +360,9 @@ after <handle-special-key> [
   {
     delete-next-character?:bool <- equal k, 65522/delete
     break-unless delete-next-character?
-    <delete-character-begin>
+    <begin-delete-character>
     go-render?:bool, deleted-cell:&:duplex-list:char <- delete-at-cursor editor, screen
-    <delete-character-end>
+    <end-delete-character>
     return
   }
 ]
@@ -436,13 +436,13 @@ after <handle-special-key> [
     next-cursor:&:duplex-list:char <- next before-cursor
     break-unless next-cursor
     # scan to next character
-    <move-cursor-begin>
+    <begin-move-cursor>
     before-cursor <- copy next-cursor
     *editor <- put *editor, before-cursor:offset, before-cursor
     go-render?:bool <- move-cursor-coordinates-right editor, screen-height
     screen <- move-cursor screen, cursor-row, cursor-column
     undo-coalesce-tag:num <- copy 2/right-arrow
-    <move-cursor-end>
+    <end-move-cursor>
     return
   }
 ]
@@ -718,12 +718,12 @@ after <handle-special-key> [
     # if not at start of text (before-cursor at § sentinel)
     prev:&:duplex-list:char <- prev before-cursor
     return-unless prev, 0/don't-render
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-cursor-coordinates-left editor
     before-cursor <- copy prev
     *editor <- put *editor, before-cursor:offset, before-cursor
     undo-coalesce-tag:num <- copy 1/left-arrow
-    <move-cursor-end>
+    <end-move-cursor>
     return
   }
 ]
@@ -984,10 +984,10 @@ after <handle-special-key> [
   {
     move-to-previous-line?:bool <- equal k, 65517/up-arrow
     break-unless move-to-previous-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-previous-line editor
     undo-coalesce-tag:num <- copy 3/up-arrow
-    <move-cursor-end>
+    <end-move-cursor>
     return
   }
 ]
@@ -1330,10 +1330,10 @@ after <handle-special-key> [
   {
     move-to-next-line?:bool <- equal k, 65516/down-arrow
     break-unless move-to-next-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-next-line editor, screen-height
     undo-coalesce-tag:num <- copy 4/down-arrow
-    <move-cursor-end>
+    <end-move-cursor>
     return
   }
 ]
@@ -1462,10 +1462,10 @@ after <handle-special-character> [
   {
     move-to-start-of-line?:bool <- equal c, 1/ctrl-a
     break-unless move-to-start-of-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
-    <move-cursor-end>
+    <end-move-cursor>
     return 0/don't-render
   }
 ]
@@ -1474,10 +1474,10 @@ after <handle-special-key> [
   {
     move-to-start-of-line?:bool <- equal k, 65521/home
     break-unless move-to-start-of-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-start-of-screen-line editor
     undo-coalesce-tag:num <- copy 0/never
-    <move-cursor-end>
+    <end-move-cursor>
     return 0/don't-render
   }
 ]
@@ -1687,10 +1687,10 @@ after <handle-special-character> [
   {
     move-to-end-of-line?:bool <- equal c, 5/ctrl-e
     break-unless move-to-end-of-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
-    <move-cursor-end>
+    <end-move-cursor>
     return 0/don't-render
   }
 ]
@@ -1699,10 +1699,10 @@ after <handle-special-key> [
   {
     move-to-end-of-line?:bool <- equal k, 65520/end
     break-unless move-to-end-of-line?
-    <move-cursor-begin>
+    <begin-move-cursor>
     move-to-end-of-line editor
     undo-coalesce-tag:num <- copy 0/never
-    <move-cursor-end>
+    <end-move-cursor>
     return 0/don't-render
   }
 ]
@@ -1882,9 +1882,9 @@ after <handle-special-character> [
   {
     delete-to-start-of-line?:bool <- equal c, 21/ctrl-u
     break-unless delete-to-start-of-line?
-    <delete-to-start-of-line-begin>
+    <begin-delete-to-start-of-line>
     deleted-cells:&:duplex-list:char <- delete-to-start-of-line editor
-    <delete-to-start-of-line-end>
+    <end-delete-to-start-of-line>
     go-render?:bool <- minimal-render-for-ctrl-u screen, editor, deleted-cells
     return
   }
@@ -2274,9 +2274,9 @@ after <handle-special-character> [
   {
     delete-to-end-of-line?:bool <- equal c, 11/ctrl-k
     break-unless delete-to-end-of-line?
-    <delete-to-end-of-line-begin>
+    <begin-delete-to-end-of-line>
     deleted-cells:&:duplex-list:char <- delete-to-end-of-line editor
-    <delete-to-end-of-line-end>
+    <end-delete-to-end-of-line>
     # checks if we can do a minimal render and if we can it will do a minimal render
     go-render?:bool <- minimal-render-for-ctrl-k screen, editor, deleted-cells
     return
@@ -2570,7 +2570,7 @@ after <handle-special-character> [
     break-unless comment-toggle?
     cursor-column:num <- get *editor, cursor-column:offset
     data:&:duplex-list:char <- get *editor, data:offset
-    <insert-character-begin>
+    <begin-insert-character>
     before-line-start:&:duplex-list:char <- before-start-of-screen-line editor
     line-start:&:duplex-list:char <- next before-line-start
     commented-out?:bool <- match line-start, [#? ]  # comment prefix
@@ -2590,7 +2590,7 @@ after <handle-special-character> [
       *editor <- put *editor, cursor-column:offset, cursor-column
       go-render? <- render-line-from-start screen, editor, 0
     }
-    <insert-character-end>
+    <end-insert-character>
     return
   }
 ]
