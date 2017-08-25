@@ -35,6 +35,10 @@ before <end-run-sandboxes-on-F4> [
   screen <- render-recipe-errors env, screen
 ]
 
+before <end-render-recipe-components> [
+  screen <- render-recipe-errors env, screen
+]
+
 def render-recipe-errors env:&:environment, screen:&:screen -> screen:&:screen [
   local-scope
   load-ingredients
@@ -618,6 +622,40 @@ scenario run-hides-errors [
     .                                                  ┊─────────────────────────────────────────────────.
     .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
     .                                                  ┊                                                 .
+  ]
+]
+
+scenario scrolling-recipe-side-reveals-errors [
+  local-scope
+  trace-until 100/app  # trace too long
+  assume-screen 100/width, 5/height
+  # recipe overflows recipe side
+  assume-resources [
+    [lesson/recipes.mu] <- [
+      |recipe foo [|
+      |  a:num <- copy 0|  # padding to overflow recipe side
+      |  b:num <- copy 0|  # padding to overflow recipe side
+      |  get 123:num, foo:offset|  # line containing error
+      |]|
+    ]
+  ]
+  env:&:environment <- new-programming-environment resources, screen, [foo]
+  render-all screen, env, render
+  # hit F4, generating errors, then scroll down
+  assume-console [
+    press F4
+    press page-down
+  ]
+  run [
+    event-loop screen, console, env, resources
+  ]
+  # errors should be displayed
+  screen-should-contain [
+    .  errors found                                                                   run (F4)           .
+    .  get 123:num, foo:offset                         ┊foo                                              .
+    .\\]                                                 ┊─────────────────────────────────────────────────.
+    .foo: unknown element 'foo' in container 'number'  ┊                                                 .
+    .┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┊                                                 .
   ]
 ]
 
