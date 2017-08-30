@@ -277,9 +277,7 @@ bool is_mu_recipe(const reagent& r) {
   if (!r.type) return false;
   if (r.type->atom)
     return r.type->name == "recipe-literal";
-  if (!r.type->left->atom) return false;
-  if (r.type->left->name == "recipe") return true;
-  return false;
+  return r.type->left->atom && r.type->left->name == "recipe";
 }
 
 :(scenario copy_typecheck_recipe_variable)
