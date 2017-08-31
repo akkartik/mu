@@ -208,6 +208,7 @@ recipe from_reagent(const reagent& r) {
   assert(r.type);
   recipe result_header;  // will contain only ingredients and products, nothing else
   result_header.has_header = true;
+  // Begin Reagent->Recipe(r, recipe_header)
   if (r.type->atom) {
     assert(r.type->name == "recipe");
     return result_header;
@@ -275,8 +276,10 @@ reagent next_recipe_reagent(const type_tree* curr) {
 
 bool is_mu_recipe(const reagent& r) {
   if (!r.type) return false;
-  if (r.type->atom)
+  if (r.type->atom) {
+    // End is_mu_recipe Atom Cases(r)
     return r.type->name == "recipe-literal";
+  }
   return r.type->left->atom && r.type->left->name == "recipe";
 }
 
