@@ -166,23 +166,23 @@ call_stack::iterator find_base_of_continuation(call_stack& c) {
 
 //: overload 'call' for continuations
 :(after "Begin Call")
-  if (current_instruction().ingredients.at(0).type->atom
-      && current_instruction().ingredients.at(0).type->name == "continuation") {
-    // copy multiple calls on to current call stack
-    assert(scalar(ingredients.at(0)));
-    if (Delimited_continuation.find(ingredients.at(0).at(0)) == Delimited_continuation.end())
-      raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-    const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
-    const call& caller = (SIZE(new_calls) > 1) ? *++new_calls.begin() : Current_routine->calls.front();
-    for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
-      Current_routine->calls.push_front(*p);
-    if (Trace_stream) {
-      Trace_stream->callstack_depth += SIZE(new_calls);
-      trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
-      assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
-    }
-    ++current_step_index();  // skip past the reply-delimited-continuation
-    ingredients.erase(ingredients.begin());  // drop the callee
-    finish_call_housekeeping(to_instruction(caller), ingredients);
-    continue;
+if (current_instruction().ingredients.at(0).type->atom
+    && current_instruction().ingredients.at(0).type->name == "continuation") {
+  // copy multiple calls on to current call stack
+  assert(scalar(ingredients.at(0)));
+  if (Delimited_continuation.find(ingredients.at(0).at(0)) == Delimited_continuation.end())
+    raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
+  const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
+  const call& caller = (SIZE(new_calls) > 1) ? *++new_calls.begin() : Current_routine->calls.front();
+  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
+    Current_routine->calls.push_front(*p);
+  if (Trace_stream) {
+    Trace_stream->callstack_depth += SIZE(new_calls);
+    trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
+    assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
+  ++current_step_index();  // skip past the reply-delimited-continuation
+  ingredients.erase(ingredients.begin());  // drop the callee
+  finish_call_housekeeping(to_instruction(caller), ingredients);
+  continue;
+}
