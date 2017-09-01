@@ -93,8 +93,8 @@ case CALL_WITH_CONTINUATION_MARK: {
 }
 :(before "End Primitive Recipe Implementations")
 case CALL_WITH_CONTINUATION_MARK: {
-  // like call, but mark the current call as a 'reset' call before pushing the
-  // next one on it
+  // like call, but mark the current call as a 'base of continuation' call
+  // before pushing the next one on it
   if (Trace_stream) {
     ++Trace_stream->callstack_depth;
     trace("trace") << "delimited continuation; incrementing callstack depth to " << Trace_stream->callstack_depth << end();
@@ -136,7 +136,10 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   call_stack::iterator find_base_of_continuation(call_stack& c);  // manual prototype containing '::'
   call_stack::iterator base = find_base_of_continuation(Current_routine->calls);
   if (base == Current_routine->calls.end()) {
-    raise << maybe(current_recipe_name()) << "couldn't find a 'reset' call to jump out to\n" << end();
+    raise << maybe(current_recipe_name()) << "couldn't find a 'call-with-continuation-mark' to return to\n" << end();
+    raise << maybe(current_recipe_name()) << "call stack:\n" << end();
+    for (call_stack::iterator p = Current_routine->calls.begin();  p != Current_routine->calls.end();  ++p)
+      raise << maybe(current_recipe_name()) << "  " << get(Recipe, p->running_recipe).name << '\n' << end();
     break;
   }
   Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), base);
