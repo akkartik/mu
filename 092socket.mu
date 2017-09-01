@@ -29,7 +29,7 @@ def example-handler query:text -> response:text [
   return [abc]
 ]
 
-# To test client operations, use `assume-resources` with a filename that
+# To test client operations, use 'assume-resources' with a filename that
 # begins with a hostname. (Filenames starting with '/' are assumed to be
 # local.)
 scenario example-client-test [

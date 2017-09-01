@@ -384,7 +384,7 @@ def test1 [
 +mem: storing 34 in location 1
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-// rewrite `return-if a, b, c, ...` to
+// rewrite 'return-if a, b, c, ...' to
 //   ```
 //   {
 //     break-unless a
@@ -400,7 +400,7 @@ if (curr.name == "return-if" || curr.name == "reply-if") {
     raise << "'" << curr.name << "' never yields any products\n" << end();
   }
 }
-// rewrite `return-unless a, b, c, ...` to
+// rewrite 'return-unless a, b, c, ...' to
 //   ```
 //   {
 //     break-if a

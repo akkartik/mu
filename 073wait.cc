@@ -403,7 +403,7 @@ def f2 [
 //:
 //: Managing arbitrary scenarios requires the ability to:
 //:   a) check if a routine is blocked
-//:   b) restart a blocked routine (`restart`)
+//:   b) restart a blocked routine ('restart')
 //:
 //: A routine is blocked either if it's waiting or if it explicitly signals
 //: that it's blocked (even as it periodically wakes up and polls for some

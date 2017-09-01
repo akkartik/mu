@@ -154,8 +154,8 @@ def main [
 :(before "Read element" following "case INDEX:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
-//:: convenience operation to automatically deduce the amount of space to
-//:: allocate in a default space with names
+//:: 'new-default-space' is a convenience operation to automatically deduce
+//:: the amount of space to allocate in a default space with names
 
 :(scenario new_default_space)
 def main [
@@ -173,9 +173,11 @@ if (x.name == "number-of-locals")
 if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-// rewrite `new-default-space` to
-//   `default-space:space <- new location:type, number-of-locals:literal`
-// where N is Name[recipe][""]
+// rewrite 'new-default-space' to
+//   ```
+//   default-space:space <- new location:type, number-of-locals:literal
+//   ```
+// where number-of-locals is Name[recipe][""]
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
 }

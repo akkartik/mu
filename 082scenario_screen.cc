@@ -156,8 +156,8 @@ Name[r]["screen"] = SCREEN;
 if (s == "screen") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-// rewrite `assume-screen width, height` to
-// `screen:&:screen <- new-fake-screen width, height`
+// rewrite 'assume-screen width, height' to
+// 'screen:&:screen <- new-fake-screen width, height'
 if (curr.name == "assume-screen") {
   curr.name = "new-fake-screen";
   if (!curr.products.empty()) {

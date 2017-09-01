@@ -163,7 +163,7 @@ bool next_instruction(istream& in, instruction* curr) {
   return true;
 }
 
-// can return empty string -- only if `in` has no more data
+// can return empty string -- only if 'in' has no more data
 string next_word(istream& in) {
   skip_whitespace_but_not_newline(in);
   // End next_word Special-cases

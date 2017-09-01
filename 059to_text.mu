@@ -1,8 +1,8 @@
-# A couple of variants of `to-text` that we'll use implicitly in stashes (see
+# A couple of variants of 'to-text' that we'll use implicitly in stashes (see
 # later layers).
 #
 # Mu code might specialize them to be smarter, but I don't anticipate any need
-# beyond specializing `to-text` itself.
+# beyond specializing 'to-text' itself.
 
 # 'shorter' variant of to-text, when you want to enable some sort of trimming
 # define it to be identical to 'to-text' by default

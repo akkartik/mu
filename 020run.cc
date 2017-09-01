@@ -451,7 +451,7 @@ bool Run_profiler = false;
 // name of a recipe.
 //
 // One drawback: if you're clearing recipes your profile will be inaccurate.
-// So far that happens in tests, and in `run-sandboxed` in a later layer.
+// So far that happens in tests, and in 'run-sandboxed' in a later layer.
 map<recipe_ordinal, int> Instructions_running;
 :(before "End Commandline Options(*arg)")
 else if (is_equal(*arg, "--profile")) {
