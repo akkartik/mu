@@ -210,27 +210,33 @@ case DEEP_COPY: {
 }
 :(before "End Primitive Recipe Implementations")
 case DEEP_COPY: {
-  const reagent& input = current_instruction().ingredients.at(0);
-  // allocate a tiny bit of temporary space for deep_copy()
-  trace(9991, "run") << "deep-copy: allocating space for temporary" << end();
-  reagent tmp("tmp:address:number");
-  tmp.set_value(allocate(1));
-  products.push_back(deep_copy(input, tmp));
-  // reclaim Mu memory allocated for tmp
-  trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
-  abandon(tmp.value, payload_type(tmp.type), payload_size(tmp));
-  // reclaim host memory allocated for tmp.type when tmp goes out of scope
+  products.push_back(deep_copy(current_instruction().ingredients.at(0)));
   break;
 }
 
 :(code)
-vector<double> deep_copy(const reagent& in, const reagent& tmp) {
+vector<double> deep_copy(const reagent& in) {
+  // allocate a tiny bit of temporary space for deep_copy()
+  trace(9991, "run") << "deep-copy: allocating space for temporary" << end();
+  reagent tmp("tmp:address:number");
+  tmp.set_value(allocate(1));
   map<int, int> addresses_copied;
-  return deep_copy(in, addresses_copied, tmp);
+  vector<double> result = deep_copy(in, addresses_copied, tmp);
+  // reclaim Mu memory allocated for tmp
+  trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
+  abandon(tmp.value, payload_type(tmp.type), payload_size(tmp));
+  // reclaim host memory allocated for tmp.type when tmp goes out of scope
+  return result;
 }
 
 vector<double> deep_copy(reagent/*copy*/ in, map<int, int>& addresses_copied, const reagent& tmp) {
   canonize(in);
+  if (is_mu_address(in)) {
+    // hack: skip primitive containers that do their own locking; they're designed to be shared between routines
+    type_tree* payload = in.type->right;
+    if (payload->left->name == "channel" || payload->left->name == "resources")
+      return read_memory(in);
+  }
   vector<double> result;
   if (is_mu_address(in))
     result.push_back(deep_copy_address(in, addresses_copied, tmp));
@@ -280,6 +286,11 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;
     for (set<address_element_info>::const_iterator info = p->second.begin();  info != p->second.end();  ++info) {
+      // hack: skip primitive containers that do their own locking; they're designed to be shared between routines
+      if (!info->payload_type->atom && info->payload_type->left->name == "channel")
+        continue;
+      if (info->payload_type->atom && info->payload_type->name == "resources")
+        continue;
       // construct a fake reagent that reads directly from the appropriate
       // field of the container
       reagent curr;
@@ -300,8 +311,6 @@ int payload_address(reagent/*copy*/ x) {
   canonize(x);
   return x.value;
 }
-
-//: moar tests, just because I can't believe it all works
 
 :(scenario deep_copy_stress_test_1)
 container foo1 [
@@ -388,3 +397,61 @@ def main [
 +mem: storing 1 in location 2
 # but it's a completely different (disjoint) cycle
 +mem: storing 0 in location 3
+
+:(scenario deep_copy_skips_channel)
+# ugly! dummy 'channel' type if we happen to be building without that layer
+% if (!contains_key(Type_ordinal, "channel")) get_or_insert(Type, put(Type_ordinal, "channel", Next_type_ordinal++)).name = "channel";
+def main [
+  local-scope
+  x:&:channel:num <- new {(channel num): type}
+  y:&:channel:num <- deep-copy x
+  10:bool/raw <- equal x, y
+]
+# channels are never deep-copied
++mem: storing 1 in location 10
+
+:(scenario deep_copy_skips_nested_channel)
+# ugly! dummy 'channel' type if we happen to be building without that layer
+% if (!contains_key(Type_ordinal, "channel")) get_or_insert(Type, put(Type_ordinal, "channel", Next_type_ordinal++)).name = "channel";
+container foo [
+  c:&:channel:num
+]
+def main [
+  local-scope
+  x:&:foo <- new foo:type
+  y:&:foo <- deep-copy x
+  xc:&:channel:num <- get *x, c:offset
+  yc:&:channel:num <- get *y, c:offset
+  10:bool/raw <- equal xc, yc
+]
+# channels are never deep-copied
++mem: storing 1 in location 10
+
+:(scenario deep_copy_skips_resources)
+# ugly! dummy 'resources' type if we happen to be building without that layer
+% if (!contains_key(Type_ordinal, "resources")) get_or_insert(Type, put(Type_ordinal, "resources", Next_type_ordinal++)).name = "resources";
+def main [
+  local-scope
+  x:&:resources <- new resources:type
+  y:&:resources <- deep-copy x
+  10:bool/raw <- equal x, y
+]
+# resources are never deep-copied
++mem: storing 1 in location 10
+
+:(scenario deep_copy_skips_nested_resources)
+# ugly! dummy 'resources' type if we happen to be building without that layer
+% if (!contains_key(Type_ordinal, "resources")) get_or_insert(Type, put(Type_ordinal, "resources", Next_type_ordinal++)).name = "resources";
+container foo [
+  c:&:resources
+]
+def main [
+  local-scope
+  x:&:foo <- new foo:type
+  y:&:foo <- deep-copy x
+  xc:&:resources <- get *x, c:offset
+  yc:&:resources <- get *y, c:offset
+  10:bool/raw <- equal xc, yc
+]
+# resources are never deep-copied
++mem: storing 1 in location 10

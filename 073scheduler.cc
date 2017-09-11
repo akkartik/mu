@@ -179,9 +179,10 @@ case START_RUNNING: {
   new_routine->parent_index = Current_routine_index;
   // populate ingredients
   for (int i = /*skip callee*/1;  i < SIZE(current_instruction().ingredients);  ++i) {
-    new_routine->calls.front().ingredient_atoms.push_back(ingredients.at(i));
     reagent/*copy*/ ingredient = current_instruction().ingredients.at(i);
     new_routine->calls.front().ingredients.push_back(ingredient);
+    vector<double> new_ingredient_atoms = deep_copy(ingredient);
+    new_routine->calls.front().ingredient_atoms.push_back(new_ingredient_atoms);
     // End Populate start-running Ingredient
   }
   Routines.push_back(new_routine);
@@ -252,7 +253,7 @@ def f2 n:&:num [
 :(before "End is_indirect_call_with_ingredients Special-cases")
 if (r == START_RUNNING) return true;
 
-//: more complex: refcounting management when starting up new routines
+//: refcounting management when starting up new routines
 
 :(scenario start_running_immediately_updates_refcounts_of_ingredients)
 % Scheduling_interval = 1;
@@ -275,24 +276,10 @@ def new-routine n:&:num [
   load-ingredients
   1:num/raw <- copy *n
 ]
-# check that n wasn't reclaimed when create-new-routine returned
+# check that n was successfully passed into new-routine before being reclaimed
 +mem: storing 34 in location 1
 
-//: to support the previous scenario we'll increment refcounts for all call
-//: ingredients right at call time, and stop incrementing refcounts inside
-//: next-ingredient
-:(before "End Populate Call Ingredient")
-increment_any_refcounts(ingredient, ingredients.at(i));
-:(before "End Populate start-running Ingredient")
-increment_any_refcounts(ingredient, ingredients.at(i));
-:(after "should_update_refcounts() Special-cases When Writing Products Of Primitive Instructions")
-if (inst.operation == NEXT_INGREDIENT || inst.operation == NEXT_INGREDIENT_WITHOUT_TYPECHECKING) {
-  if (space_index(inst.products.at(0)) > 0) return true;
-  if (has_property(inst.products.at(0), "raw")) return true;
-  return false;
-}
-
-// ensure this works with indirect calls using 'call' as well
+//: ensure this works with indirect calls using 'call' as well
 :(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)
 % Scheduling_interval = 1;
 def main [
@@ -306,7 +293,7 @@ def f1 n:&:num [
   local-scope
   load-ingredients
 ]
-# check that n wasn't reclaimed when f1 returned
+# check that n was successfully passed into new-routine before being reclaimed
 +mem: storing 34 in location 1
 
 :(scenario next_ingredient_never_leaks_refcounts)
