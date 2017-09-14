@@ -55,11 +55,11 @@ recipe g [
   23:number <- add 22:number, 1
   return 23:number
 ]
-# first call of 'g' executes the part before reply-delimited-continuation
+# first call of 'g' executes the part before return-continuation-until-mark
 +mem: storing 77 in location 21
 +run: {2: "number"} <- copy {5: "literal"}
 +mem: storing 5 in location 2
-# calls of the continuation execute the part after reply-delimited-continuation
+# calls of the continuation execute the part after return-continuation-until-mark
 +run: {2: "number"} <- call {1: "continuation"}, {2: "number"}
 +mem: storing 5 in location 22
 +mem: storing 6 in location 2
@@ -69,9 +69,9 @@ recipe g [
 +run: {2: "number"} <- call {1: "continuation"}, {2: "number"}
 +mem: storing 7 in location 22
 +mem: storing 8 in location 2
-# first call of 'g' does not execute the part after reply-delimited-continuation
+# first call of 'g' does not execute the part after return-continuation-until-mark
 -mem: storing 77 in location 22
-# calls of the continuation don't execute the part before reply-delimited-continuation
+# calls of the continuation don't execute the part before return-continuation-until-mark
 -mem: storing 5 in location 21
 -mem: storing 6 in location 21
 -mem: storing 7 in location 21
@@ -181,7 +181,7 @@ if (current_instruction().ingredients.at(0).type->atom
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
-  ++current_step_index();  // skip past the reply-delimited-continuation
+  ++current_step_index();  // skip past the return-continuation-until-mark
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(to_instruction(caller), ingredients);
   continue;
