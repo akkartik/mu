@@ -244,7 +244,7 @@ vector<double> deep_copy(reagent/*copy*/ in, map<int, int>& addresses_copied, co
   if (is_mu_address(in)) {
     // hack: skip primitive containers that do their own locking; they're designed to be shared between routines
     type_tree* payload = in.type->right;
-    if (payload->left->name == "channel" || payload->left->name == "resources")
+    if (payload->left->name == "channel" || payload->left->name == "screen" || payload->left->name == "console" || payload->left->name == "resources")
       return read_memory(in);
   }
   vector<double> result;
@@ -299,7 +299,7 @@ void deep_copy(const reagent& canonized_in, map<int, int>& addresses_copied, con
       // hack: skip primitive containers that do their own locking; they're designed to be shared between routines
       if (!info->payload_type->atom && info->payload_type->left->name == "channel")
         continue;
-      if (info->payload_type->atom && info->payload_type->name == "resources")
+      if (info->payload_type->name == "screen" || info->payload_type->name == "console" || info->payload_type->name == "resources")
         continue;
       // construct a fake reagent that reads directly from the appropriate
       // field of the container
