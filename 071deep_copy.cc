@@ -20,6 +20,16 @@ def main [
 # non-address primitives are identical
 +mem: storing 1 in location 10
 
+:(scenario deep_copy_null_pointer)
+def main [
+  local-scope
+  x:&:num <- copy 0
+  y:&:num <- deep-copy x
+  10:bool/raw <- equal x, y
+]
+# null addresses are identical
++mem: storing 1 in location 10
+
 :(scenario deep_copy_container_without_address)
 container foo [
   x:num
@@ -247,7 +257,7 @@ vector<double> deep_copy(reagent/*copy*/ in, map<int, int>& addresses_copied, co
 
 // deep-copy an address and return a new address
 int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copied, const reagent& tmp) {
-  if (canonized_in.value == 0) return 0;
+  if (address_value(canonized_in) == 0) return 0;
   int in_address = payload_address(canonized_in);
   trace(9991, "run") << "deep-copy: copying address " << in_address << end();
   if (contains_key(addresses_copied, in_address)) {
@@ -310,6 +320,13 @@ int payload_address(reagent/*copy*/ x) {
   x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
   canonize(x);
   return x.value;
+}
+
+int address_value(const reagent& x) {
+  assert(is_mu_address(x));
+  vector<double> result = read_memory(x);
+  assert(SIZE(result) == 1);
+  return static_cast<int>(result.at(0));
 }
 
 :(scenario deep_copy_stress_test_1)
