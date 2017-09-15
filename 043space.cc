@@ -12,7 +12,7 @@ put(Type_abbreviations, "scope", new_type_tree("address:array:location"));
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use 'new'
   10:num <- copy 0  # refcount
   11:num <- copy 5  # length
   default-space:space <- copy 10/unsafe
@@ -24,7 +24,7 @@ def main [
 def main [
   # pretend pointer from outside (2000 reserved for refcount)
   2001:num <- copy 34
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use 'new"
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
@@ -120,7 +120,7 @@ def main [
   # pretend pointer to container from outside (2000 reserved for refcount)
   2001:num <- copy 34
   2002:num <- copy 35
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use 'new'
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
@@ -141,7 +141,7 @@ def main [
   2001:num <- copy 2  # length
   2002:num <- copy 34
   2003:num <- copy 35
-  # pretend address:array:location; in practice we'll use new
+  # pretend address:array:location; in practice we'll use 'new'
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
