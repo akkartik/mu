@@ -303,6 +303,7 @@ list<Line>::iterator balancing_curly(list<Line>::iterator curr) {
 // Remember to update is_input below if you add to this format.
 void emit_test(const string& name, list<Line>& lines, list<Line>& result) {
   result.push_back(Line("void test_"+name+"() {", front(lines).filename, front(lines).line_number-1));  // use line number of directive
+//?   result.push_back("cerr << \""+name+"\\n\";");  // debug: uncomment this to print scenario names as you run them
   while (!lines.empty()) {
     while (!lines.empty() && starts_with(front(lines).contents, "% ")) {
       result.push_back(Line("  "+front(lines).contents.substr(strlen("% ")), front(lines)));
