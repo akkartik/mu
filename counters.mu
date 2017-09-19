@@ -25,5 +25,5 @@ def main [
   a-value:num <- increment-counter a, 1
   # check results
   $print [Contents of counters], 10/newline
-  $print [a: ], a-value, [ b: ], b-value,  10/newline
+  $print [a: ], a-value, [ b: ], b-value, 10/newline
 ]
