@@ -11,12 +11,9 @@ def equal a:text, b:text -> result:bool [
   a-len:num <- length *a
   b-len:num <- length *b
   # compare lengths
-  {
-    trace 99, [text-equal], [comparing lengths]
-    length-equal?:bool <- equal a-len, b-len
-    break-if length-equal?
-    return 0
-  }
+  trace 99, [text-equal], [comparing lengths]
+  length-equal?:bool <- equal a-len, b-len
+  return-unless length-equal?, 0/false
   # compare each corresponding character
   trace 99, [text-equal], [comparing characters]
   i:num <- copy 0
@@ -25,11 +22,8 @@ def equal a:text, b:text -> result:bool [
     break-if done?
     a2:char <- index *a, i
     b2:char <- index *b, i
-    {
-      chars-match?:bool <- equal a2, b2
-      break-if chars-match?
-      return 0
-    }
+    chars-match?:bool <- equal a2, b2
+    return-unless chars-match?, 0/false
     i <- add i, 1
     loop
   }
@@ -344,11 +338,8 @@ scenario append-to-buffer-of-non-characters [
 def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   local-scope
   load-ingredients
-  {
-    # propagate null buffer
-    break-if in
-    return 0
-  }
+  # propagate null buffer
+  return-unless in, 0
   len:num <- get *in, length:offset
   s:&:@:_elem <- get *in, data:offset
   # we can't just return s because it is usually the wrong length
@@ -995,13 +986,10 @@ def match-at text:text, pattern:text, idx:num -> result:bool [
   load-ingredients
   pattern-len:num <- length *pattern
   # check that there's space left for the pattern
-  {
-    x:num <- length *text
-    x <- subtract x, pattern-len
-    enough-room?:bool <- lesser-or-equal idx, x
-    break-if enough-room?
-    return 0/not-found
-  }
+  x:num <- length *text
+  x <- subtract x, pattern-len
+  enough-room?:bool <- lesser-or-equal idx, x
+  return-unless enough-room?, 0/not-found
   # check each character of pattern
   pattern-idx:num <- copy 0
   {
@@ -1009,11 +997,8 @@ def match-at text:text, pattern:text, idx:num -> result:bool [
     break-if done?
     c:char <- index *text, idx
     exp:char <- index *pattern, pattern-idx
-    {
-      match?:bool <- equal c, exp
-      break-if match?
-      return 0/not-found
-    }
+    match?:bool <- equal c, exp
+    return-unless match?, 0/not-found
     idx <- add idx, 1
     pattern-idx <- add pattern-idx, 1
     loop

@@ -3,30 +3,29 @@
 # We construct a factorial function with separate base and recursive cases.
 # Compare factorial.mu.
 #
-# This isn't a very tasteful example, just a simple demonstration of
+# This isn't a very tasteful example, just a basic demonstration of
 # possibilities.
 
 def factorial n:num -> result:num [
   local-scope
   load-ingredients
-  {
-    <base-case>
-  }
-  <recursive-case>
+  <factorial-cases>
 ]
 
-after <base-case> [
+after <factorial-cases> [
   # if n=0 return 1
-  zero?:bool <- equal n, 0
-  break-unless zero?
-  return 1
+  return-unless n, 1
 ]
 
-after <recursive-case> [
+after <factorial-cases> [
   # return n * factorial(n - 1)
-  x:num <- subtract n, 1
-  subresult:num <- factorial x
-  result <- multiply subresult, n
+  {
+    break-unless n
+    x:num <- subtract n, 1
+    subresult:num <- factorial x
+    result <- multiply subresult, n
+    return result
+  }
 ]
 
 def main [

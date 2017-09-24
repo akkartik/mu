@@ -10,12 +10,8 @@ def main [
 def factorial n:num -> result:num [
   local-scope
   load-ingredients
-  {
-    # if n=0 return 1
-    zero?:bool <- equal n, 0
-    break-unless zero?
-    return 1
-  }
+  # if n=0 return 1
+  return-unless n, 1
   # return n * factorial(n-1)
   x:num <- subtract n, 1
   subresult:num <- factorial x

@@ -268,21 +268,12 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error
   load-ingredients
   c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
-  {
-    q-pressed?:bool <- equal c, 81/Q
-    break-unless q-pressed?
-    return 0/dummy, 1/quit, 0/error
-  }
-  {
-    q-pressed? <- equal c, 113/q
-    break-unless q-pressed?
-    return 0/dummy, 1/quit, 0/error
-  }
-  {
-    empty-fake-keyboard?:bool <- equal c, 0/eof
-    break-unless empty-fake-keyboard?
-    return 0/dummy, 1/quit, 0/error
-  }
+  q-pressed?:bool <- equal c, 81/Q
+  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  q-pressed? <- equal c, 113/q
+  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  empty-fake-keyboard?:bool <- equal c, 0/eof
+  return-if empty-fake-keyboard?, 0/dummy, 1/quit, 0/error
   {
     newline?:bool <- equal c, 10/newline
     break-unless newline?
@@ -315,16 +306,12 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, erro
   load-ingredients
   c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
-  {
-    q-pressed?:bool <- equal c, 8/Q
-    break-unless q-pressed?
-    return 0/dummy, 1/quit, 0/error
-  }
-  {
-    q-pressed? <- equal c, 113/q
-    break-unless q-pressed?
-    return 0/dummy, 1/quit, 0/error
-  }
+  q-pressed?:bool <- equal c, 81/Q
+  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  q-pressed? <- equal c, 113/q
+  return-if q-pressed?, 0/dummy, 1/quit, 0/error
+  empty-fake-keyboard?:bool <- equal c, 0/eof
+  return-if empty-fake-keyboard?, 0/dummy, 1/quit, 0/error
   {
     newline?:bool <- equal c, 10  # newline
     break-unless newline?
