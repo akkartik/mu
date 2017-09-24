@@ -27,7 +27,7 @@ def equal a:text, b:text -> result:bool [
     i <- add i, 1
     loop
   }
-  return 1
+  return 1/true
 ]
 
 scenario text-equal-reflexive [
