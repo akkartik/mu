@@ -46,6 +46,10 @@ def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
   }
 ]
 
+# check if putting a queen on 'curr' conflicts with any of the existing
+# queens
+# assumes that 'curr' is on a non-conflicting rank, and checks for conflict
+# only in files and diagonals
 def conflict? curr:square, queens:&:list:square -> result:bool [
   local-scope
   load-ingredients
