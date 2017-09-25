@@ -36,7 +36,7 @@ def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
     {
       curr-conflicts?:bool <- conflict? curr, queens
       break-if curr-conflicts?
-      queens:&:list:square <- push curr, queens
+      queens <- push curr, queens
       sub-result:num <- nqueens n, queens
       result <- add result, sub-result
       queens <- rest queens
@@ -53,10 +53,9 @@ def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
 def conflict? curr:square, queens:&:list:square -> result:bool [
   local-scope
   load-ingredients
-  result1:bool <- conflicting-file? curr, queens
-  return-if result1, result1
-  result2:bool <- conflicting-diagonal? curr, queens
-  return result2
+  result:bool <- conflicting-file? curr, queens
+  return-if result
+  result:bool <- conflicting-diagonal? curr, queens
 ]
 
 def conflicting-file? curr:square, queens:&:list:square -> result:bool [
