@@ -8,12 +8,11 @@ container list:_elem [
   next:&:list:_elem
 ]
 
-def push x:_elem, l:&:list:_elem -> l:&:list:_elem [
+def push x:_elem, l:&:list:_elem -> result:&:list:_elem/contained-in:l [
   local-scope
   load-ingredients
-  result:&:list:_elem <- new {(list _elem): type}
+  result <- new {(list _elem): type}
   *result <- merge x, l
-  return result
 ]
 
 def first in:&:list:_elem -> result:_elem [

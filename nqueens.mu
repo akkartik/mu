@@ -36,10 +36,9 @@ def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
     {
       curr-conflicts?:bool <- conflict? curr, queens
       break-if curr-conflicts?
-      queens <- push curr, queens
-      sub-result:num <- nqueens n, queens
+      new-queens:&:list:square <- push curr, queens
+      sub-result:num <- nqueens n, new-queens
       result <- add result, sub-result
-      queens <- rest queens
     }
     next-file <- add next-file, 1
     loop

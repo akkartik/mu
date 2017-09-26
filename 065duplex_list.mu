@@ -6,17 +6,13 @@ container duplex-list:_elem [
   prev:&:duplex-list:_elem
 ]
 
-# should I say in/contained-in:result, allow ingredients to refer to products?
-def push x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
+def push x:_elem, in:&:duplex-list:_elem/contained-in:result -> result:&:duplex-list:_elem [
   local-scope
   load-ingredients
   result:&:duplex-list:_elem <- new {(duplex-list _elem): type}
   *result <- merge x, in, 0
-  {
-    break-unless in
-    *in <- put *in, prev:offset, result
-  }
-  return result  # needed explicitly because we need to replace 'in' with 'result'
+  return-unless in
+  put *in, prev:offset, result
 ]
 
 def first in:&:duplex-list:_elem -> result:_elem [

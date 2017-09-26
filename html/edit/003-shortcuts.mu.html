@@ -174,14 +174,14 @@ if ('onhashchange' in window) {
 <span id="L112" class="LineNr"> 112 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
 <span id="L113" class="LineNr"> 113 </span>  data:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
 <span id="L114" class="LineNr"> 114 </span>  <span class="Comment"># if at start of text (before-cursor at § sentinel), return</span>
-<span id="L115" class="LineNr"> 115 </span>  <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
-<span id="L116" class="LineNr"> 116 </span>  <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L36'>prev</a>, <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
+<span id="L115" class="LineNr"> 115 </span>  <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> before-cursor
+<span id="L116" class="LineNr"> 116 </span>  <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L32'>prev</a>, <span class="Constant">0/no-more-render</span>, <span class="Constant">0/nothing-deleted</span>
 <span id="L117" class="LineNr"> 117 </span>  trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[delete-before-cursor]</span>
 <span id="L118" class="LineNr"> 118 </span>  original-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L119" class="LineNr"> 119 </span>  scroll?:bool <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L156'>move-cursor-coordinates-left</a> editor
 <span id="L120" class="LineNr"> 120 </span>  backspaced-cell:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy before-cursor
 <span id="L121" class="LineNr"> 121 </span>  data <span class="Special">&lt;-</span> remove before-cursor, data  <span class="Comment"># will also neatly trim next/prev pointers in backspaced-cell/before-cursor</span>
-<span id="L122" class="LineNr"> 122 </span>  before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L122" class="LineNr"> 122 </span>  before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L32'>prev</a>
 <span id="L123" class="LineNr"> 123 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L124" class="LineNr"> 124 </span>  <span class="muControl">return-if</span> scroll?, <span class="Constant">1/go-render</span>
 <span id="L125" class="LineNr"> 125 </span>  <a href='../081print.mu.html#L768'>screen-width</a>:num <span class="Special">&lt;-</span> <a href='../081print.mu.html#L768'>screen-width</a> <a href='../081print.mu.html#L16'>screen</a>
@@ -192,7 +192,7 @@ if ('onhashchange' in window) {
 <span id="L130" class="LineNr"> 130 </span>  <span class="muControl">return-unless</span> same-row?, <span class="Constant">1/go-render</span>
 <span id="L131" class="LineNr"> 131 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
 <span id="L132" class="LineNr"> 132 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
-<span id="L133" class="LineNr"> 133 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L133" class="LineNr"> 133 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L134" class="LineNr"> 134 </span>  <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, cursor-row, cursor-column
 <span id="L135" class="LineNr"> 135 </span>  curr-column:num <span class="Special">&lt;-</span> copy cursor-column
 <span id="L136" class="LineNr"> 136 </span>  <span class="Delimiter">{</span>
@@ -206,7 +206,7 @@ if ('onhashchange' in window) {
 <span id="L144" class="LineNr"> 144 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
 <span id="L145" class="LineNr"> 145 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='../081print.mu.html#L16'>screen</a>, currc
 <span id="L146" class="LineNr"> 146 </span>  <span class="Conceal">¦</span> curr-column <span class="Special">&lt;-</span> add curr-column,<span class="Constant"> 1</span>
-<span id="L147" class="LineNr"> 147 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L147" class="LineNr"> 147 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L148" class="LineNr"> 148 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L149" class="LineNr"> 149 </span>  <span class="Delimiter">}</span>
 <span id="L150" class="LineNr"> 150 </span>  <span class="Comment"># we're guaranteed not to be at the right margin</span>
@@ -286,7 +286,7 @@ if ('onhashchange' in window) {
 <span id="L224" class="LineNr"> 224 </span>  at-start?:bool <span class="Special">&lt;-</span> equal curr, start
 <span id="L225" class="LineNr"> 225 </span>  <span class="muControl">return-if</span> at-start?
 <span id="L226" class="LineNr"> 226 </span>  <span class="Delimiter">{</span>
-<span id="L227" class="LineNr"> 227 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
+<span id="L227" class="LineNr"> 227 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> curr
 <span id="L228" class="LineNr"> 228 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
 <span id="L229" class="LineNr"> 229 </span>  <span class="Conceal">¦</span> at-start?:bool <span class="Special">&lt;-</span> equal curr, start
 <span id="L230" class="LineNr"> 230 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start?
@@ -437,14 +437,14 @@ if ('onhashchange' in window) {
 <span id="L375" class="LineNr"> 375 </span>  <span class="Constant">load-ingredients</span>
 <span id="L376" class="LineNr"> 376 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
 <span id="L377" class="LineNr"> 377 </span>  data:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
-<span id="L378" class="LineNr"> 378 </span>  deleted-cell:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L378" class="LineNr"> 378 </span>  deleted-cell:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L379" class="LineNr"> 379 </span>  <span class="muControl">return-unless</span> deleted-cell, <span class="Constant">0/don't-render</span>
 <span id="L380" class="LineNr"> 380 </span>  currc:char <span class="Special">&lt;-</span> get *deleted-cell, <span class="Constant">value:offset</span>
 <span id="L381" class="LineNr"> 381 </span>  data <span class="Special">&lt;-</span> remove deleted-cell, data
 <span id="L382" class="LineNr"> 382 </span>  deleted-newline?:bool <span class="Special">&lt;-</span> equal currc, <span class="Constant">10/newline</span>
 <span id="L383" class="LineNr"> 383 </span>  <span class="muControl">return-if</span> deleted-newline?, <span class="Constant">1/go-render</span>
 <span id="L384" class="LineNr"> 384 </span>  <span class="Comment"># wasn't a newline? render rest of line</span>
-<span id="L385" class="LineNr"> 385 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor  <span class="Comment"># refresh after remove above</span>
+<span id="L385" class="LineNr"> 385 </span>  curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor  <span class="Comment"># refresh after remove above</span>
 <span id="L386" class="LineNr"> 386 </span>  cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
 <span id="L387" class="LineNr"> 387 </span>  cursor-column:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-column:offset</span>
 <span id="L388" class="LineNr"> 388 </span>  <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> move-cursor <a href='../081print.mu.html#L16'>screen</a>, cursor-row, cursor-column
@@ -460,7 +460,7 @@ if ('onhashchange' in window) {
 <span id="L398" class="LineNr"> 398 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
 <span id="L399" class="LineNr"> 399 </span>  <span class="Conceal">¦</span> <a href='../081print.mu.html#L16'>screen</a> <span class="Special">&lt;-</span> print <a href='../081print.mu.html#L16'>screen</a>, currc
 <span id="L400" class="LineNr"> 400 </span>  <span class="Conceal">¦</span> curr-column <span class="Special">&lt;-</span> add curr-column,<span class="Constant"> 1</span>
-<span id="L401" class="LineNr"> 401 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L401" class="LineNr"> 401 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L402" class="LineNr"> 402 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L403" class="LineNr"> 403 </span>  <span class="Delimiter">}</span>
 <span id="L404" class="LineNr"> 404 </span>  <span class="Comment"># we're guaranteed not to be at the right margin</span>
@@ -498,7 +498,7 @@ if ('onhashchange' in window) {
 <span id="L436" class="LineNr"> 436 </span>  <span class="Conceal">¦</span> move-to-next-character?:bool <span class="Special">&lt;-</span> equal k, <span class="Constant">65514/right-arrow</span>
 <span id="L437" class="LineNr"> 437 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> move-to-next-character?
 <span id="L438" class="LineNr"> 438 </span>  <span class="Conceal">¦</span> <span class="Comment"># if not at end of text</span>
-<span id="L439" class="LineNr"> 439 </span>  <span class="Conceal">¦</span> next-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L439" class="LineNr"> 439 </span>  <span class="Conceal">¦</span> next-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L440" class="LineNr"> 440 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> next-cursor
 <span id="L441" class="LineNr"> 441 </span>  <span class="Conceal">¦</span> <span class="Comment"># scan to next character</span>
 <span id="L442" class="LineNr"> 442 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;begin-move-cursor&gt;</span>
@@ -543,8 +543,8 @@ if ('onhashchange' in window) {
 <span id="L481" class="LineNr"> 481 </span>  <span class="Conceal">¦</span> at-wrap?:bool <span class="Special">&lt;-</span> equal cursor-column, wrap-column
 <span id="L482" class="LineNr"> 482 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-wrap?
 <span id="L483" class="LineNr"> 483 </span>  <span class="Conceal">¦</span> <span class="Comment"># and if next character isn't newline</span>
-<span id="L484" class="LineNr"> 484 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
-<span id="L485" class="LineNr"> 485 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L484" class="LineNr"> 484 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
+<span id="L485" class="LineNr"> 485 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L486" class="LineNr"> 486 </span>  <span class="Conceal">¦</span> next-character:char <span class="Special">&lt;-</span> get *next, <span class="Constant">value:offset</span>
 <span id="L487" class="LineNr"> 487 </span>  <span class="Conceal">¦</span> newline?:bool <span class="Special">&lt;-</span> equal next-character, <span class="Constant">10/newline</span>
 <span id="L488" class="LineNr"> 488 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> newline?
@@ -783,11 +783,11 @@ if ('onhashchange' in window) {
 <span id="L721" class="LineNr"> 721 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> move-to-previous-character?
 <span id="L722" class="LineNr"> 722 </span>  <span class="Conceal">¦</span> trace<span class="Constant"> 10</span>, <span class="Constant">[app]</span>, <span class="Constant">[left arrow]</span>
 <span id="L723" class="LineNr"> 723 </span>  <span class="Conceal">¦</span> <span class="Comment"># if not at start of text (before-cursor at § sentinel)</span>
-<span id="L724" class="LineNr"> 724 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
-<span id="L725" class="LineNr"> 725 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L36'>prev</a>, <span class="Constant">0/don't-render</span>
+<span id="L724" class="LineNr"> 724 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> before-cursor
+<span id="L725" class="LineNr"> 725 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L32'>prev</a>, <span class="Constant">0/don't-render</span>
 <span id="L726" class="LineNr"> 726 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;begin-move-cursor&gt;</span>
 <span id="L727" class="LineNr"> 727 </span>  <span class="Conceal">¦</span> go-render? <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L156'>move-cursor-coordinates-left</a> editor
-<span id="L728" class="LineNr"> 728 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L728" class="LineNr"> 728 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L32'>prev</a>
 <span id="L729" class="LineNr"> 729 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L730" class="LineNr"> 730 </span>  <span class="Conceal">¦</span> undo-coalesce-tag:num <span class="Special">&lt;-</span> copy <span class="Constant">1/left-arrow</span>
 <span id="L731" class="LineNr"> 731 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;end-move-cursor&gt;</span>
@@ -1100,7 +1100,7 @@ if ('onhashchange' in window) {
 <span id="L1038" class="LineNr">1038 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
 <span id="L1039" class="LineNr">1039 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-column, target-column
 <span id="L1040" class="LineNr">1040 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
-<span id="L1041" class="LineNr">1041 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L1041" class="LineNr">1041 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L1042" class="LineNr">1042 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
 <span id="L1043" class="LineNr">1043 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> currc:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
 <span id="L1044" class="LineNr">1044 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal currc, <span class="Constant">10/newline</span>
@@ -1435,9 +1435,9 @@ if ('onhashchange' in window) {
 <span id="L1373" class="LineNr">1373 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">jump</span> <span class="Constant">+try-to-scroll</span>
 <span id="L1374" class="LineNr">1374 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
 <span id="L1375" class="LineNr">1375 </span>  <span class="Delimiter">}</span>
-<span id="L1376" class="LineNr">1376 </span>  <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L1376" class="LineNr">1376 </span>  <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L1377" class="LineNr">1377 </span>  <span class="Delimiter">{</span>
-<span id="L1378" class="LineNr">1378 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1378" class="LineNr">1378 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1379" class="LineNr">1379 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
 <span id="L1380" class="LineNr">1380 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-bottom-of-screen?
 <span id="L1381" class="LineNr">1381 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
@@ -1454,19 +1454,19 @@ if ('onhashchange' in window) {
 <span id="L1392" class="LineNr">1392 </span>  <span class="Conceal">¦</span> target-column:num <span class="Special">&lt;-</span> copy cursor-column
 <span id="L1393" class="LineNr">1393 </span>  <span class="Conceal">¦</span> <span class="Comment"># scan to start of next line</span>
 <span id="L1394" class="LineNr">1394 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L1395" class="LineNr">1395 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
-<span id="L1396" class="LineNr">1396 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1395" class="LineNr">1395 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
+<span id="L1396" class="LineNr">1396 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1397" class="LineNr">1397 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-column, right
 <span id="L1398" class="LineNr">1398 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L1399" class="LineNr">1399 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> cursor-column <span class="Special">&lt;-</span> add cursor-column,<span class="Constant"> 1</span>
-<span id="L1400" class="LineNr">1400 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1400" class="LineNr">1400 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1401" class="LineNr">1401 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *next, <span class="Constant">value:offset</span>
 <span id="L1402" class="LineNr">1402 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
 <span id="L1403" class="LineNr">1403 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
 <span id="L1404" class="LineNr">1404 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L1405" class="LineNr">1405 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
 <span id="L1406" class="LineNr">1406 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L1407" class="LineNr">1407 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1407" class="LineNr">1407 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1408" class="LineNr">1408 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Delimiter">{</span>
 <span id="L1409" class="LineNr">1409 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-bottom-of-screen?
 <span id="L1410" class="LineNr">1410 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">return</span> <span class="Constant">0/don't-render</span>
@@ -1479,15 +1479,15 @@ if ('onhashchange' in window) {
 <span id="L1417" class="LineNr">1417 </span>  <span class="Conceal">¦</span> cursor-row <span class="Special">&lt;-</span> add cursor-row,<span class="Constant"> 1</span>
 <span id="L1418" class="LineNr">1418 </span>  <span class="Conceal">¦</span> cursor-column <span class="Special">&lt;-</span> copy left
 <span id="L1419" class="LineNr">1419 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
-<span id="L1420" class="LineNr">1420 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
-<span id="L1421" class="LineNr">1421 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1420" class="LineNr">1420 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
+<span id="L1421" class="LineNr">1421 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1422" class="LineNr">1422 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *next, <span class="Constant">value:offset</span>
 <span id="L1423" class="LineNr">1423 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
 <span id="L1424" class="LineNr">1424 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
 <span id="L1425" class="LineNr">1425 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal cursor-column, target-column
 <span id="L1426" class="LineNr">1426 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L1427" class="LineNr">1427 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> cursor-column <span class="Special">&lt;-</span> add cursor-column,<span class="Constant"> 1</span>
-<span id="L1428" class="LineNr">1428 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1428" class="LineNr">1428 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1429" class="LineNr">1429 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L1430" class="LineNr">1430 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
 <span id="L1431" class="LineNr">1431 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
@@ -1637,7 +1637,7 @@ if ('onhashchange' in window) {
 <span id="L1575" class="LineNr">1575 </span>  <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> equal col, left
 <span id="L1576" class="LineNr">1576 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
 <span id="L1577" class="LineNr">1577 </span>  <span class="Conceal">¦</span> assert curr, <span class="Constant">[move-to-start-of-line tried to move before start of text]</span>
-<span id="L1578" class="LineNr">1578 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
+<span id="L1578" class="LineNr">1578 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> curr
 <span id="L1579" class="LineNr">1579 </span>  <span class="Conceal">¦</span> col <span class="Special">&lt;-</span> subtract col,<span class="Constant"> 1</span>
 <span id="L1580" class="LineNr">1580 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L1581" class="LineNr">1581 </span>  <span class="Delimiter">}</span>
@@ -1855,8 +1855,8 @@ if ('onhashchange' in window) {
 <span id="L1793" class="LineNr">1793 </span>  right:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">right:offset</span>
 <span id="L1794" class="LineNr">1794 </span>  <span class="Comment"># while not at end of line, move</span>
 <span id="L1795" class="LineNr">1795 </span>  <span class="Delimiter">{</span>
-<span id="L1796" class="LineNr">1796 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
-<span id="L1797" class="LineNr">1797 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>  <span class="Comment"># end of text</span>
+<span id="L1796" class="LineNr">1796 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
+<span id="L1797" class="LineNr">1797 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>  <span class="Comment"># end of text</span>
 <span id="L1798" class="LineNr">1798 </span>  <span class="Conceal">¦</span> nextc:char <span class="Special">&lt;-</span> get *next, <span class="Constant">value:offset</span>
 <span id="L1799" class="LineNr">1799 </span>  <span class="Conceal">¦</span> at-end-of-line?:bool <span class="Special">&lt;-</span> equal nextc, <span class="Constant">10/newline</span>
 <span id="L1800" class="LineNr">1800 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-end-of-line?
@@ -1864,7 +1864,7 @@ if ('onhashchange' in window) {
 <span id="L1802" class="LineNr">1802 </span>  <span class="Conceal">¦</span> at-right?:bool <span class="Special">&lt;-</span> equal cursor-column, right
 <span id="L1803" class="LineNr">1803 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-right?
 <span id="L1804" class="LineNr">1804 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-column:offset</span>, cursor-column
-<span id="L1805" class="LineNr">1805 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L1805" class="LineNr">1805 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L1806" class="LineNr">1806 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L1807" class="LineNr">1807 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L1808" class="LineNr">1808 </span>  <span class="Delimiter">}</span>
@@ -2043,7 +2043,7 @@ if ('onhashchange' in window) {
 <span id="L1981" class="LineNr">1981 </span>  <span class="Conceal">¦</span> <span class="Comment"># if we have a wrapped line, give up and render the whole screen</span>
 <span id="L1982" class="LineNr">1982 </span>  <span class="Conceal">¦</span> wrap?:bool <span class="Special">&lt;-</span> greater-or-equal i, right
 <span id="L1983" class="LineNr">1983 </span>  <span class="Conceal">¦</span> <span class="muControl">return-if</span> wrap?, <span class="Constant">1/go-render</span>
-<span id="L1984" class="LineNr">1984 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L1984" class="LineNr">1984 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L1985" class="LineNr">1985 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> curr
 <span id="L1986" class="LineNr">1986 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
 <span id="L1987" class="LineNr">1987 </span>  <span class="Conceal">¦</span> b:bool <span class="Special">&lt;-</span> equal c,<span class="Constant"> 10</span>
@@ -2074,7 +2074,7 @@ if ('onhashchange' in window) {
 <span id="L2012" class="LineNr">2012 </span>  update-top-of-screen?:bool <span class="Special">&lt;-</span> copy <span class="Constant">0/false</span>
 <span id="L2013" class="LineNr">2013 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
 <span id="L2014" class="LineNr">2014 </span>  start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> copy before-cursor
-<span id="L2015" class="LineNr">2015 </span>  end:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-cursor
+<span id="L2015" class="LineNr">2015 </span>  end:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-cursor
 <span id="L2016" class="LineNr">2016 </span>  <span class="Delimiter">{</span>
 <span id="L2017" class="LineNr">2017 </span>  <span class="Conceal">¦</span> at-start-of-text?:bool <span class="Special">&lt;-</span> equal start, init
 <span id="L2018" class="LineNr">2018 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start-of-text?
@@ -2084,13 +2084,13 @@ if ('onhashchange' in window) {
 <span id="L2022" class="LineNr">2022 </span>  <span class="Conceal">¦</span> <span class="Comment"># if we went past top-of-screen, make a note to update it as well</span>
 <span id="L2023" class="LineNr">2023 </span>  <span class="Conceal">¦</span> at-top-of-screen?:bool <span class="Special">&lt;-</span> equal start, top-of-screen
 <span id="L2024" class="LineNr">2024 </span>  <span class="Conceal">¦</span> update-top-of-screen?:bool <span class="Special">&lt;-</span> or update-top-of-screen?, at-top-of-screen?
-<span id="L2025" class="LineNr">2025 </span>  <span class="Conceal">¦</span> start <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> start
+<span id="L2025" class="LineNr">2025 </span>  <span class="Conceal">¦</span> start <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> start
 <span id="L2026" class="LineNr">2026 </span>  <span class="Conceal">¦</span> assert start, <span class="Constant">[delete-to-start-of-line tried to move before start of text]</span>
 <span id="L2027" class="LineNr">2027 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L2028" class="LineNr">2028 </span>  <span class="Delimiter">}</span>
 <span id="L2029" class="LineNr">2029 </span>  <span class="Comment"># snip it out</span>
-<span id="L2030" class="LineNr">2030 </span>  result:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> start
-<span id="L2031" class="LineNr">2031 </span>  <a href='../065duplex_list.mu.html#L389'>remove-between</a> start, end
+<span id="L2030" class="LineNr">2030 </span>  result:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> start
+<span id="L2031" class="LineNr">2031 </span>  <a href='../065duplex_list.mu.html#L385'>remove-between</a> start, end
 <span id="L2032" class="LineNr">2032 </span>  <span class="Comment"># update top-of-screen if it's just been invalidated</span>
 <span id="L2033" class="LineNr">2033 </span>  <span class="Delimiter">{</span>
 <span id="L2034" class="LineNr">2034 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> update-top-of-screen?
@@ -2631,19 +2631,19 @@ if ('onhashchange' in window) {
 <span id="L2569" class="LineNr">2569 </span>  <span class="Constant">load-ingredients</span>
 <span id="L2570" class="LineNr">2570 </span>  <span class="Comment"># compute range to delete</span>
 <span id="L2571" class="LineNr">2571 </span>  start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L2572" class="LineNr">2572 </span>  end:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> start
+<span id="L2572" class="LineNr">2572 </span>  end:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> start
 <span id="L2573" class="LineNr">2573 </span>  <span class="Delimiter">{</span>
 <span id="L2574" class="LineNr">2574 </span>  <span class="Conceal">¦</span> at-end-of-text?:bool <span class="Special">&lt;-</span> equal end, <span class="Constant">0/null</span>
 <span id="L2575" class="LineNr">2575 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-end-of-text?
 <span id="L2576" class="LineNr">2576 </span>  <span class="Conceal">¦</span> curr:char <span class="Special">&lt;-</span> get *end, <span class="Constant">value:offset</span>
 <span id="L2577" class="LineNr">2577 </span>  <span class="Conceal">¦</span> at-end-of-line?:bool <span class="Special">&lt;-</span> equal curr, <span class="Constant">10/newline</span>
 <span id="L2578" class="LineNr">2578 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-end-of-line?
-<span id="L2579" class="LineNr">2579 </span>  <span class="Conceal">¦</span> end <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> end
+<span id="L2579" class="LineNr">2579 </span>  <span class="Conceal">¦</span> end <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> end
 <span id="L2580" class="LineNr">2580 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L2581" class="LineNr">2581 </span>  <span class="Delimiter">}</span>
 <span id="L2582" class="LineNr">2582 </span>  <span class="Comment"># snip it out</span>
-<span id="L2583" class="LineNr">2583 </span>  result <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> start
-<span id="L2584" class="LineNr">2584 </span>  <a href='../065duplex_list.mu.html#L389'>remove-between</a> start, end
+<span id="L2583" class="LineNr">2583 </span>  result <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> start
+<span id="L2584" class="LineNr">2584 </span>  <a href='../065duplex_list.mu.html#L385'>remove-between</a> start, end
 <span id="L2585" class="LineNr">2585 </span>]
 <span id="L2586" class="LineNr">2586 </span>
 <span id="L2587" class="LineNr">2587 </span><span class="muScenario">scenario</span> editor-deletes-to-end-of-line-with-ctrl-k-2 [
@@ -2873,7 +2873,7 @@ if ('onhashchange' in window) {
 <span id="L2811" class="LineNr">2811 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
 <span id="L2812" class="LineNr">2812 </span>  <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
 <span id="L2813" class="LineNr">2813 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> at-newline?
-<span id="L2814" class="LineNr">2814 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L2814" class="LineNr">2814 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L2815" class="LineNr">2815 </span>  <span class="Conceal">¦</span> count <span class="Special">&lt;-</span> add count,<span class="Constant"> 1</span>
 <span id="L2816" class="LineNr">2816 </span>  <span class="Delimiter">}</span>
 <span id="L2817" class="LineNr">2817 </span>  <span class="Delimiter">{</span>
@@ -2883,7 +2883,7 @@ if ('onhashchange' in window) {
 <span id="L2821" class="LineNr">2821 </span>  <span class="Conceal">¦</span> c:char <span class="Special">&lt;-</span> get *curr, <span class="Constant">value:offset</span>
 <span id="L2822" class="LineNr">2822 </span>  <span class="Conceal">¦</span> at-newline?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">10/newline</span>
 <span id="L2823" class="LineNr">2823 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-newline?
-<span id="L2824" class="LineNr">2824 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L2824" class="LineNr">2824 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L2825" class="LineNr">2825 </span>  <span class="Conceal">¦</span> count <span class="Special">&lt;-</span> add count,<span class="Constant"> 1</span>
 <span id="L2826" class="LineNr">2826 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L2827" class="LineNr">2827 </span>  <span class="Delimiter">}</span>
@@ -3250,9 +3250,9 @@ if ('onhashchange' in window) {
 <span id="L3188" class="LineNr">3188 </span>  <span class="Delimiter">{</span>
 <span id="L3189" class="LineNr">3189 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> len
 <span id="L3190" class="LineNr">3190 </span>  <span class="Conceal">¦</span> <span class="Comment"># empty line; just skip this newline</span>
-<span id="L3191" class="LineNr">3191 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
-<span id="L3192" class="LineNr">3192 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L36'>prev</a>, curr
-<span id="L3193" class="LineNr">3193 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L3191" class="LineNr">3191 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> curr
+<span id="L3192" class="LineNr">3192 </span>  <span class="Conceal">¦</span> <span class="muControl">return-unless</span> <a href='../065duplex_list.mu.html#L32'>prev</a>, curr
+<span id="L3193" class="LineNr">3193 </span>  <span class="Conceal">¦</span> <span class="muControl">return</span> <a href='../065duplex_list.mu.html#L32'>prev</a>
 <span id="L3194" class="LineNr">3194 </span>  <span class="Delimiter">}</span>
 <span id="L3195" class="LineNr">3195 </span>  _, max:num <span class="Special">&lt;-</span> divide-with-remainder len, max-line-length
 <span id="L3196" class="LineNr">3196 </span>  <span class="Comment"># remainder 0 =&gt; scan one width-worth</span>
@@ -3266,9 +3266,9 @@ if ('onhashchange' in window) {
 <span id="L3204" class="LineNr">3204 </span>  <span class="Delimiter">{</span>
 <span id="L3205" class="LineNr">3205 </span>  <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal count, max
 <span id="L3206" class="LineNr">3206 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
-<span id="L3207" class="LineNr">3207 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> curr
-<span id="L3208" class="LineNr">3208 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L36'>prev</a>
-<span id="L3209" class="LineNr">3209 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L3207" class="LineNr">3207 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> curr
+<span id="L3208" class="LineNr">3208 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L32'>prev</a>
+<span id="L3209" class="LineNr">3209 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L32'>prev</a>
 <span id="L3210" class="LineNr">3210 </span>  <span class="Conceal">¦</span> count <span class="Special">&lt;-</span> add count,<span class="Constant"> 1</span>
 <span id="L3211" class="LineNr">3211 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L3212" class="LineNr">3212 </span>  <span class="Delimiter">}</span>
@@ -3664,14 +3664,14 @@ if ('onhashchange' in window) {
 <span id="L3602" class="LineNr">3602 </span>  <span class="muControl">return-unless</span> bottom-of-screen
 <span id="L3603" class="LineNr">3603 </span>  <span class="Comment"># if not, position cursor at final character</span>
 <span id="L3604" class="LineNr">3604 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L3605" class="LineNr">3605 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> bottom-of-screen
+<span id="L3605" class="LineNr">3605 </span>  before-cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> bottom-of-screen
 <span id="L3606" class="LineNr">3606 </span>  *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L3607" class="LineNr">3607 </span>  <span class="Comment"># keep one line in common with previous page</span>
 <span id="L3608" class="LineNr">3608 </span>  <span class="Delimiter">{</span>
-<span id="L3609" class="LineNr">3609 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L576'>last</a>:char <span class="Special">&lt;-</span> get *before-cursor, <span class="Constant">value:offset</span>
-<span id="L3610" class="LineNr">3610 </span>  <span class="Conceal">¦</span> newline?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L576'>last</a>, <span class="Constant">10/newline</span>
+<span id="L3609" class="LineNr">3609 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L572'>last</a>:char <span class="Special">&lt;-</span> get *before-cursor, <span class="Constant">value:offset</span>
+<span id="L3610" class="LineNr">3610 </span>  <span class="Conceal">¦</span> newline?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L572'>last</a>, <span class="Constant">10/newline</span>
 <span id="L3611" class="LineNr">3611 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> newline?:bool
-<span id="L3612" class="LineNr">3612 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
+<span id="L3612" class="LineNr">3612 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> before-cursor
 <span id="L3613" class="LineNr">3613 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L3614" class="LineNr">3614 </span>  <span class="Delimiter">}</span>
 <span id="L3615" class="LineNr">3615 </span>  <span class="Comment"># move cursor and top-of-screen to start of that line</span>
@@ -3695,10 +3695,10 @@ if ('onhashchange' in window) {
 <span id="L3633" class="LineNr">3633 </span>  <span class="Delimiter">{</span>
 <span id="L3634" class="LineNr">3634 </span>  <span class="Conceal">¦</span> at-start-of-text?:bool <span class="Special">&lt;-</span> equal before-cursor, init
 <span id="L3635" class="LineNr">3635 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start-of-text?
-<span id="L3636" class="LineNr">3636 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a>:char <span class="Special">&lt;-</span> get *before-cursor, <span class="Constant">value:offset</span>
-<span id="L3637" class="LineNr">3637 </span>  <span class="Conceal">¦</span> at-start-of-line?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L36'>prev</a>, <span class="Constant">10/newline</span>
+<span id="L3636" class="LineNr">3636 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L32'>prev</a>:char <span class="Special">&lt;-</span> get *before-cursor, <span class="Constant">value:offset</span>
+<span id="L3637" class="LineNr">3637 </span>  <span class="Conceal">¦</span> at-start-of-line?:bool <span class="Special">&lt;-</span> equal <a href='../065duplex_list.mu.html#L32'>prev</a>, <span class="Constant">10/newline</span>
 <span id="L3638" class="LineNr">3638 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> at-start-of-line?
-<span id="L3639" class="LineNr">3639 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L36'>prev</a> before-cursor
+<span id="L3639" class="LineNr">3639 </span>  <span class="Conceal">¦</span> before-cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L32'>prev</a> before-cursor
 <span id="L3640" class="LineNr">3640 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">before-cursor:offset</span>, before-cursor
 <span id="L3641" class="LineNr">3641 </span>  <span class="Conceal">¦</span> assert before-cursor, <span class="Constant">[move-to-start-of-line tried to move before start of text]</span>
 <span id="L3642" class="LineNr">3642 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
@@ -3888,9 +3888,9 @@ if ('onhashchange' in window) {
 <span id="L3826" class="LineNr">3826 </span>  <span class="Delimiter">{</span>
 <span id="L3827" class="LineNr">3827 </span>  <span class="Conceal">¦</span> done?:bool <span class="Special">&lt;-</span> greater-or-equal count, max
 <span id="L3828" class="LineNr">3828 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
-<span id="L3829" class="LineNr">3829 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L36'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L3175'>before-previous-screen-line</a> top-of-screen, editor
-<span id="L3830" class="LineNr">3830 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L36'>prev</a>
-<span id="L3831" class="LineNr">3831 </span>  <span class="Conceal">¦</span> top-of-screen <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L36'>prev</a>
+<span id="L3829" class="LineNr">3829 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L32'>prev</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L3175'>before-previous-screen-line</a> top-of-screen, editor
+<span id="L3830" class="LineNr">3830 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L32'>prev</a>
+<span id="L3831" class="LineNr">3831 </span>  <span class="Conceal">¦</span> top-of-screen <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L32'>prev</a>
 <span id="L3832" class="LineNr">3832 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">top-of-screen:offset</span>, top-of-screen
 <span id="L3833" class="LineNr">3833 </span>  <span class="Conceal">¦</span> count <span class="Special">&lt;-</span> add count,<span class="Constant"> 1</span>
 <span id="L3834" class="LineNr">3834 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
@@ -4262,7 +4262,7 @@ if ('onhashchange' in window) {
 <span id="L4200" class="LineNr">4200 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;begin-move-cursor&gt;</span>
 <span id="L4201" class="LineNr">4201 </span>  <span class="Conceal">¦</span> old-top:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">top-of-screen:offset</span>
 <span id="L4202" class="LineNr">4202 </span>  <span class="Conceal">¦</span> cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
-<span id="L4203" class="LineNr">4203 </span>  <span class="Conceal">¦</span> cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> cursor
+<span id="L4203" class="LineNr">4203 </span>  <span class="Conceal">¦</span> cursor <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> cursor
 <span id="L4204" class="LineNr">4204 </span>  <span class="Conceal">¦</span> new-top:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L3175'>before-previous-screen-line</a> cursor, editor
 <span id="L4205" class="LineNr">4205 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">top-of-screen:offset</span>, new-top
 <span id="L4206" class="LineNr">4206 </span>  <span class="Conceal">¦</span> *editor <span class="Special">&lt;-</span> put *editor, <span class="Constant">cursor-row:offset</span>,<span class="Constant"> 1</span>
@@ -4283,8 +4283,8 @@ if ('onhashchange' in window) {
 <span id="L4221" class="LineNr">4221 </span>  <span class="Conceal">¦</span> data:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">data:offset</span>
 <span id="L4222" class="LineNr">4222 </span><span class="Constant">  </span><span class="Conceal">¦</span><span class="Constant"> &lt;begin-insert-character&gt;</span>
 <span id="L4223" class="LineNr">4223 </span>  <span class="Conceal">¦</span> before-line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L4280'>before-start-of-screen-line</a> editor
-<span id="L4224" class="LineNr">4224 </span>  <span class="Conceal">¦</span> line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-line-start
-<span id="L4225" class="LineNr">4225 </span>  <span class="Conceal">¦</span> commented-out?:bool <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L589'>match</a> line-start, <span class="Constant">[#? ]</span>  <span class="Comment"># comment prefix</span>
+<span id="L4224" class="LineNr">4224 </span>  <span class="Conceal">¦</span> line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-line-start
+<span id="L4225" class="LineNr">4225 </span>  <span class="Conceal">¦</span> commented-out?:bool <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L585'>match</a> line-start, <span class="Constant">[#? ]</span>  <span class="Comment"># comment prefix</span>
 <span id="L4226" class="LineNr">4226 </span>  <span class="Conceal">¦</span> <span class="Delimiter">{</span>
 <span id="L4227" class="LineNr">4227 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="muControl">break-unless</span> commented-out?
 <span id="L4228" class="LineNr">4228 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment"># uncomment</span>
@@ -4313,7 +4313,7 @@ if ('onhashchange' in window) {
 <span id="L4251" class="LineNr">4251 </span>  <span class="Constant">local-scope</span>
 <span id="L4252" class="LineNr">4252 </span>  <span class="Constant">load-ingredients</span>
 <span id="L4253" class="LineNr">4253 </span>  before-line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L4280'>before-start-of-screen-line</a> editor
-<span id="L4254" class="LineNr">4254 </span>  line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> before-line-start
+<span id="L4254" class="LineNr">4254 </span>  line-start:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> before-line-start
 <span id="L4255" class="LineNr">4255 </span>  color:num <span class="Special">&lt;-</span> copy <span class="Constant">7/white</span>
 <span id="L4256" class="LineNr">4256 </span>  left:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">left:offset</span>
 <span id="L4257" class="LineNr">4257 </span>  cursor-row:num <span class="Special">&lt;-</span> get *editor, <span class="Constant">cursor-row:offset</span>
@@ -4331,7 +4331,7 @@ if ('onhashchange' in window) {
 <span id="L4269" class="LineNr">4269 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> newline?
 <span id="L4270" class="LineNr">4270 </span>  <span class="Conceal">¦</span> color <span class="Special">&lt;-</span> <a href='001-editor.mu.html#L397'>get-color</a> color, c
 <span id="L4271" class="LineNr">4271 </span>  <span class="Conceal">¦</span> print <a href='../081print.mu.html#L16'>screen</a>, c, color
-<span id="L4272" class="LineNr">4272 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> curr
+<span id="L4272" class="LineNr">4272 </span>  <span class="Conceal">¦</span> curr <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> curr
 <span id="L4273" class="LineNr">4273 </span>  <span class="Conceal">¦</span> i <span class="Special">&lt;-</span> add i,<span class="Constant"> 1</span>
 <span id="L4274" class="LineNr">4274 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L4275" class="LineNr">4275 </span>  <span class="Delimiter">}</span>
@@ -4344,9 +4344,9 @@ if ('onhashchange' in window) {
 <span id="L4282" class="LineNr">4282 </span>  <span class="Constant">load-ingredients</span>
 <span id="L4283" class="LineNr">4283 </span>  cursor:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> get *editor, <span class="Constant">before-cursor:offset</span>
 <span id="L4284" class="LineNr">4284 </span>  <span class="Delimiter">{</span>
-<span id="L4285" class="LineNr">4285 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L29'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L29'>next</a> cursor
-<span id="L4286" class="LineNr">4286 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L29'>next</a>
-<span id="L4287" class="LineNr">4287 </span>  <span class="Conceal">¦</span> cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L29'>next</a>
+<span id="L4285" class="LineNr">4285 </span>  <span class="Conceal">¦</span> <a href='../065duplex_list.mu.html#L25'>next</a>:&amp;:<a href='../065duplex_list.mu.html#L3'>duplex-list</a>:char <span class="Special">&lt;-</span> <a href='../065duplex_list.mu.html#L25'>next</a> cursor
+<span id="L4286" class="LineNr">4286 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> <a href='../065duplex_list.mu.html#L25'>next</a>
+<span id="L4287" class="LineNr">4287 </span>  <span class="Conceal">¦</span> cursor <span class="Special">&lt;-</span> copy <a href='../065duplex_list.mu.html#L25'>next</a>
 <span id="L4288" class="LineNr">4288 </span>  <span class="Delimiter">}</span>
 <span id="L4289" class="LineNr">4289 </span>  result <span class="Special">&lt;-</span> <a href='003-shortcuts.mu.html#L3175'>before-previous-screen-line</a> cursor, editor
 <span id="L4290" class="LineNr">4290 </span>]

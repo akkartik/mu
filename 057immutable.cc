@@ -562,14 +562,27 @@ if (has_property(current_ingredient, "contained-in")) {
   continue;
 }
 
-:(scenario contained_in_check)
+:(scenario contained_in_product)
 container test-list [
   value:num
   next:&:test-list
 ]
-def test-remove x:&:test-list/contained-in:result, from:&:test-list -> result:&:test-list [
+def foo x:&:test-list/contained-in:result -> result:&:test-list [
   local-scope
   load-ingredients
   result <- copy 0
+]
+$error: 0
+
+:(scenario contained_in_is_mutable)
+container test-list [
+  value:num
+  next:&:test-list
+]
+def foo x:&:test-list/contained-in:result -> result:&:test-list [
+  local-scope
+  load-ingredients
+  result <- copy x
+  put *x, value:offset, 34
 ]
 $error: 0
