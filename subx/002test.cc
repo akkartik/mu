@@ -19,7 +19,6 @@ const test_fn Tests[] = {
 :(before "End Globals")
 bool Run_tests = false;
 bool Passed = true;  // set this to false inside any test to indicate failure
-long Num_failures = 0;
 
 :(before "End Includes")
 #define CHECK(X) \
@@ -37,7 +36,7 @@ long Num_failures = 0;
     return;  /* Currently we stop at the very first failure. */ \
   }
 
-:(before "End Setup")
+:(before "End Reset")
 Passed = true;
 
 :(before "End Commandline Parsing")
@@ -50,18 +49,21 @@ if (Run_tests) {
   // Test Runs
   // we run some tests and then exit; assume no state need be maintained afterward
 
+  long num_failures = 0;
   // End Test Run Initialization
   time_t t;  time(&t);
   cerr << "C tests: " << ctime(&t);
   for (size_t i=0;  i < sizeof(Tests)/sizeof(Tests[0]);  ++i) {
 //?     cerr << "running .build/test_list line " << (i+1) << '\n';
     run_test(i);
+    if (Passed) cerr << '.';
+    else ++num_failures;
   }
   cerr << '\n';
   // End Tests
-  if (Num_failures > 0) {
-    cerr << Num_failures << " failure"
-         << (Num_failures > 1 ? "s" : "")
+  if (num_failures > 0) {
+    cerr << num_failures << " failure"
+         << (num_failures > 1 ? "s" : "")
          << '\n';
     return 1;
   }
@@ -74,13 +76,10 @@ void run_test(size_t i) {
     cerr << "no test " << i << '\n';
     return;
   }
-  setup();
+  reset();
   // End Test Setup
   (*Tests[i])();
   // End Test Teardown
-  teardown();
-  if (Passed) cerr << '.';
-  else ++Num_failures;
 }
 
 bool is_integer(const string& s) {

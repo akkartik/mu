@@ -79,14 +79,14 @@
 //:
 //: This 'subsetting guarantee' ensures that this directory contains a
 //: cleaned-up narrative of the evolution of this codebase. Organizing
-//: autobiographically allows a newcomer to rapidly orient himself, reading the
-//: first few files to understand a simple gestalt of a program's core purpose
-//: and features, and later gradually working his way through other features as
-//: the need arises.
+//: autobiographically allows a newcomers to rapidly orient themselves,
+//: reading the first few files to understand a simple gestalt of a program's
+//: core purpose and features, and later gradually working their way through
+//: other features as the need arises.
 //:
-//: Programmers shouldn't need to understand everything about a program to hack
-//: on it. But they shouldn't be prevented from a thorough understanding of
-//: each aspect either. The goal of layers is to reward curiosity.
+//: Programmers shouldn't need to understand everything about a program to
+//: hack on it. But they shouldn't be prevented from a thorough understanding
+//: of each aspect either. The goal of layers is to reward curiosity.
 
 // Includes
 // End Includes
@@ -94,24 +94,24 @@
 // Types
 // End Types
 
-// Prototypes are auto-generated in the 'build' script; define your functions
-// in any order. Just be sure to declare each function header all on one line.
-// Our auto-generation scripts are too minimal and simple-minded to handle
-// anything else.
+// Function prototypes are auto-generated in the 'build' script; define your
+// functions in any order. Just be sure to declare each function header all on
+// one line, ending with the '{'. Our auto-generation scripts are too minimal
+// and simple-minded to handle anything else.
 #include "function_list"  // by convention, files ending with '_list' are auto-generated
 
 // Globals
 //
 // All statements in this section should always define a single variable on a
 // single line. The 'build' script will simple-mindedly auto-generate extern
-// declarations for them. Don't forget to define (not just declare) constants
-// with extern linkage in this section, since C++ global constants have
-// internal linkage by default.
+// declarations for them. Remember to define (not just declare) constants with
+// extern linkage in this section, since C++ global constants have internal
+// linkage by default.
 //
 // End Globals
 
 int main(int argc, char* argv[]) {
-  atexit(teardown);
+  atexit(reset);
 
   // End One-time Setup
 
@@ -124,17 +124,13 @@ int main(int argc, char* argv[]) {
 // Unit Tests
 // End Unit Tests
 
-//: our first directive; will move the include above the program
+//: our first directive; insert the following header at the start of the program
 :(before "End Includes")
 #include <stdlib.h>
 
 //: Without directives or with the :(code) directive, lines get added at the
 //: end.
 :(code)
-void setup() {
-  // End Setup
-}
-
-void teardown() {
-  // End Teardown
+void reset() {
+  // End Reset
 }
