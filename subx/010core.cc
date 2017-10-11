@@ -70,8 +70,8 @@ Memory.clear();
 +load: 0b
 +load: 0c
 +load: 0d
-+run: add to EAX immediate 0x0d0c0b0a
-+reg: storing 0x0d0c0b0a in register EAX
++run: add imm 0x0d0c0b0a to reg EAX
++reg: storing 0x0d0c0b0a in reg EAX
 
 :(code)
 // helper for tests: load a program into memory from a textual representation
@@ -116,9 +116,9 @@ void run_one_instruction() {
   // our first opcode
   case 0x05: {  // add EAX, imm32
     int32_t arg2 = imm32();
-    trace(2, "run") << "add to EAX immediate 0x" << HEXWORD << arg2 << end();
+    trace(2, "run") << "add imm 0x" << HEXWORD << arg2 << " to reg EAX" << end();
     BINARY_ARITHMETIC_OP(+, R[EAX].i, arg2);
-    trace(98, "reg") << "storing 0x" << HEXWORD << R[EAX].i << " in register EAX" << end();
+    trace(98, "reg") << "storing 0x" << HEXWORD << R[EAX].i << " in reg EAX" << end();
     break;
   }
   // End Single-Byte Opcodes
