@@ -1,10 +1,7 @@
 #!/bin/sh
-#
-# Compile Mu if necessary before running it.
+# Run interpreter, first compiling if necessary.
 
-./build || exit 1
-
-./mu_bin $FLAGS "$@"
+./build  &&  ./mu_bin "$@"
 
 # Scenarios considered:
 #   mu
