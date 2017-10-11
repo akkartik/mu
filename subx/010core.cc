@@ -173,3 +173,4 @@ int32_t imm32(void) {
 #include <iomanip>
 #define HEXBYTE  std::hex << std::setw(2) << std::setfill('0')
 #define HEXWORD  std::hex << std::setw(8) << std::setfill('0')
+#include <stdint.h>
