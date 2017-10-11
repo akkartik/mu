@@ -34,7 +34,7 @@ OF = ZF = SF = false;
 
 :(before "End Includes")
 // beware: no side-effects in args
-#define PERFORM_ARITHMETIC_BINOP(op, arg1, arg2) { \
+#define BINARY_ARITHMETIC_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be signed */ \
   int64_t tmp = arg1 op arg2; \
   arg1 = arg1 op arg2; \
@@ -43,7 +43,7 @@ OF = ZF = SF = false;
   OF = (arg1 != tmp); \
 }
 
-#define PERFORM_BITWISE_BINOP(op, arg1, arg2) { \
+#define BINARY_BITWISE_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be unsigned */ \
   arg1 = arg1 op arg2; \
   SF = (arg1 >> 31); \
@@ -115,7 +115,7 @@ void run_one_instruction() {
   case 0x05: {  // add EAX, imm32
     int32_t arg2 = imm32();
     trace(2, "run") << "add to EAX immediate 0x" << HEXWORD << arg2 << end();
-    PERFORM_ARITHMETIC_BINOP(+, R[EAX].i, arg2);
+    BINARY_ARITHMETIC_OP(+, R[EAX].i, arg2);
     trace(98, "reg") << "storing 0x" << HEXWORD << R[EAX].i << " in register EAX" << end();
     break;
   }
