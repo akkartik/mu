@@ -2,24 +2,12 @@
 //: This should give you a sense for what to look forward to in later layers.
 
 :(before "End Commandline Parsing")
-if (argc != 1) {
+if (argc <= 1 || is_equal(argv[1], "--help")) {
   //: this is the functionality later layers will provide
   // currently no automated tests for commandline arg parsing
-  return 1;
-}
-
-//: Support for option parsing.
-//: Options always begin with '--' and are always the first arguments. An
-//: option will never follow a non-option.
-:(before "End Commandline Parsing")
-char** arg = &argv[1];
-while (argc > 1 && starts_with(*arg, "--")) {
-  if (false)
-    ;  // no-op branch just so any further additions can consistently always start with 'else'
-  // End Commandline Options(*arg)
-  else
-    cerr << "skipping unknown option " << *arg << '\n';
-  --argc;  ++argv;  ++arg;
+  cerr << "Usage:\n"
+       << "  subx test\n";
+  return 0;
 }
 
 //:: Helper function used by the above fragment of code (and later layers too,

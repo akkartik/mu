@@ -112,6 +112,9 @@
 
 int main(int argc, char* argv[]) {
   atexit(reset);
+  // run on a 32-bit system
+  assert(sizeof(int) == 4);
+  assert(sizeof(float) == 4);
 
   // End One-time Setup
 
