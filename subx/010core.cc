@@ -26,9 +26,11 @@ EIP = 0;
 //:: simulated flag registers; just a subset that we care about
 
 :(before "End Globals")
-bool OF=false, ZF=false, SF=false;
+bool SF = false;  // sign flag
+bool ZF = false;  // zero flag
+bool OF = false;  // overflow flag
 :(before "End Reset")
-OF = ZF = SF = false;
+SF = ZF = OF = false;
 
 //: how the flag registers are updated after each instruction
 
