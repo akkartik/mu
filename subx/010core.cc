@@ -124,7 +124,7 @@ void run_one_instruction() {
     switch(op2 = next()) {
     // End Two-Byte Opcodes Starting With 0f
     default:
-      cerr << "unrecognized second opcode after 0f: " << std::hex << op2 << '\n';
+      cerr << "unrecognized second opcode after 0f: " << std::hex << static_cast<int>(op2) << '\n';
       exit(1);
     }
     break;
@@ -135,12 +135,12 @@ void run_one_instruction() {
       switch(op3 = next()) {
       // End Three-Byte Opcodes Starting With f3 0f
       default:
-        cerr << "unrecognized third opcode after f3 0f: " << std::hex << op3 << '\n';
+        cerr << "unrecognized third opcode after f3 0f: " << std::hex << static_cast<int>(op3) << '\n';
         exit(1);
       }
       break;
     default:
-      cerr << "unrecognized second opcode after f3: " << std::hex << op2 << '\n';
+      cerr << "unrecognized second opcode after f3: " << std::hex << static_cast<int>(op2) << '\n';
       exit(1);
     }
     break;
@@ -148,7 +148,7 @@ void run_one_instruction() {
     EIP = Memory.size();
     break;
   default:
-    cerr << "unrecognized opcode: " << std::hex << op << '\n';
+    cerr << "unrecognized opcode: " << std::hex << static_cast<int>(op) << '\n';
     exit(1);
   }
 }
