@@ -61,8 +61,8 @@ Memory.clear();
 //:: core interpreter loop
 
 :(scenario add_imm32_to_eax)
-# opcode     modrm     sib       displacement      immediate
-  05                                               0a 0b 0c 0d  # add EAX, 0x0d0c0b0a
+# op  ModRM   SIB   displacement  immediate
+  05                              0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
 +load: 05
 +load: 0a
 +load: 0b
