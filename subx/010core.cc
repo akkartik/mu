@@ -122,25 +122,25 @@ void run_one_instruction() {
   // End Single-Byte Opcodes
   case 0x0f:
     switch(op2 = next()) {
-    // End Two-Byte Opcodes Starting With 0x0f
+    // End Two-Byte Opcodes Starting With 0f
     default:
-      cerr << "unrecognized second opcode after 0x0f: " << std::hex << op2 << '\n';
+      cerr << "unrecognized second opcode after 0f: " << std::hex << op2 << '\n';
       exit(1);
     }
     break;
   case 0xf3:
     switch(op2 = next()) {
-    // End Two-Byte Opcodes Starting With 0xf3
+    // End Two-Byte Opcodes Starting With f3
     case 0x0f:
       switch(op3 = next()) {
-      // End Three-Byte Opcodes Starting With 0xf3 0x0f
+      // End Three-Byte Opcodes Starting With f3 0f
       default:
-        cerr << "unrecognized third opcode after 0xf3 0x0f: " << std::hex << op3 << '\n';
+        cerr << "unrecognized third opcode after f3 0f: " << std::hex << op3 << '\n';
         exit(1);
       }
       break;
     default:
-      cerr << "unrecognized second opcode after 0xf3: " << std::hex << op2 << '\n';
+      cerr << "unrecognized second opcode after f3: " << std::hex << op2 << '\n';
       exit(1);
     }
     break;
