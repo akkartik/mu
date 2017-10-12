@@ -92,10 +92,10 @@ void run(const string& text_bytes) {
 }
 
 void load_program(const string& text_bytes) {
-  // now, to read the hex bytes in ASCII, we'll use C's strtol
-  // strtol needs a char*, so we grab the buffer backing the string object
   uint32_t addr = 1;
-  char* curr = const_cast<char*>(&text_bytes[0]);   // non-standard approach, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
+  // we'll use C's 'strtol` to parse ASCII hex bytes
+  // strtol needs a char*, so we grab the buffer backing the string object
+  char* curr = const_cast<char*>(&text_bytes[0]);   // non-portable, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
   char* max = curr + strlen(curr);
   while (curr < max) {
     // skip whitespace
