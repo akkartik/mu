@@ -72,7 +72,8 @@ End_of_program = 0;
 #   opcode        ModRM                 SIB                   displacement    immediate
 #   instruction   mod, reg, R/M bits    scale, index, base
 #   1-3 bytes     0/1 byte              0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-    0x05                                                                      0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
+    05                                                                        0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
+# All hex bytes must be exactly 2 characters each. No '0x' prefixes.
 +load: 1 -> 05
 +load: 2 -> 0a
 +load: 3 -> 0b
@@ -139,27 +140,61 @@ void run_one_instruction() {
 
 void load_program(const string& text_bytes) {
   uint32_t addr = 1;
-  // we'll use C's 'strtol` to parse ASCII hex bytes
-  // strtol needs a char*, so we grab the buffer backing the string object
-  char* curr = const_cast<char*>(&text_bytes[0]);   // non-portable, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
-  char* max = curr + strlen(curr);
-  while (curr < max) {
-    // skip whitespace
-    while (*curr == ' ' || *curr == '\n') ++curr;
-    // skip comments
-    if (*curr == '#') {
-      while (*curr != '\n') {
-        ++curr;
-        if (curr >= max) break;
-      }
-      ++curr;
-      continue;
+  istringstream in(text_bytes);
+  in >> std::noskipws;
+  while (has_data(in)) {
+    char c1 = next_hex_byte(in);
+    if (c1 == '\0') break;
+    if (!has_data(in)) {
+      raise << "input program truncated mid-byte\n" << end();
+      return;
     }
-    put(Memory, addr, strtol(curr, &curr, /*hex*/16));
-    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<unsigned int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    char c2 = next_hex_byte(in);
+    if (c2 == '\0') {
+      raise << "input program truncated mid-byte\n" << end();
+      return;
+    }
+    put(Memory, addr, to_byte(c1, c2));
+    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
     addr++;
   }
   End_of_program = addr;
+}
+
+char next_hex_byte(istream& in) {
+  while (has_data(in)) {
+    char c = '\0';
+    in >> c;
+    if (c == ' ' || c == '\n') continue;
+    while (c == '#') {
+      while (has_data(in)) {
+        in >> c;
+        if (c == '\n') {
+          in >> c;
+          break;
+        }
+      }
+    }
+    if (c >= '0' && c <= '9') return c;
+    else if (c >= 'a' && c <= 'f') return c;
+    else if (c >= 'A' && c <= 'F') return tolower(c);
+    // disallow any non-hex characters, including a '0x' prefix
+    if (!isspace(c)) {
+      raise << "invalid non-hex character '" << c << "'\n" << end();
+      break;
+    }
+  }
+  return '\0';
+}
+
+uint8_t to_byte(char hex_byte1, char hex_byte2) {
+  return to_hex_num(hex_byte1)*16 + to_hex_num(hex_byte2);
+}
+uint8_t to_hex_num(char c) {
+  if (c >= '0' && c <= '9') return c - '0';
+  if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+  assert(false);
+  return 0;
 }
 
 uint8_t next() {
