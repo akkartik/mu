@@ -17,10 +17,10 @@ union reg {
   uint32_t u;
 };
 :(before "End Globals")
-reg R[NUM_INT_REGISTERS] = { {0} };
+reg Reg[NUM_INT_REGISTERS] = { {0} };
 uint32_t EIP = 0;
 :(before "End Reset")
-bzero(R, sizeof(R));
+bzero(Reg, sizeof(Reg));
 EIP = 0;
 
 //:: simulated flag registers; just a subset that we care about
@@ -56,10 +56,10 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Globals")
-vector<uint8_t> Memory;
+vector<uint8_t> Mem;
 uint32_t End_of_program = 0;
 :(before "End Reset")
-Memory.resize(1024);
+Mem.resize(1024);
 End_of_program = 0;
 
 //:: core interpreter loop
@@ -69,10 +69,10 @@ End_of_program = 0;
 # instruction on one line.
 #
 # x86 instructions consist of the following parts (see cheatsheet.pdf):
-#   opcode        ModRM                 SIB                   displacement    immediate
-#   instruction   mod, reg, R/M bits    scale, index, base
-#   1-3 bytes     0/1 byte              0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
-    05                                                                        0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
+#   opcode        ModR/M                    SIB                   displacement    immediate
+#   instruction   mod, reg, Reg/Mem bits    scale, index, base
+#   1-3 bytes     0/1 byte                  0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+    05                                                                            0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
 # All hex bytes must be exactly 2 characters each. No '0x' prefixes.
 +load: 1 -> 05
 +load: 2 -> 0a
@@ -103,8 +103,8 @@ void run_one_instruction() {
   case 0x05: {  // add imm32 to EAX
     int32_t arg2 = imm32();
     trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
-    BINARY_ARITHMETIC_OP(+, R[EAX].i, arg2);
-    trace(98, "reg") << "storing 0x" << HEXWORD << R[EAX].i << " in reg EAX" << end();
+    BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
+    trace(98, "reg") << "storing 0x" << HEXWORD << Reg[EAX].i << " in reg EAX" << end();
     break;
   }
   // End Single-Byte Opcodes
@@ -154,8 +154,8 @@ void load_program(const string& text_bytes) {
       raise << "input program truncated mid-byte\n" << end();
       return;
     }
-    Memory.at(addr) = to_byte(c1, c2);
-    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(Memory.at(addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    Mem.at(addr) = to_byte(c1, c2);
+    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(Mem.at(addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
     addr++;
   }
   End_of_program = addr;
@@ -198,7 +198,7 @@ uint8_t to_hex_num(char c) {
 }
 
 inline uint8_t next() {
-  return Memory.at(EIP++);
+  return Mem.at(EIP++);
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
