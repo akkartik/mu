@@ -56,10 +56,10 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Globals")
-map<uint32_t, uint8_t> Memory;
+vector<uint8_t> Memory;
 uint32_t End_of_program = 0;
 :(before "End Reset")
-Memory.clear();
+Memory.resize(1024);
 End_of_program = 0;
 
 //:: core interpreter loop
@@ -95,7 +95,7 @@ void run(const string& text_bytes) {
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
-  switch(op = next()) {
+  switch (op = next()) {
   // our first opcode
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -154,8 +154,8 @@ void load_program(const string& text_bytes) {
       raise << "input program truncated mid-byte\n" << end();
       return;
     }
-    put(Memory, addr, to_byte(c1, c2));
-    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    Memory.at(addr) = to_byte(c1, c2);
+    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(Memory.at(addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
     addr++;
   }
   End_of_program = addr;
@@ -197,8 +197,8 @@ uint8_t to_hex_num(char c) {
   return 0;
 }
 
-uint8_t next() {
-  return get_or_insert(Memory, EIP++);
+inline uint8_t next() {
+  return Memory.at(EIP++);
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
