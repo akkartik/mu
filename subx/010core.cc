@@ -56,21 +56,29 @@ SF = ZF = OF = false;
 //:: simulated RAM
 
 :(before "End Globals")
-vector<uint8_t> Memory;
+map<uint32_t, uint8_t> Memory;
+uint32_t End_of_program = 0;
 :(before "End Reset")
 Memory.clear();
+End_of_program = 0;
 
 //:: core interpreter loop
 
 :(scenario add_imm32_to_eax)
-# op  ModRM   SIB   displacement  immediate
-  05                              0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
-+load: 05
-+load: 0a
-+load: 0b
-+load: 0c
-+load: 0d
-+run: add imm 0x0d0c0b0a to reg EAX
+# In scenarios, programs are a series of hex bytes, each (variable-length)
+# instruction on one line.
+#
+# x86 instructions consist of the following parts (see cheatsheet.pdf):
+#   opcode        ModRM                 SIB                   displacement    immediate
+#   instruction   mod, reg, R/M bits    scale, index, base
+#   1-3 bytes     0/1 byte              0/1 byte              0/1/2/4 bytes   0/1/2/4 bytes
+    0x05                                                                      0a 0b 0c 0d  # add 0x0d0c0b0a to EAX
++load: 1 -> 05
++load: 2 -> 0a
++load: 3 -> 0b
++load: 4 -> 0c
++load: 5 -> 0d
++run: add imm32 0x0d0c0b0a to reg EAX
 +reg: storing 0x0d0c0b0a in reg EAX
 
 :(code)
@@ -79,34 +87,33 @@ Memory.clear();
 void run(const string& text_bytes) {
   load_program(text_bytes);
   EIP = 1;  // preserve null pointer
-  while (EIP < Memory.size())
+  while (EIP < End_of_program)
     run_one_instruction();
 }
 
 void load_program(const string& text_bytes) {
-  assert(Memory.empty());
-  // initialize address 0
-  Memory.push_back(0);
   // now, to read the hex bytes in ASCII, we'll use C's strtol
   // strtol needs a char*, so we grab the buffer backing the string object
+  uint32_t addr = 1;
   char* curr = const_cast<char*>(&text_bytes[0]);   // non-standard approach, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
   char* max = curr + strlen(curr);
-  while (true) {
-    if (curr >= max) return;
+  while (curr < max) {
     // skip whitespace
     while (*curr == ' ' || *curr == '\n') ++curr;
     // skip comments
     if (*curr == '#') {
       while (*curr != '\n') {
         ++curr;
-        if (curr >= max) return;
+        if (curr >= max) break;
       }
       ++curr;
-      if (curr >= max) return;
+      continue;
     }
-    Memory.push_back(strtol(curr, &curr, /*hex*/16));
-    trace(99, "load") << HEXBYTE << static_cast<unsigned int>(Memory.back()) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    put(Memory, addr, strtol(curr, &curr, /*hex*/16));
+    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<unsigned int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    addr++;
   }
+  End_of_program = addr;
 }
 
 // skeleton of how x86 instructions are decoded
@@ -114,9 +121,12 @@ void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   switch(op = next()) {
   // our first opcode
-  case 0x05: {  // add EAX, imm32
+  case 0xf4:  // hlt
+    EIP = End_of_program;
+    break;
+  case 0x05: {  // add imm32 to EAX
     int32_t arg2 = imm32();
-    trace(2, "run") << "add imm 0x" << HEXWORD << arg2 << " to reg EAX" << end();
+    trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
     BINARY_ARITHMETIC_OP(+, R[EAX].i, arg2);
     trace(98, "reg") << "storing 0x" << HEXWORD << R[EAX].i << " in reg EAX" << end();
     break;
@@ -146,23 +156,19 @@ void run_one_instruction() {
       exit(1);
     }
     break;
-  case 0xf4:  // hlt
-    EIP = Memory.size();
-    break;
   default:
     cerr << "unrecognized opcode: " << std::hex << static_cast<int>(op) << '\n';
     exit(1);
   }
 }
 
-uint8_t next(void) {
-  if (EIP >= Memory.size()) return /*hlt*/0xf4;
-  return Memory.at(EIP++);
+uint8_t next() {
+  return get_or_insert(Memory, EIP++);
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
-int32_t imm32(void) {
-  int result = next();
+int32_t imm32() {
+  int32_t result = next();
   result |= (next()<<8);
   result |= (next()<<16);
   result |= (next()<<24);
