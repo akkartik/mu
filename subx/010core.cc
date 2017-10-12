@@ -91,31 +91,6 @@ void run(const string& text_bytes) {
     run_one_instruction();
 }
 
-void load_program(const string& text_bytes) {
-  uint32_t addr = 1;
-  // we'll use C's 'strtol` to parse ASCII hex bytes
-  // strtol needs a char*, so we grab the buffer backing the string object
-  char* curr = const_cast<char*>(&text_bytes[0]);   // non-portable, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
-  char* max = curr + strlen(curr);
-  while (curr < max) {
-    // skip whitespace
-    while (*curr == ' ' || *curr == '\n') ++curr;
-    // skip comments
-    if (*curr == '#') {
-      while (*curr != '\n') {
-        ++curr;
-        if (curr >= max) break;
-      }
-      ++curr;
-      continue;
-    }
-    put(Memory, addr, strtol(curr, &curr, /*hex*/16));
-    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<unsigned int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
-    addr++;
-  }
-  End_of_program = addr;
-}
-
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
@@ -160,6 +135,31 @@ void run_one_instruction() {
     cerr << "unrecognized opcode: " << std::hex << static_cast<int>(op) << '\n';
     exit(1);
   }
+}
+
+void load_program(const string& text_bytes) {
+  uint32_t addr = 1;
+  // we'll use C's 'strtol` to parse ASCII hex bytes
+  // strtol needs a char*, so we grab the buffer backing the string object
+  char* curr = const_cast<char*>(&text_bytes[0]);   // non-portable, but blessed by Herb Sutter (http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483)
+  char* max = curr + strlen(curr);
+  while (curr < max) {
+    // skip whitespace
+    while (*curr == ' ' || *curr == '\n') ++curr;
+    // skip comments
+    if (*curr == '#') {
+      while (*curr != '\n') {
+        ++curr;
+        if (curr >= max) break;
+      }
+      ++curr;
+      continue;
+    }
+    put(Memory, addr, strtol(curr, &curr, /*hex*/16));
+    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<unsigned int>(get_or_insert(Memory, addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    addr++;
+  }
+  End_of_program = addr;
 }
 
 uint8_t next() {
