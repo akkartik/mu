@@ -62,3 +62,24 @@ case 0x29: {  // subtract r32 from r/m32
   BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
   break;
 }
+
+//:: and
+
+:(scenario and_r32_with_r32)
+% Reg[0].i = 0x0a0b0c0d;
+% Reg[3].i = 0x000000ff;
+# op  ModR/M  SIB   displacement  immediate
+  21  d8                                      # and EBX (reg 3) with destination EAX (reg 0)
++run: and reg 3 with effective address
++run: effective address is reg 0
++run: storing 0x0000000d
+
+:(before "End Single-Byte Opcodes")
+case 0x21: {  // and r32 with r/m32
+  uint8_t modrm = next();
+  uint8_t arg2 = (modrm>>3)&0x7;
+  trace(2, "run") << "and reg " << NUM(arg2) << " with effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  BINARY_BITWISE_OP(&, *arg1, Reg[arg2].u);
+  break;
+}

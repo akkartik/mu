@@ -87,3 +87,50 @@ case 5: {
   BINARY_ARITHMETIC_OP(-, *arg1, arg2);
   break;
 }
+
+//:: and
+
+:(scenario and_imm32_with_eax)
+% Reg[EAX].i = 0xff;
+# op  ModR/M  SIB   displacement  immediate
+  25                              0a 0b 0c 0d  # and 0x0d0c0b0a with EAX (reg 0)
++run: and imm32 0x0d0c0b0a with reg EAX
++run: storing 0x0000000a
+
+:(before "End Single-Byte Opcodes")
+case 0x25: {  // and imm32 with EAX
+  int32_t arg2 = imm32();
+  trace(2, "run") << "and imm32 0x" << HEXWORD << arg2 << " with reg EAX" << end();
+  BINARY_BITWISE_OP(&, Reg[EAX].i, arg2);
+  break;
+}
+
+//:
+
+:(scenario and_imm32_with_mem_at_r32)
+% Reg[3].i = 0x60;
+% Mem.at(0x60) = 0xff;
+# op  ModRM   SIB   displacement  immediate
+  81  23                          0a 0b 0c 0d  # and 0x0d0c0b0a with *EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: subop and
++run: storing 0x0000000a
+
+//:
+
+:(scenario and_imm32_with_r32)
+% Reg[3].i = 0xff;
+# op  ModRM   SIB   displacement  immediate
+  81  e3                          0a 0b 0c 0d  # and 0x0d0c0b0a with EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is reg 3
++run: subop and
++run: storing 0x0000000a
+
+:(before "End Op 81 Subops")
+case 4: {
+  trace(2, "run") << "subop and" << end();
+  BINARY_BITWISE_OP(&, *arg1, arg2);
+  break;
+}
