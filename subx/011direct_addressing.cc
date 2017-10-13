@@ -125,3 +125,26 @@ case 0x31: {  // xor r32 with r/m32
   BINARY_BITWISE_OP(^, *arg1, Reg[arg2].u);
   break;
 }
+
+//:: not
+
+:(scenario not_r32)
+% Reg[3].i = 0x0f0f00ff;
+# op  ModR/M  SIB   displacement  immediate
+  f7  c3                                      # not EBX (reg 3)
++run: 'not' of effective address
++run: effective address is reg 3
++run: storing 0xf0f0ff00
+
+:(before "End Single-Byte Opcodes")
+case 0xf7: {  // xor r32 with r/m32
+  uint8_t modrm = next();
+  trace(2, "run") << "'not' of effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  *arg1 = ~(*arg1);
+  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  SF = (*arg1 >> 31);
+  ZF = (*arg1 == 0);
+  OF = false;
+  break;
+}

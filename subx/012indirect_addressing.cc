@@ -196,3 +196,18 @@ case 0x33: {  // xor r/m32 with r32
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
 }
+
+//:: not
+
+:(scenario not_r32_with_mem_at_r32)
+% Reg[3].i = 0x60;
+# word at 0x60 is 0x0f0f00ff
+% Mem.at(0x60) = 0xff;
+% Mem.at(0x61) = 0x00;
+% Mem.at(0x62) = 0x0f;
+% Mem.at(0x63) = 0x0f;
+# op  ModRM   SIB   displacement  immediate
+  f7  03                                      # negate *EBX (reg 3)
++run: 'not' of effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: storing 0xf0f0ff00
