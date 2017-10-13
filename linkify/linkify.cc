@@ -84,6 +84,11 @@ void read_tags(const string& filename, map<string, syminfo>& info) {
   string dummy;
   while (has_data(in)) {
     string symbol;  in >> symbol;
+    if (symbol == "operator") {
+      // unsupported
+      getline(in, dummy);  // skip
+      continue;
+    }
     encode_some_html_entities(symbol);
 //?     cerr << symbol << '\n';
     if (info.find(symbol) != info.end()) {
@@ -223,8 +228,7 @@ void replace_tags_in_file(const string& filename, const map<string, syminfo>& in
 int main(int argc, const char* argv[]) {
   map<string, syminfo> info;
   read_tags(argv[1], info);
-  for (int i = 2;  i < argc;  ++i) {
+  for (int i = 2;  i < argc;  ++i)
     replace_tags_in_file(argv[i], info);
-  }
   return 0;
 }
