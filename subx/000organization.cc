@@ -148,3 +148,6 @@ void assert_little_endian() {
     exit(1);
   }
 }
+:(before "End Includes")
+#include<iostream>
+using std::cerr;
