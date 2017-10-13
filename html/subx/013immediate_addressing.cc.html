@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - subx/013immediate_addressing.cc</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="cpp">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+a { color:#eeeeee; text-decoration: none; }
+a:hover { text-decoration: underline; }
+* { font-size: 12pt; font-size: 1em; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.Conceal { color: #4e4e4e; }
+.SalientComment { color: #00ffff; }
+.Comment { color: #9090ff; }
+.Comment a { color:#0000ee; text-decoration:underline; }
+.Delimiter { color: #800080; }
+.LineNr { color: #444444; }
+.Identifier { color: #c0a020; }
+.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
+.PreProc { color: #800080; }
+.cSpecial { color: #008000; }
+.traceContains { color: #008000; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="Comment">//: instructions that (immediately) contain an argument to act with</span>
+<span id="L2" class="LineNr"> 2 </span>
+<span id="L3" class="LineNr"> 3 </span><span class="Delimiter">:(scenario add_imm32_to_r32)</span>
+<span id="L4" class="LineNr"> 4 </span><span class="Special">% Reg[3].i = 1;</span>
+<span id="L5" class="LineNr"> 5 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L6" class="LineNr"> 6 </span>  <span class="Constant">81</span>  c3                          0a 0b 0c 0d  <span class="Comment"># add 0x0d0c0b0a to EBX (reg 3)</span>
+<span id="L7" class="LineNr"> 7 </span><span class="traceContains">+run: combine imm32 0x0d0c0b0a with effective address</span>
+<span id="L8" class="LineNr"> 8 </span><span class="traceContains">+run: effective address is reg 3</span>
+<span id="L9" class="LineNr"> 9 </span><span class="traceContains">+run: subop add</span>
+<span id="L10" class="LineNr">10 </span><span class="traceContains">+run: storing 0x0d0c0b0b</span>
+<span id="L11" class="LineNr">11 </span>
+<span id="L12" class="LineNr">12 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L13" class="LineNr">13 </span><span class="Normal">case</span> <span class="Constant">0x81</span>: <span class="Delimiter">{</span>  <span class="Comment">// combine imm32 with r/m32</span>
+<span id="L14" class="LineNr">14 </span>  <span class="Normal">uint8_t</span> modrm = next<span class="Delimiter">();</span>
+<span id="L15" class="LineNr">15 </span>  <span class="Normal">int32_t</span> arg2 = imm32<span class="Delimiter">();</span>
+<span id="L16" class="LineNr">16 </span>  trace<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;combine imm32 0x&quot;</span> &lt;&lt; HEXWORD &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; with effective address&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L17" class="LineNr">17 </span>  <span class="Normal">int32_t</span>* arg1 = effective_address<span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L18" class="LineNr">18 </span>  <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>  <span class="Comment">// middle 3 'reg opcode' bits</span>
+<span id="L19" class="LineNr">19 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>subop<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L20" class="LineNr">20 </span>  <span class="Normal">case</span> <span class="Constant">0</span>:
+<span id="L21" class="LineNr">21 </span>  <span class="Conceal">¦</span> trace<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subop add&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L22" class="LineNr">22 </span>  <span class="Conceal">¦</span> BINARY_ARITHMETIC_OP<span class="Delimiter">(</span>+<span class="Delimiter">,</span> *arg1<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
+<span id="L23" class="LineNr">23 </span>  <span class="Conceal">¦</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L24" class="LineNr">24 </span>  <span class="Comment">// End Op 81 Subops</span>
+<span id="L25" class="LineNr">25 </span>  <span class="Normal">default</span>:
+<span id="L26" class="LineNr">26 </span>  <span class="Conceal">¦</span> cerr &lt;&lt; <span class="Constant">&quot;unrecognized sub-opcode after 81: &quot;</span> &lt;&lt; NUM<span class="Delimiter">(</span>subop<span class="Delimiter">)</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L27" class="LineNr">27 </span>  <span class="Conceal">¦</span> exit<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L28" class="LineNr">28 </span>  <span class="Delimiter">}</span>
+<span id="L29" class="LineNr">29 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L30" class="LineNr">30 </span><span class="Delimiter">}</span>
+<span id="L31" class="LineNr">31 </span>
+<span id="L32" class="LineNr">32 </span><span class="Comment">//:</span>
+<span id="L33" class="LineNr">33 </span>
+<span id="L34" class="LineNr">34 </span><span class="Delimiter">:(scenario add_imm32_to_mem_at_r32)</span>
+<span id="L35" class="LineNr">35 </span><span class="Special">% Reg[3].i = 0x60;</span>
+<span id="L36" class="LineNr">36 </span><span class="Special">% Mem.at(0x60) = 1;</span>
+<span id="L37" class="LineNr">37 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
+<span id="L38" class="LineNr">38 </span>  <span class="Constant">81</span>  <span class="PreProc">0</span><span class="Constant">3</span>                          0a 0b 0c 0d  <span class="Comment"># add 0x0d0c0b0a to *EBX (reg 3)</span>
+<span id="L39" class="LineNr">39 </span><span class="traceContains">+run: combine imm32 0x0d0c0b0a with effective address</span>
+<span id="L40" class="LineNr">40 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 3)</span>
+<span id="L41" class="LineNr">41 </span><span class="traceContains">+run: subop add</span>
+<span id="L42" class="LineNr">42 </span><span class="traceContains">+run: storing 0x0d0c0b0b</span>
+<span id="L43" class="LineNr">43 </span>
+<span id="L44" class="LineNr">44 </span><span class="SalientComment">//:: subtract</span>
+<span id="L45" class="LineNr">45 </span>
+<span id="L46" class="LineNr">46 </span><span class="Delimiter">:(scenario sub_imm32_from_eax)</span>
+<span id="L47" class="LineNr">47 </span><span class="Special">% Reg[EAX].i = 0x0d0c0baa;</span>
+<span id="L48" class="LineNr">48 </span><span class="Comment"># op  ModR/M  SIB   displacement  immediate</span>
+<span id="L49" class="LineNr">49 </span>  2d                              0a 0b 0c 0d  <span class="Comment"># subtract 0x0d0c0b0a from EAX (reg 0)</span>
+<span id="L50" class="LineNr">50 </span><span class="traceContains">+run: subtract imm32 0x0d0c0b0a from reg EAX</span>
+<span id="L51" class="LineNr">51 </span><span class="traceContains">+run: storing 0x000000a0</span>
+<span id="L52" class="LineNr">52 </span>
+<span id="L53" class="LineNr">53 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L54" class="LineNr">54 </span><span class="Normal">case</span> <span class="Constant">0x2d</span>: <span class="Delimiter">{</span>  <span class="Comment">// subtract imm32 from EAX</span>
+<span id="L55" class="LineNr">55 </span>  <span class="Normal">int32_t</span> arg2 = imm32<span class="Delimiter">();</span>
+<span id="L56" class="LineNr">56 </span>  trace<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subtract imm32 0x&quot;</span> &lt;&lt; HEXWORD &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; from reg EAX&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L57" class="LineNr">57 </span>  BINARY_ARITHMETIC_OP<span class="Delimiter">(</span>-<span class="Delimiter">,</span> Reg[EAX]<span class="Delimiter">.</span>i<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
+<span id="L58" class="LineNr">58 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L59" class="LineNr">59 </span><span class="Delimiter">}</span>
+<span id="L60" class="LineNr">60 </span>
+<span id="L61" class="LineNr">61 </span><span class="Comment">//:</span>
+<span id="L62" class="LineNr">62 </span>
+<span id="L63" class="LineNr">63 </span><span class="Delimiter">:(scenario sub_imm32_from_mem_at_r32)</span>
+<span id="L64" class="LineNr">64 </span><span class="Special">% Reg[3].i = 0x60;</span>
+<span id="L65" class="LineNr">65 </span><span class="Special">% Mem.at(0x60) = 10;</span>
+<span id="L66" class="LineNr">66 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L67" class="LineNr">67 </span>  <span class="Constant">81</span>  2b                          <span class="PreProc">0</span><span class="Constant">1</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># subtract 1 from *EBX (reg 3)</span>
+<span id="L68" class="LineNr">68 </span><span class="traceContains">+run: combine imm32 0x00000001 with effective address</span>
+<span id="L69" class="LineNr">69 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 3)</span>
+<span id="L70" class="LineNr">70 </span><span class="traceContains">+run: subop subtract</span>
+<span id="L71" class="LineNr">71 </span><span class="traceContains">+run: storing 0x00000009</span>
+<span id="L72" class="LineNr">72 </span>
+<span id="L73" class="LineNr">73 </span><span class="Comment">//:</span>
+<span id="L74" class="LineNr">74 </span>
+<span id="L75" class="LineNr">75 </span><span class="Delimiter">:(scenario sub_imm32_from_r32)</span>
+<span id="L76" class="LineNr">76 </span><span class="Special">% Reg[3].i = 10;</span>
+<span id="L77" class="LineNr">77 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L78" class="LineNr">78 </span>  <span class="Constant">81</span>  eb                          <span class="PreProc">0</span><span class="Constant">1</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># subtract 1 from EBX (reg 3)</span>
+<span id="L79" class="LineNr">79 </span><span class="traceContains">+run: combine imm32 0x00000001 with effective address</span>
+<span id="L80" class="LineNr">80 </span><span class="traceContains">+run: effective address is reg 3</span>
+<span id="L81" class="LineNr">81 </span><span class="traceContains">+run: subop subtract</span>
+<span id="L82" class="LineNr">82 </span><span class="traceContains">+run: storing 0x00000009</span>
+<span id="L83" class="LineNr">83 </span>
+<span id="L84" class="LineNr">84 </span><span class="Delimiter">:(before &quot;End Op 81 Subops&quot;)</span>
+<span id="L85" class="LineNr">85 </span><span class="Normal">case</span> <span class="Constant">5</span>: <span class="Delimiter">{</span>
+<span id="L86" class="LineNr">86 </span>  trace<span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subop subtract&quot;</span> &lt;&lt; end<span class="Delimiter">();</span>
+<span id="L87" class="LineNr">87 </span>  BINARY_ARITHMETIC_OP<span class="Delimiter">(</span>-<span class="Delimiter">,</span> *arg1<span class="Delimiter">,</span> arg2<span class="Delimiter">);</span>
+<span id="L88" class="LineNr">88 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L89" class="LineNr">89 </span><span class="Delimiter">}</span>
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

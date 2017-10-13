@@ -86,5 +86,19 @@ process() {
     mv $f.out $f
   done
 
+  rm html/subx/*.html
+  for f in subx/*.cc
+  do
+    process $f
+  done
+  ( cd subx
+    ctags -x *.cc > /tmp/tags
+  )
+  linkify/linkify /tmp/tags html/subx/*.html
+  for f in html/subx/*.cc.html
+  do
+    mv $f.out $f
+  done
+
 rm /tmp/tags
 ( cd linkify; clean; )
