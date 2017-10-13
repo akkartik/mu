@@ -118,3 +118,20 @@ case 0x03: {  // add r/m32 to r32
   BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
   break;
 }
+
+//:
+
+:(scenario sub_imm32_from_eax)
+% Reg[EAX].i = 0x0d0c0baa;
+# op  ModR/M  SIB   displacement  immediate
+  2d                              0a 0b 0c 0d  # subtract 0x0d0c0b0a from EAX (reg 0)
++run: subtract imm32 0x0d0c0b0a from reg EAX
++run: storing 0x000000a0
+
+:(before "End Single-Byte Opcodes")
+case 0x2d: {  // subtract imm32 from EAX
+  int32_t arg2 = imm32();
+  trace(2, "run") << "subtract imm32 0x" << HEXWORD << arg2 << " from reg EAX" << end();
+  BINARY_ARITHMETIC_OP(-, Reg[EAX].i, arg2);
+  break;
+}

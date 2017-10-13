@@ -83,7 +83,7 @@ End_of_program = 0;
 +load: 4 -> 0c
 +load: 5 -> 0d
 +run: add imm32 0x0d0c0b0a to reg EAX
-+reg: storing 0x0d0c0b0a in reg EAX
++run: storing 0x0d0c0b0a
 
 :(code)
 // helper for tests: load a program into memory from a textual representation
@@ -107,7 +107,6 @@ void run_one_instruction() {
     int32_t arg2 = imm32();
     trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
     BINARY_ARITHMETIC_OP(+, Reg[EAX].i, arg2);
-    trace(98, "reg") << "storing 0x" << HEXWORD << Reg[EAX].i << " in reg EAX" << end();
     break;
   }
   // End Single-Byte Opcodes
