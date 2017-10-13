@@ -1,6 +1,6 @@
-//:: add r32 to r/m32
+//:: register indirect addressing
 
-:(scenario add_r32_to_rm32)
+:(scenario add_r32_to_mem_at_r32)
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
 # word in addresses 0x60-0x63 has value 1
@@ -50,9 +50,9 @@ int32_t* effective_address(uint8_t modrm) {
   return result;
 }
 
-//:: add imm32 to r/m32
+//:: register direct addressing
 
-:(scenario add_imm32_to_rm32)
+:(scenario add_imm32_to_r32)
 % Reg[3].i = 1;
 # op  ModRM   SIB   displacement  immediate
   81  c3                          0a 0b 0c 0d  # add 0x0d0c0b0a to EBX (reg 3)
@@ -85,3 +85,14 @@ case 3:
   trace(2, "run") << "effective address is reg " << NUM(rm) << end();
   result = &Reg[rm].i;
   break;
+
+//:: lots more tests
+
+:(scenario add_imm32_to_mem_at_r32)
+% Reg[3].i = 0x60;
+% Mem[0x60] = 1;
+# op  ModR/M  SIB   displacement  immediate
+  81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX (reg 3)
++run: add imm32 0x0d0c0b0a to effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: storing 0x0d0c0b0b
