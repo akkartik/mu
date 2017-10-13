@@ -33,14 +33,14 @@ int32_t* effective_address(uint8_t modrm) {
     // mod 0 is usually indirect addressing
     switch (rm) {
     default:
-      trace(99, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << NUM(rm) << ")" << end();
+      trace(2, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << NUM(rm) << ")" << end();
       assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
       result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
       break;
-    // End Mod 0 Special-Cases
+    // End Mod 0 Special-cases
     }
     break;
-  // End Mod Special-Cases
+  // End Mod Special-cases
   default:
     cerr << "unrecognized mod bits: " << NUM(mod) << '\n';
     exit(1);
