@@ -4,7 +4,7 @@
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
 # word in addresses 0x60-0x63 has value 1
-% Mem[0x60] = 1;
+% Mem.at(0x60) = 1;
 # op  ModR/M  SIB   displacement  immediate
   01  18                                     # add EBX (reg 3) to *EAX (reg 0)
 +run: add reg 3 to effective address
@@ -90,9 +90,31 @@ case 3:
 
 :(scenario add_imm32_to_mem_at_r32)
 % Reg[3].i = 0x60;
-% Mem[0x60] = 1;
+% Mem.at(0x60) = 1;
 # op  ModR/M  SIB   displacement  immediate
   81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX (reg 3)
 +run: add imm32 0x0d0c0b0a to effective address
 +run: effective address is mem at address 0x60 (reg 3)
 +run: storing 0x0d0c0b0b
+
+//:
+
+:(scenario add_mem_at_r32_to_r32)
+% Reg[0].i = 0x60;
+% Reg[3].i = 0x10;
+% Mem.at(0x60) = 1;
+# op  ModR/M  SIB   displacement  immediate
+  03  18                                      # add *EAX (reg 0) to EBX (reg 3)
++run: add effective address to reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x00000011
+
+:(before "End Single-Byte Opcodes")
+case 0x03: {  // add r/m32 to r32
+  uint8_t modrm = next();
+  uint8_t arg1 = (modrm>>3)&0x7;
+  trace(2, "run") << "add effective address to reg " << NUM(arg1) << end();
+  const int32_t* arg2 = effective_address(modrm);
+  BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
+  break;
+}

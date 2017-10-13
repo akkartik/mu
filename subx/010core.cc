@@ -61,6 +61,7 @@ SF = ZF = OF = false;
 vector<uint8_t> Mem;
 uint32_t End_of_program = 0;
 :(before "End Reset")
+Mem.clear();
 Mem.resize(1024);
 End_of_program = 0;
 
