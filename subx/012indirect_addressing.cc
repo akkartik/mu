@@ -156,3 +156,43 @@ case 0x0b: {  // or r/m32 with r32
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
 }
+
+//:: xor
+
+:(scenario xor_r32_with_mem_at_r32)
+% Reg[0].i = 0x60;
+% Mem.at(0x60) = 0x0d;
+% Mem.at(0x61) = 0x0c;
+% Mem.at(0x62) = 0xbb;
+% Mem.at(0x63) = 0xaa;
+% Reg[3].i = 0xa0b0c0d0;
+# op  ModRM   SIB   displacement  immediate
+  31  18                                      # xor EBX (reg 3) with *EAX (reg 0)
++run: xor reg 3 with effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x0a0bccdd
+
+//:
+
+:(scenario xor_mem_at_r32_with_r32)
+% Reg[0].i = 0x60;
+% Mem.at(0x60) = 0x0d;
+% Mem.at(0x61) = 0x0c;
+% Mem.at(0x62) = 0x0b;
+% Mem.at(0x63) = 0x0a;
+% Reg[3].i = 0xa0b0c0d0;
+# op  ModRM   SIB   displacement  immediate
+  33  18                                      # xor *EAX (reg 0) with EBX (reg 3)
++run: xor effective address with reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0xaabbccdd
+
+:(before "End Single-Byte Opcodes")
+case 0x33: {  // xor r/m32 with r32
+  uint8_t modrm = next();
+  uint8_t arg1 = (modrm>>3)&0x7;
+  trace(2, "run") << "xor effective address with reg " << NUM(arg1) << end();
+  const int32_t* arg2 = effective_address(modrm);
+  BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
+  break;
+}
