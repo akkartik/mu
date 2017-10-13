@@ -156,3 +156,15 @@ case 5: {
   BINARY_ARITHMETIC_OP(-, *arg1, arg2);
   break;
 }
+
+//:
+
+:(scenario sub_imm32_from_mem_at_r32)
+% Reg[3].i = 0x60;
+% Mem.at(0x60) = 10;
+# op  ModRM   SIB   displacement  immediate
+  81  2b                          01 00 00 00  # subtract 1 from *EBX (reg 3)
++run: combine imm32 0x00000001 with effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: subop subtract
++run: storing 0x00000009
