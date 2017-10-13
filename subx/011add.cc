@@ -1,3 +1,5 @@
+//:: add r32 to r/m32
+
 :(scenario add_r32_to_rm32)
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
@@ -47,6 +49,8 @@ int32_t* effective_address(uint8_t modrm) {
   }
   return result;
 }
+
+//:: add imm32 to r/m32
 
 :(scenario add_imm32_to_rm32)
 % Reg[3].i = 1;
