@@ -91,7 +91,6 @@ Dump_label = "";
 // compilation units. So no extern linkage.
 const int Max_depth = 9999;
 const int Error_depth = 0;  // definitely always print errors
-const int App_depth = 2;  // temporarily where all Mu code will trace to
 
 struct trace_stream {
   vector<trace_line> past_lines;
