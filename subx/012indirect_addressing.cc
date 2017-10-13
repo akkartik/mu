@@ -48,7 +48,7 @@ case 0x03: {  // add r/m32 to r32
 
 //:: subtract
 
-:(scenario sub_r32_from_mem_at_r32)
+:(scenario subtract_r32_from_mem_at_r32)
 % Reg[0].i = 0x60;
 % Mem.at(0x60) = 10;
 % Reg[3].i = 1;
@@ -60,7 +60,7 @@ case 0x03: {  // add r/m32 to r32
 
 //:
 
-:(scenario sub_mem_at_r32_from_r32)
+:(scenario subtract_mem_at_r32_from_r32)
 % Reg[0].i = 0x60;
 % Mem.at(0x60) = 1;
 % Reg[3].i = 10;

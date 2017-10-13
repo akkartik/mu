@@ -43,7 +43,7 @@ case 0x81: {  // combine imm32 with r/m32
 
 //:: subtract
 
-:(scenario sub_imm32_from_eax)
+:(scenario subtract_imm32_from_eax)
 % Reg[EAX].i = 0x0d0c0baa;
 # op  ModR/M  SIB   displacement  immediate
   2d                              0a 0b 0c 0d  # subtract 0x0d0c0b0a from EAX (reg 0)
@@ -60,7 +60,7 @@ case 0x2d: {  // subtract imm32 from EAX
 
 //:
 
-:(scenario sub_imm32_from_mem_at_r32)
+:(scenario subtract_imm32_from_mem_at_r32)
 % Reg[3].i = 0x60;
 % Mem.at(0x60) = 10;
 # op  ModRM   SIB   displacement  immediate
@@ -72,7 +72,7 @@ case 0x2d: {  // subtract imm32 from EAX
 
 //:
 
-:(scenario sub_imm32_from_r32)
+:(scenario subtract_imm32_from_r32)
 % Reg[3].i = 10;
 # op  ModRM   SIB   displacement  immediate
   81  eb                          01 00 00 00  # subtract 1 from EBX (reg 3)
