@@ -29,18 +29,21 @@ int32_t* effective_address(uint8_t modrm) {
   uint8_t rm = modrm & 0x7;
   int32_t* result = 0;
   switch (mod) {
-    case 0:
-      // mod 0 is usually indirect addressing
-      switch (rm) {
-      default:
-        trace(99, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << static_cast<int>(rm) << ")" << end();
-        assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
-        result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
-        break;
-      // End Mod 0 Special-Cases
-      }
+  case 0:
+    // mod 0 is usually indirect addressing
+    switch (rm) {
+    default:
+      trace(99, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << static_cast<int>(rm) << ")" << end();
+      assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
+      result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
       break;
-    // End Mod Special-Cases
+    // End Mod 0 Special-Cases
+    }
+    break;
+  // End Mod Special-Cases
+  default:
+    cerr << "unrecognized mod bits: " << static_cast<int>(mod) << '\n';
+    exit(1);
   }
   return result;
 }

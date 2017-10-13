@@ -98,10 +98,10 @@ void run(const string& text_bytes) {
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
   switch (op = next()) {
-  // our first opcode
   case 0xf4:  // hlt
     EIP = End_of_program;
     break;
+  // our first opcode
   case 0x05: {  // add imm32 to EAX
     int32_t arg2 = imm32();
     trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to reg EAX" << end();
