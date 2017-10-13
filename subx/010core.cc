@@ -114,7 +114,7 @@ void run_one_instruction() {
     switch(op2 = next()) {
     // End Two-Byte Opcodes Starting With 0f
     default:
-      cerr << "unrecognized second opcode after 0f: " << std::hex << static_cast<int>(op2) << '\n';
+      cerr << "unrecognized second opcode after 0f: " << HEXBYTE << NUM(op2) << '\n';
       exit(1);
     }
     break;
@@ -125,17 +125,17 @@ void run_one_instruction() {
       switch(op3 = next()) {
       // End Three-Byte Opcodes Starting With f3 0f
       default:
-        cerr << "unrecognized third opcode after f3 0f: " << std::hex << static_cast<int>(op3) << '\n';
+        cerr << "unrecognized third opcode after f3 0f: " << HEXBYTE << NUM(op3) << '\n';
         exit(1);
       }
       break;
     default:
-      cerr << "unrecognized second opcode after f3: " << std::hex << static_cast<int>(op2) << '\n';
+      cerr << "unrecognized second opcode after f3: " << HEXBYTE << NUM(op2) << '\n';
       exit(1);
     }
     break;
   default:
-    cerr << "unrecognized opcode: " << std::hex << static_cast<int>(op) << '\n';
+    cerr << "unrecognized opcode: " << HEXBYTE << NUM(op) << '\n';
     exit(1);
   }
 }
@@ -157,7 +157,7 @@ void load_program(const string& text_bytes) {
       return;
     }
     Mem.at(addr) = to_byte(c1, c2);
-    trace(99, "load") << addr << " -> " << HEXBYTE << static_cast<int>(Mem.at(addr)) << end();  // ugly that iostream doesn't print uint8_t as an integer
+    trace(99, "load") << addr << " -> " << HEXBYTE << NUM(Mem.at(addr)) << end();
     addr++;
   }
   End_of_program = addr;
@@ -216,4 +216,6 @@ int32_t imm32() {
 #include <iomanip>
 #define HEXBYTE  std::hex << std::setw(2) << std::setfill('0')
 #define HEXWORD  std::hex << std::setw(8) << std::setfill('0')
+// ugly that iostream doesn't print uint8_t as an integer
+#define NUM(X) static_cast<int>(X)
 #include <stdint.h>

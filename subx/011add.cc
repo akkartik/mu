@@ -13,7 +13,7 @@
 case 0x01: {  // add r32 to r/m32
   uint8_t modrm = next();
   uint8_t arg2 = (modrm>>3)&0x7;
-  trace(2, "run") << "add reg " << static_cast<int>(arg2) << " to effective address" << end();
+  trace(2, "run") << "add reg " << NUM(arg2) << " to effective address" << end();
   int32_t* arg1 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(+, *arg1, Reg[arg2].i);
   break;
@@ -33,7 +33,7 @@ int32_t* effective_address(uint8_t modrm) {
     // mod 0 is usually indirect addressing
     switch (rm) {
     default:
-      trace(99, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << static_cast<int>(rm) << ")" << end();
+      trace(99, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (reg " << NUM(rm) << ")" << end();
       assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
       result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
       break;
@@ -42,7 +42,7 @@ int32_t* effective_address(uint8_t modrm) {
     break;
   // End Mod Special-Cases
   default:
-    cerr << "unrecognized mod bits: " << static_cast<int>(mod) << '\n';
+    cerr << "unrecognized mod bits: " << NUM(mod) << '\n';
     exit(1);
   }
   return result;
