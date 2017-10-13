@@ -190,3 +190,25 @@ case 0x29: {  // subtract r32 from r/m32
   BINARY_ARITHMETIC_OP(-, *arg1, Reg[arg2].i);
   break;
 }
+
+//:
+
+:(scenario sub_mem_at_r32_from_r32)
+% Reg[0].i = 0x60;
+% Mem.at(0x60) = 1;
+% Reg[3].i = 10;
+# op  ModRM   SIB   displacement  immediate
+  2b  18                                      # subtract *EAX (reg 0) from EBX (reg 3)
++run: subtract effective address from reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x00000009
+
+:(before "End Single-Byte Opcodes")
+case 0x2b: {  // subtract r/m32 from r32
+  uint8_t modrm = next();
+  uint8_t arg1 = (modrm>>3)&0x7;
+  trace(2, "run") << "subtract effective address from reg " << NUM(arg1) << end();
+  const int32_t* arg2 = effective_address(modrm);
+  BINARY_ARITHMETIC_OP(-, Reg[arg1].i, *arg2);
+  break;
+}
