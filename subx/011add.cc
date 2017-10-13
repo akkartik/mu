@@ -7,7 +7,7 @@
   01  18                                     # add EBX (reg 3) to *EAX (reg 0)
 +run: add reg 3 to effective address
 +run: effective address is mem at address 0x60 (reg 0)
-+run: storing 0x11
++run: storing 0x00000011
 
 :(before "End Single-Byte Opcodes")
 case 0x01: {  // add r32 to r/m32
@@ -47,3 +47,37 @@ int32_t* effective_address(uint8_t modrm) {
   }
   return result;
 }
+
+:(scenario add_imm32_to_rm32)
+% Reg[3].i = 1;
+# op  ModRM   SIB   displacement  immediate
+  81  c3                          0a 0b 0c 0d  # add 0x0d0c0b0a to EBX (reg 3)
++run: add imm32 0x0d0c0b0a to effective address
++run: effective address is reg 3
++run: storing 0x0d0c0b0b
+
+:(before "End Single-Byte Opcodes")
+case 0x81: {  // combine imm32 with r/m32
+  uint8_t modrm = next();
+  int32_t arg2 = imm32();
+  trace(2, "run") << "add imm32 0x" << HEXWORD << arg2 << " to effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  switch (subop) {
+  case 0:
+    BINARY_ARITHMETIC_OP(+, *arg1, arg2);
+    break;
+  // End Op 81 Subops
+  default:
+    cerr << "unrecognized sub-opcode after 81: " << NUM(subop) << '\n';
+    exit(1);
+  }
+  break;
+}
+
+:(before "End Mod Special-cases")
+case 3:
+  // mod 3 is just register direct addressing
+  trace(2, "run") << "effective address is reg " << NUM(rm) << end();
+  result = &Reg[rm].i;
+  break;
