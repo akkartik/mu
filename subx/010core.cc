@@ -35,6 +35,8 @@ SF = ZF = OF = false;
 //: how the flag registers are updated after each instruction
 
 :(before "End Includes")
+// Combine 'arg1' and 'arg2' with arithmetic operation 'op' and store the
+// result in 'arg1', then update flags.
 // beware: no side-effects in args
 #define BINARY_ARITHMETIC_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be signed */ \
@@ -46,6 +48,8 @@ SF = ZF = OF = false;
   OF = (arg1 != tmp); \
 }
 
+// Combine 'arg1' and 'arg2' with bitwise operation 'op' and store the result
+// in 'arg1', then update flags.
 #define BINARY_BITWISE_OP(op, arg1, arg2) { \
   /* arg1 and arg2 must be unsigned */ \
   arg1 = arg1 op arg2; \
