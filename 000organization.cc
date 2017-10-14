@@ -79,10 +79,10 @@
 //:
 //: This 'subsetting guarantee' ensures that this directory contains a
 //: cleaned-up narrative of the evolution of this codebase. Organizing
-//: autobiographically allows a newcomers to rapidly orient themselves,
-//: reading the first few files to understand a simple gestalt of a program's
-//: core purpose and features, and later gradually working their way through
-//: other features as the need arises.
+//: autobiographically allows newcomers to rapidly orient themselves, reading
+//: the first few files to understand a simple gestalt of a program's core
+//: purpose and features, and later gradually working their way through other
+//: features as the need arises.
 //:
 //: Programmers shouldn't need to understand everything about a program to
 //: hack on it. But they shouldn't be prevented from a thorough understanding
