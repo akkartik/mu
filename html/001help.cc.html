@@ -256,14 +256,14 @@ if ('onhashchange' in window) {
 <span id="L193" class="LineNr">193 </span><span class="PreProc">#ifdef __APPLE__</span>
 <span id="L194" class="LineNr">194 </span><span class="Comment">// Public domain polyfill for feenableexcept on OS X</span>
 <span id="L195" class="LineNr">195 </span><span class="Comment">// <a href="http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c">http://www-personal.umich.edu/~williams/archive/computation/fe-handling-example.c</a></span>
-<span id="L196" class="LineNr">196 </span><span class="Normal">int</span> <a href='001help.cc.html#L196'>feenableexcept</a> <span class="Delimiter">(</span><span class="Normal">unsigned</span> <span class="Normal">int</span> excepts<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L196" class="LineNr">196 </span><span class="Normal">int</span> <a href='001help.cc.html#L196'>feenableexcept</a><span class="Delimiter">(</span><span class="Normal">unsigned</span> <span class="Normal">int</span> excepts<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L197" class="LineNr">197 </span>  <span class="Normal">static</span> fenv_t fenv<span class="Delimiter">;</span>
 <span id="L198" class="LineNr">198 </span>  <span class="Normal">unsigned</span> <span class="Normal">int</span> new_excepts = excepts &amp; FE_ALL_EXCEPT<span class="Delimiter">;</span>
 <span id="L199" class="LineNr">199 </span>  <span class="Normal">unsigned</span> <span class="Normal">int</span> old_excepts<span class="Delimiter">;</span>
 <span id="L200" class="LineNr">200 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>fegetenv<span class="Delimiter">(</span>&amp;fenv<span class="Delimiter">))</span> <span class="Identifier">return</span> -<span class="Constant">1</span><span class="Delimiter">;</span>
 <span id="L201" class="LineNr">201 </span>  old_excepts = fenv<span class="Delimiter">.</span>__control &amp; FE_ALL_EXCEPT<span class="Delimiter">;</span>
 <span id="L202" class="LineNr">202 </span>  fenv<span class="Delimiter">.</span>__control &amp;= ~new_excepts<span class="Delimiter">;</span>
-<span id="L203" class="LineNr">203 </span>  fenv<span class="Delimiter">.</span>__mxcsr   &amp;= ~<span class="Delimiter">(</span>new_excepts &lt;&lt; <span class="Constant">7</span><span class="Delimiter">);</span>
+<span id="L203" class="LineNr">203 </span>  fenv<span class="Delimiter">.</span>__mxcsr &amp;= ~<span class="Delimiter">(</span>new_excepts &lt;&lt; <span class="Constant">7</span><span class="Delimiter">);</span>
 <span id="L204" class="LineNr">204 </span>  <span class="Identifier">return</span> fesetenv<span class="Delimiter">(</span>&amp;fenv<span class="Delimiter">)</span> ? -<span class="Constant">1</span> : old_excepts<span class="Delimiter">;</span>
 <span id="L205" class="LineNr">205 </span><span class="Delimiter">}</span>
 <span id="L206" class="LineNr">206 </span><span class="PreProc">#endif</span>
