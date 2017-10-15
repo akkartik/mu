@@ -229,7 +229,7 @@ case 6: {
   break;
 }
 
-//:: compare
+//:: compare (cmp)
 
 :(scenario compare_imm32_with_eax_greater)
 % Reg[0].i = 0x0d0c0b0a;
@@ -331,3 +331,38 @@ case 7: {
 +run: combine imm32 0x0d0c0b0a with effective address
 +run: effective address is mem at address 0x60 (reg 3)
 +run: SF=0; ZF=1; OF=0
+
+//:: copy (mov)
+
+:(scenario copy_imm32_to_r32)
+# op  ModRM   SIB   displacement  immediate
+  b8  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to EBX (reg 3)
++run: copy imm32 0x0d0c0b0a to reg 3
+
+:(before "End Single-Byte Opcodes")
+case 0xb8: {  // copy imm32 to r32
+  uint8_t modrm = next();
+  int32_t arg2 = imm32();
+  uint8_t reg1 = modrm&0x7;  // ignore mod bits
+  trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to reg " << NUM(reg1) << end();
+  Reg[reg1].i = arg2;
+  break;
+}
+
+//:
+:(scenario copy_imm32_to_mem_at_r32)
+% Reg[3].i = 0x60;
+# op  ModRM   SIB   displacement  immediate
+  c7  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to *EBX (reg 3)
++run: copy imm32 0x0d0c0b0a to effective address
++run: effective address is mem at address 0x60 (reg 3)
+
+:(before "End Single-Byte Opcodes")
+case 0xc7: {  // copy imm32 to r32
+  uint8_t modrm = next();
+  int32_t arg2 = imm32();
+  trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  *arg1 = arg2;
+  break;
+}

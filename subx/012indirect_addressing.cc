@@ -193,7 +193,7 @@ case 0x33: {  // xor r/m32 with r32
 +run: effective address is mem at address 0x60 (reg 3)
 +run: storing 0xf0f0ff00
 
-//:: compare
+//:: compare (cmp)
 
 :(scenario compare_mem_at_r32_with_r32_greater)
 % Reg[0].i = 0x60;
@@ -272,3 +272,36 @@ case 0x3b: {  // set SF if r32 < r/m32
 +run: compare effective address with reg 3
 +run: effective address is mem at address 0x60 (reg 0)
 +run: SF=0; ZF=1; OF=0
+
+//:: copy (mov)
+
+:(scenario copy_r32_to_mem_at_r32)
+% Reg[3].i = 0xaf;
+% Reg[0].i = 0x60;
+# op  ModRM   SIB   displacement  immediate
+  89  18                                      # copy EBX (reg 3) to *EAX (reg 0)
++run: copy reg 3 to effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x000000af
+
+//:
+
+:(scenario copy_mem_at_r32_to_r32)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x000000af);
+# op  ModRM   SIB   displacement  immediate
+  8b  18                                      # copy *EAX (reg 0) to EBX (reg 3)
++run: copy effective address to reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x000000af
+
+:(before "End Single-Byte Opcodes")
+case 0x8b: {  // copy r32 to r/m32
+  uint8_t modrm = next();
+  uint8_t reg1 = (modrm>>3)&0x7;
+  trace(2, "run") << "copy effective address to reg " << NUM(reg1) << end();
+  int32_t* arg2 = effective_address(modrm);
+  Reg[reg1].i = *arg2;
+  trace(2, "run") << "storing 0x" << HEXWORD << *arg2 << end();
+  break;
+}

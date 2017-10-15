@@ -149,7 +149,7 @@ case 0xf7: {  // xor r32 with r/m32
   break;
 }
 
-//:: compare
+//:: compare (cmp)
 
 :(scenario compare_r32_with_r32_greater)
 % Reg[0].i = 0x0a0b0c0d;
@@ -193,3 +193,24 @@ case 0x39: {  // set SF if r/m32 < r32
 +run: compare reg 3 with effective address
 +run: effective address is reg 0
 +run: SF=0; ZF=1; OF=0
+
+//:: copy (mov)
+
+:(scenario copy_r32_to_r32)
+% Reg[3].i = 0xaf;
+# op  ModRM   SIB   displacement  immediate
+  89  d8                                      # copy EBX (reg 3) to EAX (reg 0)
++run: copy reg 3 to effective address
++run: effective address is reg 0
++run: storing 0x000000af
+
+:(before "End Single-Byte Opcodes")
+case 0x89: {  // copy r32 to r/m32
+  uint8_t modrm = next();
+  uint8_t reg2 = (modrm>>3)&0x7;
+  trace(2, "run") << "copy reg " << NUM(reg2) << " to effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  *arg1 = Reg[reg2].i;
+  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  break;
+}
