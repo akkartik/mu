@@ -186,11 +186,11 @@ char next_hex_byte(istream& in) {
       }
     }
     if (c >= '0' && c <= '9') return c;
-    else if (c >= 'a' && c <= 'f') return c;
-    else if (c >= 'A' && c <= 'F') return tolower(c);
+    if (c >= 'a' && c <= 'f') return c;
+    if (c >= 'A' && c <= 'F') return tolower(c);
     // disallow any non-hex characters, including a '0x' prefix
     if (!isspace(c)) {
-      raise << "invalid non-hex character '" << c << "'\n" << end();
+      raise << "invalid non-hex character " << NUM(c) << "\n" << end();
       break;
     }
   }
