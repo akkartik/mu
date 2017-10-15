@@ -3,8 +3,7 @@
 :(scenario add_r32_to_mem_at_r32)
 % Reg[3].i = 0x10;
 % Reg[0].i = 0x60;
-# word in addresses 0x60-0x63 has value 1
-% Mem.at(0x60) = 1;
+% SET_WORD_IN_MEM(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  18                                     # add EBX (reg 3) to *EAX (reg 0)
 +run: add reg 3 to effective address
@@ -29,7 +28,7 @@ case 0:
 :(scenario add_mem_at_r32_to_r32)
 % Reg[0].i = 0x60;
 % Reg[3].i = 0x10;
-% Mem.at(0x60) = 1;
+% SET_WORD_IN_MEM(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   03  18                                      # add *EAX (reg 0) to EBX (reg 3)
 +run: add effective address to reg 3
@@ -50,7 +49,7 @@ case 0x03: {  // add r/m32 to r32
 
 :(scenario subtract_r32_from_mem_at_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 10;
+% SET_WORD_IN_MEM(0x60, 10);
 % Reg[3].i = 1;
 # op  ModRM   SIB   displacement  immediate
   29  18                                      # subtract EBX (reg 3) from *EAX (reg 0)
@@ -62,7 +61,7 @@ case 0x03: {  // add r/m32 to r32
 
 :(scenario subtract_mem_at_r32_from_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 1;
+% SET_WORD_IN_MEM(0x60, 1);
 % Reg[3].i = 10;
 # op  ModRM   SIB   displacement  immediate
   2b  18                                      # subtract *EAX (reg 0) from EBX (reg 3)
@@ -84,10 +83,7 @@ case 0x2b: {  // subtract r/m32 from r32
 
 :(scenario and_r32_with_mem_at_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0x0d;
-% Mem.at(0x61) = 0x0c;
-% Mem.at(0x62) = 0x0b;
-% Mem.at(0x63) = 0x0a;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
 % Reg[3].i = 0xff;
 # op  ModRM   SIB   displacement  immediate
   21  18                                      # and EBX (reg 3) with *EAX (reg 0)
@@ -99,7 +95,7 @@ case 0x2b: {  // subtract r/m32 from r32
 
 :(scenario and_mem_at_r32_with_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0xff;
+% SET_WORD_IN_MEM(0x60, 0x000000ff);
 % Reg[3].i = 0x0a0b0c0d;
 # op  ModRM   SIB   displacement  immediate
   23  18                                      # and *EAX (reg 0) with EBX (reg 3)
@@ -121,10 +117,7 @@ case 0x23: {  // and r/m32 with r32
 
 :(scenario or_r32_with_mem_at_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0x0d;
-% Mem.at(0x61) = 0x0c;
-% Mem.at(0x62) = 0x0b;
-% Mem.at(0x63) = 0x0a;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
 % Reg[3].i = 0xa0b0c0d0;
 # op  ModRM   SIB   displacement  immediate
   09  18                                      # or EBX (reg 3) with *EAX (reg 0)
@@ -136,10 +129,7 @@ case 0x23: {  // and r/m32 with r32
 
 :(scenario or_mem_at_r32_with_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0x0d;
-% Mem.at(0x61) = 0x0c;
-% Mem.at(0x62) = 0x0b;
-% Mem.at(0x63) = 0x0a;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
 % Reg[3].i = 0xa0b0c0d0;
 # op  ModRM   SIB   displacement  immediate
   0b  18                                      # or *EAX (reg 0) with EBX (reg 3)
@@ -161,10 +151,7 @@ case 0x0b: {  // or r/m32 with r32
 
 :(scenario xor_r32_with_mem_at_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0x0d;
-% Mem.at(0x61) = 0x0c;
-% Mem.at(0x62) = 0xbb;
-% Mem.at(0x63) = 0xaa;
+% SET_WORD_IN_MEM(0x60, 0xaabb0c0d);
 % Reg[3].i = 0xa0b0c0d0;
 # op  ModRM   SIB   displacement  immediate
   31  18                                      # xor EBX (reg 3) with *EAX (reg 0)
@@ -176,10 +163,7 @@ case 0x0b: {  // or r/m32 with r32
 
 :(scenario xor_mem_at_r32_with_r32)
 % Reg[0].i = 0x60;
-% Mem.at(0x60) = 0x0d;
-% Mem.at(0x61) = 0x0c;
-% Mem.at(0x62) = 0x0b;
-% Mem.at(0x63) = 0x0a;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
 % Reg[3].i = 0xa0b0c0d0;
 # op  ModRM   SIB   displacement  immediate
   33  18                                      # xor *EAX (reg 0) with EBX (reg 3)
@@ -202,10 +186,7 @@ case 0x33: {  // xor r/m32 with r32
 :(scenario not_r32_with_mem_at_r32)
 % Reg[3].i = 0x60;
 # word at 0x60 is 0x0f0f00ff
-% Mem.at(0x60) = 0xff;
-% Mem.at(0x61) = 0x00;
-% Mem.at(0x62) = 0x0f;
-% Mem.at(0x63) = 0x0f;
+% SET_WORD_IN_MEM(0x60, 0x0f0f00ff);
 # op  ModRM   SIB   displacement  immediate
   f7  03                                      # negate *EBX (reg 3)
 +run: 'not' of effective address

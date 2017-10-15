@@ -68,6 +68,10 @@ uint32_t End_of_program = 0;
 Mem.clear();
 Mem.resize(1024);
 End_of_program = 0;
+:(before "End Includes")
+// depends on Mem being laid out contiguously (so you can't use a map, etc.)
+// and on the host also being little-endian
+#define SET_WORD_IN_MEM(addr, val)  *reinterpret_cast<int32_t*>(&Mem.at(addr)) = val;
 
 //:: core interpreter loop
 
