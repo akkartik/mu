@@ -366,3 +366,49 @@ case 0xc7: {  // copy imm32 to r32
   *arg1 = arg2;
   break;
 }
+
+//:: jump
+
+:(scenario jump_rel8)
+# op  ModRM   SIB   displacement  immediate
+  eb                05                        # skip 1 instruction
+  05                              00 00 00 01
+  05                              00 00 00 02
++run: inst: 0x00000001
++run: jump 5
++run: inst: 0x00000008
+-run: inst: 0x00000003
+
+:(before "End Single-Byte Opcodes")
+case 0xeb: {  // jump rel8
+  int8_t offset = static_cast<int>(next());
+  trace(2, "run") << "jump " << NUM(offset) << end();
+  EIP += offset;
+  break;
+}
+
+//:
+
+:(scenario jump_rel16)
+# op  ModRM   SIB   displacement  immediate
+  e9                05 00                     # skip 1 instruction
+  05                              00 00 00 01
+  05                              00 00 00 02
++run: inst: 0x00000001
++run: jump 5
++run: inst: 0x00000009
+-run: inst: 0x00000003
+
+:(before "End Single-Byte Opcodes")
+case 0xe9: {  // jump rel8
+  int16_t offset = imm16();
+  trace(2, "run") << "jump " << offset << end();
+  EIP += offset;
+  break;
+}
+:(code)
+int16_t imm16() {
+  int16_t result = next();
+  result |= (next()<<8);
+  return result;
+}

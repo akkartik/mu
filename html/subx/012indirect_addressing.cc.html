@@ -15,19 +15,20 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
-.Special { color: #c00000; }
-.Conceal { color: #4e4e4e; }
 .SalientComment { color: #00ffff; }
+.LineNr { color: #444444; }
+.Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
+.traceAbsent { color: #c00000; }
+.Delimiter { color: #800080; }
+.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
+.traceContains { color: #008000; }
+.Conceal { color: #4e4e4e; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
-.Delimiter { color: #800080; }
-.LineNr { color: #444444; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
 .Identifier { color: #c0a020; }
-.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
 .PreProc { color: #800080; }
-.Error { color: #ffffff; background-color: #ff6060; padding-bottom: 1px; }
-.traceContains { color: #008000; }
 -->
 </style>
 
@@ -79,7 +80,7 @@ if ('onhashchange' in window) {
 <span id="L15" class="LineNr"> 15 </span>  <span class="Comment">// mod 0 is usually indirect addressing</span>
 <span id="L16" class="LineNr"> 16 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>rm<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L17" class="LineNr"> 17 </span>  <span class="Normal">default</span>:
-<span id="L18" class="LineNr"> 18 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;effective address is mem at address 0x&quot;</span> &lt;&lt; std::hex &lt;&lt; Reg[rm]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a> &lt;&lt; <span class="Constant">&quot; (reg &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>rm<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L18" class="LineNr"> 18 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;effective address is mem at address 0x&quot;</span> &lt;&lt; std::hex &lt;&lt; Reg[rm]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a> &lt;&lt; <span class="Constant">&quot; (reg &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>rm<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L19" class="LineNr"> 19 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Reg[rm]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a> + <span class="Normal">sizeof</span><span class="Delimiter">(</span><span class="Normal">int32_t</span><span class="Delimiter">)</span> &lt;= <a href='010core.cc.html#L65'>Mem</a><span class="Delimiter">.</span>size<span class="Delimiter">());</span>
 <span id="L20" class="LineNr"> 20 </span>  <span class="Conceal">¦</span> result = <span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">int32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[rm]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a><span class="Delimiter">));</span>  <span class="Comment">// rely on the host itself being in little-endian order</span>
 <span id="L21" class="LineNr"> 21 </span>  <span class="Conceal">¦</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -101,9 +102,9 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr"> 37 </span>
 <span id="L38" class="LineNr"> 38 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L39" class="LineNr"> 39 </span><span class="Normal">case</span> <span class="Constant">0x03</span>: <span class="Delimiter">{</span>  <span class="Comment">// add r/m32 to r32</span>
-<span id="L40" class="LineNr"> 40 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L40" class="LineNr"> 40 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L41" class="LineNr"> 41 </span>  <span class="Normal">uint8_t</span> arg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L42" class="LineNr"> 42 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;add effective address to <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L42" class="LineNr"> 42 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;add effective address to <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L43" class="LineNr"> 43 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L44" class="LineNr"> 44 </span>  <a href='010core.cc.html#L41'>BINARY_ARITHMETIC_OP</a><span class="Delimiter">(</span>+<span class="Delimiter">,</span> Reg[arg1]<span class="Delimiter">.</span><a href='010core.cc.html#L16'>i</a><span class="Delimiter">,</span> *arg2<span class="Delimiter">);</span>
 <span id="L45" class="LineNr"> 45 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -135,9 +136,9 @@ if ('onhashchange' in window) {
 <span id="L71" class="LineNr"> 71 </span>
 <span id="L72" class="LineNr"> 72 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L73" class="LineNr"> 73 </span><span class="Normal">case</span> <span class="Constant">0x2b</span>: <span class="Delimiter">{</span>  <span class="Comment">// subtract r/m32 from r32</span>
-<span id="L74" class="LineNr"> 74 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L74" class="LineNr"> 74 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L75" class="LineNr"> 75 </span>  <span class="Normal">uint8_t</span> arg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L76" class="LineNr"> 76 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subtract effective address from <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L76" class="LineNr"> 76 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;subtract effective address from <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L77" class="LineNr"> 77 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L78" class="LineNr"> 78 </span>  <a href='010core.cc.html#L41'>BINARY_ARITHMETIC_OP</a><span class="Delimiter">(</span>-<span class="Delimiter">,</span> Reg[arg1]<span class="Delimiter">.</span><a href='010core.cc.html#L16'>i</a><span class="Delimiter">,</span> *arg2<span class="Delimiter">);</span>
 <span id="L79" class="LineNr"> 79 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -169,9 +170,9 @@ if ('onhashchange' in window) {
 <span id="L105" class="LineNr">105 </span>
 <span id="L106" class="LineNr">106 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L107" class="LineNr">107 </span><span class="Normal">case</span> <span class="Constant">0x23</span>: <span class="Delimiter">{</span>  <span class="Comment">// and r/m32 with r32</span>
-<span id="L108" class="LineNr">108 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L108" class="LineNr">108 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L109" class="LineNr">109 </span>  <span class="Normal">uint8_t</span> arg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L110" class="LineNr">110 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;and effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L110" class="LineNr">110 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;and effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L111" class="LineNr">111 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L112" class="LineNr">112 </span>  <a href='010core.cc.html#L53'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>&amp;<span class="Delimiter">,</span> Reg[arg1]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a><span class="Delimiter">,</span> *arg2<span class="Delimiter">);</span>
 <span id="L113" class="LineNr">113 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -203,9 +204,9 @@ if ('onhashchange' in window) {
 <span id="L139" class="LineNr">139 </span>
 <span id="L140" class="LineNr">140 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L141" class="LineNr">141 </span><span class="Normal">case</span> <span class="Constant">0x0b</span>: <span class="Delimiter">{</span>  <span class="Comment">// or r/m32 with r32</span>
-<span id="L142" class="LineNr">142 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L142" class="LineNr">142 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L143" class="LineNr">143 </span>  <span class="Normal">uint8_t</span> arg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L144" class="LineNr">144 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;or effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L144" class="LineNr">144 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;or effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L145" class="LineNr">145 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L146" class="LineNr">146 </span>  <a href='010core.cc.html#L53'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>|<span class="Delimiter">,</span> Reg[arg1]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a><span class="Delimiter">,</span> *arg2<span class="Delimiter">);</span>
 <span id="L147" class="LineNr">147 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -237,9 +238,9 @@ if ('onhashchange' in window) {
 <span id="L173" class="LineNr">173 </span>
 <span id="L174" class="LineNr">174 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L175" class="LineNr">175 </span><span class="Normal">case</span> <span class="Constant">0x33</span>: <span class="Delimiter">{</span>  <span class="Comment">// xor r/m32 with r32</span>
-<span id="L176" class="LineNr">176 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L176" class="LineNr">176 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L177" class="LineNr">177 </span>  <span class="Normal">uint8_t</span> arg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L178" class="LineNr">178 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;xor effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L178" class="LineNr">178 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;xor effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>arg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L179" class="LineNr">179 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L180" class="LineNr">180 </span>  <a href='010core.cc.html#L53'>BINARY_BITWISE_OP</a><span class="Delimiter">(</span>|<span class="Delimiter">,</span> Reg[arg1]<span class="Delimiter">.</span><a href='010core.cc.html#L17'>u</a><span class="Delimiter">,</span> *arg2<span class="Delimiter">);</span>
 <span id="L181" class="LineNr">181 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
@@ -303,9 +304,9 @@ if ('onhashchange' in window) {
 <span id="L239" class="LineNr">239 </span>
 <span id="L240" class="LineNr">240 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L241" class="LineNr">241 </span><span class="Normal">case</span> <span class="Constant">0x3b</span>: <span class="Delimiter">{</span>  <span class="Comment">// set SF if r32 &lt; r/m32</span>
-<span id="L242" class="LineNr">242 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L242" class="LineNr">242 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L243" class="LineNr">243 </span>  <span class="Normal">uint8_t</span> reg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L244" class="LineNr">244 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compare effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>reg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L244" class="LineNr">244 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compare effective address with <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>reg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L245" class="LineNr">245 </span>  <span class="Normal">int32_t</span> arg1 = Reg[reg1]<span class="Delimiter">.</span><a href='010core.cc.html#L16'>i</a><span class="Delimiter">;</span>
 <span id="L246" class="LineNr">246 </span>  <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L247" class="LineNr">247 </span>  <span class="Normal">int32_t</span> tmp1 = arg1 - *arg2<span class="Delimiter">;</span>
@@ -361,14 +362,46 @@ if ('onhashchange' in window) {
 <span id="L297" class="LineNr">297 </span>
 <span id="L298" class="LineNr">298 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
 <span id="L299" class="LineNr">299 </span><span class="Normal">case</span> <span class="Constant">0x8b</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy r32 to r/m32</span>
-<span id="L300" class="LineNr">300 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L300" class="LineNr">300 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
 <span id="L301" class="LineNr">301 </span>  <span class="Normal">uint8_t</span> reg1 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L302" class="LineNr">302 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy effective address to <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>reg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L302" class="LineNr">302 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy effective address to <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>NUM</a><span class="Delimiter">(</span>reg1<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L303" class="LineNr">303 </span>  <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
 <span id="L304" class="LineNr">304 </span>  Reg[reg1]<span class="Delimiter">.</span><a href='010core.cc.html#L16'>i</a> = *arg2<span class="Delimiter">;</span>
-<span id="L305" class="LineNr">305 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L226'>HEXWORD</a> &lt;&lt; *arg2 &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L305" class="LineNr">305 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>HEXWORD</a> &lt;&lt; *arg2 &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L306" class="LineNr">306 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L307" class="LineNr">307 </span><span class="Delimiter">}</span>
+<span id="L308" class="LineNr">308 </span>
+<span id="L309" class="LineNr">309 </span><span class="SalientComment">//:: jump</span>
+<span id="L310" class="LineNr">310 </span>
+<span id="L311" class="LineNr">311 </span><span class="Delimiter">:(scenario jump_mem_at_r32)</span>
+<span id="L312" class="LineNr">312 </span><span class="Special">% Reg[0].i = 0x60;</span>
+<span id="L313" class="LineNr">313 </span><span class="Special">% SET_WORD_IN_MEM(0x60, 8);</span>
+<span id="L314" class="LineNr">314 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L315" class="LineNr">315 </span>  ff  <span class="Constant">20</span>                                      <span class="Comment"># jump to *EAX (reg 0)</span>
+<span id="L316" class="LineNr">316 </span>  <span class="PreProc">0</span><span class="Constant">5</span>                              <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">1</span>
+<span id="L317" class="LineNr">317 </span>  <span class="PreProc">0</span><span class="Constant">5</span>                              <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">2</span>
+<span id="L318" class="LineNr">318 </span><span class="traceContains">+run: inst: 0x00000001</span>
+<span id="L319" class="LineNr">319 </span><span class="traceContains">+run: jump to effective address</span>
+<span id="L320" class="LineNr">320 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 0)</span>
+<span id="L321" class="LineNr">321 </span><span class="traceContains">+run: jumping to 0x00000008</span>
+<span id="L322" class="LineNr">322 </span><span class="traceContains">+run: inst: 0x00000008</span>
+<span id="L323" class="LineNr">323 </span><span class="traceAbsent">-run: inst: 0x00000003</span>
+<span id="L324" class="LineNr">324 </span>
+<span id="L325" class="LineNr">325 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L326" class="LineNr">326 </span><span class="Normal">case</span> <span class="Constant">0xff</span>: <span class="Delimiter">{</span>  <span class="Comment">// jump to r/m32</span>
+<span id="L327" class="LineNr">327 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L212'>next</a><span class="Delimiter">();</span>
+<span id="L328" class="LineNr">328 </span>  <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>  <span class="Comment">// middle 3 'reg opcode' bits</span>
+<span id="L329" class="LineNr">329 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>subop<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L330" class="LineNr">330 </span>  <span class="Normal">case</span> <span class="Constant">4</span>:
+<span id="L331" class="LineNr">331 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jump to effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L332" class="LineNr">332 </span>  <span class="Conceal">¦</span> <span class="Normal">int32_t</span>* arg2 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L333" class="LineNr">333 </span>  <span class="Conceal">¦</span> <a href='010core.cc.html#L21'>EIP</a> = *arg2<span class="Delimiter">;</span>
+<span id="L334" class="LineNr">334 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;jumping to 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>HEXWORD</a> &lt;&lt; <a href='010core.cc.html#L21'>EIP</a> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L335" class="LineNr">335 </span>  <span class="Conceal">¦</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L336" class="LineNr">336 </span>  <span class="Comment">// End Op ff Subops</span>
+<span id="L337" class="LineNr">337 </span>  <span class="Delimiter">}</span>
+<span id="L338" class="LineNr">338 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L339" class="LineNr">339 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

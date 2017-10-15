@@ -305,3 +305,35 @@ case 0x8b: {  // copy r32 to r/m32
   trace(2, "run") << "storing 0x" << HEXWORD << *arg2 << end();
   break;
 }
+
+//:: jump
+
+:(scenario jump_mem_at_r32)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 8);
+# op  ModRM   SIB   displacement  immediate
+  ff  20                                      # jump to *EAX (reg 0)
+  05                              00 00 00 01
+  05                              00 00 00 02
++run: inst: 0x00000001
++run: jump to effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: jumping to 0x00000008
++run: inst: 0x00000008
+-run: inst: 0x00000003
+
+:(before "End Single-Byte Opcodes")
+case 0xff: {  // jump to r/m32
+  uint8_t modrm = next();
+  uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
+  switch (subop) {
+  case 4:
+    trace(2, "run") << "jump to effective address" << end();
+    int32_t* arg2 = effective_address(modrm);
+    EIP = *arg2;
+    trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+    break;
+  // End Op ff Subops
+  }
+  break;
+}

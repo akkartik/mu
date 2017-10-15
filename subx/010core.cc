@@ -106,6 +106,7 @@ void run(const string& text_bytes) {
 // skeleton of how x86 instructions are decoded
 void run_one_instruction() {
   uint8_t op=0, op2=0, op3=0;
+  trace(2, "run") << "inst: 0x" << HEXWORD << EIP << end();
   switch (op = next()) {
   case 0xf4:  // hlt
     EIP = End_of_program;
@@ -185,6 +186,7 @@ char next_hex_byte(istream& in) {
         }
       }
     }
+    if (c == '\0') return c;
     if (c >= '0' && c <= '9') return c;
     if (c >= 'a' && c <= 'f') return c;
     if (c >= 'A' && c <= 'F') return tolower(c);
