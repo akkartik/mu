@@ -161,7 +161,7 @@ case 0xf7: {  // xor r32 with r/m32
 +run: SF=0; ZF=0; OF=0
 
 :(before "End Single-Byte Opcodes")
-case 0x39: {  // compare r32 with r/m32
+case 0x39: {  // set SF if r/m32 < r32
   uint8_t modrm = next();
   uint8_t reg2 = (modrm>>3)&0x7;
   trace(2, "run") << "compare reg " << NUM(reg2) << " with effective address" << end();
