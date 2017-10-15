@@ -192,3 +192,83 @@ case 0x33: {  // xor r/m32 with r32
 +run: 'not' of effective address
 +run: effective address is mem at address 0x60 (reg 3)
 +run: storing 0xf0f0ff00
+
+//:: compare
+
+:(scenario compare_mem_at_r32_with_r32_greater)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
+% Reg[3].i = 0x0a0b0c07;
+# op  ModRM   SIB   displacement  immediate
+  39  18                                      # compare EBX (reg 3) with *EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=0; ZF=0; OF=0
+
+:(scenario compare_mem_at_r32_with_r32_lesser)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c07);
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  39  18                                      # compare EBX (reg 3) with *EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_mem_at_r32_with_r32_equal)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  39  18                                      # compare EBX (reg 3) with *EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=0; ZF=1; OF=0
+
+//:
+
+:(scenario compare_r32_with_mem_at_r32_greater)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c07);
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  3b  18                                      # compare *EAX (reg 0) with EBX (reg 3)
++run: compare effective address with reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=0; ZF=0; OF=0
+
+:(before "End Single-Byte Opcodes")
+case 0x3b: {  // compare r/m32 with r32
+  uint8_t modrm = next();
+  uint8_t reg1 = (modrm>>3)&0x7;
+  trace(2, "run") << "compare effective address with reg " << NUM(reg1) << end();
+  int32_t arg1 = Reg[reg1].i;
+  int32_t* arg2 = effective_address(modrm);
+  int32_t tmp1 = arg1 - *arg2;
+  SF = (tmp1 < 0);
+  ZF = (tmp1 == 0);
+  int64_t tmp2 = arg1 - *arg2;
+  OF = (tmp1 != tmp2);
+  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  break;
+}
+
+:(scenario compare_r32_with_mem_at_r32_lesser)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
+% Reg[3].i = 0x0a0b0c07;
+# op  ModRM   SIB   displacement  immediate
+  3b  18                                      # compare *EAX (reg 0) with EBX (reg 3)
++run: compare effective address with reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_r32_with_mem_at_r32_equal)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0a0b0c0d);
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  3b  18                                      # compare *EAX (reg 0) with EBX (reg 3)
++run: compare effective address with reg 3
++run: effective address is mem at address 0x60 (reg 0)
++run: SF=0; ZF=1; OF=0

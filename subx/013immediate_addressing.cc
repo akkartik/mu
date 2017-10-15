@@ -228,3 +228,106 @@ case 6: {
   BINARY_BITWISE_OP(^, *arg1, arg2);
   break;
 }
+
+//:: compare
+
+:(scenario compare_imm32_with_eax_greater)
+% Reg[0].i = 0x0d0c0b0a;
+# op  ModRM   SIB   displacement  immediate
+  3d                              07 0b 0c 0d  # compare 0x0d0c0b07 with EAX (reg 0)
++run: compare reg EAX and imm32 0x0d0c0b07
++run: SF=0; ZF=0; OF=0
+
+:(before "End Single-Byte Opcodes")
+case 0x3d: {  // subtract imm32 from EAX
+  int32_t arg1 = Reg[EAX].i;
+  int32_t arg2 = imm32();
+  trace(2, "run") << "compare reg EAX and imm32 0x" << HEXWORD << arg2 << end();
+  int32_t tmp1 = arg1 - arg2;
+  SF = (tmp1 < 0);
+  ZF = (tmp1 == 0);
+  int64_t tmp2 = arg1 - arg2;
+  OF = (tmp1 != tmp2);
+  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  break;
+}
+
+:(scenario compare_imm32_with_eax_lesser)
+% Reg[0].i = 0x0d0c0b07;
+# op  ModRM   SIB   displacement  immediate
+  3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX (reg 0)
++run: compare reg EAX and imm32 0x0d0c0b0a
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_imm32_with_eax_equal)
+% Reg[0].i = 0x0d0c0b0a;
+# op  ModRM   SIB   displacement  immediate
+  3d                              0a 0b 0c 0d  # compare 0x0d0c0b0a with EAX (reg 0)
++run: compare reg EAX and imm32 0x0d0c0b0a
++run: SF=0; ZF=1; OF=0
+
+//:
+
+:(scenario compare_imm32_with_r32_greater)
+% Reg[3].i = 0x0d0c0b0a;
+# op  ModRM   SIB   displacement  immediate
+  81  fb                          07 0b 0c 0d  # compare 0x0d0c0b07 with EBX (reg 3)
++run: combine imm32 0x0d0c0b07 with effective address
++run: effective address is reg 3
++run: SF=0; ZF=0; OF=0
+
+:(before "End Op 81 Subops")
+case 7: {
+  trace(2, "run") << "subop compare" << end();
+  int32_t tmp1 = *arg1 - arg2;
+  SF = (tmp1 < 0);
+  ZF = (tmp1 == 0);
+  int64_t tmp2 = *arg1 - arg2;
+  OF = (tmp1 != tmp2);
+  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  break;
+}
+
+:(scenario compare_imm32_with_r32_lesser)
+% Reg[3].i = 0x0d0c0b07;
+# op  ModRM   SIB   displacement  immediate
+  81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is reg 3
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_imm32_with_r32_equal)
+% Reg[3].i = 0x0d0c0b0a;
+# op  ModRM   SIB   displacement  immediate
+  81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is reg 3
++run: SF=0; ZF=1; OF=0
+
+:(scenario compare_imm32_with_mem_at_r32_greater)
+% Reg[3].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0d0c0b0a);
+# op  ModRM   SIB   displacement  immediate
+  81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX (reg 3)
++run: combine imm32 0x0d0c0b07 with effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: SF=0; ZF=0; OF=0
+
+:(scenario compare_imm32_with_mem_at_r32_lesser)
+% Reg[3].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0d0c0b07);
+# op  ModRM   SIB   displacement  immediate
+  81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_imm32_with_mem_at_r32_equal)
+% Reg[3].i = 0x0d0c0b0a;
+% Reg[3].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0d0c0b0a);
+# op  ModRM   SIB   displacement  immediate
+  81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX (reg 3)
++run: combine imm32 0x0d0c0b0a with effective address
++run: effective address is mem at address 0x60 (reg 3)
++run: SF=0; ZF=1; OF=0

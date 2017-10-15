@@ -148,3 +148,48 @@ case 0xf7: {  // xor r32 with r/m32
   OF = false;
   break;
 }
+
+//:: compare
+
+:(scenario compare_r32_with_r32_greater)
+% Reg[0].i = 0x0a0b0c0d;
+% Reg[3].i = 0x0a0b0c07;
+# op  ModRM   SIB   displacement  immediate
+  39  d8                                      # compare EBX (reg 3) with EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is reg 0
++run: SF=0; ZF=0; OF=0
+
+:(before "End Single-Byte Opcodes")
+case 0x39: {  // compare r32 with r/m32
+  uint8_t modrm = next();
+  uint8_t reg2 = (modrm>>3)&0x7;
+  trace(2, "run") << "compare reg " << NUM(reg2) << " with effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  int32_t arg2 = Reg[reg2].i;
+  int32_t tmp1 = *arg1 - arg2;
+  SF = (tmp1 < 0);
+  ZF = (tmp1 == 0);
+  int64_t tmp2 = *arg1 - arg2;
+  OF = (tmp1 != tmp2);
+  trace(2, "run") << "SF=" << SF << "; ZF=" << ZF << "; OF=" << OF << end();
+  break;
+}
+
+:(scenario compare_r32_with_r32_lesser)
+% Reg[0].i = 0x0a0b0c07;
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  39  d8                                      # compare EBX (reg 3) with EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is reg 0
++run: SF=1; ZF=0; OF=0
+
+:(scenario compare_r32_with_r32_equal)
+% Reg[0].i = 0x0a0b0c0d;
+% Reg[3].i = 0x0a0b0c0d;
+# op  ModRM   SIB   displacement  immediate
+  39  d8                                      # compare EBX (reg 3) with EAX (reg 0)
++run: compare reg 3 with effective address
++run: effective address is reg 0
++run: SF=0; ZF=1; OF=0

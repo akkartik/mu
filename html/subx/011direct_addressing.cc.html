@@ -213,6 +213,51 @@ if ('onhashchange' in window) {
 <span id="L148" class="LineNr">148 </span>  <a href='010core.cc.html#L31'>OF</a> = <span class="Constant">false</span><span class="Delimiter">;</span>
 <span id="L149" class="LineNr">149 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L150" class="LineNr">150 </span><span class="Delimiter">}</span>
+<span id="L151" class="LineNr">151 </span>
+<span id="L152" class="LineNr">152 </span><span class="SalientComment">//:: compare</span>
+<span id="L153" class="LineNr">153 </span>
+<span id="L154" class="LineNr">154 </span><span class="Delimiter">:(scenario compare_r32_with_r32_greater)</span>
+<span id="L155" class="LineNr">155 </span><span class="Special">% Reg[0].i = 0x0a0b0c0d;</span>
+<span id="L156" class="LineNr">156 </span><span class="Special">% Reg[3].i = 0x0a0b0c07;</span>
+<span id="L157" class="LineNr">157 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Constant">39</span>  d8                                      <span class="Comment"># compare EBX (reg 3) with EAX (reg 0)</span>
+<span id="L159" class="LineNr">159 </span><span class="traceContains">+run: compare <a href='010core.cc.html#L15'>reg</a> 3 with effective address</span>
+<span id="L160" class="LineNr">160 </span><span class="traceContains">+run: effective address is <a href='010core.cc.html#L15'>reg</a> 0</span>
+<span id="L161" class="LineNr">161 </span><span class="traceContains">+run: SF=0; ZF=0; OF=0</span>
+<span id="L162" class="LineNr">162 </span>
+<span id="L163" class="LineNr">163 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L164" class="LineNr">164 </span><span class="Normal">case</span> <span class="Constant">0x39</span>: <span class="Delimiter">{</span>  <span class="Comment">// compare r32 with r/m32</span>
+<span id="L165" class="LineNr">165 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L210'>next</a><span class="Delimiter">();</span>
+<span id="L166" class="LineNr">166 </span>  <span class="Normal">uint8_t</span> reg2 = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
+<span id="L167" class="LineNr">167 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;compare <a href='010core.cc.html#L15'>reg</a> &quot;</span> &lt;&lt; <a href='010core.cc.html#L228'>NUM</a><span class="Delimiter">(</span>reg2<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; with effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L168" class="LineNr">168 </span>  <span class="Normal">int32_t</span>* arg1 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L169" class="LineNr">169 </span>  <span class="Normal">int32_t</span> arg2 = Reg[reg2]<span class="Delimiter">.</span><a href='010core.cc.html#L16'>i</a><span class="Delimiter">;</span>
+<span id="L170" class="LineNr">170 </span>  <span class="Normal">int32_t</span> tmp1 = *arg1 - arg2<span class="Delimiter">;</span>
+<span id="L171" class="LineNr">171 </span>  SF = <span class="Delimiter">(</span>tmp1 &lt; <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L172" class="LineNr">172 </span>  <a href='010core.cc.html#L30'>ZF</a> = <span class="Delimiter">(</span>tmp1 == <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L173" class="LineNr">173 </span>  <span class="Normal">int64_t</span> tmp2 = *arg1 - arg2<span class="Delimiter">;</span>
+<span id="L174" class="LineNr">174 </span>  <a href='010core.cc.html#L31'>OF</a> = <span class="Delimiter">(</span>tmp1 != tmp2<span class="Delimiter">);</span>
+<span id="L175" class="LineNr">175 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;SF=&quot;</span> &lt;&lt; SF &lt;&lt; <span class="Constant">&quot;; ZF=&quot;</span> &lt;&lt; <a href='010core.cc.html#L30'>ZF</a> &lt;&lt; <span class="Constant">&quot;; OF=&quot;</span> &lt;&lt; <a href='010core.cc.html#L31'>OF</a> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L176" class="LineNr">176 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L177" class="LineNr">177 </span><span class="Delimiter">}</span>
+<span id="L178" class="LineNr">178 </span>
+<span id="L179" class="LineNr">179 </span><span class="Delimiter">:(scenario compare_r32_with_r32_lesser)</span>
+<span id="L180" class="LineNr">180 </span><span class="Special">% Reg[0].i = 0x0a0b0c07;</span>
+<span id="L181" class="LineNr">181 </span><span class="Special">% Reg[3].i = 0x0a0b0c0d;</span>
+<span id="L182" class="LineNr">182 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L183" class="LineNr">183 </span>  <span class="Constant">39</span>  d8                                      <span class="Comment"># compare EBX (reg 3) with EAX (reg 0)</span>
+<span id="L184" class="LineNr">184 </span><span class="traceContains">+run: compare <a href='010core.cc.html#L15'>reg</a> 3 with effective address</span>
+<span id="L185" class="LineNr">185 </span><span class="traceContains">+run: effective address is <a href='010core.cc.html#L15'>reg</a> 0</span>
+<span id="L186" class="LineNr">186 </span><span class="traceContains">+run: SF=1; ZF=0; OF=0</span>
+<span id="L187" class="LineNr">187 </span>
+<span id="L188" class="LineNr">188 </span><span class="Delimiter">:(scenario compare_r32_with_r32_equal)</span>
+<span id="L189" class="LineNr">189 </span><span class="Special">% Reg[0].i = 0x0a0b0c0d;</span>
+<span id="L190" class="LineNr">190 </span><span class="Special">% Reg[3].i = 0x0a0b0c0d;</span>
+<span id="L191" class="LineNr">191 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L192" class="LineNr">192 </span>  <span class="Constant">39</span>  d8                                      <span class="Comment"># compare EBX (reg 3) with EAX (reg 0)</span>
+<span id="L193" class="LineNr">193 </span><span class="traceContains">+run: compare <a href='010core.cc.html#L15'>reg</a> 3 with effective address</span>
+<span id="L194" class="LineNr">194 </span><span class="traceContains">+run: effective address is <a href='010core.cc.html#L15'>reg</a> 0</span>
+<span id="L195" class="LineNr">195 </span><span class="traceContains">+run: SF=0; ZF=1; OF=0</span>
 </pre>
 </body>
 </html>
