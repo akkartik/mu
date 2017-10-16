@@ -2,12 +2,13 @@
 
 Bytecode interpreter for a subset of the 32-bit x86 ISA.
 
-* Only instructions that operate on the 32-bit E*X registers.
+* Only instructions that operate on the 32-bit E*X registers. (No
+  floating-point yet.)
 * Only instructions that assume a flat address space; no instructions that use
   segment registers.
 * No instructions that check the carry or parity flags; arithmetic operations
-  always operate on signed numbers (while bitwise operations always operate on
-  unsigned numbers)
+  always operate on signed integers (while bitwise operations always operate
+  on unsigned integers)
 * Only relative jump instructions (with 8-bit or 16-bit offsets).
 
 These rules yield a clean instruction set. We don't care about running
