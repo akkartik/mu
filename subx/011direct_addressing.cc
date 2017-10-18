@@ -219,7 +219,7 @@ case 0x89: {  // copy r32 to r/m32
 
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
-% Reg[EBX].i = 10;
+% Reg[EBX].i = 0x0000000a;
 # op  ModRM   SIB   displacement  immediate
   53                                          # push EBX (reg 3) to stack
 +run: push reg 3
@@ -244,5 +244,34 @@ case 0x57: {  // push r32 to stack
   *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
   trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
   trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  break;
+}
+
+//:: pop
+
+:(scenario pop_r32)
+% Reg[ESP].u = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x0000000a);
+# op  ModRM   SIB   displacement  immediate
+  5b                                          # pop stack to EBX (reg 3)
++run: pop into reg 3
++run: popping value 0x0000000a
++run: ESP is now 0x00000064
+
+:(before "End Single-Byte Opcodes")
+case 0x58:
+case 0x59:
+case 0x5a:
+case 0x5b:
+case 0x5c:
+case 0x5d:
+case 0x5e:
+case 0x5f: {  // pop stack into r32
+  uint8_t reg = op & 0x7;
+  trace(2, "run") << "pop into reg " << NUM(reg) << end();
+  Reg[reg].u = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
+  trace(2, "run") << "popping value 0x" << HEXWORD << Reg[reg].u << end();
+  Reg[ESP].u += 4;
+  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
   break;
 }

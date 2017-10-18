@@ -364,3 +364,33 @@ case 6: {
   break;
 }
 
+//:: pop
+
+:(scenario pop_mem_at_r32)
+% Reg[0].i = 0x60;
+% Reg[ESP].u = 0x10;
+% SET_WORD_IN_MEM(0x10, 0x00000030);
+# op  ModRM   SIB   displacement  immediate
+  8f  00                                      # pop stack into *EAX (reg 0)
++run: pop into effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: storing 0x00000030
++run: ESP is now 0x00000014
+
+:(before "End Single-Byte Opcodes")
+case 0x8f: {  // pop stack into r/m32
+  uint8_t modrm = next();
+  uint8_t subop = (modrm>>3)&0x7;
+  switch (subop) {
+    case 0: {
+      trace(2, "run") << "pop into effective address" << end();
+      int32_t* dest = effective_address(modrm);
+      *dest = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
+      trace(2, "run") << "storing 0x" << HEXWORD << *dest << end();
+      Reg[ESP].u += 4;
+      trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+      break;
+    }
+  }
+  break;
+}
