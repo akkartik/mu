@@ -164,7 +164,12 @@ case 0x0d: {  // or imm32 with EAX
 +run: subop or
 +run: storing 0xddccbbaa
 
-//:
+:(before "End Op 81 Subops")
+case 1: {
+  trace(2, "run") << "subop or" << end();
+  BINARY_BITWISE_OP(|, *arg1, arg2);
+  break;
+}
 
 :(scenario or_imm32_with_r32)
 % Reg[3].i = 0xd0c0b0a0;
@@ -174,13 +179,6 @@ case 0x0d: {  // or imm32 with EAX
 +run: effective address is reg 3
 +run: subop or
 +run: storing 0xddccbbaa
-
-:(before "End Op 81 Subops")
-case 1: {
-  trace(2, "run") << "subop or" << end();
-  BINARY_BITWISE_OP(|, *arg1, arg2);
-  break;
-}
 
 //:: xor
 
@@ -211,7 +209,12 @@ case 0x35: {  // xor imm32 with EAX
 +run: subop xor
 +run: storing 0xddccbbaa
 
-//:
+:(before "End Op 81 Subops")
+case 6: {
+  trace(2, "run") << "subop xor" << end();
+  BINARY_BITWISE_OP(^, *arg1, arg2);
+  break;
+}
 
 :(scenario xor_imm32_with_r32)
 % Reg[3].i = 0xd0c0b0a0;
@@ -221,13 +224,6 @@ case 0x35: {  // xor imm32 with EAX
 +run: effective address is reg 3
 +run: subop xor
 +run: storing 0xddccbbaa
-
-:(before "End Op 81 Subops")
-case 6: {
-  trace(2, "run") << "subop xor" << end();
-  BINARY_BITWISE_OP(^, *arg1, arg2);
-  break;
-}
 
 //:: compare (cmp)
 
