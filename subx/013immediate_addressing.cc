@@ -332,14 +332,20 @@ case 7: {
 
 :(scenario copy_imm32_to_r32)
 # op  ModRM   SIB   displacement  immediate
-  b8  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to EBX (reg 3)
+  bb                              0a 0b 0c 0d  # copy 0x0d0c0b0a to EBX (reg 3)
 +run: copy imm32 0x0d0c0b0a to reg 3
 
 :(before "End Single-Byte Opcodes")
-case 0xb8: {  // copy imm32 to r32
-  uint8_t modrm = next();
+case 0xb8:
+case 0xb9:
+case 0xba:
+case 0xbb:
+case 0xbc:
+case 0xbd:
+case 0xbe:
+case 0xbf: {  // copy imm32 to r32
+  uint8_t reg1 = op & 0x7;
   int32_t arg2 = imm32();
-  uint8_t reg1 = modrm&0x7;  // ignore mod bits
   trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to reg " << NUM(reg1) << end();
   Reg[reg1].i = arg2;
   break;

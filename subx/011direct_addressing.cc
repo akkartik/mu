@@ -235,7 +235,7 @@ case 0x53:
 case 0x54:
 case 0x55:
 case 0x56:
-case 0x57: {
+case 0x57: {  // push r32 to stack
   uint8_t reg = op & 0x7;
   trace(2, "run") << "push reg " << NUM(reg) << end();
   const int32_t val = Reg[reg].u;
