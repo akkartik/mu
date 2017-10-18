@@ -1,4 +1,6 @@
-//:: simulated x86 registers
+//:: simulated x86 registers; just a subset
+//:    assume segment registers are hard-coded to 0
+//:    no floating-point, MMX, etc. yet
 
 :(before "End Types")
 enum {
