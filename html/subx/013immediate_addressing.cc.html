@@ -414,22 +414,44 @@ if ('onhashchange' in window) {
 <span id="L350" class="LineNr">350 </span><span class="Delimiter">}</span>
 <span id="L351" class="LineNr">351 </span>
 <span id="L352" class="LineNr">352 </span><span class="Comment">//:</span>
-<span id="L353" class="LineNr">353 </span><span class="Delimiter">:(scenario copy_imm32_to_mem_at_r32)</span>
-<span id="L354" class="LineNr">354 </span><span class="Special">% Reg[3].i = 0x60;</span>
-<span id="L355" class="LineNr">355 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
-<span id="L356" class="LineNr">356 </span>  c7  <span class="PreProc">0</span><span class="Constant">3</span>                          0a 0b 0c 0d  <span class="Comment"># copy 0x0d0c0b0a to *EBX (reg 3)</span>
-<span id="L357" class="LineNr">357 </span><span class="traceContains">+run: copy <a href='010core.cc.html#L219'>imm32</a> 0x0d0c0b0a to effective address</span>
-<span id="L358" class="LineNr">358 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 3)</span>
-<span id="L359" class="LineNr">359 </span>
-<span id="L360" class="LineNr">360 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
-<span id="L361" class="LineNr">361 </span><span class="Normal">case</span> <span class="Constant">0xc7</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm32 to r32</span>
-<span id="L362" class="LineNr">362 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L214'>next</a><span class="Delimiter">();</span>
-<span id="L363" class="LineNr">363 </span>  <span class="Normal">int32_t</span> arg2 = <a href='010core.cc.html#L219'>imm32</a><span class="Delimiter">();</span>
-<span id="L364" class="LineNr">364 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy <a href='010core.cc.html#L219'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; to effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L365" class="LineNr">365 </span>  <span class="Normal">int32_t</span>* arg1 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
-<span id="L366" class="LineNr">366 </span>  *arg1 = arg2<span class="Delimiter">;</span>
-<span id="L367" class="LineNr">367 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L368" class="LineNr">368 </span><span class="Delimiter">}</span>
+<span id="L353" class="LineNr">353 </span>
+<span id="L354" class="LineNr">354 </span><span class="Delimiter">:(scenario copy_imm32_to_mem_at_r32)</span>
+<span id="L355" class="LineNr">355 </span><span class="Special">% Reg[3].i = 0x60;</span>
+<span id="L356" class="LineNr">356 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L357" class="LineNr">357 </span>  c7  <span class="PreProc">0</span><span class="Constant">3</span>                          0a 0b 0c 0d  <span class="Comment"># copy 0x0d0c0b0a to *EBX (reg 3)</span>
+<span id="L358" class="LineNr">358 </span><span class="traceContains">+run: copy <a href='010core.cc.html#L219'>imm32</a> 0x0d0c0b0a to effective address</span>
+<span id="L359" class="LineNr">359 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 3)</span>
+<span id="L360" class="LineNr">360 </span>
+<span id="L361" class="LineNr">361 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L362" class="LineNr">362 </span><span class="Normal">case</span> <span class="Constant">0xc7</span>: <span class="Delimiter">{</span>  <span class="Comment">// copy imm32 to r32</span>
+<span id="L363" class="LineNr">363 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L214'>next</a><span class="Delimiter">();</span>
+<span id="L364" class="LineNr">364 </span>  <span class="Normal">int32_t</span> arg2 = <a href='010core.cc.html#L219'>imm32</a><span class="Delimiter">();</span>
+<span id="L365" class="LineNr">365 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;copy <a href='010core.cc.html#L219'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; arg2 &lt;&lt; <span class="Constant">&quot; to effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L366" class="LineNr">366 </span>  <span class="Normal">int32_t</span>* arg1 = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L367" class="LineNr">367 </span>  *arg1 = arg2<span class="Delimiter">;</span>
+<span id="L368" class="LineNr">368 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L369" class="LineNr">369 </span><span class="Delimiter">}</span>
+<span id="L370" class="LineNr">370 </span>
+<span id="L371" class="LineNr">371 </span><span class="SalientComment">//:: push</span>
+<span id="L372" class="LineNr">372 </span>
+<span id="L373" class="LineNr">373 </span><span class="Delimiter">:(scenario push_imm32)</span>
+<span id="L374" class="LineNr">374 </span><span class="Special">% Reg[ESP].u = 0x14;</span>
+<span id="L375" class="LineNr">375 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L376" class="LineNr">376 </span>  <span class="Constant">68</span>                              af <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span> <span class="PreProc">0</span><span class="Constant">0</span>  <span class="Comment"># push *EAX (reg 0) to stack</span>
+<span id="L377" class="LineNr">377 </span><span class="traceContains">+run: push <a href='010core.cc.html#L219'>imm32</a> 0x000000af</span>
+<span id="L378" class="LineNr">378 </span><span class="traceContains">+run: <a href='010core.cc.html#L11'>ESP</a> is now 0x00000010</span>
+<span id="L379" class="LineNr">379 </span><span class="traceContains">+run: <a href='003trace.cc.html#L74'>contents</a> at <a href='010core.cc.html#L11'>ESP</a>: 0x000000af</span>
+<span id="L380" class="LineNr">380 </span>
+<span id="L381" class="LineNr">381 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L382" class="LineNr">382 </span><span class="Normal">case</span> <span class="Constant">0x68</span>: <span class="Delimiter">{</span>
+<span id="L383" class="LineNr">383 </span>  <span class="Normal">int32_t</span> val = <a href='010core.cc.html#L219'>imm32</a><span class="Delimiter">();</span>
+<span id="L384" class="LineNr">384 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;push <a href='010core.cc.html#L219'>imm32</a> 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; val &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L385" class="LineNr">385 </span>  Reg[ESP]<span class="Delimiter">.</span>u -= <span class="Constant">4</span><span class="Delimiter">;</span>
+<span id="L386" class="LineNr">386 </span>  *<span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">))</span> = val<span class="Delimiter">;</span>
+<span id="L387" class="LineNr">387 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ESP is now 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; Reg[ESP]<span class="Delimiter">.</span>u &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L388" class="LineNr">388 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;contents at <a href='010core.cc.html#L11'>ESP</a>: 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; *<span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">))</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L389" class="LineNr">389 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L390" class="LineNr">390 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>

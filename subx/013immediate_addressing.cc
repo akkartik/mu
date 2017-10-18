@@ -350,6 +350,7 @@ case 0xb8: {  // copy imm32 to r32
 }
 
 //:
+
 :(scenario copy_imm32_to_mem_at_r32)
 % Reg[3].i = 0x60;
 # op  ModRM   SIB   displacement  immediate
@@ -364,5 +365,26 @@ case 0xc7: {  // copy imm32 to r32
   trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to effective address" << end();
   int32_t* arg1 = effective_address(modrm);
   *arg1 = arg2;
+  break;
+}
+
+//:: push
+
+:(scenario push_imm32)
+% Reg[ESP].u = 0x14;
+# op  ModRM   SIB   displacement  immediate
+  68                              af 00 00 00  # push *EAX (reg 0) to stack
++run: push imm32 0x000000af
++run: ESP is now 0x00000010
++run: contents at ESP: 0x000000af
+
+:(before "End Single-Byte Opcodes")
+case 0x68: {
+  int32_t val = imm32();
+  trace(2, "run") << "push imm32 0x" << HEXWORD << val << end();
+  Reg[ESP].u -= 4;
+  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
+  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
   break;
 }

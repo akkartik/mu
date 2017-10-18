@@ -214,3 +214,29 @@ case 0x89: {  // copy r32 to r/m32
   trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
   break;
 }
+
+//:: push
+
+:(scenario push_r32)
+% Reg[ESP].u = 0x64;
+% Reg[EBX].i = 10;
+# op  ModRM   SIB   displacement  immediate
+  50  03                                      # push EBX (reg 3) to stack
++run: push reg 3
++run: pushing value 0x0000000a
++run: ESP is now 0x00000060
++run: contents at ESP: 0x0000000a
+
+:(before "End Single-Byte Opcodes")
+case 0x50: {
+  uint8_t modrm = next();
+  uint8_t reg = modrm & 0x7;
+  trace(2, "run") << "push reg " << NUM(reg) << end();
+  const int32_t val = Reg[reg].u;
+  trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
+  Reg[ESP].u -= 4;
+  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
+  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  break;
+}

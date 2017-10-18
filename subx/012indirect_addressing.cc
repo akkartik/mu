@@ -327,13 +327,40 @@ case 0xff: {  // jump to r/m32
   uint8_t modrm = next();
   uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
-  case 4:
-    trace(2, "run") << "jump to effective address" << end();
-    int32_t* arg2 = effective_address(modrm);
-    EIP = *arg2;
-    trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
-    break;
-  // End Op ff Subops
+    case 4: {
+      trace(2, "run") << "jump to effective address" << end();
+      int32_t* arg2 = effective_address(modrm);
+      EIP = *arg2;
+      trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
+      break;
+    }
+    // End Op ff Subops
   }
   break;
 }
+
+//:: push
+
+:(scenario push_mem_at_r32)
+% Reg[0].i = 0x60;
+% SET_WORD_IN_MEM(0x60, 0x000000af);
+% Reg[ESP].u = 0x14;
+# op  ModRM   SIB   displacement  immediate
+  ff  30                                      # push *EAX (reg 0) to stack
++run: push effective address
++run: effective address is mem at address 0x60 (reg 0)
++run: ESP is now 0x00000010
++run: contents at ESP: 0x000000af
+
+:(before "End Op ff Subops")
+case 6: {
+  trace(2, "run") << "push effective address" << end();
+  const int32_t* val = effective_address(modrm);
+  trace(2, "run") << "pushing value 0x" << HEXWORD << *val << end();
+  Reg[ESP].u -= 4;
+  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = *val;
+  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  break;
+}
+
