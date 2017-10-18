@@ -323,11 +323,11 @@ case 0x8b: {  // copy r32 to r/m32
 -run: inst: 0x00000003
 
 :(before "End Single-Byte Opcodes")
-case 0xff: {  // jump to r/m32
+case 0xff: {
   uint8_t modrm = next();
   uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
-    case 4: {
+    case 4: {  // jump to r/m32
       trace(2, "run") << "jump to effective address" << end();
       int32_t* arg2 = effective_address(modrm);
       EIP = *arg2;
@@ -353,7 +353,7 @@ case 0xff: {  // jump to r/m32
 +run: pushing value 0x000000af
 
 :(before "End Op ff Subops")
-case 6: {
+case 6: {  // push r/m32 to stack
   trace(2, "run") << "push effective address" << end();
   const int32_t* val = effective_address(modrm);
   push(*val);
