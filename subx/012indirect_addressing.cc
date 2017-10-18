@@ -349,18 +349,14 @@ case 0xff: {  // jump to r/m32
   ff  30                                      # push *EAX (reg 0) to stack
 +run: push effective address
 +run: effective address is mem at address 0x60 (reg 0)
-+run: ESP is now 0x00000010
-+run: contents at ESP: 0x000000af
++run: decrementing ESP to 0x00000010
++run: pushing value 0x000000af
 
 :(before "End Op ff Subops")
 case 6: {
   trace(2, "run") << "push effective address" << end();
   const int32_t* val = effective_address(modrm);
-  trace(2, "run") << "pushing value 0x" << HEXWORD << *val << end();
-  Reg[ESP].u -= 4;
-  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = *val;
-  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  push(*val);
   break;
 }
 
@@ -374,8 +370,8 @@ case 6: {
   8f  00                                      # pop stack into *EAX (reg 0)
 +run: pop into effective address
 +run: effective address is mem at address 0x60 (reg 0)
-+run: storing 0x00000030
-+run: ESP is now 0x00000014
++run: popping value 0x00000030
++run: incrementing ESP to 0x00000014
 
 :(before "End Single-Byte Opcodes")
 case 0x8f: {  // pop stack into r/m32
@@ -385,10 +381,7 @@ case 0x8f: {  // pop stack into r/m32
     case 0: {
       trace(2, "run") << "pop into effective address" << end();
       int32_t* dest = effective_address(modrm);
-      *dest = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
-      trace(2, "run") << "storing 0x" << HEXWORD << *dest << end();
-      Reg[ESP].u += 4;
-      trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+      *dest = pop();
       break;
     }
   }

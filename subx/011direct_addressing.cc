@@ -223,9 +223,8 @@ case 0x89: {  // copy r32 to r/m32
 # op  ModRM   SIB   displacement  immediate
   53                                          # push EBX (reg 3) to stack
 +run: push reg 3
++run: decrementing ESP to 0x00000060
 +run: pushing value 0x0000000a
-+run: ESP is now 0x00000060
-+run: contents at ESP: 0x0000000a
 
 :(before "End Single-Byte Opcodes")
 case 0x50:
@@ -238,13 +237,15 @@ case 0x56:
 case 0x57: {  // push r32 to stack
   uint8_t reg = op & 0x7;
   trace(2, "run") << "push reg " << NUM(reg) << end();
-  const int32_t val = Reg[reg].u;
-  trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
-  Reg[ESP].u -= 4;
-  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
-  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
-  trace(2, "run") << "contents at ESP: 0x" << HEXWORD << *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) << end();
+  push(Reg[reg].u);
   break;
+}
+:(code)
+void push(uint32_t val) {
+  Reg[ESP].u -= 4;
+  trace(2, "run") << "decrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
+  *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u)) = val;
 }
 
 //:: pop
@@ -256,7 +257,7 @@ case 0x57: {  // push r32 to stack
   5b                                          # pop stack to EBX (reg 3)
 +run: pop into reg 3
 +run: popping value 0x0000000a
-+run: ESP is now 0x00000064
++run: incrementing ESP to 0x00000064
 
 :(before "End Single-Byte Opcodes")
 case 0x58:
@@ -269,9 +270,14 @@ case 0x5e:
 case 0x5f: {  // pop stack into r32
   uint8_t reg = op & 0x7;
   trace(2, "run") << "pop into reg " << NUM(reg) << end();
-  Reg[reg].u = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
-  trace(2, "run") << "popping value 0x" << HEXWORD << Reg[reg].u << end();
-  Reg[ESP].u += 4;
-  trace(2, "run") << "ESP is now 0x" << HEXWORD << Reg[ESP].u << end();
+  Reg[reg].u = pop();
   break;
+}
+:(code)
+uint32_t pop() {
+  uint32_t result = *reinterpret_cast<uint32_t*>(&Mem.at(Reg[ESP].u));
+  trace(2, "run") << "popping value 0x" << HEXWORD << result << end();
+  Reg[ESP].u += 4;
+  trace(2, "run") << "incrementing ESP to 0x" << HEXWORD << Reg[ESP].u << end();
+  return result;
 }

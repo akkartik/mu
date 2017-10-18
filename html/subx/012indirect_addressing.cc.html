@@ -412,53 +412,46 @@ if ('onhashchange' in window) {
 <span id="L347" class="LineNr">347 </span><span class="Special">% Reg[ESP].u = 0x14;</span>
 <span id="L348" class="LineNr">348 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
 <span id="L349" class="LineNr">349 </span>  ff  <span class="Constant">30</span>                                      <span class="Comment"># push *EAX (reg 0) to stack</span>
-<span id="L350" class="LineNr">350 </span><span class="traceContains">+run: push effective address</span>
+<span id="L350" class="LineNr">350 </span><span class="traceContains">+run: <a href='011direct_addressing.cc.html#L244'>push</a> effective address</span>
 <span id="L351" class="LineNr">351 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 0)</span>
-<span id="L352" class="LineNr">352 </span><span class="traceContains">+run: <a href='010core.cc.html#L11'>ESP</a> is now 0x00000010</span>
-<span id="L353" class="LineNr">353 </span><span class="traceContains">+run: <a href='003trace.cc.html#L74'>contents</a> at <a href='010core.cc.html#L11'>ESP</a>: 0x000000af</span>
+<span id="L352" class="LineNr">352 </span><span class="traceContains">+run: decrementing <a href='010core.cc.html#L11'>ESP</a> to 0x00000010</span>
+<span id="L353" class="LineNr">353 </span><span class="traceContains">+run: pushing value 0x000000af</span>
 <span id="L354" class="LineNr">354 </span>
 <span id="L355" class="LineNr">355 </span><span class="Delimiter">:(before &quot;End Op ff Subops&quot;)</span>
 <span id="L356" class="LineNr">356 </span><span class="Normal">case</span> <span class="Constant">6</span>: <span class="Delimiter">{</span>
 <span id="L357" class="LineNr">357 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;push effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
 <span id="L358" class="LineNr">358 </span>  <span class="Normal">const</span> <span class="Normal">int32_t</span>* val = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
-<span id="L359" class="LineNr">359 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;pushing value 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; *val &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L360" class="LineNr">360 </span>  Reg[ESP]<span class="Delimiter">.</span>u -= <span class="Constant">4</span><span class="Delimiter">;</span>
-<span id="L361" class="LineNr">361 </span>  *<span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">))</span> = *val<span class="Delimiter">;</span>
-<span id="L362" class="LineNr">362 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ESP is now 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; Reg[ESP]<span class="Delimiter">.</span>u &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L363" class="LineNr">363 </span>  <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;contents at <a href='010core.cc.html#L11'>ESP</a>: 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; *<span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">))</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L364" class="LineNr">364 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L365" class="LineNr">365 </span><span class="Delimiter">}</span>
-<span id="L366" class="LineNr">366 </span>
-<span id="L367" class="LineNr">367 </span><span class="SalientComment">//:: pop</span>
-<span id="L368" class="LineNr">368 </span>
-<span id="L369" class="LineNr">369 </span><span class="Delimiter">:(scenario pop_mem_at_r32)</span>
-<span id="L370" class="LineNr">370 </span><span class="Special">% Reg[0].i = 0x60;</span>
-<span id="L371" class="LineNr">371 </span><span class="Special">% Reg[ESP].u = 0x10;</span>
-<span id="L372" class="LineNr">372 </span><span class="Special">% SET_WORD_IN_MEM(0x10, 0x00000030);</span>
-<span id="L373" class="LineNr">373 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
-<span id="L374" class="LineNr">374 </span>  <span class="Constant">8f</span>  <span class="PreProc">0</span><span class="Constant">0</span>                                      <span class="Comment"># pop stack into *EAX (reg 0)</span>
-<span id="L375" class="LineNr">375 </span><span class="traceContains">+run: pop into effective address</span>
-<span id="L376" class="LineNr">376 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 0)</span>
-<span id="L377" class="LineNr">377 </span><span class="traceContains">+run: storing 0x00000030</span>
-<span id="L378" class="LineNr">378 </span><span class="traceContains">+run: <a href='010core.cc.html#L11'>ESP</a> is now 0x00000014</span>
-<span id="L379" class="LineNr">379 </span>
-<span id="L380" class="LineNr">380 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
-<span id="L381" class="LineNr">381 </span><span class="Normal">case</span> <span class="Constant">0x8f</span>: <span class="Delimiter">{</span>  <span class="Comment">// pop stack into r/m32</span>
-<span id="L382" class="LineNr">382 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L214'>next</a><span class="Delimiter">();</span>
-<span id="L383" class="LineNr">383 </span>  <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
-<span id="L384" class="LineNr">384 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>subop<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L385" class="LineNr">385 </span>  <span class="Conceal">¦</span> <span class="Normal">case</span> <span class="Constant">0</span>: <span class="Delimiter">{</span>
-<span id="L386" class="LineNr">386 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;pop into effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L387" class="LineNr">387 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">int32_t</span>* dest = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
-<span id="L388" class="LineNr">388 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *dest = *<span class="Normal">reinterpret_cast</span>&lt;<span class="Normal">uint32_t</span>*&gt;<span class="Delimiter">(</span>&amp;Mem<span class="Delimiter">.</span>at<span class="Delimiter">(</span>Reg[ESP]<span class="Delimiter">.</span>u<span class="Delimiter">));</span>
-<span id="L389" class="LineNr">389 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;storing 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; *dest &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L390" class="LineNr">390 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> Reg[ESP]<span class="Delimiter">.</span>u += <span class="Constant">4</span><span class="Delimiter">;</span>
-<span id="L391" class="LineNr">391 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;ESP is now 0x&quot;</span> &lt;&lt; <a href='010core.cc.html#L230'>HEXWORD</a> &lt;&lt; Reg[ESP]<span class="Delimiter">.</span>u &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
-<span id="L392" class="LineNr">392 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L393" class="LineNr">393 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L394" class="LineNr">394 </span>  <span class="Delimiter">}</span>
-<span id="L395" class="LineNr">395 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L396" class="LineNr">396 </span><span class="Delimiter">}</span>
+<span id="L359" class="LineNr">359 </span>  <a href='011direct_addressing.cc.html#L244'>push</a><span class="Delimiter">(</span>*val<span class="Delimiter">);</span>
+<span id="L360" class="LineNr">360 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L361" class="LineNr">361 </span><span class="Delimiter">}</span>
+<span id="L362" class="LineNr">362 </span>
+<span id="L363" class="LineNr">363 </span><span class="SalientComment">//:: pop</span>
+<span id="L364" class="LineNr">364 </span>
+<span id="L365" class="LineNr">365 </span><span class="Delimiter">:(scenario pop_mem_at_r32)</span>
+<span id="L366" class="LineNr">366 </span><span class="Special">% Reg[0].i = 0x60;</span>
+<span id="L367" class="LineNr">367 </span><span class="Special">% Reg[ESP].u = 0x10;</span>
+<span id="L368" class="LineNr">368 </span><span class="Special">% SET_WORD_IN_MEM(0x10, 0x00000030);</span>
+<span id="L369" class="LineNr">369 </span><span class="Comment"># op  ModRM   SIB   displacement  immediate</span>
+<span id="L370" class="LineNr">370 </span>  <span class="Constant">8f</span>  <span class="PreProc">0</span><span class="Constant">0</span>                                      <span class="Comment"># pop stack into *EAX (reg 0)</span>
+<span id="L371" class="LineNr">371 </span><span class="traceContains">+run: <a href='011direct_addressing.cc.html#L277'>pop</a> into effective address</span>
+<span id="L372" class="LineNr">372 </span><span class="traceContains">+run: effective address is mem at address 0x60 (reg 0)</span>
+<span id="L373" class="LineNr">373 </span><span class="traceContains">+run: popping value 0x00000030</span>
+<span id="L374" class="LineNr">374 </span><span class="traceContains">+run: incrementing <a href='010core.cc.html#L11'>ESP</a> to 0x00000014</span>
+<span id="L375" class="LineNr">375 </span>
+<span id="L376" class="LineNr">376 </span><span class="Delimiter">:(before &quot;End Single-Byte Opcodes&quot;)</span>
+<span id="L377" class="LineNr">377 </span><span class="Normal">case</span> <span class="Constant">0x8f</span>: <span class="Delimiter">{</span>  <span class="Comment">// pop stack into r/m32</span>
+<span id="L378" class="LineNr">378 </span>  <span class="Normal">uint8_t</span> modrm = <a href='010core.cc.html#L214'>next</a><span class="Delimiter">();</span>
+<span id="L379" class="LineNr">379 </span>  <span class="Normal">uint8_t</span> subop = <span class="Delimiter">(</span>modrm&gt;&gt;<span class="Constant">3</span><span class="Delimiter">)</span>&amp;<span class="Constant">0x7</span><span class="Delimiter">;</span>
+<span id="L380" class="LineNr">380 </span>  <span class="Normal">switch</span> <span class="Delimiter">(</span>subop<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L381" class="LineNr">381 </span>  <span class="Conceal">¦</span> <span class="Normal">case</span> <span class="Constant">0</span>: <span class="Delimiter">{</span>
+<span id="L382" class="LineNr">382 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L160'>trace</a><span class="Delimiter">(</span><span class="Constant">2</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;pop into effective address&quot;</span> &lt;&lt; <a href='003trace.cc.html#L184'>end</a><span class="Delimiter">();</span>
+<span id="L383" class="LineNr">383 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">int32_t</span>* dest = <a href='011direct_addressing.cc.html#L26'>effective_address</a><span class="Delimiter">(</span>modrm<span class="Delimiter">);</span>
+<span id="L384" class="LineNr">384 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> *dest = <a href='011direct_addressing.cc.html#L277'>pop</a><span class="Delimiter">();</span>
+<span id="L385" class="LineNr">385 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L386" class="LineNr">386 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L387" class="LineNr">387 </span>  <span class="Delimiter">}</span>
+<span id="L388" class="LineNr">388 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L389" class="LineNr">389 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
