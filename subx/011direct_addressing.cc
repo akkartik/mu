@@ -221,16 +221,22 @@ case 0x89: {  // copy r32 to r/m32
 % Reg[ESP].u = 0x64;
 % Reg[EBX].i = 10;
 # op  ModRM   SIB   displacement  immediate
-  50  03                                      # push EBX (reg 3) to stack
+  53                                          # push EBX (reg 3) to stack
 +run: push reg 3
 +run: pushing value 0x0000000a
 +run: ESP is now 0x00000060
 +run: contents at ESP: 0x0000000a
 
 :(before "End Single-Byte Opcodes")
-case 0x50: {
-  uint8_t modrm = next();
-  uint8_t reg = modrm & 0x7;
+case 0x50:
+case 0x51:
+case 0x52:
+case 0x53:
+case 0x54:
+case 0x55:
+case 0x56:
+case 0x57: {
+  uint8_t reg = op & 0x7;
   trace(2, "run") << "push reg " << NUM(reg) << end();
   const int32_t val = Reg[reg].u;
   trace(2, "run") << "pushing value 0x" << HEXWORD << val << end();
