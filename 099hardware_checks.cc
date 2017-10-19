@@ -38,7 +38,7 @@ void check_for_misuse_of_real_hardware(const recipe_ordinal r) {
   trace(9991, "transform") << "--- check if recipe " << caller.name << " has any dependency-injection mistakes" << end();
   for (int index = 0;  index < SIZE(caller.steps);  ++index) {
     const instruction& inst = caller.steps.at(index);
-    if (inst.operation < MAX_PRIMITIVE_RECIPES) continue;
+    if (is_primitive(inst.operation)) continue;
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i) {
       const reagent& ing = inst.ingredients.at(i);
       if (!is_literal(ing) || ing.name != "0") continue;

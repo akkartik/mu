@@ -67,7 +67,7 @@ void check_types_of_return_instructions(const recipe_ordinal r) {
     const instruction& caller_instruction = caller.steps.at(i);
     if (caller_instruction.is_label) continue;
     if (caller_instruction.products.empty()) continue;
-    if (caller_instruction.operation < MAX_PRIMITIVE_RECIPES) continue;
+    if (is_primitive(caller_instruction.operation)) continue;
     const recipe& callee = get(Recipe, caller_instruction.operation);
     for (int i = 0;  i < SIZE(callee.steps);  ++i) {
       const instruction& return_inst = callee.steps.at(i);
@@ -109,6 +109,10 @@ void check_types_of_return_instructions(const recipe_ordinal r) {
       finish_return_check:;
     }
   }
+}
+
+bool is_primitive(recipe_ordinal r) {
+  return r < MAX_PRIMITIVE_RECIPES;
 }
 
 :(scenario return_type_mismatch)

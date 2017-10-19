@@ -200,7 +200,7 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
   // error messages
-  if (get(Recipe_ordinal, inst.name) >= MAX_PRIMITIVE_RECIPES) {  // we currently don't check types for primitive variants
+  if (!is_primitive(get(Recipe_ordinal, inst.name))) {  // we currently don't check types for primitive variants
     if (SIZE(variants) == 1) {
       raise << maybe(caller_recipe.name) << "types don't match in call for '" << to_original_string(inst) << "'\n" << end();
       raise << "  which tries to call '" << original_header_label(get(Recipe, variants.at(0))) << "'\n" << end();

@@ -75,7 +75,7 @@ skip_shape_shifting_variants:;
 //: recipes can be called
 
 :(before "End Instruction Operation Checks")
-if (contains_key(Recipe, inst.operation) && inst.operation >= MAX_PRIMITIVE_RECIPES
+if (contains_key(Recipe, inst.operation) && !is_primitive(inst.operation)
     && any_type_ingredient_in_header(inst.operation)) {
   raise << maybe(caller.name) << "instruction '" << inst.name << "' has no valid specialization\n" << end();
   return;

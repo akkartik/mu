@@ -291,7 +291,7 @@ void check_calls_against_header(const recipe_ordinal r) {
   trace(9991, "transform") << "--- type-check calls inside recipe " << caller.name << end();
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
-    if (inst.operation < MAX_PRIMITIVE_RECIPES) continue;
+    if (is_primitive(inst.operation)) continue;
     const recipe& callee = get(Recipe, inst.operation);
     if (!callee.has_header) continue;
     for (long int i = 0;  i < min(SIZE(inst.ingredients), SIZE(callee.ingredients));  ++i) {

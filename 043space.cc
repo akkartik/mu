@@ -293,7 +293,7 @@ bool escaping(const reagent& r) {
 if (Writing_products_of_instruction) {
   const instruction& inst = current_instruction();
   // should_update_refcounts() Special-cases When Writing Products Of Primitive Instructions
-  if (inst.operation < MAX_PRIMITIVE_RECIPES) return true;
+  if (is_primitive(inst.operation)) return true;
   if (!contains_key(Recipe, inst.operation)) return true;
   const recipe& callee = get(Recipe, inst.operation);
   if (callee.steps.empty()) return true;
