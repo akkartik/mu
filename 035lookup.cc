@@ -79,7 +79,7 @@ def main [
 :(code)
 void canonize(reagent& x) {
   if (is_literal(x)) return;
-  // End canonize(x) Special-cases
+  // Begin canonize(x) Lookups
   while (has_property(x, "lookup"))
     lookup_memory(x);
 }

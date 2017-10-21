@@ -1,12 +1,13 @@
 //: Spaces help isolate recipes from each other. You can create them at will,
 //: and all addresses in arguments are implicitly based on the 'default-space'
 //: (unless they have the /raw property)
+//:
+//: Spaces are often called 'scopes' in other languages. Stack frames are a
+//: limited form of space that can't outlive callers.
 
-//: A space is just an array of any scalar location.
+//: Under the hood, a space is an array of locations in memory.
 :(before "End Mu Types Initialization")
 put(Type_abbreviations, "space", new_type_tree("address:array:location"));
-//: Spaces are often called 'scopes' in other languages.
-put(Type_abbreviations, "scope", new_type_tree("address:array:location"));
 
 :(scenario set_default_space)
 # if default-space is 10, and if an array of 5 locals lies from location 12 to 16 (inclusive),
@@ -34,7 +35,8 @@ def main [
 ]
 +mem: storing 34 in location 8
 
-//:: first disable name conversion for 'default-space'
+//: precondition: disable name conversion for 'default-space'
+
 :(scenario convert_names_passes_default_space)
 % Hide_errors = true;
 def main [
@@ -49,13 +51,14 @@ if (x.name == "default-space")
 :(before "End is_special_name Special-cases")
 if (s == "default-space") return true;
 
-//:: now implement space support
+//: core implementation
+
 :(before "End call Fields")
 int default_space;
 :(before "End call Constructor")
 default_space = 0;
 
-:(before "End canonize(x) Special-cases")
+:(before "Begin canonize(x) Lookups")
 absolutize(x);
 :(code)
 void absolutize(reagent& x) {
@@ -85,7 +88,7 @@ int address(int offset, int base) {
   return base + /*skip length*/1 + offset;
 }
 
-//:: reads and writes to the 'default-space' variable have special behavior
+//: reads and writes to the 'default-space' variable have special behavior
 
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
@@ -181,6 +184,17 @@ if (s == "number-of-locals") return true;
 if (curr.name == "new-default-space") {
   rewrite_default_space_instruction(curr);
 }
+:(code)
+void rewrite_default_space_instruction(instruction& curr) {
+  if (!curr.ingredients.empty())
+    raise << "'" << to_original_string(curr) << "' can't take any ingredients\n" << end();
+  curr.name = "new";
+  curr.ingredients.push_back(reagent("location:type"));
+  curr.ingredients.push_back(reagent("number-of-locals:literal"));
+  if (!curr.products.empty())
+    raise << "new-default-space can't take any results\n" << end();
+  curr.products.push_back(reagent("default-space:space"));
+}
 :(after "Begin Preprocess read_memory(x)")
 if (x.name == "number-of-locals") {
   vector<double> result;
@@ -200,14 +214,14 @@ if (x.name == "number-of-locals") {
 
 :(scenario local_scope)
 def main [
-  1:&:@:location <- foo
-  2:&:@:location <- foo
-  3:bool <- equal 1:&, 2:&
+  1:num <- foo
+  2:num <- foo
+  3:bool <- equal 1:num, 2:num
 ]
 def foo [
   local-scope
-  x:num <- copy 34
-  return default-space:space
+  result:num <- copy default-space:space
+  return result:num
 ]
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
@@ -309,17 +323,6 @@ bool caller_uses_product(int product_index) {
   const instruction& caller_inst = to_instruction(caller);
   if (product_index >= SIZE(caller_inst.products)) return false;
   return !is_dummy(caller_inst.products.at(product_index));
-}
-
-void rewrite_default_space_instruction(instruction& curr) {
-  if (!curr.ingredients.empty())
-    raise << "'" << to_original_string(curr) << "' can't take any ingredients\n" << end();
-  curr.name = "new";
-  curr.ingredients.push_back(reagent("location:type"));
-  curr.ingredients.push_back(reagent("number-of-locals:literal"));
-  if (!curr.products.empty())
-    raise << "new-default-space can't take any results\n" << end();
-  curr.products.push_back(reagent("default-space:space"));
 }
 
 :(scenario local_scope_frees_up_addresses_inside_containers)
