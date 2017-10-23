@@ -17,8 +17,12 @@ def main [
 +run: {2: ("address" "number")} <- copy {0: "literal"}
 +mem: decrementing refcount of 1000: 1 -> 0
 
-:(before "End write_memory(x) Special-cases")
-update_any_refcounts(x, data);
+:(after "Writing Instruction Product(i)")
+if (is_primitive(current_instruction().operation)) {
+  reagent/*copy*/ tmp = current_instruction().products.at(i);
+  canonize(tmp);
+  update_any_refcounts(tmp, products.at(i));
+}
 
 :(before "End Globals")
 bool Reclaim_memory = true;
@@ -30,15 +34,8 @@ else if (is_equal(*arg, "--no-reclaim")) {
 :(code)
 void update_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
   if (!Reclaim_memory) return;
-  if (!should_update_refcounts()) return;
   increment_any_refcounts(canonized_x, data);  // increment first so we don't reclaim on x <- copy x
   decrement_any_refcounts(canonized_x);
-}
-
-//: escape hatch for a later layer
-bool should_update_refcounts() {
-  // End should_update_refcounts() Special-cases
-  return true;
 }
 
 void increment_any_refcounts(const reagent& canonized_x, const vector<double>& data) {
@@ -60,8 +57,8 @@ void increment_refcount(int new_address) {
 }
 
 void decrement_any_refcounts(const reagent& canonized_x) {
-  if (is_mu_address(canonized_x)) {
-    assert(canonized_x.value);
+  // Begin Decrement Refcounts(canonized_x)
+  if (is_mu_address(canonized_x) && canonized_x.value != 0) {
     assert(!canonized_x.metadata.size);
     decrement_refcount(get_or_insert(Memory, canonized_x.value), payload_type(canonized_x.type), payload_size(canonized_x));
   }
@@ -1057,7 +1054,7 @@ if (Run_profiler) {
 Num_refcount_updates[caller_frame.running_recipe][caller_frame.running_step_index]
     += (Total_refcount_updates - initial_num_refcount_updates);
 initial_num_refcount_updates = Total_refcount_updates;
-:(after "Starting Reply")
+:(after "Begin Return")
 if (Run_profiler) {
   Num_refcount_updates[current_call().running_recipe][current_call().running_step_index]
       += (Total_refcount_updates - initial_num_refcount_updates);

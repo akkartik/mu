@@ -143,6 +143,15 @@ bool is_static_array(const reagent& x) {
   return !x.type->atom && x.type->left->atom && x.type->left->name == "array";
 }
 
+//: Supporting 'append' above requires remembering what name an instruction
+//: had before any rewrites or transforms.
+:(before "End instruction Fields")
+string name_before_rewrite;
+:(before "End instruction Clear")
+name_before_rewrite.clear();
+:(before "End next_instruction(curr)")
+curr->name_before_rewrite = curr->name;
+
 :(scenarios run)
 :(scenario append_other_types_to_text)
 def main [

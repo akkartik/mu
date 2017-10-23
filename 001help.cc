@@ -256,3 +256,7 @@ using std::cerr;
 using std::string;
 
 #define unused  __attribute__((unused))
+
+#include <algorithm>
+using std::min;
+using std::max;

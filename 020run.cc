@@ -95,15 +95,15 @@ void run_current_routine() {
     }
     //: used by a later layer
     if (write_products) {
-      Writing_products_of_instruction = true;
       if (SIZE(products) < SIZE(current_instruction().products)) {
         raise << SIZE(products) << " vs " << SIZE(current_instruction().products) << ": failed to write to all products in '" << to_original_string(current_instruction()) << "'\n" << end();
       }
       else {
-        for (int i = 0;  i < SIZE(current_instruction().products);  ++i)
+        for (int i = 0;  i < SIZE(current_instruction().products);  ++i) {
+          // Writing Instruction Product(i)
           write_memory(current_instruction().products.at(i), products.at(i));
+        }
       }
-      Writing_products_of_instruction = false;
     }
     // End Running One Instruction
     if (fall_through_to_next_instruction)
@@ -111,8 +111,6 @@ void run_current_routine() {
   }
   stop_running_current_routine:;
 }
-:(before "End Globals")
-bool Writing_products_of_instruction = false;
 
 :(code)
 //: hook replaced in a later layer

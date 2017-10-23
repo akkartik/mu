@@ -640,7 +640,3 @@ void check_recipe_header_constraints(const recipe_ordinal r) {
     raise << "recipe 'main' must return at most a single product, a number\n" << end();
   }
 }
-
-:(before "End Includes")
-using std::min;
-using std::max;

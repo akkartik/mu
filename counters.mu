@@ -3,7 +3,7 @@
 
 def new-counter n:num -> default-space:space [
   default-space <- new location:type, 30
-  load-ingredients
+  load-ingredients  # initialize n
 ]
 
 def increment-counter outer:space/names:new-counter, x:num -> n:num/space:1 [

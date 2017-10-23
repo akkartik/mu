@@ -263,6 +263,8 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   if (contains_key(addresses_copied, in_address)) {
     int out = get(addresses_copied, in_address);
     trace(9991, "run") << "deep-copy: copy already exists: " << out << end();
+    assert(contains_key(Memory, out));  // refcount must already be incremented
+    ++get(Memory, out);
     return out;
   }
   int out = allocate(payload_size(canonized_in));
@@ -405,15 +407,18 @@ def main [
   y:&:foo <- deep-copy x
   1:num/raw <- get *y, p:offset
   y2:&:foo <- get *y, q:offset
-  stash y [vs] y2
   2:bool/raw <- equal y, y2  # is it still a cycle?
   3:bool/raw <- equal x, y  # is it the same cycle?
+  # not bothering cleaning up; both cycles leak memory
 ]
 +mem: storing 34 in location 1
 # deep copy also contains a cycle
 +mem: storing 1 in location 2
 # but it's a completely different (disjoint) cycle
 +mem: storing 0 in location 3
+
+//: todo: version of deep_copy_cycles that breaks cycles at end and verifies no memory leaks
+//: needs approximate matching over scenario traces
 
 :(scenario deep_copy_skips_channel)
 # ugly! dummy 'channel' type if we happen to be building without that layer

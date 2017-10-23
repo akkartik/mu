@@ -386,7 +386,6 @@ using std::list;
 using std::map;
 #include <set>
 using std::set;
-#include <algorithm>
 
 #include <sstream>
 using std::istringstream;

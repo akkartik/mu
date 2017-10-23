@@ -4,6 +4,10 @@
 //:
 //: Spaces are often called 'scopes' in other languages. Stack frames are a
 //: limited form of space that can't outlive callers.
+//:
+//: Warning: messing with 'default-space' can corrupt memory. Don't do things
+//: like initialize default-space with some other function's default-space.
+//: Later we'll see how to chain spaces safely.
 
 //: Under the hood, a space is an array of locations in memory.
 :(before "End Mu Types Initialization")
@@ -157,12 +161,12 @@ def main [
 :(before "Read element" following "case INDEX:")
 element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
-//:: 'new-default-space' is a convenience operation to automatically deduce
+//:: 'local-scope' is a convenience operation to automatically deduce
 //:: the amount of space to allocate in a default space with names
 
-:(scenario new_default_space)
+:(scenario local_scope)
 def main [
-  new-default-space
+  local-scope
   x:num <- copy 0
   y:num <- copy 3
 ]
@@ -176,12 +180,12 @@ if (x.name == "number-of-locals")
 if (s == "number-of-locals") return true;
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-// rewrite 'new-default-space' to
+// rewrite 'local-scope' to
 //   ```
 //   default-space:space <- new location:type, number-of-locals:literal
 //   ```
 // where number-of-locals is Name[recipe][""]
-if (curr.name == "new-default-space") {
+if (curr.name == "local-scope") {
   rewrite_default_space_instruction(curr);
 }
 :(code)
@@ -209,10 +213,9 @@ if (x.name == "number-of-locals") {
   return;
 }
 
-//:: 'local-scope' is like 'new-default-space' except that we'll reclaim the
-//:: default-space when the routine exits
+//:: try to reclaim the default-space when a recipe returns
 
-:(scenario local_scope)
+:(scenario local_scope_reclaimed_on_return)
 def main [
   1:num <- foo
   2:num <- foo
@@ -226,104 +229,102 @@ def foo [
 # both calls to foo should have received the same default-space
 +mem: storing 1 in location 3
 
-:(scenario local_scope_frees_up_addresses)
+//: todo: do this in a transform, rather than magically in the 'return' instruction
+:(after "Falling Through End Of Recipe")
+reclaim_default_space();
+:(after "Begin Return")
+reclaim_default_space();
+:(code)
+void reclaim_default_space() {
+  if (!Reclaim_memory) return;
+  const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
+  const recipe& exiting_recipe = get(Recipe, r);
+  if (!starts_by_setting_default_space(exiting_recipe)) return;
+  // Reclaim default-space
+  decrement_refcount(current_call().default_space,
+      exiting_recipe.steps.at(0).products.at(0).type->right,
+      /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
+}
+bool starts_by_setting_default_space(const recipe& r) {
+  return !r.steps.empty()
+      && !r.steps.at(0).products.empty()
+      && r.steps.at(0).products.at(0).name == "default-space";
+}
+
+//:
+
+:(scenario local_scope_reclaims_locals)
 def main [
   local-scope
   x:text <- new [abc]
 ]
-+mem: clearing x:text
+# x
++mem: automatically abandoning 1004
+# local-scope
++mem: automatically abandoning 1000
 
-:(before "End Rewrite Instruction(curr, recipe result)")
-if (curr.name == "local-scope") {
-  rewrite_default_space_instruction(curr);
-}
-
-//: todo: do this in a transform, rather than magically in the 'return' instruction
-:(after "Falling Through End Of Recipe")
-try_reclaim_locals();
-:(after "Starting Reply")
-try_reclaim_locals();
-
-:(code)
-void try_reclaim_locals() {
-  if (!Reclaim_memory) return;
-  // only reclaim routines starting with 'local-scope'
-  const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
-  const recipe& exiting_recipe = get(Recipe, r);
-  if (exiting_recipe.steps.empty()) return;
-  const instruction& inst = exiting_recipe.steps.at(0);
-  if (inst.name_before_rewrite != "local-scope") return;
-  // reclaim any local variables unless they're being returned
-  vector<double> zeros;
+:(before "Reclaim default-space")
+if (get_or_insert(Memory, current_call().default_space) <= 1) {
+  set<string> reclaimed_locals;
+  trace(9999, "mem") << "trying to reclaim locals" << end();
   for (int i = /*leave default space for last*/1;  i < SIZE(exiting_recipe.steps);  ++i) {
     const instruction& inst = exiting_recipe.steps.at(i);
     for (int i = 0;  i < SIZE(inst.products);  ++i) {
-      const reagent& product = inst.products.at(i);
+      reagent/*copy*/ product = inst.products.at(i);
+      if (reclaimed_locals.find(product.name) != reclaimed_locals.end()) continue;
+      reclaimed_locals.insert(product.name);
       // local variables only
       if (has_property(product, "lookup")) continue;
       if (has_property(product, "raw")) continue;  // tests often want to check such locations after they run
-      if (escaping(product)) continue;
       // End Checks For Reclaiming Locals
-      trace(9999, "mem") << "clearing " << product.original_string << end();
-      zeros.resize(size_of(product));
-      write_memory(product, zeros);
+      trace(9999, "mem") << "trying to reclaim local " << product.original_string << end();
+      canonize(product);
+      decrement_any_refcounts(product);
     }
   }
-  trace(9999, "mem") << "automatically abandoning " << current_call().default_space << end();
-  abandon(current_call().default_space,
-          inst.products.at(0).type->right,
-          /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
 }
 
-//: Reclaiming local variables above requires remembering what name an
-//: instruction had before any rewrites or transforms.
-:(before "End instruction Fields")
-string name_before_rewrite;
-:(before "End instruction Clear")
-name_before_rewrite.clear();
-:(before "End next_instruction(curr)")
-curr->name_before_rewrite = curr->name;
+:(scenario local_variables_can_outlive_call)
+def main [
+  local-scope
+  x:&:num <- new num:type
+  y:space <- copy default-space:space
+]
+-mem: automatically abandoning 1005
 
+//:
+
+:(scenario local_scope_does_not_reclaim_escaping_locals)
+def main [
+  1:text <- foo
+]
+def foo [
+  local-scope
+  x:text <- new [abc]
+  return x:text
+]
+# local-scope
++mem: automatically abandoning 1000
+# x
+-mem: automatically abandoning 1004
+
+:(after "Begin Return")  // before reclaiming default-space
+increment_refcounts_of_return_ingredients(ingredients);
 :(code)
-// is this reagent one of the values returned by the current (return) instruction?
-// is the corresponding ingredient saved in the caller?
-bool escaping(const reagent& r) {
-  assert(Current_routine);  // run-time only
-  // nothing escapes when you fall through past end of recipe
-  if (current_step_index() >= SIZE(Current_routine->steps())) return false;
-  for (long long i = 0;  i < SIZE(current_instruction().ingredients);  ++i) {
-    if (r == current_instruction().ingredients.at(i)) {
-      if (caller_uses_product(i))
-        return true;
+void increment_refcounts_of_return_ingredients(const vector<vector<double> >& ingredients) {
+  assert(current_instruction().operation == RETURN);
+  if (SIZE(Current_routine->calls) == 1)  // no caller to receive result
+    return;
+  const instruction& caller_instruction = to_instruction(*++Current_routine->calls.begin());
+  for (int i = 0;  i < min(SIZE(current_instruction().ingredients), SIZE(caller_instruction.products));  ++i) {
+    if (!is_dummy(caller_instruction.products.at(i))) {
+      // no need to canonize ingredient because we ignore its value
+      increment_any_refcounts(current_instruction().ingredients.at(i), ingredients.at(i));
     }
   }
-  return false;
 }
 
-//: since we don't decrement refcounts for escaping values above, make sure we
-//: don't increment them when the caller saves them either
-
-:(before "End should_update_refcounts() Special-cases")
-if (Writing_products_of_instruction) {
-  const instruction& inst = current_instruction();
-  // should_update_refcounts() Special-cases When Writing Products Of Primitive Instructions
-  if (is_primitive(inst.operation)) return true;
-  if (!contains_key(Recipe, inst.operation)) return true;
-  const recipe& callee = get(Recipe, inst.operation);
-  if (callee.steps.empty()) return true;
-  return callee.steps.at(0).name_before_rewrite != "local-scope";  // callees that call local-scope are already dealt with before return
-}
-
-:(code)
-bool caller_uses_product(int product_index) {
-  assert(Current_routine);  // run-time only
-  assert(!Current_routine->calls.empty());
-  if (Current_routine->calls.size() == 1) return false;
-  const call& caller = *++Current_routine->calls.begin();
-  const instruction& caller_inst = to_instruction(caller);
-  if (product_index >= SIZE(caller_inst.products)) return false;
-  return !is_dummy(caller_inst.products.at(product_index));
-}
+//:
 
 :(scenario local_scope_frees_up_addresses_inside_containers)
 container foo [
@@ -336,10 +337,6 @@ def main [
   y:foo <- merge 34, x:&:num
   # x and y are both cleared when main returns
 ]
-+mem: clearing x:&:num
-+mem: decrementing refcount of 1006: 2 -> 1
-+mem: clearing y:foo
-+mem: decrementing refcount of 1006: 1 -> 0
 +mem: automatically abandoning 1006
 
 :(scenario local_scope_returns_addresses_inside_containers)
@@ -407,10 +404,8 @@ void check_default_space(const recipe_ordinal r) {
   if (!contains_non_special_name(r)) return;
   trace(9991, "transform") << "--- check that recipe " << caller.name << " sets default-space" << end();
   if (caller.steps.empty()) return;
-  if (caller.steps.at(0).products.empty()
-      || caller.steps.at(0).products.at(0).name != "default-space") {
+  if (!starts_by_setting_default_space(caller))
     raise << caller.name << " does not seem to start with 'local-scope' or 'default-space'\n" << end();
-  }
 }
 :(after "Load Mu Prelude")
 Hide_missing_default_space_errors = false;

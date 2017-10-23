@@ -321,7 +321,7 @@ def main [
   run-closure b:&:num, a:space
 ]
 def new-closure [
-  new-default-space
+  local-scope
   x:&:num <- new number:type
   return default-space
 ]

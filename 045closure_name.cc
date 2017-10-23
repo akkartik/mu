@@ -2,6 +2,9 @@
 //: spaces together. When a variable has a property of /space:1, it looks up
 //: the variable in the chained/surrounding space. /space:2 looks up the
 //: surrounding space of the surrounding space, etc.
+//:
+//: todo: warn on default-space abuse. default-space for one function should
+//: never come from another, otherwise memory will be corrupted.
 
 :(scenario closure)
 def main [
@@ -149,7 +152,7 @@ def f [
 //: extra test for try_reclaim_locals() from previous layers
 :(scenario local_scope_ignores_nonlocal_spaces)
 def new-scope [
-  new-default-space
+  local-scope
   x:&:num <- new number:type
   *x:&:num <- copy 34
   return default-space:space

@@ -35,7 +35,7 @@ case RETURN: {
 }
 :(before "End Primitive Recipe Implementations")
 case RETURN: {
-  // Starting Reply
+  // Begin Return
   if (Trace_stream) {
     trace(9999, "trace") << current_instruction().name << ": decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
@@ -51,7 +51,7 @@ case RETURN: {
     trace(9998, "run") << "result " << i << " is " << to_string(ingredients.at(i)) << end();
   // make return products available to caller
   copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
-  // End Reply
+  // End Return
   break;  // continue to process rest of *caller* instruction
 }
 
