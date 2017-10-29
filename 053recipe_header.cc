@@ -357,7 +357,7 @@ def add2 x:num, y:num [
 ]
 +error: add2: replied with the wrong number of products at 'return z'
 
-:(scenario recipe_headers_are_checked_against_transformed_instructions)
+:(scenario recipe_headers_are_checked_against_pre_transformed_instructions)
 % Hide_errors = true;
 def foo -> x:num [
   local-scope
