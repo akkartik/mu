@@ -197,14 +197,10 @@ int number_of_concrete_type_names(recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   int result = 0;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
-    result += number_of_concrete_type_names(caller.ingredients.at(i));
+    result += number_of_concrete_type_names(caller.ingredients.at(i).type);
   for (int i = 0;  i < SIZE(caller.products);  ++i)
-    result += number_of_concrete_type_names(caller.products.at(i));
+    result += number_of_concrete_type_names(caller.products.at(i).type);
   return result;
-}
-
-int number_of_concrete_type_names(const reagent& r) {
-  return number_of_concrete_type_names(r.type);
 }
 
 int number_of_concrete_type_names(const type_tree* type) {
