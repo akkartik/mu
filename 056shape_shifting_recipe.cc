@@ -116,7 +116,7 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
 }
 
 // tie-breaker for phase 3
-recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
+recipe_ordinal best_shape_shifting_variant(const instruction& inst, const vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
   if (SIZE(candidates) == 1) return candidates.at(0);
   // primary score
