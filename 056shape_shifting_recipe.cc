@@ -53,7 +53,7 @@ if (!candidates.empty()) {
   trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
   recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
   if (new_recipe_ordinal == 0) goto skip_shape_shifting_variants;
-  variants.push_back(new_recipe_ordinal);  // side-effect
+  get(Recipe_variants, inst.name).push_back(new_recipe_ordinal);  // side-effect
   recipe& variant = get(Recipe, new_recipe_ordinal);
   // perform all transforms on the new specialization
   if (!variant.steps.empty()) {
@@ -87,7 +87,7 @@ if (is_literal(from) && is_mu_address(to))
 
 :(code)
 // phase 3 of static dispatch
-vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
+vector<recipe_ordinal> strictly_matching_shape_shifting_variants(const instruction& inst, const vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
     if (variants.at(i) == -1) continue;
@@ -118,6 +118,7 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
 // tie-breaker for phase 3
 recipe_ordinal best_shape_shifting_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
+  if (SIZE(candidates) == 1) return candidates.at(0);
   // primary score
   int max_score = -1;
   for (int i = 0;  i < SIZE(candidates);  ++i) {

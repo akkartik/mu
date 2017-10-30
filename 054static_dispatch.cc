@@ -180,7 +180,7 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
 }
 
 string best_variant(instruction& inst, const recipe& caller_recipe) {
-  vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
+  const vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
   vector<recipe_ordinal> candidates;
 
   // Static Dispatch Phase 1
@@ -234,7 +234,7 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
 }
 
 // phase 1
-vector<recipe_ordinal> strictly_matching_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
+vector<recipe_ordinal> strictly_matching_variants(const instruction& inst, const vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
     if (variants.at(i) == -1) continue;
@@ -263,7 +263,7 @@ bool all_header_reagents_strictly_match(const instruction& inst, const recipe& v
 }
 
 // phase 2
-vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address_or_boolean(const instruction& inst, vector<recipe_ordinal>& variants) {
+vector<recipe_ordinal> strictly_matching_variants_except_literal_against_address_or_boolean(const instruction& inst, const vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
     if (variants.at(i) == -1) continue;
@@ -302,7 +302,7 @@ bool types_strictly_match_except_literal_against_address_or_boolean(const reagen
 }
 
 // phase 4
-vector<recipe_ordinal> matching_variants(const instruction& inst, vector<recipe_ordinal>& variants) {
+vector<recipe_ordinal> matching_variants(const instruction& inst, const vector<recipe_ordinal>& variants) {
   vector<recipe_ordinal> result;
   for (int i = 0;  i < SIZE(variants);  ++i) {
     if (variants.at(i) == -1) continue;
@@ -333,6 +333,7 @@ bool all_header_reagents_match(const instruction& inst, const recipe& variant) {
 // tie-breaker for each phase
 const recipe& best_variant(const instruction& inst, vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
+  if (SIZE(candidates) == 1) return get(Recipe, candidates.at(0));
   int min_score = 999;
   int min_index = 0;
   for (int i = 0;  i < SIZE(candidates);  ++i) {
