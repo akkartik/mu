@@ -127,16 +127,16 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, const vector
     if (score > max_score) max_score = score;
   }
   // break any ties at max_score by a secondary score
-  int min_score2 = 999;
+  int max_score2 = -999;
   int best_index = 0;
   for (int i = 0;  i < SIZE(candidates);  ++i) {
     int score1 = number_of_concrete_type_names(candidates.at(i));
     assert(score1 <= max_score);
     if (score1 != max_score) continue;
     int score2 = shape_shifting_tiebreak_heuristic(inst, candidates.at(i));
-    assert(score2 < 999);
-    if (score2 < min_score2) {
-      min_score2 = score2;
+    assert(score2 > -999);
+    if (score2 > max_score2) {
+      max_score2 = score2;
       best_index = i;
     }
   }
@@ -145,8 +145,8 @@ recipe_ordinal best_shape_shifting_variant(const instruction& inst, const vector
 
 int shape_shifting_tiebreak_heuristic(const instruction& inst, const recipe_ordinal candidate) {
   const recipe& r = get(Recipe, candidate);
-  return (SIZE(r.products) - SIZE(inst.products))
-       + (SIZE(inst.ingredients) - SIZE(r.ingredients));
+  return (SIZE(inst.products) - SIZE(r.products))
+       + (SIZE(r.ingredients) - SIZE(inst.ingredients));
 }
 
 bool any_type_ingredient_in_header(recipe_ordinal variant) {
