@@ -115,35 +115,48 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
   return true;
 }
 
+// manual prototype
+vector<recipe_ordinal> keep_max(const instruction&, const vector<recipe_ordinal>&,
+                                int (*)(const instruction&, recipe_ordinal));
+
 // tie-breaker for phase 3
 recipe_ordinal best_shape_shifting_variant(const instruction& inst, const vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
   if (SIZE(candidates) == 1) return candidates.at(0);
-  // primary score
-  int max_score = -1;
-  for (int i = 0;  i < SIZE(candidates);  ++i) {
-    int score = number_of_concrete_type_names(candidates.at(i));
-    assert(score > -1);
-    if (score > max_score) max_score = score;
+  vector<recipe_ordinal> result1 = keep_max(inst, candidates, number_of_concrete_type_names);
+  assert(!result1.empty());
+  if (SIZE(result1) == 1) return result1.at(0);
+  vector<recipe_ordinal> result2 = keep_max(inst, result1, shape_shifting_tiebreak_heuristic);
+  if (SIZE(result2) > 1) {
+    raise << "couldn't decide the best shape-shifting variant for instruction '" << to_original_string(inst) << "'\n";
+    cerr << "This is a hole in Mu. Please copy the following candidates into an email to Kartik Agaram <mu@akkartik.com>\n";
+    for (int i = 0;  i < SIZE(candidates);  ++i)
+      cerr << "  " << header_label(get(Recipe, candidates.at(i))) << '\n';
   }
-  // break any ties at max_score by a secondary score
-  int max_score2 = -999;
-  int best_index = 0;
-  for (int i = 0;  i < SIZE(candidates);  ++i) {
-    int score1 = number_of_concrete_type_names(candidates.at(i));
-    assert(score1 <= max_score);
-    if (score1 != max_score) continue;
-    int score2 = shape_shifting_tiebreak_heuristic(inst, candidates.at(i));
-    assert(score2 > -999);
-    if (score2 > max_score2) {
-      max_score2 = score2;
-      best_index = i;
-    }
-  }
-  return candidates.at(best_index);
+  return result2.at(0);
 }
 
-int shape_shifting_tiebreak_heuristic(const instruction& inst, const recipe_ordinal candidate) {
+vector<recipe_ordinal> keep_max(const instruction& inst, const vector<recipe_ordinal>& in,
+                                int (*scorer)(const instruction&, recipe_ordinal)) {
+  assert(!in.empty());
+  vector<recipe_ordinal> out;
+  out.push_back(in.at(0));
+  int best_score = (*scorer)(inst, in.at(0));
+  for (int i = 1;  i < SIZE(in);  ++i) {
+    int score = (*scorer)(inst, in.at(i));
+    if (score == best_score) {
+      out.push_back(in.at(i));
+    }
+    else if (score > best_score) {
+      best_score = score;
+      out.clear();
+      out.push_back(in.at(i));
+    }
+  }
+  return out;
+}
+
+int shape_shifting_tiebreak_heuristic(const instruction& inst, recipe_ordinal candidate) {
   const recipe& r = get(Recipe, candidate);
   return (SIZE(inst.products) - SIZE(r.products))
        + (SIZE(r.ingredients) - SIZE(inst.ingredients));
@@ -197,7 +210,7 @@ bool contains_type_ingredient_name(const type_tree* type) {
   return contains_type_ingredient_name(type->left) || contains_type_ingredient_name(type->right);
 }
 
-int number_of_concrete_type_names(recipe_ordinal r) {
+int number_of_concrete_type_names(unused const instruction& inst, recipe_ordinal r) {
   const recipe& caller = get(Recipe, r);
   int result = 0;
   for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
