@@ -184,18 +184,22 @@ string best_variant(instruction& inst, const recipe& caller_recipe) {
   vector<recipe_ordinal> candidates;
 
   // Static Dispatch Phase 1
+//?   cerr << inst.name << " phase 1\n";
   candidates = strictly_matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
   // Static Dispatch Phase 2
+//?   cerr << inst.name << " phase 2\n";
   candidates = strictly_matching_variants_except_literal_against_address_or_boolean(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 
+//?   cerr << inst.name << " phase 3\n";
   // Static Dispatch Phase 3
   //: (shape-shifting recipes in a later layer)
   // End Static Dispatch Phase 3
 
   // Static Dispatch Phase 4
+//?   cerr << inst.name << " phase 4\n";
   candidates = matching_variants(inst, variants);
   if (!candidates.empty()) return best_variant(inst, candidates).name;
 

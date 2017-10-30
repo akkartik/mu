@@ -123,17 +123,23 @@ vector<recipe_ordinal> keep_max(const instruction&, const vector<recipe_ordinal>
 recipe_ordinal best_shape_shifting_variant(const instruction& inst, const vector<recipe_ordinal>& candidates) {
   assert(!candidates.empty());
   if (SIZE(candidates) == 1) return candidates.at(0);
+//?   cerr << "A picking shape-shifting variant:\n";
   vector<recipe_ordinal> result1 = keep_max(inst, candidates, number_of_concrete_type_names);
   assert(!result1.empty());
   if (SIZE(result1) == 1) return result1.at(0);
-  vector<recipe_ordinal> result2 = keep_max(inst, result1, shape_shifting_tiebreak_heuristic);
-  if (SIZE(result2) > 1) {
-    raise << "couldn't decide the best shape-shifting variant for instruction '" << to_original_string(inst) << "'\n";
+//?   cerr << "B picking shape-shifting variant:\n";
+  vector<recipe_ordinal> result2 = keep_max(inst, result1, arity_fit);
+  assert(!result2.empty());
+  if (SIZE(result2) == 1) return result2.at(0);
+//?   cerr << "C picking shape-shifting variant:\n";
+  vector<recipe_ordinal> result3 = keep_max(inst, result2, number_of_type_ingredients);
+  if (SIZE(result3) > 1) {
+    raise << "\nCouldn't decide the best shape-shifting variant for instruction '" << to_original_string(inst) << "'\n" << end();
     cerr << "This is a hole in Mu. Please copy the following candidates into an email to Kartik Agaram <mu@akkartik.com>\n";
     for (int i = 0;  i < SIZE(candidates);  ++i)
       cerr << "  " << header_label(get(Recipe, candidates.at(i))) << '\n';
   }
-  return result2.at(0);
+  return result3.at(0);
 }
 
 vector<recipe_ordinal> keep_max(const instruction& inst, const vector<recipe_ordinal>& in,
@@ -142,8 +148,10 @@ vector<recipe_ordinal> keep_max(const instruction& inst, const vector<recipe_ord
   vector<recipe_ordinal> out;
   out.push_back(in.at(0));
   int best_score = (*scorer)(inst, in.at(0));
+//?   cerr << best_score << " " << header_label(get(Recipe, in.at(0))) << '\n';
   for (int i = 1;  i < SIZE(in);  ++i) {
     int score = (*scorer)(inst, in.at(i));
+//?     cerr << score << " " << header_label(get(Recipe, in.at(i))) << '\n';
     if (score == best_score) {
       out.push_back(in.at(i));
     }
@@ -156,7 +164,7 @@ vector<recipe_ordinal> keep_max(const instruction& inst, const vector<recipe_ord
   return out;
 }
 
-int shape_shifting_tiebreak_heuristic(const instruction& inst, recipe_ordinal candidate) {
+int arity_fit(const instruction& inst, recipe_ordinal candidate) {
   const recipe& r = get(Recipe, candidate);
   return (SIZE(inst.products) - SIZE(r.products))
        + (SIZE(r.ingredients) - SIZE(inst.ingredients));
@@ -226,6 +234,24 @@ int number_of_concrete_type_names(const type_tree* type) {
     return is_type_ingredient_name(type->name) ? 0 : 1;
   return number_of_concrete_type_names(type->left)
        + number_of_concrete_type_names(type->right);
+}
+
+int number_of_type_ingredients(unused const instruction& inst, recipe_ordinal r) {
+  const recipe& caller = get(Recipe, r);
+  int result = 0;
+  for (int i = 0;  i < SIZE(caller.ingredients);  ++i)
+    result += number_of_type_ingredients(caller.ingredients.at(i).type);
+  for (int i = 0;  i < SIZE(caller.products);  ++i)
+    result += number_of_type_ingredients(caller.products.at(i).type);
+  return result;
+}
+
+int number_of_type_ingredients(const type_tree* type) {
+  if (!type) return 0;
+  if (type->atom)
+    return is_type_ingredient_name(type->name) ? 1 : 0;
+  return number_of_type_ingredients(type->left)
+       + number_of_type_ingredients(type->right);
 }
 
 recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
@@ -1102,3 +1128,28 @@ def main [
   add 0, 0
 ]
 $error: 0
+
+:(scenario specialization_heuristic_test_1)
+# modeled on the 'buffer' container in text.mu
+container foo_buffer:_elem [
+  x:num
+]
+def main [
+  append 1:&:foo_buffer:char/raw, 2:text/raw
+]
+def append buf:&:foo_buffer:_elem, x:_elem -> buf:&:foo_buffer:_elem [
+  local-scope
+  load-ingredients
+  stash 34
+]
+def append buf:&:foo_buffer:char, x:_elem -> buf:&:foo_buffer:char [
+  local-scope
+  load-ingredients
+  stash 35
+]
+def append buf:&:foo_buffer:_elem, x:&:@:_elem -> buf:&:foo_buffer:_elem [
+  local-scope
+  load-ingredients
+  stash 36
+]
++app: 36

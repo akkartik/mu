@@ -220,7 +220,7 @@ def append buf:&:buffer:char, c:char -> buf:&:buffer:char [
   *buf <- put *buf, length:offset, len
 ]
 
-def append buf:&:buffer:char, t:text -> buf:&:buffer:char [
+def append buf:&:buffer:_elem, t:&:@:_elem -> buf:&:buffer:_elem [
   local-scope
   load-ingredients
   len:num <- length *t
@@ -228,8 +228,8 @@ def append buf:&:buffer:char, t:text -> buf:&:buffer:char [
   {
     done?:bool <- greater-or-equal i, len
     break-if done?
-    c:char <- index *t, i
-    buf <- append buf, c
+    x:_elem <- index *t, i
+    buf <- append buf, x
     i <- add i, 1
     loop
   }
