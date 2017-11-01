@@ -29,7 +29,7 @@ def main [
 def main [
   # pretend pointer from outside (2000 reserved for refcount)
   2001:num <- copy 34
-  # pretend address:array:location; in practice we'll use 'new"
+  # pretend address:array:location; in practice we'll use 'new'
   1000:num <- copy 0  # refcount
   1001:num <- copy 5  # length
   # actual start of this recipe
