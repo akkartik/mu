@@ -33,8 +33,8 @@
 //:   b) If you allow data to be reclaimed, you have to be careful not to
 //:   leave any stale addresses pointing at it. Otherwise your program might
 //:   try to lookup such an address and find something unexpected. Such
-//:   problems can be very hard to track down, and they can also be exploited
-//:   to break into your computer over the network, etc.
+//:   "memory corruption" problems can be very hard to track down, and they
+//:   can also be exploited to break into your computer over the network, etc.
 //:
 //: To avoid these problems, we introduce the notion of a *reference count* or
 //: refcount. The life cycle of a bit of data accessed through addresses looks
