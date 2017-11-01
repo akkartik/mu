@@ -69,6 +69,8 @@ routine::routine(recipe_ordinal r) {
 
 //:: now update routine's helpers
 
+//: macro versions for a slight speedup
+
 :(delete{} "int& current_step_index()")
 :(delete{} "recipe_ordinal currently_running_recipe()")
 :(delete{} "const string& current_recipe_name()")
@@ -83,6 +85,51 @@ routine::routine(recipe_ordinal r) {
 #define current_recipe_name() current_recipe().name
 #define to_instruction(call) get(Recipe, (call).running_recipe).steps.at((call).running_step_index)
 #define current_instruction() to_instruction(current_call())
+
+//: function versions for debugging
+
+:(code)
+//? :(before "End Globals")
+//? bool Foo2 = false;
+//? :(code)
+//? call& current_call() {
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return Current_routine->calls.front();
+//? }
+//? :(replace{} "int& current_step_index()")
+//? int& current_step_index() {
+//?   assert(!Current_routine->calls.empty());
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return current_call().running_step_index;
+//? }
+//? :(replace{} "recipe_ordinal currently_running_recipe()")
+//? recipe_ordinal currently_running_recipe() {
+//?   assert(!Current_routine->calls.empty());
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return current_call().running_recipe;
+//? }
+//? :(replace{} "const string& current_recipe_name()")
+//? const string& current_recipe_name() {
+//?   assert(!Current_routine->calls.empty());
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return get(Recipe, current_call().running_recipe).name;
+//? }
+//? :(replace{} "const recipe& current_recipe()")
+//? const recipe& current_recipe() {
+//?   assert(!Current_routine->calls.empty());
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return get(Recipe, current_call().running_recipe);
+//? }
+//? :(replace{} "const instruction& current_instruction()")
+//? const instruction& current_instruction() {
+//?   assert(!Current_routine->calls.empty());
+//?   if (Foo2) cerr << __FUNCTION__ << '\n';
+//?   return to_instruction(current_call());
+//? }
+//? :(code)
+//? const instruction& to_instruction(const call& call) {
+//?   return get(Recipe, call.running_recipe).steps.at(call.running_step_index);
+//? }
 
 :(after "Defined Recipe Checks")
 // not a primitive; check that it's present in the book of recipes

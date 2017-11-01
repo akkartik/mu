@@ -86,7 +86,9 @@ int address(int offset, int base) {
   int size = get_or_insert(Memory, base);
   if (offset >= size) {
     // todo: test
-    raise << "location " << offset << " is out of bounds " << size << " at " << base << '\n' << end();
+    raise << current_recipe_name() << ": location " << offset << " is out of bounds " << size << " at " << base << '\n' << end();
+    DUMP("");
+    exit(1);
     return 0;
   }
   return base + /*skip length*/1 + offset;
@@ -96,14 +98,19 @@ int address(int offset, int base) {
 
 :(after "Begin Preprocess write_memory(x, data)")
 if (x.name == "default-space") {
-  if (!scalar(data) || !is_space(x))
+  if (!scalar(data) || !is_mu_space(x))
     raise << maybe(current_recipe_name()) << "'default-space' should be of type address:array:location, but is " << to_string(x.type) << '\n' << end();
   current_call().default_space = data.at(0);
   return;
 }
 :(code)
-bool is_space(const reagent& r) {
-  return is_address_of_array_of_numbers(r);
+bool is_mu_space(reagent/*copy*/ x) {
+  canonize_type(x);
+  if (!is_compound_type_starting_with(x.type, "address")) return false;
+  drop_from_type(x, "address");
+  if (!is_compound_type_starting_with(x.type, "array")) return false;
+  drop_from_type(x, "array");
+  return x.type && x.type->atom && x.type->name == "location";
 }
 
 :(scenario get_default_space)
@@ -237,14 +244,34 @@ reclaim_default_space();
 :(code)
 void reclaim_default_space() {
   if (!Reclaim_memory) return;
-  const recipe_ordinal r = get(Recipe_ordinal, current_recipe_name());
-  const recipe& exiting_recipe = get(Recipe, r);
-  if (!starts_by_setting_default_space(exiting_recipe)) return;
-  // Reclaim default-space
-  decrement_refcount(current_call().default_space,
-      exiting_recipe.steps.at(0).products.at(0).type->right,
-      /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[r][""]);
+  reagent default_space("default-space:address:array:location");
+  decrement_any_refcounts(default_space);
 }
+:(after "Begin Decrement Refcounts(canonized_x)")
+if (is_mu_space(canonized_x)) {
+  int space_address = (canonized_x.name == "default-space") ? current_call().default_space : get_or_insert(Memory, canonized_x.value);
+  if (space_address == 0) return;
+  // this branch relies on global state
+  string recipe_name;
+  if (has_property(canonized_x, "names")) {
+    assert(property(canonized_x, "names")->atom);
+    recipe_name = property(canonized_x, "names")->value;
+  }
+  else {
+    if (canonized_x.name != "default-space")
+      cerr << current_recipe_name() << ": " << to_string(canonized_x) << '\n';
+    assert(canonized_x.name == "default-space");
+    recipe_name = current_recipe_name();
+  }
+  const recipe_ordinal space_recipe_ordinal = get(Recipe_ordinal, recipe_name);
+  const recipe& space_recipe = get(Recipe, space_recipe_ordinal);
+  if (canonized_x.name == "default-space" && !has_property(canonized_x, "names") && !starts_by_setting_default_space(space_recipe)) return;
+  // Reclaim Space(space_address, space_recipe_ordinal, space_recipe)
+  decrement_refcount(space_address, canonized_x.type->right,
+      /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[space_recipe_ordinal][""]);
+  return;
+}
+:(code)
 bool starts_by_setting_default_space(const recipe& r) {
   return !r.steps.empty()
       && !r.steps.at(0).products.empty()
@@ -263,12 +290,16 @@ def main [
 # local-scope
 +mem: automatically abandoning 1000
 
-:(before "Reclaim default-space")
-if (get_or_insert(Memory, current_call().default_space) <= 1) {
+:(before "Reclaim Space(space_address, space_recipe_ordinal, space_recipe)")
+if (get_or_insert(Memory, space_address) <= 1) {
   set<string> reclaimed_locals;
   trace(9999, "mem") << "trying to reclaim locals" << end();
-  for (int i = /*leave default space for last*/1;  i < SIZE(exiting_recipe.steps);  ++i) {
-    const instruction& inst = exiting_recipe.steps.at(i);
+  // update any refcounts for variables in the space -- in the context of the space
+  call_stack calls_stash = save_call_stack(space_address, space_recipe_ordinal);
+  Current_routine->calls.swap(calls_stash);
+  // no early returns until we restore 'calls' below
+  for (int i = /*leave default space for last*/1;  i < SIZE(space_recipe.steps);  ++i) {
+    const instruction& inst = space_recipe.steps.at(i);
     for (int i = 0;  i < SIZE(inst.products);  ++i) {
       reagent/*copy*/ product = inst.products.at(i);
       if (reclaimed_locals.find(product.name) != reclaimed_locals.end()) continue;
@@ -282,6 +313,15 @@ if (get_or_insert(Memory, current_call().default_space) <= 1) {
       decrement_any_refcounts(product);
     }
   }
+  Current_routine->calls.swap(calls_stash);  // restore
+}
+:(code)
+call_stack save_call_stack(int space_address, recipe_ordinal space_recipe_ordinal) {
+  call dummy_call(space_recipe_ordinal);
+  dummy_call.default_space = space_address;
+  call_stack result;
+  result.push_front(dummy_call);
+  return result;
 }
 
 :(scenario local_variables_can_outlive_call)

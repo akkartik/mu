@@ -130,6 +130,13 @@ type_ordinal skip_addresses(type_tree* type) {
   return base_type->left->value;
 }
 
+bool is_compound_type_starting_with(const type_tree* type, const string& expected_name) {
+  if (!type) return false;
+  if (type->atom) return false;
+  if (!type->left->atom) return false;
+  return type->left->value == get(Type_ordinal, expected_name);
+}
+
 int find_element_name(const type_ordinal t, const string& name, const string& recipe_name) {
   const type_info& container = get(Type, t);
   for (int i = 0;  i < SIZE(container.elements);  ++i)

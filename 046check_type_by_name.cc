@@ -25,25 +25,34 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     instruction& inst = caller.steps.at(i);
     for (int in = 0;  in < SIZE(inst.ingredients);  ++in) {
-      deduce_missing_type(known, inst.ingredients.at(in));
+      deduce_missing_type(known, inst.ingredients.at(in), caller);
       check_type(known, inst.ingredients.at(in), caller);
     }
     for (int out = 0;  out < SIZE(inst.products);  ++out) {
-      deduce_missing_type(known, inst.products.at(out));
+      deduce_missing_type(known, inst.products.at(out), caller);
       check_type(known, inst.products.at(out), caller);
     }
   }
 }
 
-void deduce_missing_type(set<reagent>& known, reagent& x) {
+void deduce_missing_type(set<reagent>& known, reagent& x, const recipe& caller) {
   if (x.type) return;
   if (is_jump_target(x.name)) {
     x.type = new type_tree("label");
     return;
   }
   if (known.find(x) == known.end()) return;
-  x.type = new type_tree(*known.find(x)->type);
+  const reagent& exemplar = *known.find(x);
+  x.type = new type_tree(*exemplar.type);
   trace(9992, "transform") << x.name << " <= " << names_to_string(x.type) << end();
+  // spaces are special; their type includes their /names property
+  if (is_mu_space(x) && !has_property(x, "names")) {
+    if (!has_property(exemplar, "names")) {
+      raise << maybe(caller.name) << "missing /names property for space variable '" << exemplar.name << "'\n" << end();
+      return;
+    }
+    x.properties.push_back(pair<string, string_tree*>("names", new string_tree(*property(exemplar, "names"))));
+  }
 }
 
 void check_type(set<reagent>& known, const reagent& x, const recipe& caller) {

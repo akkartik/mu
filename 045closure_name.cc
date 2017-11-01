@@ -47,7 +47,7 @@ void collect_surrounding_spaces(const recipe_ordinal r) {
     for (int j = 0;  j < SIZE(inst.products);  ++j) {
       if (is_literal(inst.products.at(j))) continue;
       if (inst.products.at(j).name != "0") continue;
-      if (!is_space(inst.products.at(j))) {
+      if (!is_mu_space(inst.products.at(j))) {
         raise << "slot 0 should always have type address:array:location, but is '" << to_string(inst.products.at(j)) << "'\n" << end();
         continue;
       }
@@ -159,7 +159,7 @@ def new-scope [
 ]
 def use-scope [
   local-scope
-  outer:space <- next-ingredient
+  outer:space/names:new-scope <- next-ingredient
   0:space/names:new-scope <- copy outer:space
   return *x:&:num/space:1
 ]

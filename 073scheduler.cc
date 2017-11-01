@@ -313,7 +313,7 @@ def main [
   local-scope
   n:&:num <- copy 12000/unsafe  # pretend allocation with a known address
   *n <- copy 23
-  space:space <- create-space n
+  space:space/names:create-space <- create-space n
   n2:&:num <- copy 13000/unsafe
   n3:num <- use-space space, n2
 ]
