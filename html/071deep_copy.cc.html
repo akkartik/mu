@@ -284,7 +284,7 @@ if ('onhashchange' in window) {
 <span id="L220" class="LineNr">220 </span><span class="Delimiter">}</span>
 <span id="L221" class="LineNr">221 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
 <span id="L222" class="LineNr">222 </span><span class="Normal">case</span> DEEP_COPY: <span class="Delimiter">{</span>
-<span id="L223" class="LineNr">223 </span>  products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deep_copy<span class="Delimiter">(</span><a href='026call.cc.html#L85'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
+<span id="L223" class="LineNr">223 </span>  products<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>deep_copy<span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">)));</span>
 <span id="L224" class="LineNr">224 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
 <span id="L225" class="LineNr">225 </span><span class="Delimiter">}</span>
 <span id="L226" class="LineNr">226 </span>
@@ -292,13 +292,13 @@ if ('onhashchange' in window) {
 <span id="L228" class="LineNr">228 </span>vector&lt;<span class="Normal">double</span>&gt; deep_copy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L229" class="LineNr">229 </span>  <span class="Comment">// allocate a tiny bit of temporary space for deep_copy()</span>
 <span id="L230" class="LineNr">230 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: allocating space for temporary&quot;</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L231" class="LineNr">231 </span>  reagent tmp<span class="Delimiter">(</span><span class="Constant">&quot;tmp:address:number&quot;</span><span class="Delimiter">);</span>
+<span id="L231" class="LineNr">231 </span>  reagent tmp<span class="Delimiter">(</span><span class="Constant">&quot;tmp:<a href='043space.cc.html#L83'>address</a>:number&quot;</span><span class="Delimiter">);</span>
 <span id="L232" class="LineNr">232 </span>  tmp<span class="Delimiter">.</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>allocate<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">));</span>
 <span id="L233" class="LineNr">233 </span>  map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt; addresses_copied<span class="Delimiter">;</span>
 <span id="L234" class="LineNr">234 </span>  vector&lt;<span class="Normal">double</span>&gt; result = deep_copy<span class="Delimiter">(</span>in<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
 <span id="L235" class="LineNr">235 </span>  <span class="Comment">// reclaim Mu memory allocated for tmp</span>
 <span id="L236" class="LineNr">236 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: reclaiming temporary&quot;</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L237" class="LineNr">237 </span>  <a href='037abandon.cc.html#L28'>abandon</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>type<span class="Delimiter">),</span> <a href='036refcount.cc.html#L92'>payload_size</a><span class="Delimiter">(</span>tmp<span class="Delimiter">));</span>
+<span id="L237" class="LineNr">237 </span>  <a href='037abandon.cc.html#L28'>abandon</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> <a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>type<span class="Delimiter">),</span> <a href='036refcount.cc.html#L89'>payload_size</a><span class="Delimiter">(</span>tmp<span class="Delimiter">));</span>
 <span id="L238" class="LineNr">238 </span>  <span class="Comment">// reclaim host memory allocated for tmp.type when tmp goes out of scope</span>
 <span id="L239" class="LineNr">239 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
 <span id="L240" class="LineNr">240 </span><span class="Delimiter">}</span>
@@ -321,221 +321,226 @@ if ('onhashchange' in window) {
 <span id="L257" class="LineNr">257 </span>
 <span id="L258" class="LineNr">258 </span><span class="Comment">// deep-copy an address and return a new address</span>
 <span id="L259" class="LineNr">259 </span><span class="Normal">int</span> <a href='071deep_copy.cc.html#L259'>deep_copy_address</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L260" class="LineNr">260 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='071deep_copy.cc.html#L325'>address_value</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L261" class="LineNr">261 </span>  <span class="Normal">int</span> in_address = <a href='071deep_copy.cc.html#L319'>payload_address</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
-<span id="L262" class="LineNr">262 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying address &quot;</span> &lt;&lt; in_address &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L260" class="LineNr">260 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='071deep_copy.cc.html#L327'>address_value</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">)</span> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">0</span><span class="Delimiter">;</span>
+<span id="L261" class="LineNr">261 </span>  <span class="Normal">int</span> in_address = <a href='071deep_copy.cc.html#L321'>payload_address</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
+<span id="L262" class="LineNr">262 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying <a href='043space.cc.html#L83'>address</a> &quot;</span> &lt;&lt; in_address &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
 <span id="L263" class="LineNr">263 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L264" class="LineNr">264 </span>  <span class="Conceal">¦</span> <span class="Normal">int</span> out = get<span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">);</span>
 <span id="L265" class="LineNr">265 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copy already exists: &quot;</span> &lt;&lt; out &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L266" class="LineNr">266 </span>  <span class="Conceal">¦</span> <span class="Identifier">return</span> out<span class="Delimiter">;</span>
-<span id="L267" class="LineNr">267 </span>  <span class="Delimiter">}</span>
-<span id="L268" class="LineNr">268 </span>  <span class="Normal">int</span> out = allocate<span class="Delimiter">(</span><a href='036refcount.cc.html#L92'>payload_size</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
-<span id="L269" class="LineNr">269 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: new address is &quot;</span> &lt;&lt; out &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L270" class="LineNr">270 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
-<span id="L271" class="LineNr">271 </span>  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> payload = canonized_in<span class="Delimiter">;</span>
-<span id="L272" class="LineNr">272 </span>  payload<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
-<span id="L273" class="LineNr">273 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recursing on payload &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L274" class="LineNr">274 </span>  vector&lt;<span class="Normal">double</span>&gt; data = deep_copy<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
-<span id="L275" class="LineNr">275 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing result &quot;</span> &lt;&lt; out &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L276" class="LineNr">276 </span>  <span class="Comment">// HACK: write_memory interface isn't ideal for this situation; we need</span>
-<span id="L277" class="LineNr">277 </span>  <span class="Comment">// a temporary location to help copy the payload.</span>
-<span id="L278" class="LineNr">278 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing temporary &quot;</span> &lt;&lt; tmp<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; out &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L279" class="LineNr">279 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
-<span id="L280" class="LineNr">280 </span>  payload<span class="Delimiter">.</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>value<span class="Delimiter">);</span>  <span class="Comment">// now modified for output</span>
-<span id="L281" class="LineNr">281 </span>  vector&lt;<span class="Normal">double</span>&gt; old_data = read_memory<span class="Delimiter">(</span>payload<span class="Delimiter">);</span>
-<span id="L282" class="LineNr">282 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: really writing to &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (old value &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>old_data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; new value &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L283" class="LineNr">283 </span>  write_memory<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> data<span class="Delimiter">);</span>
-<span id="L284" class="LineNr">284 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: output is &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L285" class="LineNr">285 </span>  <span class="Identifier">return</span> out<span class="Delimiter">;</span>
-<span id="L286" class="LineNr">286 </span><span class="Delimiter">}</span>
-<span id="L287" class="LineNr">287 </span>
-<span id="L288" class="LineNr">288 </span><span class="Comment">// deep-copy a non-address and return a vector of locations</span>
-<span id="L289" class="LineNr">289 </span><span class="Normal">void</span> deep_copy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">,</span> vector&lt;<span class="Normal">double</span>&gt;&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L290" class="LineNr">290 </span>  assert<span class="Delimiter">(</span>!is_mu_address<span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
-<span id="L291" class="LineNr">291 </span>  vector&lt;<span class="Normal">double</span>&gt; data = read_memory<span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
-<span id="L292" class="LineNr">292 </span>  out<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>out<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">(),</span> data<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> data<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">());</span>
-<span id="L293" class="LineNr">293 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
-<span id="L294" class="LineNr">294 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: scanning for addresses in &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L158'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L295" class="LineNr">295 </span>  <span class="Normal">const</span> container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
-<span id="L296" class="LineNr">296 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;set&lt;tag_condition_info&gt;<span class="Delimiter">,</span> set&lt;address_element_info&gt; &gt;::const_iterator p = metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != metadata<span class="Delimiter">.</span>address<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L297" class="LineNr">297 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!all_match<span class="Delimiter">(</span>data<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L298" class="LineNr">298 </span>  <span class="Conceal">¦</span> <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;address_element_info&gt;::const_iterator info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  info != p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L299" class="LineNr">299 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// hack: skip primitive containers that do their own locking; they're designed to be shared between routines</span>
-<span id="L300" class="LineNr">300 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>atom &amp;&amp; info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;channel&quot;</span><span class="Delimiter">)</span>
-<span id="L301" class="LineNr">301 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L302" class="LineNr">302 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;screen&quot;</span> || info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;console&quot;</span> || info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">)</span>
+<span id="L266" class="LineNr">266 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> out<span class="Delimiter">));</span>  <span class="Comment">// refcount must already be incremented</span>
+<span id="L267" class="LineNr">267 </span>  <span class="Conceal">¦</span> ++get<span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+<span id="L268" class="LineNr">268 </span>  <span class="Conceal">¦</span> <span class="Identifier">return</span> out<span class="Delimiter">;</span>
+<span id="L269" class="LineNr">269 </span>  <span class="Delimiter">}</span>
+<span id="L270" class="LineNr">270 </span>  <span class="Normal">int</span> out = allocate<span class="Delimiter">(</span><a href='036refcount.cc.html#L89'>payload_size</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
+<span id="L271" class="LineNr">271 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: new <a href='043space.cc.html#L83'>address</a> is &quot;</span> &lt;&lt; out &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L272" class="LineNr">272 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>addresses_copied<span class="Delimiter">,</span> in_address<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+<span id="L273" class="LineNr">273 </span>  reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> payload = canonized_in<span class="Delimiter">;</span>
+<span id="L274" class="LineNr">274 </span>  payload<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+<span id="L275" class="LineNr">275 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;recursing on payload &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L276" class="LineNr">276 </span>  vector&lt;<span class="Normal">double</span>&gt; data = deep_copy<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+<span id="L277" class="LineNr">277 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing result &quot;</span> &lt;&lt; out &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L278" class="LineNr">278 </span>  <span class="Comment">// HACK: write_memory interface isn't ideal for this situation; we need</span>
+<span id="L279" class="LineNr">279 </span>  <span class="Comment">// a temporary location to help copy the payload.</span>
+<span id="L280" class="LineNr">280 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: writing temporary &quot;</span> &lt;&lt; tmp<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">&quot;: &quot;</span> &lt;&lt; out &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L281" class="LineNr">281 </span>  <a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> tmp<span class="Delimiter">.</span>value<span class="Delimiter">,</span> out<span class="Delimiter">);</span>
+<span id="L282" class="LineNr">282 </span>  payload<span class="Delimiter">.</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>value<span class="Delimiter">);</span>  <span class="Comment">// now modified for output</span>
+<span id="L283" class="LineNr">283 </span>  vector&lt;<span class="Normal">double</span>&gt; old_data = read_memory<span class="Delimiter">(</span>payload<span class="Delimiter">);</span>
+<span id="L284" class="LineNr">284 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: really writing to &quot;</span> &lt;&lt; payload<span class="Delimiter">.</span>value &lt;&lt; <span class="Constant">' '</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>payload<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; (old value &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>old_data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot; new value &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;)&quot;</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L285" class="LineNr">285 </span>  write_memory<span class="Delimiter">(</span>payload<span class="Delimiter">,</span> data<span class="Delimiter">);</span>
+<span id="L286" class="LineNr">286 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: output is &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L287" class="LineNr">287 </span>  <span class="Identifier">return</span> out<span class="Delimiter">;</span>
+<span id="L288" class="LineNr">288 </span><span class="Delimiter">}</span>
+<span id="L289" class="LineNr">289 </span>
+<span id="L290" class="LineNr">290 </span><span class="Comment">// deep-copy a non-address and return a vector of locations</span>
+<span id="L291" class="LineNr">291 </span><span class="Normal">void</span> deep_copy<span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; canonized_in<span class="Delimiter">,</span> map&lt;<span class="Normal">int</span><span class="Delimiter">,</span> <span class="Normal">int</span>&gt;&amp; addresses_copied<span class="Delimiter">,</span> <span class="Normal">const</span> reagent&amp; tmp<span class="Delimiter">,</span> vector&lt;<span class="Normal">double</span>&gt;&amp; out<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L292" class="LineNr">292 </span>  assert<span class="Delimiter">(</span>!is_mu_address<span class="Delimiter">(</span>canonized_in<span class="Delimiter">));</span>
+<span id="L293" class="LineNr">293 </span>  vector&lt;<span class="Normal">double</span>&gt; data = read_memory<span class="Delimiter">(</span>canonized_in<span class="Delimiter">);</span>
+<span id="L294" class="LineNr">294 </span>  out<span class="Delimiter">.</span>insert<span class="Delimiter">(</span>out<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">(),</span> data<span class="Delimiter">.</span>begin<span class="Delimiter">(),</span> data<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">());</span>
+<span id="L295" class="LineNr">295 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">))</span> <span class="Identifier">return</span><span class="Delimiter">;</span>
+<span id="L296" class="LineNr">296 </span>  <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: scanning for addresses in &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L162'>to_string</a><span class="Delimiter">(</span>data<span class="Delimiter">)</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L297" class="LineNr">297 </span>  <span class="Normal">const</span> container_metadata&amp; metadata = get<span class="Delimiter">(</span>Container_metadata<span class="Delimiter">,</span> canonized_in<span class="Delimiter">.</span>type<span class="Delimiter">);</span>
+<span id="L298" class="LineNr">298 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>map&lt;set&lt;tag_condition_info&gt;<span class="Delimiter">,</span> set&lt;address_element_info&gt; &gt;::const_iterator p = metadata<span class="Delimiter">.</span><a href='043space.cc.html#L83'>address</a><span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  p != metadata<span class="Delimiter">.</span><a href='043space.cc.html#L83'>address</a><span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++p<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L299" class="LineNr">299 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!all_match<span class="Delimiter">(</span>data<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>first<span class="Delimiter">))</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L300" class="LineNr">300 </span>  <span class="Conceal">¦</span> <span class="Normal">for</span> <span class="Delimiter">(</span>set&lt;address_element_info&gt;::const_iterator info = p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span>begin<span class="Delimiter">();</span>  info != p<span class="Delimiter">-&gt;</span>second<span class="Delimiter">.</span><a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>  ++info<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L301" class="LineNr">301 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// hack: skip primitive containers that do their own locking; they're designed to be shared between routines</span>
+<span id="L302" class="LineNr">302 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>!info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>atom &amp;&amp; info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>left<span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;channel&quot;</span><span class="Delimiter">)</span>
 <span id="L303" class="LineNr">303 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
-<span id="L304" class="LineNr">304 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// construct a fake reagent that reads directly from the appropriate</span>
-<span id="L305" class="LineNr">305 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// field of the container</span>
-<span id="L306" class="LineNr">306 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> reagent curr<span class="Delimiter">;</span>
-<span id="L307" class="LineNr">307 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
-<span id="L308" class="LineNr">308 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name<span class="Delimiter">),</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
-<span id="L309" class="LineNr">309 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">else</span>
-<span id="L310" class="LineNr">310 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">));</span>
-<span id="L311" class="LineNr">311 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">.</span>value + info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">);</span>
-<span id="L312" class="LineNr">312 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
-<span id="L313" class="LineNr">313 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying address &quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>value &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L314" class="LineNr">314 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> out<span class="Delimiter">.</span>at<span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">)</span> = <a href='071deep_copy.cc.html#L259'>deep_copy_address</a><span class="Delimiter">(</span>curr<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
-<span id="L315" class="LineNr">315 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L316" class="LineNr">316 </span>  <span class="Delimiter">}</span>
-<span id="L317" class="LineNr">317 </span><span class="Delimiter">}</span>
-<span id="L318" class="LineNr">318 </span>
-<span id="L319" class="LineNr">319 </span><span class="Normal">int</span> <a href='071deep_copy.cc.html#L319'>payload_address</a><span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L320" class="LineNr">320 </span>  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
-<span id="L321" class="LineNr">321 </span>  canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-<span id="L322" class="LineNr">322 </span>  <span class="Identifier">return</span> x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
-<span id="L323" class="LineNr">323 </span><span class="Delimiter">}</span>
-<span id="L324" class="LineNr">324 </span>
-<span id="L325" class="LineNr">325 </span><span class="Normal">int</span> <a href='071deep_copy.cc.html#L325'>address_value</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L326" class="LineNr">326 </span>  assert<span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
-<span id="L327" class="LineNr">327 </span>  vector&lt;<span class="Normal">double</span>&gt; result = read_memory<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
-<span id="L328" class="LineNr">328 </span>  assert<span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>result<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
-<span id="L329" class="LineNr">329 </span>  <span class="Identifier">return</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
-<span id="L330" class="LineNr">330 </span><span class="Delimiter">}</span>
-<span id="L331" class="LineNr">331 </span>
-<span id="L332" class="LineNr">332 </span><span class="Delimiter">:(scenario deep_copy_stress_test_1)</span>
-<span id="L333" class="LineNr">333 </span><span class="muData">container</span> foo1 [
-<span id="L334" class="LineNr">334 </span>  <span class="Normal">p</span>:&amp;:num
-<span id="L335" class="LineNr">335 </span>]
-<span id="L336" class="LineNr">336 </span><span class="muData">container</span> foo2 [
-<span id="L337" class="LineNr">337 </span>  <span class="Normal">p</span>:&amp;:foo1
-<span id="L338" class="LineNr">338 </span>]
-<span id="L339" class="LineNr">339 </span><span class="muData">exclusive-container</span> foo3 [
-<span id="L340" class="LineNr">340 </span>  <span class="Normal">p</span>:&amp;:foo1
-<span id="L341" class="LineNr">341 </span>  <span class="Normal">q</span>:&amp;:foo2
-<span id="L342" class="LineNr">342 </span>]
-<span id="L343" class="LineNr">343 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L344" class="LineNr">344 </span>  local-scope
-<span id="L345" class="LineNr">345 </span>  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L346" class="LineNr">346 </span>  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-<span id="L347" class="LineNr">347 </span>  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
-<span id="L348" class="LineNr">348 </span>  *a<span class="Special"> &lt;- </span>merge x
-<span id="L349" class="LineNr">349 </span>  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
-<span id="L350" class="LineNr">350 </span>  *b<span class="Special"> &lt;- </span>merge a
-<span id="L351" class="LineNr">351 </span>  <span class="Normal">c</span>:foo3<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
-<span id="L352" class="LineNr">352 </span>  <span class="Normal">d</span>:foo3<span class="Special"> &lt;- </span>deep-copy c
-<span id="L353" class="LineNr">353 </span>  <span class="Normal">e</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert d<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
-<span id="L354" class="LineNr">354 </span>  <span class="Normal">f</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *e<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
-<span id="L355" class="LineNr">355 </span>  <span class="Normal">g</span>:&amp;:num<span class="Special"> &lt;- </span>get *f<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
-<span id="L356" class="LineNr">356 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *g
-<span id="L357" class="LineNr">357 </span>]
-<span id="L358" class="LineNr">358 </span><span class="traceContains">+mem: storing 34 in location 1</span>
-<span id="L359" class="LineNr">359 </span>
-<span id="L360" class="LineNr">360 </span><span class="Delimiter">:(scenario deep_copy_stress_test_2)</span>
-<span id="L361" class="LineNr">361 </span><span class="muData">container</span> foo1 [
-<span id="L362" class="LineNr">362 </span>  <span class="Normal">p</span>:&amp;:num
-<span id="L363" class="LineNr">363 </span>]
-<span id="L364" class="LineNr">364 </span><span class="muData">container</span> foo2 [
-<span id="L365" class="LineNr">365 </span>  <span class="Normal">p</span>:&amp;:foo1
-<span id="L366" class="LineNr">366 </span>]
-<span id="L367" class="LineNr">367 </span><span class="muData">exclusive-container</span> foo3 [
-<span id="L368" class="LineNr">368 </span>  <span class="Normal">p</span>:&amp;:foo1
-<span id="L369" class="LineNr">369 </span>  <span class="Normal">q</span>:&amp;:foo2
-<span id="L370" class="LineNr">370 </span>]
-<span id="L371" class="LineNr">371 </span><span class="muData">container</span> foo4 [
-<span id="L372" class="LineNr">372 </span>  <span class="Normal">p</span>:num
-<span id="L373" class="LineNr">373 </span>  <span class="Normal">q</span>:&amp;:foo3
-<span id="L374" class="LineNr">374 </span>]
-<span id="L375" class="LineNr">375 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L376" class="LineNr">376 </span>  local-scope
-<span id="L377" class="LineNr">377 </span>  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
-<span id="L378" class="LineNr">378 </span>  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
-<span id="L379" class="LineNr">379 </span>  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
-<span id="L380" class="LineNr">380 </span>  *a<span class="Special"> &lt;- </span>merge x
-<span id="L381" class="LineNr">381 </span>  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
-<span id="L382" class="LineNr">382 </span>  *b<span class="Special"> &lt;- </span>merge a
-<span id="L383" class="LineNr">383 </span>  <span class="Normal">c</span>:&amp;:foo3<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo3:type</span>
-<span id="L384" class="LineNr">384 </span>  *c<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
-<span id="L385" class="LineNr">385 </span>  <span class="Normal">d</span>:foo4<span class="Special"> &lt;- </span>merge <span class="Constant">35</span><span class="Delimiter">,</span> c
-<span id="L386" class="LineNr">386 </span>  <span class="Normal">e</span>:foo4<span class="Special"> &lt;- </span>deep-copy d
-<span id="L387" class="LineNr">387 </span>  <span class="Normal">f</span>:&amp;:foo3<span class="Special"> &lt;- </span>get e<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
-<span id="L388" class="LineNr">388 </span>  <span class="Normal">g</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert *f<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
-<span id="L389" class="LineNr">389 </span>  <span class="Normal">h</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *g<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
-<span id="L390" class="LineNr">390 </span>  <span class="Normal">y</span>:&amp;:num<span class="Special"> &lt;- </span>get *h<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
-<span id="L391" class="LineNr">391 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *y
-<span id="L392" class="LineNr">392 </span>]
-<span id="L393" class="LineNr">393 </span><span class="traceContains">+mem: storing 34 in location 1</span>
-<span id="L394" class="LineNr">394 </span>
-<span id="L395" class="LineNr">395 </span><span class="Delimiter">:(scenario deep_copy_cycles)</span>
-<span id="L396" class="LineNr">396 </span><span class="muData">container</span> foo [
-<span id="L397" class="LineNr">397 </span>  <span class="Normal">p</span>:num
-<span id="L398" class="LineNr">398 </span>  <span class="Normal">q</span>:&amp;:foo
-<span id="L399" class="LineNr">399 </span>]
-<span id="L400" class="LineNr">400 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L401" class="LineNr">401 </span>  local-scope
-<span id="L402" class="LineNr">402 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
-<span id="L403" class="LineNr">403 </span>  *x<span class="Special"> &lt;- </span><a href='001help.cc.html#L221'>put</a> *x<span class="Delimiter">,</span> <span class="Constant">p:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
-<span id="L404" class="LineNr">404 </span>  *x<span class="Special"> &lt;- </span><a href='001help.cc.html#L221'>put</a> *x<span class="Delimiter">,</span> <span class="Constant">q:offset</span><span class="Delimiter">,</span> x  <span class="Comment"># create a cycle</span>
-<span id="L405" class="LineNr">405 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
-<span id="L406" class="LineNr">406 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
-<span id="L407" class="LineNr">407 </span>  <span class="Normal">y2</span>:&amp;:foo<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
-<span id="L408" class="LineNr">408 </span>  stash y [vs] y2
-<span id="L409" class="LineNr">409 </span>  <span class="Constant">2</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y<span class="Delimiter">,</span> y2  <span class="Comment"># is it still a cycle?</span>
-<span id="L410" class="LineNr">410 </span>  <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y  <span class="Comment"># is it the same cycle?</span>
-<span id="L411" class="LineNr">411 </span>]
-<span id="L412" class="LineNr">412 </span><span class="traceContains">+mem: storing 34 in location 1</span>
-<span id="L413" class="LineNr">413 </span><span class="Comment"># deep copy also contains a cycle</span>
-<span id="L414" class="LineNr">414 </span><span class="traceContains">+mem: storing 1 in location 2</span>
-<span id="L415" class="LineNr">415 </span><span class="Comment"># but it's a completely different (disjoint) cycle</span>
-<span id="L416" class="LineNr">416 </span><span class="traceContains">+mem: storing 0 in location 3</span>
-<span id="L417" class="LineNr">417 </span>
-<span id="L418" class="LineNr">418 </span><span class="Delimiter">:(scenario deep_copy_skips_channel)</span>
-<span id="L419" class="LineNr">419 </span><span class="Comment"># ugly! dummy 'channel' type if we happen to be building without that layer</span>
-<span id="L420" class="LineNr">420 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;channel&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;channel&quot;, Next_type_ordinal++)).name = &quot;channel&quot;;</span>
-<span id="L421" class="LineNr">421 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L422" class="LineNr">422 </span>  local-scope
-<span id="L423" class="LineNr">423 </span>  <span class="Normal">x</span>:&amp;:channel:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>channel num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
-<span id="L424" class="LineNr">424 </span>  <span class="Normal">y</span>:&amp;:channel:num<span class="Special"> &lt;- </span>deep-copy x
-<span id="L425" class="LineNr">425 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y
-<span id="L426" class="LineNr">426 </span>]
-<span id="L427" class="LineNr">427 </span><span class="Comment"># channels are never deep-copied</span>
-<span id="L428" class="LineNr">428 </span><span class="traceContains">+mem: storing 1 in location 10</span>
-<span id="L429" class="LineNr">429 </span>
-<span id="L430" class="LineNr">430 </span><span class="Delimiter">:(scenario deep_copy_skips_nested_channel)</span>
-<span id="L431" class="LineNr">431 </span><span class="Comment"># ugly! dummy 'channel' type if we happen to be building without that layer</span>
-<span id="L432" class="LineNr">432 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;channel&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;channel&quot;, Next_type_ordinal++)).name = &quot;channel&quot;;</span>
-<span id="L433" class="LineNr">433 </span><span class="muData">container</span> foo [
-<span id="L434" class="LineNr">434 </span>  <span class="Normal">c</span>:&amp;:channel:num
-<span id="L435" class="LineNr">435 </span>]
-<span id="L436" class="LineNr">436 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L437" class="LineNr">437 </span>  local-scope
-<span id="L438" class="LineNr">438 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
-<span id="L439" class="LineNr">439 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
-<span id="L440" class="LineNr">440 </span>  <span class="Normal">xc</span>:&amp;:channel:num<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
-<span id="L441" class="LineNr">441 </span>  <span class="Normal">yc</span>:&amp;:channel:num<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
-<span id="L442" class="LineNr">442 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal xc<span class="Delimiter">,</span> yc
-<span id="L443" class="LineNr">443 </span>]
-<span id="L444" class="LineNr">444 </span><span class="Comment"># channels are never deep-copied</span>
-<span id="L445" class="LineNr">445 </span><span class="traceContains">+mem: storing 1 in location 10</span>
-<span id="L446" class="LineNr">446 </span>
-<span id="L447" class="LineNr">447 </span><span class="Delimiter">:(scenario deep_copy_skips_resources)</span>
-<span id="L448" class="LineNr">448 </span><span class="Comment"># ugly! dummy 'resources' type if we happen to be building without that layer</span>
-<span id="L449" class="LineNr">449 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;resources&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;resources&quot;, Next_type_ordinal++)).name = &quot;resources&quot;;</span>
-<span id="L450" class="LineNr">450 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L451" class="LineNr">451 </span>  local-scope
-<span id="L452" class="LineNr">452 </span>  <span class="Normal">x</span>:&amp;:resources<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">resources:type</span>
-<span id="L453" class="LineNr">453 </span>  <span class="Normal">y</span>:&amp;:resources<span class="Special"> &lt;- </span>deep-copy x
-<span id="L454" class="LineNr">454 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y
-<span id="L455" class="LineNr">455 </span>]
-<span id="L456" class="LineNr">456 </span><span class="Comment"># resources are never deep-copied</span>
-<span id="L457" class="LineNr">457 </span><span class="traceContains">+mem: storing 1 in location 10</span>
-<span id="L458" class="LineNr">458 </span>
-<span id="L459" class="LineNr">459 </span><span class="Delimiter">:(scenario deep_copy_skips_nested_resources)</span>
-<span id="L460" class="LineNr">460 </span><span class="Comment"># ugly! dummy 'resources' type if we happen to be building without that layer</span>
-<span id="L461" class="LineNr">461 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;resources&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;resources&quot;, Next_type_ordinal++)).name = &quot;resources&quot;;</span>
-<span id="L462" class="LineNr">462 </span><span class="muData">container</span> foo [
-<span id="L463" class="LineNr">463 </span>  <span class="Normal">c</span>:&amp;:resources
-<span id="L464" class="LineNr">464 </span>]
-<span id="L465" class="LineNr">465 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L466" class="LineNr">466 </span>  local-scope
-<span id="L467" class="LineNr">467 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
-<span id="L468" class="LineNr">468 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
-<span id="L469" class="LineNr">469 </span>  <span class="Normal">xc</span>:&amp;:resources<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
-<span id="L470" class="LineNr">470 </span>  <span class="Normal">yc</span>:&amp;:resources<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
-<span id="L471" class="LineNr">471 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal xc<span class="Delimiter">,</span> yc
-<span id="L472" class="LineNr">472 </span>]
-<span id="L473" class="LineNr">473 </span><span class="Comment"># resources are never deep-copied</span>
-<span id="L474" class="LineNr">474 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L304" class="LineNr">304 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;screen&quot;</span> || info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;console&quot;</span> || info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name == <span class="Constant">&quot;resources&quot;</span><span class="Delimiter">)</span>
+<span id="L305" class="LineNr">305 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Identifier">continue</span><span class="Delimiter">;</span>
+<span id="L306" class="LineNr">306 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// construct a fake reagent that reads directly from the appropriate</span>
+<span id="L307" class="LineNr">307 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Comment">// field of the container</span>
+<span id="L308" class="LineNr">308 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> reagent curr<span class="Delimiter">;</span>
+<span id="L309" class="LineNr">309 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>atom<span class="Delimiter">)</span>
+<span id="L310" class="LineNr">310 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">-&gt;</span>name<span class="Delimiter">),</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+<span id="L311" class="LineNr">311 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Normal">else</span>
+<span id="L312" class="LineNr">312 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;address&quot;</span><span class="Delimiter">),</span> <span class="Normal">new</span> type_tree<span class="Delimiter">(</span>*info<span class="Delimiter">-&gt;</span><a href='030container.cc.html#L238'>payload_type</a><span class="Delimiter">));</span>
+<span id="L313" class="LineNr">313 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span><a href='010vm.cc.html#L65'>set_value</a><span class="Delimiter">(</span>canonized_in<span class="Delimiter">.</span>value + info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">);</span>
+<span id="L314" class="LineNr">314 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> curr<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;raw&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+<span id="L315" class="LineNr">315 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">9991</span><span class="Delimiter">,</span> <span class="Constant">&quot;run&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;deep-copy: copying <a href='043space.cc.html#L83'>address</a> &quot;</span> &lt;&lt; curr<span class="Delimiter">.</span>value &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
+<span id="L316" class="LineNr">316 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> out<span class="Delimiter">.</span>at<span class="Delimiter">(</span>info<span class="Delimiter">-&gt;</span>offset<span class="Delimiter">)</span> = <a href='071deep_copy.cc.html#L259'>deep_copy_address</a><span class="Delimiter">(</span>curr<span class="Delimiter">,</span> addresses_copied<span class="Delimiter">,</span> tmp<span class="Delimiter">);</span>
+<span id="L317" class="LineNr">317 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L318" class="LineNr">318 </span>  <span class="Delimiter">}</span>
+<span id="L319" class="LineNr">319 </span><span class="Delimiter">}</span>
+<span id="L320" class="LineNr">320 </span>
+<span id="L321" class="LineNr">321 </span><span class="Normal">int</span> <a href='071deep_copy.cc.html#L321'>payload_address</a><span class="Delimiter">(</span>reagent<span class="Comment">/*</span><span class="Comment">copy</span><span class="Comment">*/</span> x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L322" class="LineNr">322 </span>  x<span class="Delimiter">.</span>properties<span class="Delimiter">.</span>push_back<span class="Delimiter">(</span>pair&lt;string<span class="Delimiter">,</span> string_tree*&gt;<span class="Delimiter">(</span><span class="Constant">&quot;lookup&quot;</span><span class="Delimiter">,</span> <span class="Constant">NULL</span><span class="Delimiter">));</span>
+<span id="L323" class="LineNr">323 </span>  canonize<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span id="L324" class="LineNr">324 </span>  <span class="Identifier">return</span> x<span class="Delimiter">.</span>value<span class="Delimiter">;</span>
+<span id="L325" class="LineNr">325 </span><span class="Delimiter">}</span>
+<span id="L326" class="LineNr">326 </span>
+<span id="L327" class="LineNr">327 </span><span class="Normal">int</span> <a href='071deep_copy.cc.html#L327'>address_value</a><span class="Delimiter">(</span><span class="Normal">const</span> reagent&amp; x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L328" class="LineNr">328 </span>  assert<span class="Delimiter">(</span>is_mu_address<span class="Delimiter">(</span>x<span class="Delimiter">));</span>
+<span id="L329" class="LineNr">329 </span>  vector&lt;<span class="Normal">double</span>&gt; result = read_memory<span class="Delimiter">(</span>x<span class="Delimiter">);</span>
+<span id="L330" class="LineNr">330 </span>  assert<span class="Delimiter">(</span><a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>result<span class="Delimiter">)</span> == <span class="Constant">1</span><span class="Delimiter">);</span>
+<span id="L331" class="LineNr">331 </span>  <span class="Identifier">return</span> <span class="Normal">static_cast</span>&lt;<span class="Normal">int</span>&gt;<span class="Delimiter">(</span>result<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
+<span id="L332" class="LineNr">332 </span><span class="Delimiter">}</span>
+<span id="L333" class="LineNr">333 </span>
+<span id="L334" class="LineNr">334 </span><span class="Delimiter">:(scenario deep_copy_stress_test_1)</span>
+<span id="L335" class="LineNr">335 </span><span class="muData">container</span> foo1 [
+<span id="L336" class="LineNr">336 </span>  <span class="Normal">p</span>:&amp;:num
+<span id="L337" class="LineNr">337 </span>]
+<span id="L338" class="LineNr">338 </span><span class="muData">container</span> foo2 [
+<span id="L339" class="LineNr">339 </span>  <span class="Normal">p</span>:&amp;:foo1
+<span id="L340" class="LineNr">340 </span>]
+<span id="L341" class="LineNr">341 </span><span class="muData">exclusive-container</span> foo3 [
+<span id="L342" class="LineNr">342 </span>  <span class="Normal">p</span>:&amp;:foo1
+<span id="L343" class="LineNr">343 </span>  <span class="Normal">q</span>:&amp;:foo2
+<span id="L344" class="LineNr">344 </span>]
+<span id="L345" class="LineNr">345 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L346" class="LineNr">346 </span>  local-scope
+<span id="L347" class="LineNr">347 </span>  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L348" class="LineNr">348 </span>  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<span id="L349" class="LineNr">349 </span>  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
+<span id="L350" class="LineNr">350 </span>  *a<span class="Special"> &lt;- </span>merge x
+<span id="L351" class="LineNr">351 </span>  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
+<span id="L352" class="LineNr">352 </span>  *b<span class="Special"> &lt;- </span>merge a
+<span id="L353" class="LineNr">353 </span>  <span class="Normal">c</span>:foo3<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
+<span id="L354" class="LineNr">354 </span>  <span class="Normal">d</span>:foo3<span class="Special"> &lt;- </span>deep-copy c
+<span id="L355" class="LineNr">355 </span>  <span class="Normal">e</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert d<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
+<span id="L356" class="LineNr">356 </span>  <span class="Normal">f</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *e<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+<span id="L357" class="LineNr">357 </span>  <span class="Normal">g</span>:&amp;:num<span class="Special"> &lt;- </span>get *f<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+<span id="L358" class="LineNr">358 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *g
+<span id="L359" class="LineNr">359 </span>]
+<span id="L360" class="LineNr">360 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L361" class="LineNr">361 </span>
+<span id="L362" class="LineNr">362 </span><span class="Delimiter">:(scenario deep_copy_stress_test_2)</span>
+<span id="L363" class="LineNr">363 </span><span class="muData">container</span> foo1 [
+<span id="L364" class="LineNr">364 </span>  <span class="Normal">p</span>:&amp;:num
+<span id="L365" class="LineNr">365 </span>]
+<span id="L366" class="LineNr">366 </span><span class="muData">container</span> foo2 [
+<span id="L367" class="LineNr">367 </span>  <span class="Normal">p</span>:&amp;:foo1
+<span id="L368" class="LineNr">368 </span>]
+<span id="L369" class="LineNr">369 </span><span class="muData">exclusive-container</span> foo3 [
+<span id="L370" class="LineNr">370 </span>  <span class="Normal">p</span>:&amp;:foo1
+<span id="L371" class="LineNr">371 </span>  <span class="Normal">q</span>:&amp;:foo2
+<span id="L372" class="LineNr">372 </span>]
+<span id="L373" class="LineNr">373 </span><span class="muData">container</span> foo4 [
+<span id="L374" class="LineNr">374 </span>  <span class="Normal">p</span>:num
+<span id="L375" class="LineNr">375 </span>  <span class="Normal">q</span>:&amp;:foo3
+<span id="L376" class="LineNr">376 </span>]
+<span id="L377" class="LineNr">377 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L378" class="LineNr">378 </span>  local-scope
+<span id="L379" class="LineNr">379 </span>  <span class="Normal">x</span>:&amp;:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">number:type</span>
+<span id="L380" class="LineNr">380 </span>  *x<span class="Special"> &lt;- </span>copy <span class="Constant">34</span>
+<span id="L381" class="LineNr">381 </span>  <span class="Normal">a</span>:&amp;:foo1<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo1:type</span>
+<span id="L382" class="LineNr">382 </span>  *a<span class="Special"> &lt;- </span>merge x
+<span id="L383" class="LineNr">383 </span>  <span class="Normal">b</span>:&amp;:foo2<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo2:type</span>
+<span id="L384" class="LineNr">384 </span>  *b<span class="Special"> &lt;- </span>merge a
+<span id="L385" class="LineNr">385 </span>  <span class="Normal">c</span>:&amp;:foo3<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo3:type</span>
+<span id="L386" class="LineNr">386 </span>  *c<span class="Special"> &lt;- </span>merge <span class="Constant">1</span>/q<span class="Delimiter">,</span> b
+<span id="L387" class="LineNr">387 </span>  <span class="Normal">d</span>:foo4<span class="Special"> &lt;- </span>merge <span class="Constant">35</span><span class="Delimiter">,</span> c
+<span id="L388" class="LineNr">388 </span>  <span class="Normal">e</span>:foo4<span class="Special"> &lt;- </span>deep-copy d
+<span id="L389" class="LineNr">389 </span>  <span class="Normal">f</span>:&amp;:foo3<span class="Special"> &lt;- </span>get e<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
+<span id="L390" class="LineNr">390 </span>  <span class="Normal">g</span>:&amp;:foo2<span class="Delimiter">,</span> z:<span class="Normal">bool</span><span class="Special"> &lt;- </span>maybe-convert *f<span class="Delimiter">,</span> <span class="Constant">q:variant</span>
+<span id="L391" class="LineNr">391 </span>  <span class="Normal">h</span>:&amp;:foo1<span class="Special"> &lt;- </span>get *g<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+<span id="L392" class="LineNr">392 </span>  <span class="Normal">y</span>:&amp;:num<span class="Special"> &lt;- </span>get *h<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+<span id="L393" class="LineNr">393 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>copy *y
+<span id="L394" class="LineNr">394 </span>]
+<span id="L395" class="LineNr">395 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L396" class="LineNr">396 </span>
+<span id="L397" class="LineNr">397 </span><span class="Delimiter">:(scenario deep_copy_cycles)</span>
+<span id="L398" class="LineNr">398 </span><span class="muData">container</span> foo [
+<span id="L399" class="LineNr">399 </span>  <span class="Normal">p</span>:num
+<span id="L400" class="LineNr">400 </span>  <span class="Normal">q</span>:&amp;:foo
+<span id="L401" class="LineNr">401 </span>]
+<span id="L402" class="LineNr">402 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L403" class="LineNr">403 </span>  local-scope
+<span id="L404" class="LineNr">404 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
+<span id="L405" class="LineNr">405 </span>  *x<span class="Special"> &lt;- </span><a href='001help.cc.html#L221'>put</a> *x<span class="Delimiter">,</span> <span class="Constant">p:offset</span><span class="Delimiter">,</span> <span class="Constant">34</span>
+<span id="L406" class="LineNr">406 </span>  *x<span class="Special"> &lt;- </span><a href='001help.cc.html#L221'>put</a> *x<span class="Delimiter">,</span> <span class="Constant">q:offset</span><span class="Delimiter">,</span> x  <span class="Comment"># create a cycle</span>
+<span id="L407" class="LineNr">407 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
+<span id="L408" class="LineNr">408 </span>  <span class="Constant">1</span>:num/<span class="Special">raw &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">p:offset</span>
+<span id="L409" class="LineNr">409 </span>  <span class="Normal">y2</span>:&amp;:foo<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">q:offset</span>
+<span id="L410" class="LineNr">410 </span>  <span class="Constant">2</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal y<span class="Delimiter">,</span> y2  <span class="Comment"># is it still a cycle?</span>
+<span id="L411" class="LineNr">411 </span>  <span class="Constant">3</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y  <span class="Comment"># is it the same cycle?</span>
+<span id="L412" class="LineNr">412 </span>  <span class="Comment"># not bothering cleaning up; both cycles leak memory</span>
+<span id="L413" class="LineNr">413 </span>]
+<span id="L414" class="LineNr">414 </span><span class="traceContains">+mem: storing 34 in location 1</span>
+<span id="L415" class="LineNr">415 </span><span class="Comment"># deep copy also contains a cycle</span>
+<span id="L416" class="LineNr">416 </span><span class="traceContains">+mem: storing 1 in location 2</span>
+<span id="L417" class="LineNr">417 </span><span class="Comment"># but it's a completely different (disjoint) cycle</span>
+<span id="L418" class="LineNr">418 </span><span class="traceContains">+mem: storing 0 in location 3</span>
+<span id="L419" class="LineNr">419 </span>
+<span id="L420" class="LineNr">420 </span><span class="Comment">//: todo: version of deep_copy_cycles that breaks cycles at end and verifies no memory leaks</span>
+<span id="L421" class="LineNr">421 </span><span class="Comment">//: needs approximate matching over scenario traces</span>
+<span id="L422" class="LineNr">422 </span>
+<span id="L423" class="LineNr">423 </span><span class="Delimiter">:(scenario deep_copy_skips_channel)</span>
+<span id="L424" class="LineNr">424 </span><span class="Comment"># ugly! dummy 'channel' type if we happen to be building without that layer</span>
+<span id="L425" class="LineNr">425 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;channel&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;channel&quot;, Next_type_ordinal++)).name = &quot;channel&quot;;</span>
+<span id="L426" class="LineNr">426 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L427" class="LineNr">427 </span>  local-scope
+<span id="L428" class="LineNr">428 </span>  <span class="Normal">x</span>:&amp;:channel:num<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Delimiter">{(</span>channel num<span class="Delimiter">)</span>: type<span class="Delimiter">}</span>
+<span id="L429" class="LineNr">429 </span>  <span class="Normal">y</span>:&amp;:channel:num<span class="Special"> &lt;- </span>deep-copy x
+<span id="L430" class="LineNr">430 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y
+<span id="L431" class="LineNr">431 </span>]
+<span id="L432" class="LineNr">432 </span><span class="Comment"># channels are never deep-copied</span>
+<span id="L433" class="LineNr">433 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L434" class="LineNr">434 </span>
+<span id="L435" class="LineNr">435 </span><span class="Delimiter">:(scenario deep_copy_skips_nested_channel)</span>
+<span id="L436" class="LineNr">436 </span><span class="Comment"># ugly! dummy 'channel' type if we happen to be building without that layer</span>
+<span id="L437" class="LineNr">437 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;channel&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;channel&quot;, Next_type_ordinal++)).name = &quot;channel&quot;;</span>
+<span id="L438" class="LineNr">438 </span><span class="muData">container</span> foo [
+<span id="L439" class="LineNr">439 </span>  <span class="Normal">c</span>:&amp;:channel:num
+<span id="L440" class="LineNr">440 </span>]
+<span id="L441" class="LineNr">441 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L442" class="LineNr">442 </span>  local-scope
+<span id="L443" class="LineNr">443 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
+<span id="L444" class="LineNr">444 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
+<span id="L445" class="LineNr">445 </span>  <span class="Normal">xc</span>:&amp;:channel:num<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
+<span id="L446" class="LineNr">446 </span>  <span class="Normal">yc</span>:&amp;:channel:num<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
+<span id="L447" class="LineNr">447 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal xc<span class="Delimiter">,</span> yc
+<span id="L448" class="LineNr">448 </span>]
+<span id="L449" class="LineNr">449 </span><span class="Comment"># channels are never deep-copied</span>
+<span id="L450" class="LineNr">450 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L451" class="LineNr">451 </span>
+<span id="L452" class="LineNr">452 </span><span class="Delimiter">:(scenario deep_copy_skips_resources)</span>
+<span id="L453" class="LineNr">453 </span><span class="Comment"># ugly! dummy 'resources' type if we happen to be building without that layer</span>
+<span id="L454" class="LineNr">454 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;resources&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;resources&quot;, Next_type_ordinal++)).name = &quot;resources&quot;;</span>
+<span id="L455" class="LineNr">455 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L456" class="LineNr">456 </span>  local-scope
+<span id="L457" class="LineNr">457 </span>  <span class="Normal">x</span>:&amp;:resources<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">resources:type</span>
+<span id="L458" class="LineNr">458 </span>  <span class="Normal">y</span>:&amp;:resources<span class="Special"> &lt;- </span>deep-copy x
+<span id="L459" class="LineNr">459 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal x<span class="Delimiter">,</span> y
+<span id="L460" class="LineNr">460 </span>]
+<span id="L461" class="LineNr">461 </span><span class="Comment"># resources are never deep-copied</span>
+<span id="L462" class="LineNr">462 </span><span class="traceContains">+mem: storing 1 in location 10</span>
+<span id="L463" class="LineNr">463 </span>
+<span id="L464" class="LineNr">464 </span><span class="Delimiter">:(scenario deep_copy_skips_nested_resources)</span>
+<span id="L465" class="LineNr">465 </span><span class="Comment"># ugly! dummy 'resources' type if we happen to be building without that layer</span>
+<span id="L466" class="LineNr">466 </span><span class="Special">% if (!contains_key(Type_ordinal, &quot;resources&quot;)) get_or_insert(Type, put(Type_ordinal, &quot;resources&quot;, Next_type_ordinal++)).name = &quot;resources&quot;;</span>
+<span id="L467" class="LineNr">467 </span><span class="muData">container</span> foo [
+<span id="L468" class="LineNr">468 </span>  <span class="Normal">c</span>:&amp;:resources
+<span id="L469" class="LineNr">469 </span>]
+<span id="L470" class="LineNr">470 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L471" class="LineNr">471 </span>  local-scope
+<span id="L472" class="LineNr">472 </span>  <span class="Normal">x</span>:&amp;:foo<span class="Special"> &lt;- </span><span class="Normal">new</span> <span class="Constant">foo:type</span>
+<span id="L473" class="LineNr">473 </span>  <span class="Normal">y</span>:&amp;:foo<span class="Special"> &lt;- </span>deep-copy x
+<span id="L474" class="LineNr">474 </span>  <span class="Normal">xc</span>:&amp;:resources<span class="Special"> &lt;- </span>get *x<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
+<span id="L475" class="LineNr">475 </span>  <span class="Normal">yc</span>:&amp;:resources<span class="Special"> &lt;- </span>get *y<span class="Delimiter">,</span> <span class="Constant">c:offset</span>
+<span id="L476" class="LineNr">476 </span>  <span class="Constant">10</span>:<span class="Normal">bool</span>/<span class="Special">raw &lt;- </span>equal xc<span class="Delimiter">,</span> yc
+<span id="L477" class="LineNr">477 </span>]
+<span id="L478" class="LineNr">478 </span><span class="Comment"># resources are never deep-copied</span>
+<span id="L479" class="LineNr">479 </span><span class="traceContains">+mem: storing 1 in location 10</span>
 </pre>
 </body>
 </html>
