@@ -204,7 +204,7 @@ if (current_instruction().ingredients.at(0).type->atom
     int space_address = Current_routine->calls.front().default_space;
     if (space_address != 0) {
       int refcount = get_or_insert(Memory, space_address);
-      trace(9999, "mem") << "incrementing refcount of " << space_address << ": " << refcount << " -> " << refcount+1 << end();
+      trace("mem") << "incrementing refcount of " << space_address << ": " << refcount << " -> " << refcount+1 << end();
       put(Memory, space_address, refcount+1);
     }
   }

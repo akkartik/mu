@@ -57,7 +57,7 @@ case CREATE_ARRAY: {
     array_length_from_type = array_length_from_type->left;
   int array_length = to_integer(array_length_from_type->name);
   // initialize array length, so that size_of will work
-  trace(9999, "mem") << "storing " << array_length << " in location " << base_address << end();
+  trace("mem") << "storing " << array_length << " in location " << base_address << end();
   put(Memory, base_address, array_length);  // in array elements
   int size = size_of(product);  // in locations
   trace(9998, "run") << "creating array of size " << size << end();
@@ -561,7 +561,7 @@ case PUT_INDEX: {
   vector<double> value = read_memory(current_instruction().ingredients.at(2));
   // Write Memory in PUT_INDEX in Run
   for (int i = 0;  i < SIZE(value);  ++i) {
-    trace(9999, "mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
+    trace("mem") << "storing " << no_scientific(value.at(i)) << " in location " << address+i << end();
     put(Memory, address+i, value.at(i));
   }
   break;

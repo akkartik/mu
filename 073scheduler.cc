@@ -535,7 +535,7 @@ DISCONTINUED,
 :(before "End Scheduler State Transitions")
 if (Current_routine->limit >= 0) {
   if (Current_routine->limit <= Scheduling_interval) {
-    trace(9999, "schedule") << "discontinuing routine " << Current_routine->id << end();
+    trace("schedule") << "discontinuing routine " << Current_routine->id << end();
     Current_routine->state = DISCONTINUED;
     Current_routine->limit = 0;
   }

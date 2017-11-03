@@ -37,7 +37,7 @@ case RETURN: {
 case RETURN: {
   // Begin Return
   if (Trace_stream) {
-    trace(9999, "trace") << current_instruction().name << ": decrementing callstack depth from " << Trace_stream->callstack_depth << end();
+    trace("trace") << current_instruction().name << ": decrementing callstack depth from " << Trace_stream->callstack_depth << end();
     --Trace_stream->callstack_depth;
     if (Trace_stream->callstack_depth < 0) {
       Current_routine->calls.clear();

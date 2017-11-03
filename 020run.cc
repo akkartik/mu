@@ -295,7 +295,7 @@ vector<double> read_memory(reagent/*copy*/ x) {
   int size = size_of(x);
   for (int offset = 0;  offset < size;  ++offset) {
     double val = get_or_insert(Memory, x.value+offset);
-    trace(9999, "mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
+    trace("mem") << "location " << x.value+offset << " is " << no_scientific(val) << end();
     result.push_back(val);
   }
   return result;
@@ -322,7 +322,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
   // End write_memory(x) Special-cases
   for (int offset = 0;  offset < SIZE(data);  ++offset) {
     assert(x.value+offset > 0);
-    trace(9999, "mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
+    trace("mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
     put(Memory, x.value+offset, data.at(offset));
   }
 }

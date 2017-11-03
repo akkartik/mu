@@ -576,7 +576,7 @@ case PUT: {
   // Write Memory in PUT in Run
   write_products = false;
   for (int i = 0;  i < SIZE(ingredients.at(2));  ++i) {
-    trace(9999, "mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
+    trace("mem") << "storing " << no_scientific(ingredients.at(2).at(i)) << " in location " << address+i << end();
     put(Memory, address+i, ingredients.at(2).at(i));
   }
   break;
@@ -672,7 +672,7 @@ void insert_container(const string& command, kind_of_type kind, istream& in) {
       || get(Type_ordinal, name) == 0) {
     put(Type_ordinal, name, Next_type_ordinal++);
   }
-  trace(9999, "parse") << "type number: " << get(Type_ordinal, name) << end();
+  trace("parse") << "type number: " << get(Type_ordinal, name) << end();
   skip_bracket(in, "'"+command+"' must begin with '['");
   type_info& info = get_or_insert(Type, get(Type_ordinal, name));
   if (info.Num_calls_to_transform_all_at_first_definition == -1) {

@@ -293,7 +293,7 @@ def main [
 :(before "Reclaim Space(space_address, space_recipe_ordinal, space_recipe)")
 if (get_or_insert(Memory, space_address) <= 1) {
   set<string> reclaimed_locals;
-  trace(9999, "mem") << "trying to reclaim locals" << end();
+  trace("mem") << "trying to reclaim locals" << end();
   // update any refcounts for variables in the space -- in the context of the space
   call_stack calls_stash = save_call_stack(space_address, space_recipe_ordinal);
   Current_routine->calls.swap(calls_stash);
@@ -308,7 +308,7 @@ if (get_or_insert(Memory, space_address) <= 1) {
       if (has_property(product, "lookup")) continue;
       if (has_property(product, "raw")) continue;  // tests often want to check such locations after they run
       // End Checks For Reclaiming Locals
-      trace(9999, "mem") << "trying to reclaim local " << product.original_string << end();
+      trace("mem") << "trying to reclaim local " << product.original_string << end();
       canonize(product);
       decrement_any_refcounts(product);
     }

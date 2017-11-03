@@ -66,7 +66,7 @@ case ASSUME_CONSOLE: {
   for (int i = 0;  i < SIZE(r.steps);  ++i) {
     const instruction& inst = r.steps.at(i);
     if (inst.name == "left-click") {
-      trace(9999, "mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
+      trace("mem") << "storing 'left-click' event starting at " << Current_routine->alloc << end();
       put(Memory, curr_address, /*tag for 'touch-event' variant of 'event' exclusive-container*/2);
       put(Memory, curr_address+/*skip tag*/1+/*offset of 'type' in 'mouse-event'*/0, TB_KEY_MOUSE_LEFT);
       put(Memory, curr_address+/*skip tag*/1+/*offset of 'row' in 'mouse-event'*/1, to_integer(inst.ingredients.at(0).name));
@@ -74,7 +74,7 @@ case ASSUME_CONSOLE: {
       curr_address += size_of_event();
     }
     else if (inst.name == "press") {
-      trace(9999, "mem") << "storing 'press' event starting at " << curr_address << end();
+      trace("mem") << "storing 'press' event starting at " << curr_address << end();
       string key = inst.ingredients.at(0).name;
       if (is_integer(key))
         put(Memory, curr_address+1, to_integer(key));
@@ -95,18 +95,18 @@ case ASSUME_CONSOLE: {
     else {
       // keyboard input
       assert(inst.name == "type");
-      trace(9999, "mem") << "storing 'type' event starting at " << curr_address << end();
+      trace("mem") << "storing 'type' event starting at " << curr_address << end();
       const string& contents = inst.ingredients.at(0).name;
       const char* raw_contents = contents.c_str();
       int num_keyboard_events = unicode_length(contents);
       int curr = 0;
       for (int i = 0;  i < num_keyboard_events;  ++i) {
-        trace(9999, "mem") << "storing 'text' tag at " << curr_address << end();
+        trace("mem") << "storing 'text' tag at " << curr_address << end();
         put(Memory, curr_address, /*tag for 'text' variant of 'event' exclusive-container*/0);
         uint32_t curr_character;
         assert(curr < SIZE(contents));
         tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-        trace(9999, "mem") << "storing character " << curr_character << " at " << curr_address+/*skip exclusive container tag*/1 << end();
+        trace("mem") << "storing character " << curr_character << " at " << curr_address+/*skip exclusive container tag*/1 << end();
         put(Memory, curr_address+/*skip exclusive container tag*/1, curr_character);
         curr += tb_utf8_char_length(raw_contents[curr]);
         curr_address += size_of_event();
@@ -116,9 +116,9 @@ case ASSUME_CONSOLE: {
   assert(curr_address == event_data_address+size);
   // wrap the array of events in a console object
   int console_address = allocate(size_of_console());
-  trace(9999, "mem") << "storing console in " << console_address << end();
+  trace("mem") << "storing console in " << console_address << end();
   put(Memory, CONSOLE, console_address);
-  trace(9999, "mem") << "storing console data in " << console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1 << end();
+  trace("mem") << "storing console data in " << console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1 << end();
   put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
   // increment refcount for event data
   put(Memory, event_data_address, 1);

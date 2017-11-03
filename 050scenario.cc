@@ -431,7 +431,7 @@ void check_memory(const string& s) {
     double value = to_double(rhs);
     if (contains_key(locations_checked, address))
       raise << maybe(current_recipe_name()) << "duplicate expectation for location '" << address << "'\n" << end();
-    trace(9999, "run") << "checking location " << address << end();
+    trace("run") << "checking location " << address << end();
     if (get_or_insert(Memory, address) != value) {
       if (!Hide_errors) cerr << '\n';
       raise << "F - " << maybe(current_recipe_name()) << "expected location '" << address << "' to contain " << no_scientific(value) << " but saw " << no_scientific(get_or_insert(Memory, address)) << '\n' << end();
@@ -477,7 +477,7 @@ void check_type(const string& lhs, istream& in) {
 }
 
 void check_mu_text(int start, const string& literal) {
-  trace(9999, "run") << "checking text length at " << start << end();
+  trace("run") << "checking text length at " << start << end();
   int array_length = static_cast<int>(get_or_insert(Memory, start));
   if (array_length != SIZE(literal)) {
     if (!Hide_errors) cerr << '\n';
@@ -487,7 +487,7 @@ void check_mu_text(int start, const string& literal) {
   }
   int curr = start+1;  // now skip length
   for (int i = 0;  i < SIZE(literal);  ++i) {
-    trace(9999, "run") << "checking location " << curr+i << end();
+    trace("run") << "checking location " << curr+i << end();
     if (get_or_insert(Memory, curr+i) != literal.at(i)) {
       if (!Hide_errors) cerr << '\n';
       raise << "F - " << maybe(current_recipe_name()) << "expected location " << (curr+i) << " to contain " << literal.at(i) << " but saw " << no_scientific(get_or_insert(Memory, curr+i)) << '\n' << end();

@@ -207,31 +207,31 @@ void construct_resources_object(const map<string, string>& contents) {
   int curr = resources_data_address + /*skip refcount and length*/2;
   for (map<string, string>::const_iterator p = contents.begin();  p != contents.end();  ++p) {
     put(Memory, curr, new_mu_text(p->first));
-    trace(9999, "mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
+    trace("mem") << "storing file name " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
-    trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
+    trace("mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
     ++curr;
     put(Memory, curr, new_mu_text(p->second));
-    trace(9999, "mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
+    trace("mem") << "storing file contents " << get(Memory, curr) << " in location " << curr << end();
     put(Memory, get(Memory, curr), 1);
-    trace(9999, "mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
+    trace("mem") << "storing refcount 1 in location " << get(Memory, curr) << end();
     ++curr;
   }
   curr = resources_data_address+/*skip refcount*/1;
   put(Memory, curr, SIZE(contents));  // size of array
-  trace(9999, "mem") << "storing resources size " << get(Memory, curr) << " in location " << curr << end();
+  trace("mem") << "storing resources size " << get(Memory, curr) << " in location " << curr << end();
   put(Memory, resources_data_address, 1);  // initialize refcount
-  trace(9999, "mem") << "storing refcount 1 in location " << resources_data_address << end();
+  trace("mem") << "storing refcount 1 in location " << resources_data_address << end();
   // wrap the resources data in a 'resources' object
   int resources_address = allocate(size_of_resources());
   curr = resources_address+/*skip refcount*/1+/*offset of 'data' element*/1;
   put(Memory, curr, resources_data_address);
-  trace(9999, "mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
+  trace("mem") << "storing resources data address " << resources_data_address << " in location " << curr << end();
   put(Memory, resources_address, 1);  // initialize refcount
-  trace(9999, "mem") << "storing refcount 1 in location " << resources_address << end();
+  trace("mem") << "storing refcount 1 in location " << resources_address << end();
   // save in product
   put(Memory, RESOURCES, resources_address);
-  trace(9999, "mem") << "storing resources address " << resources_address << " in location " << RESOURCES << end();
+  trace("mem") << "storing resources address " << resources_address << " in location " << RESOURCES << end();
 }
 
 int size_of_resources() {

@@ -30,7 +30,7 @@ if (inst.name == "new" && !inst.ingredients.empty() && is_literal_text(inst.ingr
   if (is_literal_text(current_instruction().ingredients.at(0))) {
     products.resize(1);
     products.at(0).push_back(new_mu_text(current_instruction().ingredients.at(0).name));
-    trace(9999, "mem") << "new string alloc: " << products.at(0).at(0) << end();
+    trace("mem") << "new string alloc: " << products.at(0).at(0) << end();
     break;
   }
 
@@ -41,10 +41,10 @@ int new_mu_text(const string& contents) {
 //?   Total_alloc += string_length+1;
 //?   ++Num_alloc;
   int result = allocate(string_length+/*array length*/1);
-  trace(9999, "mem") << "storing string refcount 0 in location " << result << end();
+  trace("mem") << "storing string refcount 0 in location " << result << end();
   put(Memory, result, 0);
   int curr_address = result+/*skip refcount*/1;
-  trace(9999, "mem") << "storing string length " << string_length << " in location " << curr_address << end();
+  trace("mem") << "storing string length " << string_length << " in location " << curr_address << end();
   put(Memory, curr_address, string_length);
   ++curr_address;  // skip length
   int curr = 0;
@@ -53,7 +53,7 @@ int new_mu_text(const string& contents) {
     uint32_t curr_character;
     assert(curr < SIZE(contents));
     tb_utf8_char_to_unicode(&curr_character, &raw_contents[curr]);
-    trace(9999, "mem") << "storing string character " << curr_character << " in location " << curr_address << end();
+    trace("mem") << "storing string character " << curr_character << " in location " << curr_address << end();
     put(Memory, curr_address, curr_character);
     curr += tb_utf8_char_length(raw_contents[curr]);
     ++curr_address;

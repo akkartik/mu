@@ -132,7 +132,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
   if (Routines.at(i)->state != WAITING) continue;
   int loc = Routines.at(i)->waiting_on_location;
   if (loc && get_or_insert(Memory, loc) == 0) {
-    trace(9999, "schedule") << "waking up routine " << Routines.at(i)->id << end();
+    trace("schedule") << "waking up routine " << Routines.at(i)->id << end();
     put(Memory, loc, 1);
     Routines.at(i)->state = RUNNING;
     Routines.at(i)->waiting_on_location = 0;
@@ -360,7 +360,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
     const routine* waitee = Routines.at(j);
     if (waitee->id == id && waitee->state != RUNNING && waitee->state != WAITING) {
       // routine is COMPLETED or DISCONTINUED
-      trace(9999, "schedule") << "waking up routine " << waiter->id << end();
+      trace("schedule") << "waking up routine " << waiter->id << end();
       waiter->state = RUNNING;
       waiter->waiting_on_routine = 0;
     }
@@ -520,7 +520,7 @@ for (int i = 0;  i < SIZE(Routines);  ++i) {
     const routine* waitee = Routines.at(j);
     if (waitee->id != id) continue;
     if (waitee->state != RUNNING || waitee->blocked) {
-      trace(9999, "schedule") << "waking up routine " << waiter->id << " because routine " << waitee->id << " is blocked" << end();
+      trace("schedule") << "waking up routine " << waiter->id << " because routine " << waitee->id << " is blocked" << end();
       waiter->state = RUNNING;
       waiter->waiting_on_routine_to_block = 0;
     }

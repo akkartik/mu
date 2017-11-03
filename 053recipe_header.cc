@@ -24,7 +24,7 @@ has_header = false;
 
 :(before "End Recipe Refinements")
 if (in.peek() != '[') {
-  trace(9999, "parse") << "recipe has a header; parsing" << end();
+  trace("parse") << "recipe has a header; parsing" << end();
   load_recipe_header(in, result);
 }
 
@@ -42,7 +42,7 @@ void load_recipe_header(istream& in, recipe& result) {
       raise << "recipe " << result.name << " should say '->' and not '<-'\n" << end();
     if (s == "->") break;
     result.ingredients.push_back(reagent(s));
-    trace(9999, "parse") << "header ingredient: " << result.ingredients.back().original_string << end();
+    trace("parse") << "header ingredient: " << result.ingredients.back().original_string << end();
     skip_whitespace_but_not_newline(in);
   }
   while (has_data(in) && in.peek() != '[' && in.peek() != '\n') {
@@ -53,7 +53,7 @@ void load_recipe_header(istream& in, recipe& result) {
       return;
     }
     result.products.push_back(reagent(s));
-    trace(9999, "parse") << "header product: " << result.products.back().original_string << end();
+    trace("parse") << "header product: " << result.products.back().original_string << end();
     skip_whitespace_but_not_newline(in);
   }
   // End Load Recipe Header(result)
@@ -149,7 +149,7 @@ if (!result.has_header) {
   }
 }
 if (result.has_header) {
-  trace(9999, "parse") << "recipe " << result.name << " has a header" << end();
+  trace("parse") << "recipe " << result.name << " has a header" << end();
 }
 
 //: Support type abbreviations in headers.

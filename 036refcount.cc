@@ -52,7 +52,7 @@ void increment_refcount(int new_address) {
   if (new_address == 0) return;
   ++Total_refcount_updates;
   int new_refcount = get_or_insert(Memory, new_address);
-  trace(9999, "mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << new_refcount+1 << end();
+  trace("mem") << "incrementing refcount of " << new_address << ": " << new_refcount << " -> " << new_refcount+1 << end();
   put(Memory, new_address, new_refcount+1);
 }
 
@@ -70,7 +70,7 @@ void decrement_refcount(int old_address, const type_tree* payload_type, int payl
   if (old_address == 0) return;
   ++Total_refcount_updates;
   int old_refcount = get_or_insert(Memory, old_address);
-  trace(9999, "mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
+  trace("mem") << "decrementing refcount of " << old_address << ": " << old_refcount << " -> " << old_refcount-1 << end();
   --old_refcount;
   put(Memory, old_address, old_refcount);
   if (old_refcount < 0) {
@@ -719,12 +719,12 @@ if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
 
 :(before "End Decrement Refcounts(canonized_x)")
 if (is_mu_container(canonized_x) || is_mu_exclusive_container(canonized_x)) {
-  trace(9999, "mem") << "need to read old value of '" << to_string(canonized_x) << "' to figure out what refcounts to decrement" << end();
+  trace("mem") << "need to read old value of '" << to_string(canonized_x) << "' to figure out what refcounts to decrement" << end();
   // read from canonized_x but without canonizing again
   reagent/*copy*/ tmp = canonized_x;
   tmp.properties.push_back(pair<string, string_tree*>("raw", NULL));
   vector<double> data = read_memory(tmp);
-  trace(9999, "mem") << "done reading old value of '" << to_string(canonized_x) << "'" << end();
+  trace("mem") << "done reading old value of '" << to_string(canonized_x) << "'" << end();
   const container_metadata& metadata = get(Container_metadata, canonized_x.type);
   for (map<set<tag_condition_info>, set<address_element_info> >::const_iterator p = metadata.address.begin();  p != metadata.address.end();  ++p) {
     if (!all_match(data, p->first)) continue;

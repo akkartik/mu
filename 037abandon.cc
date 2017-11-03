@@ -15,7 +15,7 @@ def main [
 
 :(before "End Decrement Refcount(old_address, payload_type, payload_size)")
 if (old_refcount == 0) {
-  trace(9999, "mem") << "automatically abandoning " << old_address << end();
+  trace("mem") << "automatically abandoning " << old_address << end();
   abandon(old_address, payload_type, payload_size);
 }
 
@@ -26,7 +26,7 @@ map<int, int> free_list;
 
 :(code)
 void abandon(int address, const type_tree* payload_type, int payload_size) {
-  trace(9999, "abandon") << "updating refcounts inside " << address << ": " << to_string(payload_type) << end();
+  trace("abandon") << "updating refcounts inside " << address << ": " << to_string(payload_type) << end();
 //?   Total_free += size;
 //?   ++Num_free;
 //?   cerr << "abandon: " << size << '\n';
@@ -52,16 +52,16 @@ void abandon(int address, const type_tree* payload_type, int payload_size) {
   for (int curr = address;  curr < address+payload_size;  ++curr)
     put(Memory, curr, 0);
   // append existing free list to address
-  trace(9999, "abandon") << "saving " << address << " in free-list of size " << payload_size << end();
+  trace("abandon") << "saving " << address << " in free-list of size " << payload_size << end();
   put(Memory, address, get_or_insert(Current_routine->free_list, payload_size));
   put(Current_routine->free_list, payload_size, address);
 }
 
 :(after "Allocate Special-cases")
 if (get_or_insert(Current_routine->free_list, size)) {
-  trace(9999, "abandon") << "picking up space from free-list of size " << size << end();
+  trace("abandon") << "picking up space from free-list of size " << size << end();
   int result = get_or_insert(Current_routine->free_list, size);
-  trace(9999, "mem") << "new alloc from free list: " << result << end();
+  trace("mem") << "new alloc from free list: " << result << end();
   put(Current_routine->free_list, size, get_or_insert(Memory, result));
   put(Memory, result, 0);
   for (int curr = result;  curr < result+size;  ++curr) {

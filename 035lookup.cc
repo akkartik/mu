@@ -99,11 +99,11 @@ void lookup_memory(reagent& x) {
 
 void lookup_memory_core(reagent& x, bool check_for_null) {
   if (x.value == 0) return;
-  trace(9999, "mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
+  trace("mem") << "location " << x.value << " is " << no_scientific(get_or_insert(Memory, x.value)) << end();
   x.set_value(get_or_insert(Memory, x.value));
   drop_from_type(x, "address");
   if (x.value) {
-    trace(9999, "mem") << "skipping refcount at " << x.value << end();
+    trace("mem") << "skipping refcount at " << x.value << end();
     x.set_value(x.value+1);  // skip refcount
   }
   else if (check_for_null) {

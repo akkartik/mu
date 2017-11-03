@@ -302,7 +302,7 @@ int alloc, alloc_max;
 alloc = Memory_allocated_until;
 Memory_allocated_until += Initial_memory_per_routine;
 alloc_max = Memory_allocated_until;
-trace(9999, "new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
+trace("new") << "routine allocated memory from " << alloc << " to " << alloc_max << end();
 
 :(before "End Primitive Recipe Declarations")
 ALLOCATE,
@@ -314,13 +314,13 @@ case ALLOCATE: {
   int size = ingredients.at(0).at(0);
   if (SIZE(ingredients) > 1) {
     // array allocation
-    trace(9999, "mem") << "array length is " << ingredients.at(1).at(0) << end();
+    trace("mem") << "array length is " << ingredients.at(1).at(0) << end();
     size = /*space for length*/1 + size*ingredients.at(1).at(0);
   }
   int result = allocate(size);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
-    trace(9999, "mem") << "storing " << ingredients.at(1).at(0) << " in location " << result+/*skip refcount*/1 << end();
+    trace("mem") << "storing " << ingredients.at(1).at(0) << " in location " << result+/*skip refcount*/1 << end();
     put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
   }
   products.resize(1);
@@ -331,7 +331,7 @@ case ALLOCATE: {
 int allocate(int size) {
   // include space for refcount
   ++size;
-  trace(9999, "mem") << "allocating size " << size << end();
+  trace("mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
 //?   ++Num_alloc;
   // Allocate Special-cases
@@ -339,10 +339,10 @@ int allocate(int size) {
   // really crappy at the moment
   ensure_space(size);
   const int result = Current_routine->alloc;
-  trace(9999, "mem") << "new alloc: " << result << end();
+  trace("mem") << "new alloc: " << result << end();
   // initialize allocated space
   for (int address = result;  address < result+size;  ++address) {
-    trace(9999, "mem") << "storing 0 in location " << address << end();
+    trace("mem") << "storing 0 in location " << address << end();
     put(Memory, address, 0);
   }
   Current_routine->alloc += size;
@@ -376,7 +376,7 @@ void ensure_space(int size) {
     Current_routine->alloc = Memory_allocated_until;
     Memory_allocated_until += Initial_memory_per_routine;
     Current_routine->alloc_max = Memory_allocated_until;
-    trace(9999, "new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max << end();
+    trace("new") << "routine allocated memory from " << Current_routine->alloc << " to " << Current_routine->alloc_max << end();
   }
 }
 
