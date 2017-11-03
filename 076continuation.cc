@@ -8,11 +8,33 @@
 //:    calls the provided function.
 //:  * 'return-continuation-until-mark' copies the top of the stack
 //:    until the mark, and returns it as the result of
-//:    call-with-continuation-mark (which might be a distant ancestor on the call
-//:    stack; intervening calls don't return)
+//:    'call-with-continuation-mark' (which might be a distant ancestor on the
+//:    call stack; intervening calls don't return)
 //:
 //: The resulting slice of the stack can now be called just like a regular
 //: function.
+//:
+//: See the example programs continuation*.mu to get a sense for the
+//: possibilities.
+//:
+//: Refinements:
+//:  * You can call a single continuation multiple times, and it will preserve
+//:    the state of its local variables at each stack frame between calls.
+//:    The stack frames of a continuation are not destroyed until the
+//:    continuation goes out of scope. See continuation1.mu.
+//:  * 'return-continuation-until-mark' doesn't consume the mark, so you can
+//:    return multiple continuations based on a single mark. In combination
+//:    with the fact that 'return-continuation-until-mark' can return from
+//:    regular calls, just as long as there was an earlier call to
+//:    'call-with-continuation-mark', this gives us a way to create resumable
+//:    functions. See continuation5.mu.
+//:
+//: Caveats:
+//:  * At the moment we can't statically type-check continuations. So we raise
+//:    runtime errors for a call that doesn't return a continuation when the
+//:    caller expects, or one that returns a continuation when the caller
+//:    doesn't expect it. This shouldn't cause memory corruption, though.
+//:    There should still be no way to lookup addresses that aren't allocated.
 
 :(before "End Mu Types Initialization")
 type_ordinal continuation = Type_ordinal["continuation"] = Next_type_ordinal++;
@@ -113,10 +135,10 @@ case CALL_WITH_CONTINUATION_MARK: {
 //: todo: implement delimited continuations in Mu's memory
 :(before "End Globals")
 map<long long int, call_stack> Delimited_continuation;
-long long int Next_delimited_continuation_id = 0;
+long long int Next_delimited_continuation_id = 1;  // 0 is null just like an address
 :(before "End Reset")
 Delimited_continuation.clear();
-Next_delimited_continuation_id = 0;
+Next_delimited_continuation_id = 1;
 
 :(before "End Primitive Recipe Declarations")
 RETURN_CONTINUATION_UNTIL_MARK,
@@ -142,6 +164,7 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
       raise << maybe(current_recipe_name()) << "  " << get(Recipe, p->running_recipe).name << '\n' << end();
     break;
   }
+  trace("run") << "creating continuation " << Next_delimited_continuation_id << end();
   Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), base);
   while (Current_routine->calls.begin() != base) {
     if (Trace_stream) {
@@ -170,12 +193,21 @@ if (current_instruction().ingredients.at(0).type->atom
     && current_instruction().ingredients.at(0).type->name == "continuation") {
   // copy multiple calls on to current call stack
   assert(scalar(ingredients.at(0)));
+  trace("run") << "calling continuation " << ingredients.at(0).at(0) << end();
   if (Delimited_continuation.find(ingredients.at(0).at(0)) == Delimited_continuation.end())
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
   const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
   const call& caller = (SIZE(new_calls) > 1) ? *++new_calls.begin() : Current_routine->calls.front();
-  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p)
+  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p) {
     Current_routine->calls.push_front(*p);
+    // ensure that the presence of a continuation keeps its stack frames from being reclaimed
+    int space_address = Current_routine->calls.front().default_space;
+    if (space_address != 0) {
+      int refcount = get_or_insert(Memory, space_address);
+      trace(9999, "mem") << "incrementing refcount of " << space_address << ": " << refcount << " -> " << refcount+1 << end();
+      put(Memory, space_address, refcount+1);
+    }
+  }
   if (Trace_stream) {
     Trace_stream->callstack_depth += SIZE(new_calls);
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
@@ -185,4 +217,67 @@ if (current_instruction().ingredients.at(0).type->atom
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(to_instruction(caller), ingredients);
   continue;
+}
+
+//: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
+
+:(scenario continuations_preserve_local_scopes)
+def main [
+  local-scope
+  k:continuation <- call-with-continuation-mark f
+  call k
+  return 34
+]
+def f [
+  local-scope
+  g
+]
+def g [
+  local-scope
+  return-continuation-until-mark
+  a:num <- copy 35
+]
+# entering main
++mem: new alloc: 1000
++run: {k: "continuation"} <- call-with-continuation-mark {f: "recipe-literal"}
+# entering f
++mem: new alloc: 1004
+# entering g
++mem: new alloc: 1007
+# return control to main
++run: return-continuation-until-mark
+# no allocs abandoned yet
+# finish running main
++run: call {k: "continuation"}
++run: return {34: "literal"}
+# now k is reclaimed
++mem: trying to reclaim local k:continuation
+# at this point all allocs in the continuation are abandoned
++mem: automatically abandoning 1007
++mem: automatically abandoning 1004
+# finally the alloc for main is abandoned
++mem: automatically abandoning 1000
+
+:(after "Begin Decrement Refcounts(canonized_x)")
+if (is_mu_continuation(canonized_x)) {
+  int continuation_id = get_or_insert(Memory, canonized_x.value);
+  trace("run") << "reclaiming continuation " << continuation_id << end();
+  if (continuation_id == 0) return;
+  const call_stack& continuation_calls = get(Delimited_continuation, continuation_id);
+  // temporarily push the stack frames for the continuation one last time on to the call stack
+  for (call_stack::const_reverse_iterator p = continuation_calls.rbegin(); p != continuation_calls.rend(); ++p)
+    Current_routine->calls.push_front(*p);
+  // reclaim their spaces while popping them
+  // (because reclaim_default_space() relies on the default-space being reclaimed being at the top of the stack)
+  for (call_stack::const_iterator p = continuation_calls.begin(); p != continuation_calls.end(); ++p) {
+    reclaim_default_space();
+    Current_routine->calls.pop_front();
+  }
+  return;
+}
+
+:(code)
+bool is_mu_continuation(reagent/*copy*/ x) {
+  canonize_type(x);
+  return x.type && x.type->atom && x.type->value == get(Type_ordinal, "continuation");
 }
