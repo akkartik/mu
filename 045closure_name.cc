@@ -3,7 +3,7 @@
 //: the variable in the chained/surrounding space. /space:2 looks up the
 //: surrounding space of the surrounding space, etc.
 //:
-//: todo: warn on default-space abuse. default-space for one function should
+//: todo: warn on default-space abuse. default-space for one recipe should
 //: never come from another, otherwise memory will be corrupted.
 
 :(scenario closure)

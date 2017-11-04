@@ -1,4 +1,4 @@
-//: make some functions more friendly by trying to auto-convert their ingredients to text
+//: make some recipes more friendly by trying to auto-convert their ingredients to text
 
 :(scenarios transform)
 :(scenario rewrite_stashes_to_text)

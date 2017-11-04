@@ -5,9 +5,8 @@
 //: Spaces are often called 'scopes' in other languages. Stack frames are a
 //: limited form of space that can't outlive callers.
 //:
-//: Warning: messing with 'default-space' can corrupt memory. Don't do things
-//: like initialize default-space with some other function's default-space.
-//: Later we'll see how to chain spaces safely.
+//: Warning: messing with 'default-space' can corrupt memory. Don't share
+//: default-space between recipes. Later we'll see how to chain spaces safely.
 
 //: Under the hood, a space is an array of locations in memory.
 :(before "End Mu Types Initialization")

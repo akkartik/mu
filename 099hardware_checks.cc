@@ -1,6 +1,6 @@
-//: Let's raise errors when students use real hardware in any functions
-//: besides 'main'. Part of the goal is to teach them testing hygiene and
-//: dependency injection.
+//: Let's raise errors when students use real hardware in any recipes besides
+//: 'main'. Part of the goal is to teach them testing hygiene and dependency
+//: injection.
 //:
 //: This is easy to sidestep, it's for feedback rather than safety.
 

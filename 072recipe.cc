@@ -341,7 +341,7 @@ def f x:&:num -> y:num [
 ]
 $error: 0
 
-//: make sure we don't accidentally break on a function literal
+//: make sure we don't accidentally break on a recipe literal
 :(scenario jump_forbidden_on_recipe_literals)
 % Hide_errors = true;
 def foo [

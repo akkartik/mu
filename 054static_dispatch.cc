@@ -342,10 +342,10 @@ const recipe& best_variant(const instruction& inst, vector<recipe_ordinal>& cand
   int min_index = 0;
   for (int i = 0;  i < SIZE(candidates);  ++i) {
     const recipe& candidate = get(Recipe, candidates.at(i));
-    // prefer functions without extra or missing ingredients or products
+    // prefer variants without extra or missing ingredients or products
     int score = abs(SIZE(candidate.products)-SIZE(inst.products))
                           + abs(SIZE(candidate.ingredients)-SIZE(inst.ingredients));
-    // prefer functions with non-address ingredients or products
+    // prefer variants with non-address ingredients or products
     for (int j = 0;  j < SIZE(candidate.ingredients);  ++j) {
       if (is_mu_address(candidate.ingredients.at(j)))
         ++score;

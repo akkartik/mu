@@ -877,7 +877,7 @@ def main [
 :(after "case _SYSTEM:")
   if (Current_scenario) break;
 
-//:: Warn if people use '_' manually in function names. They're reserved for internal use.
+//:: Warn if people use '_' manually in recipe names. They're reserved for internal use.
 
 :(scenario recipe_name_with_underscore)
 % Hide_errors = true;

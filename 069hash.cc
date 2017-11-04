@@ -1,4 +1,4 @@
-// A universal hash function that can handle objects of any type.
+// Compute a hash for objects of any type.
 //
 // The way it's currently implemented, two objects will have the same hash if
 // all their non-address fields (all the way down) expand to the same sequence
