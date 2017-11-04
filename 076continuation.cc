@@ -5,14 +5,14 @@
 //: out of two primitives:
 //:
 //:  * 'call-with-continuation-mark' marks the top of the call stack and then
-//:    calls the provided function.
+//:    calls the provided recipe.
 //:  * 'return-continuation-until-mark' copies the top of the stack
 //:    until the mark, and returns it as the result of
 //:    'call-with-continuation-mark' (which might be a distant ancestor on the
 //:    call stack; intervening calls don't return)
 //:
 //: The resulting slice of the stack can now be called just like a regular
-//: function.
+//: recipe.
 //:
 //: See the example programs continuation*.mu to get a sense for the
 //: possibilities.
@@ -21,13 +21,13 @@
 //:  * You can call a single continuation multiple times, and it will preserve
 //:    the state of its local variables at each stack frame between calls.
 //:    The stack frames of a continuation are not destroyed until the
-//:    continuation goes out of scope. See continuation1.mu.
+//:    continuation goes out of scope. See continuation2.mu.
 //:  * 'return-continuation-until-mark' doesn't consume the mark, so you can
 //:    return multiple continuations based on a single mark. In combination
 //:    with the fact that 'return-continuation-until-mark' can return from
 //:    regular calls, just as long as there was an earlier call to
 //:    'call-with-continuation-mark', this gives us a way to create resumable
-//:    functions. See continuation5.mu.
+//:    recipes. See continuation3.mu.
 //:
 //: Caveats:
 //:  * At the moment we can't statically type-check continuations. So we raise
