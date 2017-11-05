@@ -176,6 +176,8 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   // return it as the result of the marked call
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
+  // return any other ingredients passed in
+  copy(ingredients.begin(), ingredients.end(), inserter(products, products.end()));
   ++Next_delimited_continuation_id;
   break;  // continue to process rest of marked call
 }
@@ -281,3 +283,37 @@ bool is_mu_continuation(reagent/*copy*/ x) {
   canonize_type(x);
   return x.type && x.type->atom && x.type->value == get(Type_ordinal, "continuation");
 }
+
+:(scenario continuations_can_return_values)
+def main [
+  local-scope
+  k:continuation, 1:num/raw <- call-with-continuation-mark f
+]
+def f [
+  local-scope
+  g
+]
+def g [
+  local-scope
+  return-continuation-until-mark 34
+  stash [continuation called]
+]
+# entering main
++mem: new alloc: 1000
++run: {k: "continuation"}, {1: "number", "raw": ()} <- call-with-continuation-mark {f: "recipe-literal"}
+# entering f
++mem: new alloc: 1004
+# entering g
++mem: new alloc: 1007
+# return control to main
++run: return-continuation-until-mark {34: "literal"}
+# no allocs abandoned yet
++mem: storing 34 in location 1
+# end of main
+# make sure no memory leaks..
++mem: trying to reclaim local k:continuation
++mem: automatically abandoning 1007
++mem: automatically abandoning 1004
++mem: automatically abandoning 1000
+# ..even though we never called the continuation
+-app: continuation called
