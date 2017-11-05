@@ -237,7 +237,7 @@ def f [
 def g [
   local-scope
   return-continuation-until-mark
-  a:num <- copy 35
+  add 1, 1
 ]
 # entering main
 +mem: new alloc: 1000
@@ -251,6 +251,7 @@ def g [
 # no allocs abandoned yet
 # finish running main
 +run: call {k: "continuation"}
++run: add {1: "literal"}, {1: "literal"}
 +run: return {34: "literal"}
 # now k is reclaimed
 +mem: trying to reclaim local k:continuation
