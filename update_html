@@ -3,8 +3,17 @@
 
 set -e
 
-# convert a single file to html
+( cd linkify; build; )
+
+# generate html/$1.html using /tmp/tags
 process() {
+  rm html/$1.html
+  convert_html $1
+  linkify/linkify /tmp/tags html/$1.html
+  mv html/$1.html.out html/$1.html
+}
+
+convert_html() {
   vim -c "set number" -c TOhtml -c write -c qall $1
 
   sed -i 's,<title>\~/mu/,<title>Mu - ,' $1.html
@@ -37,68 +46,39 @@ process() {
   mv -i $1.html html/`dirname $1`
 }
 
-( cd linkify; build; )
+ctags -x *.cc  |grep -v "^operator \| member \| variable "  > /tmp/tags
+for f in *.cc
+do
+  process $f
+done
 
-  rm html/*.cc.html
-  for f in *.cc
-  do
-    process $f
-  done
-  ctags -x *.cc  |grep -v "^operator \| member \| variable "  > /tmp/tags
-  linkify/linkify /tmp/tags html/*.cc.html
-  for f in html/*.cc.html
-  do
-    mv $f.out $f
-  done
+ctags -x [0-9]*.mu  > /tmp/tags
+for f in [0-9]*.mu
+do
+  process $f
+done
 
-  rm html/[0-9]*.mu.html
-  for f in [0-9]*.mu
-  do
-    process $f
-  done
-  ctags -x [0-9]*.mu  > /tmp/tags
-  linkify/linkify /tmp/tags html/[0-9]*.mu.html
-  for f in html/[0-9]*.mu.html
-  do
-    mv $f.out $f
-  done
+for f in [a-zA-Z]*.mu
+do
+  ctags -x [0-9]*.mu $f  > /tmp/tags
+  process $f
+done
 
-  for f in [a-zA-Z]*.mu
-  do
-    rm -f html/$f.html
-    process $f
-    ctags -x [0-9]*.mu $f  > /tmp/tags
-    linkify/linkify /tmp/tags html/$f.html
-    mv html/$f.html.out html/$f.html
-  done
+( cd edit
+  ctags -x ../[0-9]*.mu *.mu  > /tmp/tags
+)
+for f in edit/*.mu
+do
+  process $f
+done
 
-  rm html/edit/*.html
-  for f in edit/*.mu
-  do
-    process $f
-  done
-  ( cd edit
-    ctags -x ../[0-9]*.mu *.mu  > /tmp/tags
-  )
-  linkify/linkify /tmp/tags html/edit/*.mu.html
-  for f in html/edit/*.mu.html
-  do
-    mv $f.out $f
-  done
-
-  rm html/subx/*.html
-  for f in subx/*.cc
-  do
-    process $f
-  done
-  ( cd subx
-    ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
-  )
-  linkify/linkify /tmp/tags html/subx/*.html
-  for f in html/subx/*.cc.html
-  do
-    mv $f.out $f
-  done
+( cd subx
+  ctags -x *.cc  |grep -v '^. '  > /tmp/tags  # don't hyperlink every 'i' to the integer register variant
+)
+for f in subx/*.cc
+do
+  process $f
+done
 
 rm /tmp/tags
 ( cd linkify; clean; )
