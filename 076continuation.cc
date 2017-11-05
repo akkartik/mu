@@ -28,6 +28,9 @@
 //:    regular calls, just as long as there was an earlier call to
 //:    'call-with-continuation-mark', this gives us a way to create resumable
 //:    recipes. See continuation3.mu.
+//:  * 'return-continuation-until-mark' can take ingredients to return just
+//:    like other 'return' instructions. It just implicitly also returns a
+//:    continuation as the first result. See continuation4.mu.
 //:
 //: Caveats:
 //:  * At the moment we can't statically type-check continuations. So we raise
