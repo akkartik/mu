@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Mu - continuation1.mu</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
+<meta name="colorscheme" content="minimal">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color: #080808; }
+a { color:#eeeeee; text-decoration: none; }
+a:hover { text-decoration: underline; }
+* { font-size: 12pt; font-size: 1em; }
+.muRecipe { color: #ff8700; }
+.Special { color: #c00000; }
+.Conceal { color: #4e4e4e; }
+.Delimiter { color: #800080; }
+.Comment { color: #9090ff; }
+.Comment a { color:#0000ee; text-decoration:underline; }
+.Constant { color: #00a0a0; }
+.LineNr { color: #444444; }
+.muControl { color: #c0a020; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+/* function to open any folds containing a jumped-to line before jumping to it */
+function JumpToLine()
+{
+  var lineNum;
+  lineNum = window.location.hash;
+  lineNum = lineNum.substr(1); /* strip off '#' */
+
+  if (lineNum.indexOf('L') == -1) {
+    lineNum = 'L'+lineNum;
+  }
+  lineElem = document.getElementById(lineNum);
+  /* Always jump to new location even if the line was hidden inside a fold, or
+   * we corrected the raw number to a line ID.
+   */
+  if (lineElem) {
+    lineElem.scrollIntoView(true);
+  }
+  return true;
+}
+if ('onhashchange' in window) {
+  window.onhashchange = JumpToLine;
+}
+
+-->
+</script>
+</head>
+<body onload='JumpToLine();'>
+<pre id='vimCodeElement'>
+<span id="L1" class="LineNr"> 1 </span><span class="Comment"># example program showing that 'return-continuation-until-mark' can 'pause' a</span>
+<span id="L2" class="LineNr"> 2 </span><span class="Comment"># function call, returning a continuation, and that calling the continuation</span>
+<span id="L3" class="LineNr"> 3 </span><span class="Comment"># can 'resume' the paused function call.</span>
+<span id="L4" class="LineNr"> 4 </span>
+<span id="L5" class="LineNr"> 5 </span><span class="muRecipe">def</span> <a href='continuation1.mu.html#L5'>main</a> [
+<span id="L6" class="LineNr"> 6 </span>  <span class="Constant">local-scope</span>
+<span id="L7" class="LineNr"> 7 </span>  k:continuation <span class="Special">&lt;-</span> call-with-continuation-mark <a href='continuation1.mu.html#L16'>create-yielder</a>
+<span id="L8" class="LineNr"> 8 </span>  <span class="Delimiter">{</span>
+<span id="L9" class="LineNr"> 9 </span>  <span class="Conceal">¦</span> x:num, done?:bool <span class="Special">&lt;-</span> call k  <span class="Comment"># should return 1</span>
+<span id="L10" class="LineNr">10 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> done?
+<span id="L11" class="LineNr">11 </span>  <span class="Conceal">¦</span> $print x <span class="Constant">10/newline</span>
+<span id="L12" class="LineNr">12 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
+<span id="L13" class="LineNr">13 </span>  <span class="Delimiter">}</span>
+<span id="L14" class="LineNr">14 </span>]
+<span id="L15" class="LineNr">15 </span>
+<span id="L16" class="LineNr">16 </span><span class="muRecipe">def</span> <a href='continuation1.mu.html#L16'>create-yielder</a><span class="muRecipe"> -&gt; </span>n:num, done?:bool [
+<span id="L17" class="LineNr">17 </span>  <span class="Constant">local-scope</span>
+<span id="L18" class="LineNr">18 </span>  <span class="Constant">load-ingredients</span>
+<span id="L19" class="LineNr">19 </span>  n <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
+<span id="L20" class="LineNr">20 </span>  return-continuation-until-mark
+<span id="L21" class="LineNr">21 </span>  done?:bool <span class="Special">&lt;-</span> greater-or-equal n,<span class="Constant"> 3</span>
+<span id="L22" class="LineNr">22 </span>  n <span class="Special">&lt;-</span> add n,<span class="Constant"> 1</span>
+<span id="L23" class="LineNr">23 </span>]
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

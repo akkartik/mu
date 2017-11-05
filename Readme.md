@@ -85,11 +85,11 @@ Assembly language of the Mu VM is as powerful as C for low-level pointer
 operations and manual memory management, but much safer, paying some run-time
 checking overhead to validate pointers. It is as powerful as high-level
 languages (providing strong type safety, general lexical scope, generic types,
-and higher-order functions) but should be easier to write a compiler for since
-it gives up some expressiveness by not allowing recursive expressions. It is
-also *more* expressive than conventional high-level languages in some ways:
-Literate Programming turns out to be a great fit for a statement-oriented
-language, and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
+higher-order functions and delimited continuations) but should be easier to
+write a compiler for since it gives up some expressiveness by not allowing
+recursive expressions. It is also *more* expressive than conventional
+high-level languages in some ways: Literate Programming turns out to be a
+great fit for a statement-oriented language, and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
 
 Balancing these strengths, however, Mu is currently interpreted and slow. Too
 slow for graphics or sound, among other things. Rather than try to build a
