@@ -1051,9 +1051,11 @@ if (Run_profiler) {
   initial_num_refcount_updates = Total_refcount_updates;
 }
 :(before "End Non-primitive Call(caller_frame)")
-Num_refcount_updates[caller_frame.running_recipe][caller_frame.running_step_index]
-    += (Total_refcount_updates - initial_num_refcount_updates);
-initial_num_refcount_updates = Total_refcount_updates;
+if (Run_profiler) {
+  Num_refcount_updates[caller_frame.running_recipe][caller_frame.running_step_index]
+      += (Total_refcount_updates - initial_num_refcount_updates);
+  initial_num_refcount_updates = Total_refcount_updates;
+}
 :(after "Begin Return")
 if (Run_profiler) {
   Num_refcount_updates[current_call().running_recipe][current_call().running_step_index]
