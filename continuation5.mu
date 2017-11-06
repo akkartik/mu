@@ -3,6 +3,11 @@
 #
 # Print out a list of numbers, first adding 0 to the first, 1 to the second, 2
 # to the third, and so on.
+#
+# Expected output:
+#   1
+#   3
+#   5
 
 def main [
   local-scope

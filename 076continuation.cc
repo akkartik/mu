@@ -31,6 +31,12 @@
 //:  * 'return-continuation-until-mark' can take ingredients to return just
 //:    like other 'return' instructions. It just implicitly also returns a
 //:    continuation as the first result. See continuation4.mu.
+//:  * Conversely, you can pass ingredients to a continuation when calling it,
+//:    to make it available to products of 'return-continuation-until-mark'.
+//:
+//: Inspired by James and Sabry, "Yield: Mainstream delimited continuations",
+//: Workshop on the Theory and Practice of Delimited Continuations, 2011.
+//: https://www.cs.indiana.edu/~sabry/papers/yield.pdf
 //:
 //: Caveats:
 //:  * At the moment we can't statically type-check continuations. So we raise

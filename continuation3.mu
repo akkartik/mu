@@ -1,5 +1,13 @@
-# example program showing that a function call can be 'paused' multiple times,
-# creating different continuation values
+# Example program showing that a function call can be 'paused' multiple times,
+# creating different continuation values.
+#
+# Expected output:
+#   caller 0
+#   callee 0
+#   caller 1
+#   callee 1
+#   caller 2
+#   callee 2
 
 def main [
   local-scope

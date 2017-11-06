@@ -1,5 +1,10 @@
-# example program showing that a 'paused' continuation can be 'resumed'
-# multiple times from the same point (but with changes to data)
+# Example program showing that a 'paused' continuation can be 'resumed'
+# multiple times from the same point (but with changes to data).
+#
+# Expected output:
+#   1
+#   2
+#   3
 
 def main [
   local-scope

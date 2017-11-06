@@ -1,5 +1,12 @@
-# example program showing 'return-continuation-until-mark' return other values
-# alongside continuations
+# Example program showing 'return-continuation-until-mark' return other values
+# alongside continuations.
+#
+# Print out a given list of numbers.
+#
+# Expected output:
+#   1
+#   2
+#   3
 
 def main [
   local-scope

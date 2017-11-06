@@ -1,6 +1,11 @@
-# example program showing that 'return-continuation-until-mark' can 'pause' a
+# Example program showing that 'return-continuation-until-mark' can 'pause' a
 # function call, returning a continuation, and that calling the continuation
 # can 'resume' the paused function call.
+#
+# Expected output:
+#   1
+#   2
+#   3
 
 def main [
   local-scope
