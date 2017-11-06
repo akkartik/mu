@@ -64,6 +64,7 @@ void run_current_routine() {
     // Running One Instruction
     if (current_instruction().is_label) { ++current_step_index();  continue; }
     trace(Initial_callstack_depth + Trace_stream->callstack_depth, "run") << to_string(current_instruction()) << end();
+//?     if (Foo) cerr << "run: " << to_string(current_instruction()) << '\n';
     if (get_or_insert(Memory, 0) != 0) {
       raise << "something wrote to location 0; this should never happen\n" << end();
       put(Memory, 0, 0);
@@ -323,6 +324,7 @@ void write_memory(reagent/*copy*/ x, const vector<double>& data) {
   for (int offset = 0;  offset < SIZE(data);  ++offset) {
     assert(x.value+offset > 0);
     trace("mem") << "storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << end();
+//?     if (Foo) cerr << "mem: storing " << no_scientific(data.at(offset)) << " in location " << x.value+offset << '\n';
     put(Memory, x.value+offset, data.at(offset));
   }
 }

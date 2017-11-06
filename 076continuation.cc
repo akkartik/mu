@@ -60,7 +60,7 @@ recipe main [
   1:continuation <- call-with-continuation-mark f, 77  # 77 is an argument to f
   2:number <- copy 5
   {
-    2:number <- call 1:continuation, 2:number  # 2 is an argument to g, the 'top' of the continuation
+    2:number <- call 1:continuation, 2:number  # jump to 'return-continuation-until-mark' below
     3:boolean <- greater-or-equal 2:number, 8
     break-if 3:boolean
     loop
@@ -73,10 +73,7 @@ recipe f [
 ]
 recipe g [
   21:number <- next-ingredient
-  rewind-ingredients
-  return-continuation-until-mark
-  # calls of the continuation start from here
-  22:number <- next-ingredient
+  22:number <- return-continuation-until-mark
   23:number <- add 22:number, 1
   return 23:number
 ]
@@ -218,10 +215,10 @@ if (current_instruction().ingredients.at(0).type->atom
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
-  ++current_step_index();  // skip past the return-continuation-until-mark
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(to_instruction(caller), ingredients);
-  continue;
+  copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+  break;  // record results of resuming 'return-continuation-until-mark' instruction
 }
 
 //: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
