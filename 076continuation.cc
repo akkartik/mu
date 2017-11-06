@@ -33,6 +33,7 @@
 //:    continuation as the first result. See continuation4.mu.
 //:  * Conversely, you can pass ingredients to a continuation when calling it,
 //:    to make it available to products of 'return-continuation-until-mark'.
+//:    See continuation5.mu.
 //:
 //: Inspired by James and Sabry, "Yield: Mainstream delimited continuations",
 //: Workshop on the Theory and Practice of Delimited Continuations, 2011.
