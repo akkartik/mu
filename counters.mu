@@ -16,9 +16,9 @@ def increment-counter outer:space/names:new-counter, x:num -> n:num/space:1 [
 def main [
   local-scope
   # counter A
-  a:space <- new-counter 34
+  a:space/names:new-counter <- new-counter 34
   # counter B
-  b:space <- new-counter 23
+  b:space/names:new-counter <- new-counter 23
   # increment both by 2 but in different ways
   increment-counter a, 1
   b-value:num <- increment-counter b, 2

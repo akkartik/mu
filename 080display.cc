@@ -116,7 +116,7 @@ case PRINT_CHARACTER_TO_DISPLAY: {
   int height = (h >= 0) ? h : 0;
   int width = (w >= 0) ? w : 0;
   int c = ingredients.at(0).at(0);
-  int color = TB_BLACK;
+  int color = TB_WHITE;
   if (SIZE(ingredients) > 1) {
     color = ingredients.at(1).at(0);
   }

@@ -1,3 +1,11 @@
+# Example program showing how multiple functions with the same name can
+# coexist, and how we select between them.
+#
+# Expected output:
+#   4
+#   7
+#   7
+
 def test a:num -> b:num [
   local-scope
   load-ingredients
