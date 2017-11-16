@@ -355,6 +355,14 @@ def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   }
 ]
 
+def blank? x:&:@:_elem -> result:bool [
+  local-scope
+  load-ingredients
+  return-unless x, 1/true
+  len:num <- length *x
+  result <- equal len, 0
+]
+
 # Append any number of texts together.
 # A later layer also translates calls to this to implicitly call to-text, so
 # append to string becomes effectively dynamically typed.
