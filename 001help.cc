@@ -219,6 +219,7 @@ template<typename T> typename T::mapped_type const& get(const T& map, typename T
   return iter->second;
 }
 template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
+  // requires value to have a zero-arg (default) constructor
   map[key] = value;
   return map[key];
 }
