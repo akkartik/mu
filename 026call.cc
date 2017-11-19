@@ -203,3 +203,18 @@ while (current_step_index() >= SIZE(Current_routine->steps())) {
   // todo: fail if no products returned
   ++current_step_index();
 }
+
+:(before "End Primitive Recipe Declarations")
+_DUMP_CALL_STACK,
+:(before "End Primitive Recipe Numbers")
+put(Recipe_ordinal, "$dump-call-stack", _DUMP_CALL_STACK);
+:(before "End Primitive Recipe Checks")
+case _DUMP_CALL_STACK: {
+  break;
+}
+:(before "End Primitive Recipe Implementations")
+case _DUMP_CALL_STACK: {
+  for (call_stack::const_reverse_iterator p = Current_routine->calls.rbegin(); p != Current_routine->calls.rend(); ++p)
+    cerr << get(Recipe, p->running_recipe).name << ":" << p->running_step_index << " -- " << to_string(to_instruction(*p)) << '\n';
+  break;
+}
