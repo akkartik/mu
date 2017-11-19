@@ -140,8 +140,14 @@ case CALL_WITH_CONTINUATION_MARK: {
 //: save the slice of current call stack until the 'call-with-continuation-mark'
 //: call, and return it as the result.
 //: todo: implement delimited continuations in Mu's memory
+:(before "End Types")
+struct delimited_continuation {
+  call_stack frames;
+  int nrefs;
+  delimited_continuation(call_stack::iterator begin, call_stack::iterator end) :frames(call_stack(begin, end)), nrefs(0) {}
+};
 :(before "End Globals")
-map<long long int, call_stack> Delimited_continuation;
+map<long long int, delimited_continuation> Delimited_continuation;
 long long int Next_delimited_continuation_id = 1;  // 0 is null just like an address
 :(before "End Reset")
 Delimited_continuation.clear();
@@ -172,7 +178,7 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
     break;
   }
   trace("run") << "creating continuation " << Next_delimited_continuation_id << end();
-  put(Delimited_continuation, Next_delimited_continuation_id, call_stack(Current_routine->calls.begin(), base));
+  put(Delimited_continuation, Next_delimited_continuation_id, delimited_continuation(Current_routine->calls.begin(), base));
   while (Current_routine->calls.begin() != base) {
     if (Trace_stream) {
       --Trace_stream->callstack_depth;
@@ -204,7 +210,7 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   trace("run") << "calling continuation " << ingredients.at(0).at(0) << end();
   if (!contains_key(Delimited_continuation, ingredients.at(0).at(0)))
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-  const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0));
+  const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0)).frames;
   const call& caller = (SIZE(new_frames) > 1) ? *++new_frames.begin() : Current_routine->calls.front();
   for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p) {
     Current_routine->calls.push_front(*p);
@@ -296,19 +302,38 @@ def g [
 # finally the alloc for main is abandoned
 +mem: automatically abandoning 1000
 
+:(before "End Increment Refcounts(canonized_x)")
+if (is_mu_continuation(canonized_x)) {
+  int continuation_id = data.at(0);
+  if (continuation_id == 0) return;
+  if (!contains_key(Delimited_continuation, continuation_id)) {
+    raise << maybe(current_recipe_name()) << "missing delimited continuation: " << canonized_x.name << '\n';
+    return;
+  }
+  delimited_continuation& curr = get(Delimited_continuation, continuation_id);
+  trace("run") << "incrementing refcount of continuation " << continuation_id << ": " << curr.nrefs << " -> " << 1+curr.nrefs << end();
+  ++curr.nrefs;
+  return;
+}
+
 :(before "End Decrement Refcounts(canonized_x)")
 if (is_mu_continuation(canonized_x)) {
   int continuation_id = get_or_insert(Memory, canonized_x.value);
-  trace("run") << "reclaiming continuation " << continuation_id << end();
   if (continuation_id == 0) return;
-  const call_stack& continuation_frames = get(Delimited_continuation, continuation_id);
+  delimited_continuation& curr = get(Delimited_continuation, continuation_id);
+  assert(curr.nrefs > 0);
+  --curr.nrefs;
+  trace("run") << "decrementing refcount of continuation " << continuation_id << ": " << 1+curr.nrefs << " -> " << curr.nrefs << end();
+  if (curr.nrefs > 0) return;
+  trace("run") << "reclaiming continuation " << continuation_id << end();
   // temporarily push the stack frames for the continuation to the call stack before reclaiming their spaces
   // (because reclaim_default_space() relies on the default-space being reclaimed being at the top of the stack)
-  for (call_stack::const_iterator p = continuation_frames.begin(); p != continuation_frames.end(); ++p) {
+  for (call_stack::const_iterator p = curr.frames.begin(); p != curr.frames.end(); ++p) {
     Current_routine->calls.push_front(*p);
     reclaim_default_space();
     Current_routine->calls.pop_front();
   }
+  Delimited_continuation.erase(continuation_id);
   return;
 }
 
@@ -317,3 +342,18 @@ bool is_mu_continuation(reagent/*copy*/ x) {
   canonize_type(x);
   return x.type && x.type->atom && x.type->value == get(Type_ordinal, "continuation");
 }
+
+:(scenario continuations_can_be_copied)
+def main [
+  local-scope
+  k:continuation <- call-with-continuation-mark f
+  k2:continuation <- copy k
+  # reclaiming k and k2 shouldn't delete f's local scope twice
+]
+def f [
+  local-scope
+  load-ingredients
+  return-continuation-until-mark
+  return 0
+]
+$error: 0

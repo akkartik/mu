@@ -219,9 +219,9 @@ template<typename T> typename T::mapped_type const& get(const T& map, typename T
   return iter->second;
 }
 template<typename T> typename T::mapped_type const& put(T& map, typename T::key_type const& key, typename T::mapped_type const& value) {
-  // requires value to have a zero-arg (default) constructor
-  (*((map.insert(std::make_pair(key, typename T::mapped_type()))).first)).second = value;
-  return (*((map.insert(std::make_pair(key, typename T::mapped_type()))).first)).second;
+  // map[key] requires mapped_type to have a zero-arg (default) constructor
+  map.insert(std::make_pair(key, value)).first->second = value;
+  return value;
 }
 template<typename T> bool contains_key(T& map, typename T::key_type const& key) {
   return map.find(key) != map.end();
