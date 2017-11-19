@@ -209,12 +209,7 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p) {
     Current_routine->calls.push_front(*p);
     // ensure that the presence of a continuation keeps its stack frames from being reclaimed
-    int space_address = Current_routine->calls.front().default_space;
-    if (space_address != 0) {
-      int refcount = get_or_insert(Memory, space_address);
-      trace("mem") << "incrementing refcount of " << space_address << ": " << refcount << " -> " << refcount+1 << end();
-      put(Memory, space_address, refcount+1);
-    }
+    increment_refcount(Current_routine->calls.front().default_space);
   }
   if (Trace_stream) {
     Trace_stream->callstack_depth += SIZE(new_calls);
