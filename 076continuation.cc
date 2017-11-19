@@ -172,7 +172,7 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
     break;
   }
   trace("run") << "creating continuation " << Next_delimited_continuation_id << end();
-  Delimited_continuation[Next_delimited_continuation_id] = call_stack(Current_routine->calls.begin(), base);
+  put(Delimited_continuation, Next_delimited_continuation_id, call_stack(Current_routine->calls.begin(), base));
   while (Current_routine->calls.begin() != base) {
     if (Trace_stream) {
       --Trace_stream->callstack_depth;
@@ -202,17 +202,17 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   // copy multiple calls on to current call stack
   assert(scalar(ingredients.at(0)));
   trace("run") << "calling continuation " << ingredients.at(0).at(0) << end();
-  if (Delimited_continuation.find(ingredients.at(0).at(0)) == Delimited_continuation.end())
+  if (!contains_key(Delimited_continuation, ingredients.at(0).at(0)))
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
-  const call_stack& new_calls = Delimited_continuation[ingredients.at(0).at(0)];
-  const call& caller = (SIZE(new_calls) > 1) ? *++new_calls.begin() : Current_routine->calls.front();
-  for (call_stack::const_reverse_iterator p = new_calls.rbegin(); p != new_calls.rend(); ++p) {
+  const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0));
+  const call& caller = (SIZE(new_frames) > 1) ? *++new_frames.begin() : Current_routine->calls.front();
+  for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p) {
     Current_routine->calls.push_front(*p);
     // ensure that the presence of a continuation keeps its stack frames from being reclaimed
     increment_refcount(Current_routine->calls.front().default_space);
   }
   if (Trace_stream) {
-    Trace_stream->callstack_depth += SIZE(new_calls);
+    Trace_stream->callstack_depth += SIZE(new_frames);
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
@@ -262,15 +262,15 @@ def g [
 # finally the alloc for main is abandoned
 +mem: automatically abandoning 1000
 
-:(after "Begin Decrement Refcounts(canonized_x)")
+:(before "End Decrement Refcounts(canonized_x)")
 if (is_mu_continuation(canonized_x)) {
   int continuation_id = get_or_insert(Memory, canonized_x.value);
   trace("run") << "reclaiming continuation " << continuation_id << end();
   if (continuation_id == 0) return;
-  const call_stack& continuation_calls = get(Delimited_continuation, continuation_id);
+  const call_stack& continuation_frames = get(Delimited_continuation, continuation_id);
   // temporarily push the stack frames for the continuation to the call stack before reclaiming their spaces
   // (because reclaim_default_space() relies on the default-space being reclaimed being at the top of the stack)
-  for (call_stack::const_iterator p = continuation_calls.begin(); p != continuation_calls.end(); ++p) {
+  for (call_stack::const_iterator p = continuation_frames.begin(); p != continuation_frames.end(); ++p) {
     Current_routine->calls.push_front(*p);
     reclaim_default_space();
     Current_routine->calls.pop_front();
