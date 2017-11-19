@@ -198,8 +198,7 @@ call_stack::iterator find_base_of_continuation(call_stack& c) {
 
 //: overload 'call' for continuations
 :(after "Begin Call")
-if (current_instruction().ingredients.at(0).type->atom
-    && current_instruction().ingredients.at(0).type->name == "continuation") {
+if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   // copy multiple calls on to current call stack
   assert(scalar(ingredients.at(0)));
   trace("run") << "calling continuation " << ingredients.at(0).at(0) << end();
@@ -274,12 +273,10 @@ if (is_mu_continuation(canonized_x)) {
   trace("run") << "reclaiming continuation " << continuation_id << end();
   if (continuation_id == 0) return;
   const call_stack& continuation_calls = get(Delimited_continuation, continuation_id);
-  // temporarily push the stack frames for the continuation one last time on to the call stack
-  for (call_stack::const_reverse_iterator p = continuation_calls.rbegin(); p != continuation_calls.rend(); ++p)
-    Current_routine->calls.push_front(*p);
-  // reclaim their spaces while popping them
+  // temporarily push the stack frames for the continuation to the call stack before reclaiming their spaces
   // (because reclaim_default_space() relies on the default-space being reclaimed being at the top of the stack)
   for (call_stack::const_iterator p = continuation_calls.begin(); p != continuation_calls.end(); ++p) {
+    Current_routine->calls.push_front(*p);
     reclaim_default_space();
     Current_routine->calls.pop_front();
   }
