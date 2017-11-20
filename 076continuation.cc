@@ -211,7 +211,6 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   if (!contains_key(Delimited_continuation, ingredients.at(0).at(0)))
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
   const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0)).frames;
-  const call& caller = (SIZE(new_frames) > 1) ? *++new_frames.begin() : Current_routine->calls.front();
   for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p) {
     Current_routine->calls.push_front(*p);
     // ensure that the presence of a continuation keeps its stack frames from being reclaimed
@@ -222,9 +221,8 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
-  ingredients.erase(ingredients.begin());  // drop the callee
-  finish_call_housekeeping(to_instruction(caller), ingredients);
-  copy(ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
+  // no call housekeeping; continuations don't support next-ingredient
+  copy(/*drop continuation*/++ingredients.begin(), ingredients.end(), inserter(products, products.begin()));
   break;  // record results of resuming 'return-continuation-until-mark' instruction
 }
 
