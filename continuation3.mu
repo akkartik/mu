@@ -1,6 +1,11 @@
 # Example program showing that a function call can be 'paused' multiple times,
 # creating different continuation values.
 #
+# To run:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./mu continuation3.mu
+#
 # Expected output:
 #   caller 0
 #   callee 0

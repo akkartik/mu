@@ -3,6 +3,11 @@
 #
 # Print out a given list of numbers.
 #
+# To run:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./mu continuation4.mu
+#
 # Expected output:
 #   1
 #   2

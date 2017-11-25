@@ -1,6 +1,11 @@
 # Example program showing that a 'paused' continuation can be 'resumed'
 # multiple times from the same point (but with changes to data).
 #
+# To run:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./mu continuation2.mu
+#
 # Expected output:
 #   1
 #   2

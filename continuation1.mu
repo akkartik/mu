@@ -2,6 +2,11 @@
 # function call, returning a continuation, and that calling the continuation
 # can 'resume' the paused function call.
 #
+# To run:
+#   $ git clone https://github.com/akkartik/mu
+#   $ cd mu
+#   $ ./mu continuation1.mu
+#
 # Expected output:
 #   1
 
