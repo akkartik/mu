@@ -166,16 +166,21 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
   for (int index = 0;  index < SIZE(caller_recipe.steps);  ++index) {
     instruction& inst = caller_recipe.steps.at(index);
     if (inst.is_label) continue;
-    if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) continue;
-    trace(9992, "transform") << "instruction " << to_original_string(inst) << end();
-    Resolve_stack.push_front(call(r, index));
-    string new_name = best_variant(inst, caller_recipe);
-    if (!new_name.empty())
-      inst.name = new_name;
-    assert(Resolve_stack.front().running_recipe == r);
-    assert(Resolve_stack.front().running_step_index == index);
-    Resolve_stack.pop_front();
+    resolve_ambiguous_call(r, index, inst, caller_recipe);
   }
+}
+
+void resolve_ambiguous_call(const recipe_ordinal r, int index, instruction& inst, const recipe& caller_recipe) {
+  // End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases
+  if (non_ghost_size(get_or_insert(Recipe_variants, inst.name)) == 0) return;
+  trace(9992, "transform") << "instruction " << to_original_string(inst) << end();
+  Resolve_stack.push_front(call(r, index));
+  string new_name = best_variant(inst, caller_recipe);
+  if (!new_name.empty())
+    inst.name = new_name;
+  assert(Resolve_stack.front().running_recipe == r);
+  assert(Resolve_stack.front().running_step_index == index);
+  Resolve_stack.pop_front();
 }
 
 string best_variant(const instruction& inst, const recipe& caller_recipe) {

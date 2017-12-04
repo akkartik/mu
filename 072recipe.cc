@@ -159,6 +159,31 @@ def f x:point -> y:point [
 +error: main: ingredient 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
 +error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
 
+:(scenario call_check_shape_shifting_recipe)
+def main [
+  1:num <- call f, 34
+]
+def f x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 1
+
+:(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
+if (inst.name == "call" && !inst.ingredients.empty() && inst.ingredients.at(0).type && inst.ingredients.at(0).type->atom && inst.ingredients.at(0).type->name == "recipe-literal") {
+  instruction inst2;
+  inst2.name = inst.ingredients.at(0).name;
+  for (int i = /*skip recipe*/1;  i < SIZE(inst.ingredients);  ++i)
+    inst2.ingredients.push_back(inst.ingredients.at(i));
+  for (int i = 0;  i < SIZE(inst.products);  ++i)
+    inst2.products.push_back(inst.products.at(i));
+  resolve_ambiguous_call(r, index, inst2, caller_recipe);
+  inst.ingredients.at(0).name = inst2.name;
+  inst.ingredients.at(0).set_value(get(Recipe_ordinal, inst2.name));
+  return;
+}
+
 :(after "Transform.push_back(check_instruction)")
 Transform.push_back(check_indirect_calls_against_header);  // idempotent
 :(code)
