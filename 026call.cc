@@ -37,9 +37,11 @@ struct call {
   recipe_ordinal running_recipe;
   int running_step_index;
   // End call Fields
-  call(recipe_ordinal r) {
+  call(recipe_ordinal r) { clear(r, 0); }
+  call(recipe_ordinal r, int index) { clear(r, index); }
+  void clear(recipe_ordinal r, int index) {
     running_recipe = r;
-    running_step_index = 0;
+    running_step_index = index;
     // End call Constructor
   }
   ~call() {
