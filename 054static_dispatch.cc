@@ -179,7 +179,7 @@ void resolve_ambiguous_calls(const recipe_ordinal r) {
   }
 }
 
-string best_variant(instruction& inst, const recipe& caller_recipe) {
+string best_variant(const instruction& inst, const recipe& caller_recipe) {
   const vector<recipe_ordinal>& variants = get(Recipe_variants, inst.name);
   vector<recipe_ordinal> candidates;
 
