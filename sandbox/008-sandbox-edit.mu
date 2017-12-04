@@ -122,7 +122,7 @@ after <global-touch> [
 # some preconditions for attempting to edit a sandbox
 def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, env
   return-unless click-sandbox-area?, 0/false
@@ -141,7 +141,7 @@ def should-attempt-edit? click-row:num, click-column:num, env:&:environment -> r
 
 def try-edit-sandbox click-row:num, env:&:environment -> clicked-on-edit-button?:bool, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   # identify the sandbox to edit, if the click was actually on the 'edit' button
   sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false

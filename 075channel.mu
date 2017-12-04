@@ -10,9 +10,9 @@
 #   addresses from being shared between routines, and therefore eliminates all
 #   possibility of race conditions.
 #
-# There's still a narrow window for race conditions: the ingredients passed in
+# There's still a narrow window for race conditions: the inputs passed in
 # to 'start-running'. Pass only channels into routines and you should be fine.
-# Any other mutable ingredients will require locks.
+# Any other mutable inputs will require locks.
 
 scenario channel [
   run [
@@ -50,7 +50,7 @@ container sink:_elem [
 
 def new-channel capacity:num -> in:&:source:_elem, out:&:sink:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   result:&:channel:_elem <- new {(channel _elem): type}
   *result <- put *result, first-full:offset, 0
   *result <- put *result, first-free:offset, 0
@@ -66,7 +66,7 @@ def new-channel capacity:num -> in:&:source:_elem, out:&:sink:_elem [
 # write a value to a channel
 def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   assert out, [write to null channel]
   chan:&:channel:_elem <- get *out, chan:offset
   <channel-write-initial>
@@ -112,7 +112,7 @@ def write out:&:sink:_elem, val:_elem -> out:&:sink:_elem [
 # read a value from a channel
 def read in:&:source:_elem -> result:_elem, eof?:bool, in:&:source:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   assert in, [read on null channel]
   eof? <- copy 0/false  # default result
   chan:&:channel:_elem <- get *in, chan:offset
@@ -311,7 +311,7 @@ scenario channel-clear [
 
 def clear in:&:source:_elem -> in:&:source:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   chan:&:channel:_elem <- get *in, chan:offset
   {
     empty?:bool <- channel-empty? chan
@@ -333,13 +333,13 @@ container channel:_elem [
 # both routines can modify the 'closed?' bit, but they can only ever set it, so this is a benign race
 def close x:&:source:_elem -> x:&:source:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   chan:&:channel:_elem <- get *x, chan:offset
   *chan <- put *chan, closed?:offset, 1/true
 ]
 def close x:&:sink:_elem -> x:&:sink:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   chan:&:channel:_elem <- get *x, chan:offset
   *chan <- put *chan, closed?:offset, 1/true
 ]
@@ -369,7 +369,7 @@ after <channel-read-empty> [
 # An empty channel has first-free and first-full both at the same value.
 def channel-empty? chan:&:channel:_elem -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # return chan.first-full == chan.first-free
   full:num <- get *chan, first-full:offset
   free:num <- get *chan, first-free:offset
@@ -380,7 +380,7 @@ def channel-empty? chan:&:channel:_elem -> result:bool [
 # (Other alternatives: https://www.snellman.net/blog/archive/2016-12-13-ring-buffers)
 def channel-full? chan:&:channel:_elem -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # tmp = chan.first-free + 1
   tmp:num <- get *chan, first-free:offset
   tmp <- add tmp, 1
@@ -398,7 +398,7 @@ def channel-full? chan:&:channel:_elem -> result:bool [
 
 def capacity chan:&:channel:_elem -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   q:&:@:_elem <- get *chan, data:offset
   result <- length *q
 ]
@@ -407,7 +407,7 @@ def capacity chan:&:channel:_elem -> result:num [
 
 def buffer-lines in:&:source:char, buffered-out:&:sink:char -> buffered-out:&:sink:char, in:&:source:char [
   local-scope
-  load-ingredients
+  load-inputs
   # repeat forever
   eof?:bool <- copy 0/false
   {
@@ -506,7 +506,7 @@ F buffer-lines-blocks-until-newline: channel should contain data after writing n
 
 def drain source:&:source:char -> result:text, source:&:source:char [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 30
   {
     c:char, done?:bool <- read source

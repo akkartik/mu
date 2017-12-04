@@ -176,7 +176,7 @@ for (long int i = 0;  i < SIZE(caller.products);  ++i)
 //: Rewrite 'load-ingredients' to instructions to create all reagents in the header.
 
 :(before "End Rewrite Instruction(curr, recipe result)")
-if (curr.name == "load-ingredients") {
+if (curr.name == "load-ingredients" || curr.name == "load-inputs") {
   curr.clear();
   recipe_ordinal op = get(Recipe_ordinal, "next-ingredient-without-typechecking");
   for (int i = 0;  i < SIZE(result.ingredients);  ++i) {

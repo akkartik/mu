@@ -27,14 +27,14 @@ container console [
 
 def new-fake-console events:&:@:event -> result:&:console [
   local-scope
-  load-ingredients
+  load-inputs
   result:&:console <- new console:type
   *result <- put *result, events:offset, events
 ]
 
 def read-event console:&:console -> result:event, found?:bool, quit?:bool, console:&:console [
   local-scope
-  load-ingredients
+  load-inputs
   {
     break-unless console
     current-event-index:num <- get *console, current-event-index:offset
@@ -61,7 +61,7 @@ def read-event console:&:console -> result:event, found?:bool, quit?:bool, conso
 # newlines, tabs, ctrl-d..
 def read-key console:&:console -> result:char, found?:bool, quit?:bool, console:&:console [
   local-scope
-  load-ingredients
+  load-inputs
   x:event, found?:bool, quit?:bool, console <- read-event console
   return-if quit?, 0, found?, quit?
   return-unless found?, 0, found?, quit?
@@ -72,7 +72,7 @@ def read-key console:&:console -> result:char, found?:bool, quit?:bool, console:
 
 def send-keys-to-channel console:&:console, chan:&:sink:char, screen:&:screen -> console:&:console, chan:&:sink:char, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   {
     c:char, found?:bool, quit?:bool, console <- read-key console
     loop-unless found?
@@ -87,7 +87,7 @@ def send-keys-to-channel console:&:console, chan:&:sink:char, screen:&:screen ->
 
 def wait-for-event console:&:console -> console:&:console [
   local-scope
-  load-ingredients
+  load-inputs
   {
     _, found?:bool <- read-event console
     break-if found?
@@ -98,7 +98,7 @@ def wait-for-event console:&:console -> console:&:console [
 
 def has-more-events? console:&:console -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   return-if console, 0/false  # fake events are processed as soon as they arrive
   result <- interactions-left?
 ]

@@ -29,6 +29,7 @@ RETURN,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "return", RETURN);
 put(Recipe_ordinal, "reply", RETURN);  // synonym while teaching
+put(Recipe_ordinal, "output", RETURN);  // experiment
 :(before "End Primitive Recipe Checks")
 case RETURN: {
   break;  // checks will be performed by a transform below

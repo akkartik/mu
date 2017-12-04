@@ -70,7 +70,7 @@ if ('onhashchange' in window) {
 <span id="L6" class="LineNr">  6 </span>  open-console  <span class="Comment"># take control of screen, keyboard and mouse</span>
 <span id="L7" class="LineNr">  7 </span>  <a href='081print.mu.html#L46'>clear-screen</a> <span class="Constant">0/screen</span>  <span class="Comment"># non-scrolling app</span>
 <span id="L8" class="LineNr">  8 </span>
-<span id="L9" class="LineNr">  9 </span>  <span class="Comment"># The chessboard function takes keyboard and screen objects as 'ingredients'.</span>
+<span id="L9" class="LineNr">  9 </span>  <span class="Comment"># The chessboard function takes keyboard and screen objects as inputs.</span>
 <span id="L10" class="LineNr"> 10 </span>  <span class="Comment">#</span>
 <span id="L11" class="LineNr"> 11 </span>  <span class="Comment"># In Mu it is good form (though not required) to explicitly state what</span>
 <span id="L12" class="LineNr"> 12 </span>  <span class="Comment"># hardware a function needs.</span>
@@ -132,7 +132,7 @@ if ('onhashchange' in window) {
 <span id="L68" class="LineNr"> 68 </span>
 <span id="L69" class="LineNr"> 69 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L69'>chessboard</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, <a href='084console.mu.html#L23'>console</a>:&amp;:<a href='084console.mu.html#L23'>console</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, <a href='084console.mu.html#L23'>console</a>:&amp;:<a href='084console.mu.html#L23'>console</a> [
 <span id="L70" class="LineNr"> 70 </span>  <span class="Constant">local-scope</span>
-<span id="L71" class="LineNr"> 71 </span>  <span class="Constant">load-ingredients</span>
+<span id="L71" class="LineNr"> 71 </span>  <span class="Constant">load-inputs</span>
 <span id="L72" class="LineNr"> 72 </span>  <a href='chessboard.mu.html#L67'>board</a>:<a href='chessboard.mu.html#L67'>board</a> <span class="Special">&lt;-</span> <a href='chessboard.mu.html#L180'>initial-position</a>
 <span id="L73" class="LineNr"> 73 </span>  <span class="Comment"># hook up stdin</span>
 <span id="L74" class="LineNr"> 74 </span>  stdin-in:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, stdin-out:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">10/capacity</span>
@@ -170,7 +170,7 @@ if ('onhashchange' in window) {
 <span id="L106" class="LineNr">106 </span>
 <span id="L107" class="LineNr">107 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L107'>new-board</a> <a href='chessboard.mu.html#L180'>initial-position</a>:&amp;:@:char<span class="muRecipe"> -&gt; </span><a href='chessboard.mu.html#L67'>board</a>:<a href='chessboard.mu.html#L67'>board</a> [
 <span id="L108" class="LineNr">108 </span>  <span class="Constant">local-scope</span>
-<span id="L109" class="LineNr">109 </span>  <span class="Constant">load-ingredients</span>
+<span id="L109" class="LineNr">109 </span>  <span class="Constant">load-inputs</span>
 <span id="L110" class="LineNr">110 </span>  <span class="Comment"># assert(length(initial-position) == 64)</span>
 <span id="L111" class="LineNr">111 </span>  len:num <span class="Special">&lt;-</span> length *initial-position
 <span id="L112" class="LineNr">112 </span>  correct-length?:bool <span class="Special">&lt;-</span> equal len,<span class="Constant"> 64</span>
@@ -190,7 +190,7 @@ if ('onhashchange' in window) {
 <span id="L126" class="LineNr">126 </span>
 <span id="L127" class="LineNr">127 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L127'>new-file</a> position:&amp;:@:char, index:num<span class="muRecipe"> -&gt; </span>result:&amp;:@:char [
 <span id="L128" class="LineNr">128 </span>  <span class="Constant">local-scope</span>
-<span id="L129" class="LineNr">129 </span>  <span class="Constant">load-ingredients</span>
+<span id="L129" class="LineNr">129 </span>  <span class="Constant">load-inputs</span>
 <span id="L130" class="LineNr">130 </span>  index <span class="Special">&lt;-</span> multiply index,<span class="Constant"> 8</span>
 <span id="L131" class="LineNr">131 </span>  result <span class="Special">&lt;-</span> new <span class="Constant">character:type</span>,<span class="Constant"> 8</span>
 <span id="L132" class="LineNr">132 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
@@ -207,7 +207,7 @@ if ('onhashchange' in window) {
 <span id="L143" class="LineNr">143 </span>
 <span id="L144" class="LineNr">144 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L144'>print-board</a> <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>, <a href='chessboard.mu.html#L67'>board</a>:<a href='chessboard.mu.html#L67'>board</a><span class="muRecipe"> -&gt; </span><a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L145" class="LineNr">145 </span>  <span class="Constant">local-scope</span>
-<span id="L146" class="LineNr">146 </span>  <span class="Constant">load-ingredients</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Constant">load-inputs</span>
 <span id="L147" class="LineNr">147 </span>  row:num <span class="Special">&lt;-</span> copy<span class="Constant"> 7</span>  <span class="Comment"># start printing from the top of the board</span>
 <span id="L148" class="LineNr">148 </span>  space:char <span class="Special">&lt;-</span> copy <span class="Constant">32/space</span>
 <span id="L149" class="LineNr">149 </span>  <span class="Comment"># print each row</span>
@@ -301,7 +301,7 @@ if ('onhashchange' in window) {
 <span id="L237" class="LineNr">237 </span><span class="Comment"># prints only error messages to screen</span>
 <span id="L238" class="LineNr">238 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L238'>read-move</a> stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>result:&amp;:<a href='chessboard.mu.html#L229'>move</a>, quit?:bool, error?:bool, stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L239" class="LineNr">239 </span>  <span class="Constant">local-scope</span>
-<span id="L240" class="LineNr">240 </span>  <span class="Constant">load-ingredients</span>
+<span id="L240" class="LineNr">240 </span>  <span class="Constant">load-inputs</span>
 <span id="L241" class="LineNr">241 </span>  from-file:num, quit?:bool, error?:bool <span class="Special">&lt;-</span> <a href='chessboard.mu.html#L266'>read-file</a> stdin, <a href='081print.mu.html#L16'>screen</a>
 <span id="L242" class="LineNr">242 </span>  <span class="muControl">return-if</span> quit?, <span class="Constant">0/dummy</span>
 <span id="L243" class="LineNr">243 </span>  <span class="muControl">return-if</span> error?, <span class="Constant">0/dummy</span>
@@ -329,7 +329,7 @@ if ('onhashchange' in window) {
 <span id="L265" class="LineNr">265 </span><span class="Comment"># valid values for file: 0-7</span>
 <span id="L266" class="LineNr">266 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L266'>read-file</a> stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>file:num, quit:bool, error:bool, stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L267" class="LineNr">267 </span>  <span class="Constant">local-scope</span>
-<span id="L268" class="LineNr">268 </span>  <span class="Constant">load-ingredients</span>
+<span id="L268" class="LineNr">268 </span>  <span class="Constant">load-inputs</span>
 <span id="L269" class="LineNr">269 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
 <span id="L270" class="LineNr">270 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
 <span id="L271" class="LineNr">271 </span>  q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">81/Q</span>
@@ -367,7 +367,7 @@ if ('onhashchange' in window) {
 <span id="L303" class="LineNr">303 </span><span class="Comment"># valid values for rank: 0-7</span>
 <span id="L304" class="LineNr">304 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L304'>read-rank</a> stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>rank:num, quit?:bool, error?:bool, stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L305" class="LineNr">305 </span>  <span class="Constant">local-scope</span>
-<span id="L306" class="LineNr">306 </span>  <span class="Constant">load-ingredients</span>
+<span id="L306" class="LineNr">306 </span>  <span class="Constant">load-inputs</span>
 <span id="L307" class="LineNr">307 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
 <span id="L308" class="LineNr">308 </span>  <span class="muControl">return-if</span> eof?, <span class="Constant">0/dummy</span>, <span class="Constant">1/quit</span>, <span class="Constant">0/error</span>
 <span id="L309" class="LineNr">309 </span>  q-pressed?:bool <span class="Special">&lt;-</span> equal c, <span class="Constant">81/Q</span>
@@ -405,7 +405,7 @@ if ('onhashchange' in window) {
 <span id="L341" class="LineNr">341 </span><span class="Comment"># return true on error</span>
 <span id="L342" class="LineNr">342 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L342'>expect-from-channel</a> stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, expected:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a><span class="muRecipe"> -&gt; </span>result:bool, stdin:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a> [
 <span id="L343" class="LineNr">343 </span>  <span class="Constant">local-scope</span>
-<span id="L344" class="LineNr">344 </span>  <span class="Constant">load-ingredients</span>
+<span id="L344" class="LineNr">344 </span>  <span class="Constant">load-inputs</span>
 <span id="L345" class="LineNr">345 </span>  c:char, eof?:bool, stdin <span class="Special">&lt;-</span> read stdin
 <span id="L346" class="LineNr">346 </span>  <span class="muControl">return-if</span> eof? <span class="Constant">1/true</span>
 <span id="L347" class="LineNr">347 </span>  <span class="Delimiter">{</span>
@@ -422,7 +422,7 @@ if ('onhashchange' in window) {
 <span id="L358" class="LineNr">358 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">2/capacity</span>
 <span id="L359" class="LineNr">359 </span>  read-move-routine:num/routine <span class="Special">&lt;-</span> start-running <a href='chessboard.mu.html#L238'>read-move</a>, <a href='075channel.mu.html#L43'>source</a>, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>
 <span id="L360" class="LineNr">360 </span>  run [
-<span id="L361" class="LineNr">361 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L361" class="LineNr">361 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for keypress</span>
 <span id="L362" class="LineNr">362 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L363" class="LineNr">363 </span>  <span class="Conceal">¦</span> read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L364" class="LineNr">364 </span>  <span class="Conceal">¦</span> waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -431,7 +431,7 @@ if ('onhashchange' in window) {
 <span id="L367" class="LineNr">367 </span>  <span class="Conceal">¦</span> <span class="Comment"># press 'a'</span>
 <span id="L368" class="LineNr">368 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L67'>write</a> <a href='075channel.mu.html#L47'>sink</a>, <span class="Constant">97/a</span>
 <span id="L369" class="LineNr">369 </span>  <span class="Conceal">¦</span> restart read-move-routine
-<span id="L370" class="LineNr">370 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L370" class="LineNr">370 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for keypress</span>
 <span id="L371" class="LineNr">371 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L372" class="LineNr">372 </span>  <span class="Conceal">¦</span> read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L373" class="LineNr">373 </span>  <span class="Conceal">¦</span> waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -440,7 +440,7 @@ if ('onhashchange' in window) {
 <span id="L376" class="LineNr">376 </span>  <span class="Conceal">¦</span> <span class="Comment"># press '2'</span>
 <span id="L377" class="LineNr">377 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L67'>write</a> <a href='075channel.mu.html#L47'>sink</a>, <span class="Constant">50/'2'</span>
 <span id="L378" class="LineNr">378 </span>  <span class="Conceal">¦</span> restart read-move-routine
-<span id="L379" class="LineNr">379 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L379" class="LineNr">379 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for keypress</span>
 <span id="L380" class="LineNr">380 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L381" class="LineNr">381 </span>  <span class="Conceal">¦</span> read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L382" class="LineNr">382 </span>  <span class="Conceal">¦</span> waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -449,7 +449,7 @@ if ('onhashchange' in window) {
 <span id="L385" class="LineNr">385 </span>  <span class="Conceal">¦</span> <span class="Comment"># press '-'</span>
 <span id="L386" class="LineNr">386 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L67'>write</a> <a href='075channel.mu.html#L47'>sink</a>, <span class="Constant">45/'-'</span>
 <span id="L387" class="LineNr">387 </span>  <span class="Conceal">¦</span> restart read-move-routine
-<span id="L388" class="LineNr">388 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L388" class="LineNr">388 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for keypress</span>
 <span id="L389" class="LineNr">389 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L390" class="LineNr">390 </span>  <span class="Conceal">¦</span> read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L391" class="LineNr">391 </span>  <span class="Conceal">¦</span> waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -458,7 +458,7 @@ if ('onhashchange' in window) {
 <span id="L394" class="LineNr">394 </span>  <span class="Conceal">¦</span> <span class="Comment"># press 'a'</span>
 <span id="L395" class="LineNr">395 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L67'>write</a> <a href='075channel.mu.html#L47'>sink</a>, <span class="Constant">97/a</span>
 <span id="L396" class="LineNr">396 </span>  <span class="Conceal">¦</span> restart read-move-routine
-<span id="L397" class="LineNr">397 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L397" class="LineNr">397 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for keypress</span>
 <span id="L398" class="LineNr">398 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L399" class="LineNr">399 </span>  <span class="Conceal">¦</span> read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L400" class="LineNr">400 </span>  <span class="Conceal">¦</span> waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -467,7 +467,7 @@ if ('onhashchange' in window) {
 <span id="L403" class="LineNr">403 </span>  <span class="Conceal">¦</span> <span class="Comment"># press '4'</span>
 <span id="L404" class="LineNr">404 </span>  <span class="Conceal">¦</span> <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <a href='075channel.mu.html#L67'>write</a> <a href='075channel.mu.html#L47'>sink</a>, <span class="Constant">52/'4'</span>
 <span id="L405" class="LineNr">405 </span>  <span class="Conceal">¦</span> restart read-move-routine
-<span id="L406" class="LineNr">406 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for input</span>
+<span id="L406" class="LineNr">406 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' still waiting for keypress</span>
 <span id="L407" class="LineNr">407 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L408" class="LineNr">408 </span>  <span class="Conceal">¦</span> read-move-state <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L409" class="LineNr">409 </span>  <span class="Conceal">¦</span> waiting? <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -495,7 +495,7 @@ if ('onhashchange' in window) {
 <span id="L431" class="LineNr">431 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">2/capacity</span>
 <span id="L432" class="LineNr">432 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running <a href='chessboard.mu.html#L238'>read-move</a>, <a href='075channel.mu.html#L43'>source</a>, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>
 <span id="L433" class="LineNr">433 </span>  run [
-<span id="L434" class="LineNr">434 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L434" class="LineNr">434 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for keypress</span>
 <span id="L435" class="LineNr">435 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L436" class="LineNr">436 </span>  <span class="Conceal">¦</span> read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L437" class="LineNr">437 </span>  <span class="Conceal">¦</span> waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -523,7 +523,7 @@ if ('onhashchange' in window) {
 <span id="L459" class="LineNr">459 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">2/capacity</span>
 <span id="L460" class="LineNr">460 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running <a href='chessboard.mu.html#L238'>read-move</a>, <a href='075channel.mu.html#L43'>source</a>, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>
 <span id="L461" class="LineNr">461 </span>  run [
-<span id="L462" class="LineNr">462 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L462" class="LineNr">462 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for keypress</span>
 <span id="L463" class="LineNr">463 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L464" class="LineNr">464 </span>  <span class="Conceal">¦</span> read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L465" class="LineNr">465 </span>  <span class="Conceal">¦</span> waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -545,7 +545,7 @@ if ('onhashchange' in window) {
 <span id="L481" class="LineNr">481 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">2/capacity</span>
 <span id="L482" class="LineNr">482 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running <a href='chessboard.mu.html#L238'>read-move</a>, <a href='075channel.mu.html#L43'>source</a>, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>
 <span id="L483" class="LineNr">483 </span>  run [
-<span id="L484" class="LineNr">484 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L484" class="LineNr">484 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for keypress</span>
 <span id="L485" class="LineNr">485 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L486" class="LineNr">486 </span>  <span class="Conceal">¦</span> read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L487" class="LineNr">487 </span>  <span class="Conceal">¦</span> waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -568,7 +568,7 @@ if ('onhashchange' in window) {
 <span id="L504" class="LineNr">504 </span>  <a href='075channel.mu.html#L43'>source</a>:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a> <span class="Constant">2/capacity</span>
 <span id="L505" class="LineNr">505 </span>  read-move-routine:num <span class="Special">&lt;-</span> start-running <a href='chessboard.mu.html#L238'>read-move</a>, <a href='075channel.mu.html#L43'>source</a>, <a href='081print.mu.html#L16'>screen</a>:&amp;:<a href='081print.mu.html#L16'>screen</a>
 <span id="L506" class="LineNr">506 </span>  run [
-<span id="L507" class="LineNr">507 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for input</span>
+<span id="L507" class="LineNr">507 </span>  <span class="Conceal">¦</span> <span class="Comment"># 'read-move' is waiting for keypress</span>
 <span id="L508" class="LineNr">508 </span>  <span class="Conceal">¦</span> wait-for-routine-to-block read-move-routine
 <span id="L509" class="LineNr">509 </span>  <span class="Conceal">¦</span> read-move-state:num <span class="Special">&lt;-</span> routine-state read-move-routine
 <span id="L510" class="LineNr">510 </span>  <span class="Conceal">¦</span> waiting?:bool <span class="Special">&lt;-</span> not-equal read-move-state, <span class="Constant">2/discontinued</span>
@@ -587,7 +587,7 @@ if ('onhashchange' in window) {
 <span id="L523" class="LineNr">523 </span>
 <span id="L524" class="LineNr">524 </span><span class="muRecipe">def</span> <a href='chessboard.mu.html#L524'>make-move</a> <a href='chessboard.mu.html#L67'>board</a>:<a href='chessboard.mu.html#L67'>board</a>, m:&amp;:<a href='chessboard.mu.html#L229'>move</a><span class="muRecipe"> -&gt; </span><a href='chessboard.mu.html#L67'>board</a>:<a href='chessboard.mu.html#L67'>board</a> [
 <span id="L525" class="LineNr">525 </span>  <span class="Constant">local-scope</span>
-<span id="L526" class="LineNr">526 </span>  <span class="Constant">load-ingredients</span>
+<span id="L526" class="LineNr">526 </span>  <span class="Constant">load-inputs</span>
 <span id="L527" class="LineNr">527 </span>  from-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-file:offset</span>
 <span id="L528" class="LineNr">528 </span>  from-rank:num <span class="Special">&lt;-</span> get *m, <span class="Constant">from-rank:offset</span>
 <span id="L529" class="LineNr">529 </span>  to-file:num <span class="Special">&lt;-</span> get *m, <span class="Constant">to-file:offset</span>

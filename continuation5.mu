@@ -1,5 +1,5 @@
 # Example program showing that a 'paused' continuation can be 'resumed' with
-# ingredients.
+# inputs.
 #
 # Print out a list of numbers, first adding 0 to the first, 1 to the second, 2
 # to the third, and so on.
@@ -33,7 +33,7 @@ def main [
 
 def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   a:num <- copy 0
   {
     done? <- equal l, 0

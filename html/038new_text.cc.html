@@ -146,13 +146,13 @@ if ('onhashchange' in window) {
 <span id="L81" class="LineNr"> 81 </span><span class="traceContains">+app: foo: abc</span>
 <span id="L82" class="LineNr"> 82 </span>
 <span id="L83" class="LineNr"> 83 </span><span class="Delimiter">:(before &quot;End inspect Special-cases(r, data)&quot;)</span>
-<span id="L84" class="LineNr"> 84 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='027call_ingredient.cc.html#L174'>is_mu_text</a><span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L84" class="LineNr"> 84 </span><span class="Normal">if</span> <span class="Delimiter">(</span><a href='027call_ingredient.cc.html#L177'>is_mu_text</a><span class="Delimiter">(</span>r<span class="Delimiter">))</span> <span class="Delimiter">{</span>
 <span id="L85" class="LineNr"> 85 </span>  assert<span class="Delimiter">(</span>scalar<span class="Delimiter">(</span>data<span class="Delimiter">));</span>
 <span id="L86" class="LineNr"> 86 </span>  <span class="Identifier">return</span> <a href='038new_text.cc.html#L143'>read_mu_text</a><span class="Delimiter">(</span>data<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
 <span id="L87" class="LineNr"> 87 </span><span class="Delimiter">}</span>
 <span id="L88" class="LineNr"> 88 </span>
 <span id="L89" class="LineNr"> 89 </span><span class="Delimiter">:(before &quot;End $print Special-cases&quot;)</span>
-<span id="L90" class="LineNr"> 90 </span><span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='027call_ingredient.cc.html#L174'>is_mu_text</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
+<span id="L90" class="LineNr"> 90 </span><span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='027call_ingredient.cc.html#L177'>is_mu_text</a><span class="Delimiter">(</span><a href='026call.cc.html#L87'>current_instruction</a><span class="Delimiter">().</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">)))</span> <span class="Delimiter">{</span>
 <span id="L91" class="LineNr"> 91 </span>  cout &lt;&lt; <a href='038new_text.cc.html#L143'>read_mu_text</a><span class="Delimiter">(</span>ingredients<span class="Delimiter">.</span>at<span class="Delimiter">(</span>i<span class="Delimiter">).</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">));</span>
 <span id="L92" class="LineNr"> 92 </span><span class="Delimiter">}</span>
 <span id="L93" class="LineNr"> 93 </span>
@@ -208,7 +208,7 @@ if ('onhashchange' in window) {
 <span id="L143" class="LineNr">143 </span>string <a href='038new_text.cc.html#L143'>read_mu_text</a><span class="Delimiter">(</span><span class="Normal">int</span> <a href='043space.cc.html#L82'>address</a><span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L144" class="LineNr">144 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='043space.cc.html#L82'>address</a> == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L145" class="LineNr">145 </span>  ++address<span class="Delimiter">;</span>  <span class="Comment">// skip refcount</span>
-<span id="L146" class="LineNr">146 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L228'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <a href='043space.cc.html#L82'>address</a><span class="Delimiter">);</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> <a href='043space.cc.html#L82'>address</a><span class="Delimiter">);</span>
 <span id="L147" class="LineNr">147 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>length == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
 <span id="L148" class="LineNr">148 </span>  <span class="Identifier">return</span> <a href='038new_text.cc.html#L151'>read_mu_characters</a><span class="Delimiter">(</span>address+<span class="Constant">1</span><span class="Delimiter">,</span> length<span class="Delimiter">);</span>
 <span id="L149" class="LineNr">149 </span><span class="Delimiter">}</span>
@@ -216,7 +216,7 @@ if ('onhashchange' in window) {
 <span id="L151" class="LineNr">151 </span>string <a href='038new_text.cc.html#L151'>read_mu_characters</a><span class="Delimiter">(</span><span class="Normal">int</span> start<span class="Delimiter">,</span> <span class="Normal">int</span> length<span class="Delimiter">)</span> <span class="Delimiter">{</span>
 <span id="L152" class="LineNr">152 </span>  ostringstream tmp<span class="Delimiter">;</span>
 <span id="L153" class="LineNr">153 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span><span class="Normal">int</span> curr = start<span class="Delimiter">;</span>  curr &lt; start+length<span class="Delimiter">;</span>  ++curr<span class="Delimiter">)</span>
-<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='001help.cc.html#L228'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
+<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> tmp &lt;&lt; to_unicode<span class="Delimiter">(</span><span class="Normal">static_cast</span>&lt;<span class="Normal">uint32_t</span>&gt;<span class="Delimiter">(</span><a href='001help.cc.html#L229'>get_or_insert</a><span class="Delimiter">(</span>Memory<span class="Delimiter">,</span> curr<span class="Delimiter">)));</span>
 <span id="L155" class="LineNr">155 </span>  <span class="Identifier">return</span> tmp<span class="Delimiter">.</span>str<span class="Delimiter">();</span>
 <span id="L156" class="LineNr">156 </span><span class="Delimiter">}</span>
 <span id="L157" class="LineNr">157 </span>
@@ -277,7 +277,7 @@ if ('onhashchange' in window) {
 <span id="L212" class="LineNr">212 </span><span class="Normal">case</span> _READ: <span class="Delimiter">{</span>
 <span id="L213" class="LineNr">213 </span>  <a href='038new_text.cc.html#L223'>skip_whitespace</a><span class="Delimiter">(</span>cin<span class="Delimiter">);</span>
 <span id="L214" class="LineNr">214 </span>  string result<span class="Delimiter">;</span>
-<span id="L215" class="LineNr">215 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L238'>has_data</a><span class="Delimiter">(</span>cin<span class="Delimiter">))</span>
+<span id="L215" class="LineNr">215 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='001help.cc.html#L239'>has_data</a><span class="Delimiter">(</span>cin<span class="Delimiter">))</span>
 <span id="L216" class="LineNr">216 </span>  <span class="Conceal">¦</span> cin &gt;&gt; result<span class="Delimiter">;</span>
 <span id="L217" class="LineNr">217 </span>  products<span class="Delimiter">.</span>resize<span class="Delimiter">(</span><span class="Constant">1</span><span class="Delimiter">);</span>
 <span id="L218" class="LineNr">218 </span>  products<span class="Delimiter">.</span>at<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">).</span>push_back<span class="Delimiter">(</span><a href='038new_text.cc.html#L38'>new_mu_text</a><span class="Delimiter">(</span>result<span class="Delimiter">));</span>

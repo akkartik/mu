@@ -10,20 +10,20 @@ container list:_elem [
 
 def push x:_elem, l:&:list:_elem -> result:&:list:_elem/contained-in:l [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new {(list _elem): type}
   *result <- merge x, l
 ]
 
 def first in:&:list:_elem -> result:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   result <- get *in, value:offset
 ]
 
 def rest in:&:list:_elem -> result:&:list:_elem/contained-in:in [
   local-scope
-  load-ingredients
+  load-inputs
   result <- get *in, next:offset
 ]
 
@@ -50,7 +50,7 @@ scenario list-handling [
 
 def length l:&:list:_elem -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   result <- copy 0
   {
     break-unless l
@@ -63,7 +63,7 @@ def length l:&:list:_elem -> result:num [
 # insert 'x' after 'in'
 def insert x:_elem, in:&:list:_elem -> in:&:list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   new-node:&:list:_elem <- new {(list _elem): type}
   *new-node <- put *new-node, value:offset, x
   next-node:&:list:_elem <- get *in, next:offset
@@ -155,7 +155,7 @@ scenario inserting-after-start-of-list [
 # pointers to the head are now invalid.
 def remove x:&:list:_elem/contained-in:in, in:&:list:_elem -> in:&:list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   # if 'x' is null, return
   return-unless x
   next-node:&:list:_elem <- rest x
@@ -265,7 +265,7 @@ scenario removing-from-singleton-list [
 # (contributed by Caleb Couch)
 def reverse list:&:list:_elem temp:&:list:_elem/contained-in:result -> result:&:list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless list, temp
   object:_elem <- first, list
   list <- rest list
@@ -304,7 +304,7 @@ scenario stash-list [
 
 def to-text in:&:list:_elem -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf
   result <- buffer-to-array buf
@@ -313,7 +313,7 @@ def to-text in:&:list:_elem -> result:text [
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
 def to-text-line in:&:list:_elem -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
   result <- buffer-to-array buf
@@ -321,7 +321,7 @@ def to-text-line in:&:list:_elem -> result:text [
 
 def to-buffer in:&:list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
     break-if in
     buf <- append buf, [[]]
@@ -336,9 +336,9 @@ def to-buffer in:&:list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   return-unless next
   buf <- append buf, [ -> ]
   # and recurse
-  remaining:num, optional-ingredient-found?:bool <- next-ingredient
+  remaining:num, optional-input-found?:bool <- next-input
   {
-    break-if optional-ingredient-found?
+    break-if optional-input-found?
     # unlimited recursion
     buf <- to-buffer next, buf
     return

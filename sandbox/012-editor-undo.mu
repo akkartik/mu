@@ -199,7 +199,7 @@ before <end-insert-enter> [
 # moving the cursor can lose work on the undo stack.
 def add-operation editor:&:editor, op:&:operation -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   undo:&:list:&:operation <- get *editor, undo:offset
   undo <- push op undo
   *editor <- put *editor, undo:offset, undo

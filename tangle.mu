@@ -8,7 +8,7 @@
 
 def factorial n:num -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   <factorial-cases>
 ]
 

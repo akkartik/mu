@@ -2,7 +2,7 @@
 
 def equal a:text, b:text -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   an:num, bn:num <- copy a, b
   address-equal?:boolean <- equal an, bn
   return-if address-equal?, 1/true
@@ -124,7 +124,7 @@ container buffer:_elem [
 
 def new-buffer capacity:num -> result:&:buffer:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new {(buffer _elem): type}
   *result <- put *result, length:offset, 0
   {
@@ -139,7 +139,7 @@ def new-buffer capacity:num -> result:&:buffer:_elem [
 
 def grow-buffer buf:&:buffer:_elem -> buf:&:buffer:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   # double buffer size
   olddata:&:@:_elem <- get *buf, data:offset
   oldlen:num <- length *olddata
@@ -160,7 +160,7 @@ def grow-buffer buf:&:buffer:_elem -> buf:&:buffer:_elem [
 
 def buffer-full? in:&:buffer:_elem -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- get *in, length:offset
   s:&:@:_elem <- get *in, data:offset
   capacity:num <- length *s
@@ -170,7 +170,7 @@ def buffer-full? in:&:buffer:_elem -> result:bool [
 # most broadly applicable definition of append to a buffer
 def append buf:&:buffer:_elem, x:_elem -> buf:&:buffer:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- get *buf, length:offset
   {
     # grow buffer if necessary
@@ -188,7 +188,7 @@ def append buf:&:buffer:_elem, x:_elem -> buf:&:buffer:_elem [
 # call to-text
 def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
   local-scope
-  load-ingredients
+  load-inputs
   text:text <- to-text x
   buf <- append buf, text
 ]
@@ -196,7 +196,7 @@ def append buf:&:buffer:char, x:_elem -> buf:&:buffer:char [
 # specialization for characters that is backspace-aware
 def append buf:&:buffer:char, c:char -> buf:&:buffer:char [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- get *buf, length:offset
   {
     # backspace? just drop last character if it exists and return
@@ -222,7 +222,7 @@ def append buf:&:buffer:char, c:char -> buf:&:buffer:char [
 
 def append buf:&:buffer:_elem, t:&:@:_elem -> buf:&:buffer:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- length *t
   i:num <- copy 0
   {
@@ -337,7 +337,7 @@ scenario append-to-buffer-of-non-characters [
 
 def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   # propagate null buffer
   return-unless in, 0
   len:num <- get *in, length:offset
@@ -357,7 +357,7 @@ def buffer-to-array in:&:buffer:_elem -> result:&:@:_elem [
 
 def blank? x:&:@:_elem -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless x, 1/true
   len:num <- length *x
   result <- equal len, 0
@@ -373,16 +373,16 @@ def blank? x:&:@:_elem -> result:bool [
 # will never ever get used.
 def append first:text -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 30
-  # append first ingredient
+  # append first input
   {
     break-unless first
     buf <- append buf, first
   }
-  # append remaining ingredients
+  # append remaining inputs
   {
-    arg:text, arg-found?:bool <- next-ingredient
+    arg:text, arg-found?:bool <- next-input
     break-unless arg-found?
     loop-unless arg
     buf <- append buf, arg
@@ -458,7 +458,7 @@ scenario replace-character-in-text [
 
 def replace s:text, oldc:char, newc:char, from:num/optional -> s:text [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- length *s
   i:num <- find-next s, oldc, from
   done?:bool <- greater-or-equal i, len
@@ -519,13 +519,13 @@ scenario replace-all-characters [
 # replace underscores in first with remaining args
 def interpolate template:text -> result:text [
   local-scope
-  load-ingredients  # consume just the template
+  load-inputs  # consume just the template
   # compute result-len, space to allocate for result
   tem-len:num <- length *template
   result-len:num <- copy tem-len
   {
-    # while ingredients remain
-    a:text, arg-received?:bool <- next-ingredient
+    # while inputs remain
+    a:text, arg-received?:bool <- next-input
     break-unless arg-received?
     # result-len = result-len + arg.length - 1 (for the 'underscore' being replaced)
     a-len:num <- length *a
@@ -533,15 +533,15 @@ def interpolate template:text -> result:text [
     result-len <- subtract result-len, 1
     loop
   }
-  rewind-ingredients
-  _ <- next-ingredient  # skip template
+  rewind-inputs
+  _ <- next-input  # skip template
   result <- new character:type, result-len
   # repeatedly copy sections of template and 'holes' into result
   result-idx:num <- copy 0
   i:num <- copy 0
   {
     # while arg received
-    a:text, arg-received?:bool <- next-ingredient
+    a:text, arg-received?:bool <- next-input
     break-unless arg-received?
     # copy template into result until '_'
     {
@@ -633,7 +633,7 @@ scenario interpolate-at-end [
 # result:bool <- space? c:char
 def space? c:char -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # most common case first
   result <- equal c, 32/space
   return-if result
@@ -694,7 +694,7 @@ def space? c:char -> result:bool [
 
 def trim s:text -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- length *s
   # left trim: compute start
   start:num <- copy 0
@@ -804,7 +804,7 @@ scenario trim-newline-tab [
 
 def find-next text:text, pattern:char, idx:num -> next-index:num [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- length *text
   {
     eof?:bool <- greater-or-equal idx, len
@@ -910,7 +910,7 @@ scenario text-find-next-second [
 # fairly dumb algorithm
 def find-next text:text, pattern:text, idx:num -> next-index:num [
   local-scope
-  load-ingredients
+  load-inputs
   first:char <- index *pattern, 0
   # repeatedly check for match at current idx
   len:num <- length *text
@@ -991,7 +991,7 @@ scenario find-next-suffix-match-2 [
 # checks if pattern matches at index 'idx'
 def match-at text:text, pattern:text, idx:num -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   pattern-len:num <- length *pattern
   # check that there's space left for the pattern
   x:num <- length *text
@@ -1122,7 +1122,7 @@ scenario match-at-inside-bounds-2 [
 
 def split s:text, delim:char -> result:&:@:text [
   local-scope
-  load-ingredients
+  load-inputs
   # empty text? return empty array
   len:num <- length *s
   {
@@ -1254,7 +1254,7 @@ scenario text-split-empty-piece [
 
 def split-first text:text, delim:char -> x:text, y:text [
   local-scope
-  load-ingredients
+  load-inputs
   # empty text? return empty texts
   len:num <- length *text
   {
@@ -1286,7 +1286,7 @@ scenario text-split-first [
 
 def copy-range buf:text, start:num, end:num -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   # if end is out of bounds, trim it
   len:num <- length *buf
   end:num <- min len, end
@@ -1345,7 +1345,7 @@ scenario copy-range-out-of-bounds-2 [
 
 def parse-whole-number in:text -> out:num, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   out <- copy 0
   result:num <- copy 0  # temporary location
   i:num <- copy 0
@@ -1369,7 +1369,7 @@ def parse-whole-number in:text -> out:num, error?:bool [
 # (contributed by Ella Couch)
 recipe character-code-to-digit character-code:number -> result:number, error?:boolean [
   local-scope
-  load-ingredients
+  load-inputs
   result <- copy 0
   error? <- lesser-than character-code, 48  # '0'
   return-if error?

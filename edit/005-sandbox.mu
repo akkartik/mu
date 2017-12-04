@@ -145,7 +145,7 @@ after <global-keypress> [
 
 def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, resources:&:resources, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   errors-found?:bool <- update-recipes env, resources, screen
   jump-if errors-found?, +return
   # check contents of right editor (sandbox)
@@ -196,7 +196,7 @@ def run-sandboxes env:&:environment, resources:&:resources, screen:&:screen -> e
 # replaced in a later layer (whereupon errors-found? will actually be set)
 def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, resources:&:resources, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   recipes:&:editor <- get *env, recipes:offset
   in:text <- editor-contents recipes
   resources <- dump resources, [lesson/recipes.mu], in
@@ -207,7 +207,7 @@ def update-recipes env:&:environment, resources:&:resources, screen:&:screen -> 
 # replaced in a later layer
 def update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   data:text <- get *sandbox, data:offset
   response:text, _, fake-screen:&:screen <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
@@ -216,14 +216,14 @@ def update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sa
 
 def update-status screen:&:screen, msg:text, color:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   screen <- move-cursor screen, 0, 2
   screen <- print screen, msg, color, 238/grey/background
 ]
 
 def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resources [
   local-scope
-  load-ingredients
+  load-inputs
   trace 11, [app], [save sandboxes]
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   # first clear previous versions, in case we deleted some sandbox
@@ -241,7 +241,7 @@ def save-sandboxes env:&:environment, resources:&:resources -> resources:&:resou
 
 def save-sandbox resources:&:resources, sandbox:&:sandbox, sandbox-index:num -> resources:&:resources [
   local-scope
-  load-ingredients
+  load-inputs
   data:text <- get *sandbox, data:offset
   filename:text <- append [lesson/], sandbox-index
   resources <- dump resources, filename, data
@@ -250,7 +250,7 @@ def save-sandbox resources:&:resources, sandbox:&:sandbox, sandbox-index:num -> 
 
 def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 11, [app], [render sandbox side]
   old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -277,7 +277,7 @@ def! render-sandbox-side screen:&:screen, env:&:environment, render-editor:rende
 
 def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, row:num, render-from:num, idx:num -> row:num, screen:&:screen, sandbox:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless sandbox
   screen-height:num <- screen-height screen
   hidden?:bool <- lesser-than idx, render-from
@@ -332,7 +332,7 @@ def render-sandboxes screen:&:screen, sandbox:&:sandbox, left:num, right:num, ro
 
 def render-sandbox-menu screen:&:screen, sandbox-index:num, left:num, right:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   move-cursor-to-column screen, left
   edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, recipe-button-left:num, recipe-button-right:num, delete-button-left:num <- sandbox-menu-columns left, right
   print screen, sandbox-index, 232/dark-grey, 245/grey
@@ -377,7 +377,7 @@ scenario skip-rendering-sandbox-menu-past-bottom-row [
 # all left/right pairs are inclusive
 def sandbox-menu-columns left:num, right:num -> edit-button-left:num, edit-button-right:num, copy-button-left:num, copy-button-right:num, recipe-button-left:num, recipe-button-right:num, delete-button-left:num [
   local-scope
-  load-ingredients
+  load-inputs
   start-buttons:num <- add left, 4/space-for-sandbox-index
   buttons-space:num <- subtract right, start-buttons
   button-width:num <- divide-with-remainder buttons-space, 4  # integer division
@@ -397,7 +397,7 @@ def sandbox-menu-columns left:num, right:num -> edit-button-left:num, edit-butto
 # like 'render-code' but without syntax-based colorization
 def render-text screen:&:screen, s:text, left:num, right:num, color:num, row:num -> row:num, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless s
   column:num <- copy left
   screen <- move-cursor screen, row, column
@@ -474,7 +474,7 @@ scenario render-text-wraps-barely-long-lines [
 # assumes programming environment has no sandboxes; restores them from previous session
 def restore-sandboxes env:&:environment, resources:&:resources -> env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   # read all scenarios, pushing them to end of a list of scenarios
   idx:num <- copy 0
   curr:&:sandbox <- copy 0
@@ -508,7 +508,7 @@ def restore-sandboxes env:&:environment, resources:&:resources -> env:&:environm
 # leave cursor at start of next line
 def render-screen screen:&:screen, sandbox-screen:&:screen, left:num, right:num, row:num -> row:num, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless sandbox-screen
   # print 'screen:'
   row <- render-text screen, [screen:], left, right, 245/grey, row
@@ -682,7 +682,7 @@ scenario run-instruction-manages-screen-per-sandbox [
 
 def editor-contents editor:&:editor -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 80
   curr:&:duplex-list:char <- get *editor, data:offset
   # skip § sentinel
@@ -944,7 +944,7 @@ after <global-keypress> [
 # return 0 if there's no such sandbox, either because 'in' doesn't exist in 'env', or because it's the first sandbox
 def previous-sandbox env:&:environment, in:&:sandbox -> out:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   curr:&:sandbox <- get *env, sandbox:offset
   return-unless curr, 0/nil
   next:&:sandbox <- get *curr, next-sandbox:offset

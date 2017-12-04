@@ -8,7 +8,7 @@ container duplex-list:_elem [
 
 def push x:_elem, in:&:duplex-list:_elem/contained-in:result -> result:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   result:&:duplex-list:_elem <- new {(duplex-list _elem): type}
   *result <- merge x, in, 0
   return-unless in
@@ -17,21 +17,21 @@ def push x:_elem, in:&:duplex-list:_elem/contained-in:result -> result:&:duplex-
 
 def first in:&:duplex-list:_elem -> result:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless in, 0
   result <- get *in, value:offset
 ]
 
 def next in:&:duplex-list:_elem -> result:&:duplex-list:_elem/contained-in:in [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless in, 0
   result <- get *in, next:offset
 ]
 
 def prev in:&:duplex-list:_elem -> result:&:duplex-list:_elem/contained-in:in [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless in, 0
   result <- get *in, prev:offset
   return result
@@ -81,7 +81,7 @@ scenario duplex-list-handling [
 
 def length l:&:duplex-list:_elem -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   result <- copy 0
   {
     break-unless l
@@ -94,7 +94,7 @@ def length l:&:duplex-list:_elem -> result:num [
 # insert 'x' after 'in'
 def insert x:_elem, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   new-node:&:duplex-list:_elem <- new {(duplex-list _elem): type}
   *new-node <- put *new-node, value:offset, x
   # save old next before changing it
@@ -223,7 +223,7 @@ scenario inserting-after-start-of-duplex-list [
 # pointers to the head are now invalid.
 def remove x:&:duplex-list:_elem/contained-in:in, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   # if 'x' is null, return
   return-unless x
   next-node:&:duplex-list:_elem <- get *x, next:offset
@@ -347,7 +347,7 @@ scenario removing-from-singleton-duplex-list [
 
 def remove x:&:duplex-list:_elem/contained-in:in, n:num, in:&:duplex-list:_elem -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   i:num <- copy 0
   curr:&:duplex-list:_elem <- copy x
   {
@@ -384,7 +384,7 @@ scenario removing-multiple-from-duplex-list [
 # clean way to return the new head pointer.
 def remove-between start:&:duplex-list:_elem, end:&:duplex-list:_elem/contained-in:start -> start:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   next:&:duplex-list:_elem <- get *start, next:offset
   nothing-to-delete?:bool <- equal next, end
   return-if nothing-to-delete?
@@ -524,7 +524,7 @@ scenario remove-range-to-end [
 # insert list beginning at 'start' after 'in'
 def splice in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless in
   return-unless start
   end:&:duplex-list:_elem <- last start
@@ -541,7 +541,7 @@ def splice in:&:duplex-list:_elem, start:&:duplex-list:_elem/contained-in:in -> 
 # insert contents of 'new' after 'in'
 def insert in:&:duplex-list:_elem, new:&:@:_elem -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless in
   return-unless new
   len:num <- length *new
@@ -562,7 +562,7 @@ def insert in:&:duplex-list:_elem, new:&:@:_elem -> in:&:duplex-list:_elem [
 
 def append in:&:duplex-list:_elem, new:&:duplex-list:_elem/contained-in:in -> in:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   last:&:duplex-list:_elem <- last in
   *last <- put *last, next:offset, new
   return-unless new
@@ -571,7 +571,7 @@ def append in:&:duplex-list:_elem, new:&:duplex-list:_elem/contained-in:in -> in
 
 def last in:&:duplex-list:_elem -> result:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   result <- copy in
   {
     next:&:duplex-list:_elem <- next result
@@ -584,7 +584,7 @@ def last in:&:duplex-list:_elem -> result:&:duplex-list:_elem [
 # does a duplex list start with a certain sequence of elements?
 def match x:&:duplex-list:_elem, y:&:@:_elem -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   i:num <- copy 0
   max:num <- length *y
   {
@@ -629,7 +629,7 @@ scenario duplex-list-match [
 # helper for debugging
 def dump-from x:&:duplex-list:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   $print x, [: ]
   {
     break-unless x
@@ -662,7 +662,7 @@ scenario stash-duplex-list [
 
 def to-text in:&:duplex-list:_elem -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf
   result <- buffer-to-array buf
@@ -671,7 +671,7 @@ def to-text in:&:duplex-list:_elem -> result:text [
 # variant of 'to-text' which stops printing after a few elements (and so is robust to cycles)
 def to-text-line in:&:duplex-list:_elem -> result:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 80
   buf <- to-buffer in, buf, 6  # max elements to display
   result <- buffer-to-array buf
@@ -679,7 +679,7 @@ def to-text-line in:&:duplex-list:_elem -> result:text [
 
 def to-buffer in:&:duplex-list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
     break-if in
     buf <- append buf, [[]]
@@ -694,9 +694,9 @@ def to-buffer in:&:duplex-list:_elem, buf:&:buffer:char -> buf:&:buffer:char [
   return-unless next
   buf <- append buf, [ <-> ]
   # and recurse
-  remaining:num, optional-ingredient-found?:bool <- next-ingredient
+  remaining:num, optional-input-found?:bool <- next-input
   {
-    break-if optional-ingredient-found?
+    break-if optional-input-found?
     # unlimited recursion
     buf <- to-buffer next, buf
     return

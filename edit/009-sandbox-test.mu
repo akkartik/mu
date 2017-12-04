@@ -151,7 +151,7 @@ after <global-touch> [
 
 def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:sandbox, sandbox-index:num [
   local-scope
-  load-ingredients
+  load-inputs
   # assert click-row >= sandbox.starting-row-on-screen
   sandbox:&:sandbox <- get *env, sandbox:offset
   start:num <- get *sandbox, starting-row-on-screen:offset
@@ -179,7 +179,7 @@ def find-click-in-sandbox-output env:&:environment, click-row:num -> sandbox:&:s
 
 def toggle-expected-response sandbox:&:sandbox -> sandbox:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   expected-response:text <- get *sandbox, expected-response:offset
   {
     # if expected-response is set, reset
@@ -206,7 +206,7 @@ after <render-sandbox-response> [
 
 def render-sandbox-response screen:&:screen, sandbox:&:sandbox, left:num, right:num -> row:num, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   sandbox-response:text <- get *sandbox, response:offset
   expected-response:text <- get *sandbox, expected-response:offset
   row:num <- get *sandbox response-starting-row-on-screen:offset

@@ -25,7 +25,7 @@ F - example-server-test: $open-server-socket failed]
 # helper just for this scenario
 def example-handler query:text -> response:text [
   local-scope
-  load-ingredients
+  load-inputs
   return [abc]
 ]
 
@@ -54,7 +54,7 @@ type request-handler = (recipe text -> text)
 
 def serve-one-request socket:num, request-handler:request-handler -> socket:num [
   local-scope
-  load-ingredients
+  load-inputs
   session:num <- $accept socket
   assert session, [ 
 F - example-server-test: $accept failed]
@@ -68,9 +68,9 @@ F - example-server-test: $accept failed]
 
 def start-reading-from-network resources:&:resources, uri:text -> contents:&:source:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
-    port:num, port-found?:boolean <- next-ingredient
+    port:num, port-found?:boolean <- next-input
     break-if port-found?
     port <- copy 80/http-port
   }
@@ -92,7 +92,7 @@ def start-reading-from-network resources:&:resources, uri:text -> contents:&:sou
 
 def request-socket socket:num, s:text -> socket:num [
   local-scope
-  load-ingredients
+  load-inputs
   write-to-socket socket, s
   $write-to-socket socket, 13/cr
   $write-to-socket socket, 10/lf
@@ -103,7 +103,7 @@ def request-socket socket:num, s:text -> socket:num [
 
 def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char, socket:num [
   local-scope
-  load-ingredients
+  load-inputs
   {
     +next-attempt
     c:char, found?:bool, eof?:bool, error:num <- $read-from-socket socket
@@ -124,14 +124,14 @@ def receive-from-socket socket:num, sink:&:sink:char -> sink:&:sink:char, socket
 
 def receive-from-client-socket-and-close socket:num, sink:&:sink:char -> sink:&:sink:char, socket:num [
   local-scope
-  load-ingredients
+  load-inputs
   sink <- receive-from-socket socket, sink
   socket <- $close-socket socket
 ]
 
 def write-to-socket socket:num, s:text [
   local-scope
-  load-ingredients
+  load-inputs
   len:num <- length *s
   i:num <- copy 0
   {
@@ -147,7 +147,7 @@ def write-to-socket socket:num, s:text [
 # like split-first, but don't eat the delimiter
 def split-at text:text, delim:char -> x:text, y:text [
   local-scope
-  load-ingredients
+  load-inputs
   # empty text? return empty texts
   len:num <- length *text
   {

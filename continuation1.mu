@@ -19,7 +19,7 @@ def main [
 
 def create-yielder -> n:num [
   local-scope
-  load-ingredients
+  load-inputs
   return-continuation-until-mark
   return 1
 ]

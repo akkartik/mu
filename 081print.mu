@@ -31,7 +31,7 @@ container screen-cell [
 
 def new-fake-screen w:num, h:num -> result:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new screen:type
   non-zero-width?:bool <- greater-than w, 0
   assert non-zero-width?, [screen can't have zero width]
@@ -45,7 +45,7 @@ def new-fake-screen w:num, h:num -> result:&:screen [
 
 def clear-screen screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [clear-screen]
   {
     break-if screen
@@ -73,7 +73,7 @@ def clear-screen screen:&:screen -> screen:&:screen [
 
 def fake-screen-is-empty? screen:&:screen -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [fake-screen-is-empty?]
   return-unless screen, 1/true  # do nothing for real screens
   buf:&:@:screen-cell <- get *screen, data:offset
@@ -94,14 +94,14 @@ def fake-screen-is-empty? screen:&:screen -> result:bool [
 
 def print screen:&:screen, c:char -> screen:&:screen [
   local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
+  load-inputs
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -205,7 +205,7 @@ def print screen:&:screen, c:char -> screen:&:screen [
 
 def cursor-down-on-fake-screen screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-down]
   row:num <- get *screen, cursor-row:offset
   height:num <- get *screen, num-rows:offset
@@ -224,7 +224,7 @@ def cursor-down-on-fake-screen screen:&:screen -> screen:&:screen [
 
 def scroll-fake-screen screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [scroll-fake-screen]
   width:num <- get *screen, num-columns:offset
   height:num <- get *screen, num-rows:offset
@@ -252,7 +252,7 @@ def scroll-fake-screen screen:&:screen -> screen:&:screen [
 # while accounting for scrolling (sliding top-idx)
 def data-index row:num, column:num, width:num, height:num, top-idx:num -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   {
     overflow?:bool <- greater-or-equal row, height
     break-unless overflow?
@@ -508,13 +508,13 @@ scenario print-character-at-bottom-right [
 # these helpers help check for scrolling at development time
 def save-top-idx screen:&:screen -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless screen, 0  # check is only for fake screens
   result <- get *screen, top-idx:offset
 ]
 def assert-no-scroll screen:&:screen, old-top-idx:num [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless screen
   new-top-idx:num <- get *screen, top-idx:offset
   no-scroll?:bool <- equal old-top-idx, new-top-idx
@@ -523,7 +523,7 @@ def assert-no-scroll screen:&:screen, old-top-idx:num [
 
 def clear-line screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [clear-line]
   space:char <- copy 0/nul
   {
@@ -552,14 +552,14 @@ def clear-line screen:&:screen -> screen:&:screen [
 # only for non-scrolling apps
 def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   row:num, column:num <- cursor-position screen
 #?   stash [clear-line-until] row column
   height:num <- screen-height screen
   past-bottom?:bool <- greater-or-equal row, height
   return-if past-bottom?
   space:char <- copy 32/space
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -576,7 +576,7 @@ def clear-line-until screen:&:screen, right:num/inclusive -> screen:&:screen [
 
 def cursor-position screen:&:screen -> row:num, column:num [
   local-scope
-  load-ingredients
+  load-inputs
   {
     break-if screen
     # real screen
@@ -590,7 +590,7 @@ def cursor-position screen:&:screen -> row:num, column:num [
 
 def move-cursor screen:&:screen, new-row:num, new-column:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [move-cursor] new-row new-column
   {
     break-if screen
@@ -644,7 +644,7 @@ scenario clear-line-erases-printed-characters [
 
 def cursor-down screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-down]
   {
     break-if screen
@@ -687,7 +687,7 @@ scenario cursor-down-scrolls [
 
 def cursor-up screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-up]
   {
     break-if screen
@@ -705,7 +705,7 @@ def cursor-up screen:&:screen -> screen:&:screen [
 
 def cursor-right screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-right]
   {
     break-if screen
@@ -725,7 +725,7 @@ def cursor-right screen:&:screen -> screen:&:screen [
 
 def cursor-left screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-left]
   {
     break-if screen
@@ -743,7 +743,7 @@ def cursor-left screen:&:screen -> screen:&:screen [
 
 def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-to-start-of-line]
   row:num <- cursor-position screen
   screen <- move-cursor screen, row, 0/column
@@ -751,7 +751,7 @@ def cursor-to-start-of-line screen:&:screen -> screen:&:screen [
 
 def cursor-to-next-line screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [cursor-to-next-line]
   screen <- cursor-down screen
   screen <- cursor-to-start-of-line screen
@@ -759,7 +759,7 @@ def cursor-to-next-line screen:&:screen -> screen:&:screen [
 
 def move-cursor-to-column screen:&:screen, column:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   row:num, _ <- cursor-position screen
 #?   stash [move-cursor-to-column] row
   move-cursor screen, row, column
@@ -767,7 +767,7 @@ def move-cursor-to-column screen:&:screen, column:num -> screen:&:screen [
 
 def screen-width screen:&:screen -> width:num [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [screen-width]
   {
     break-unless screen
@@ -781,7 +781,7 @@ def screen-width screen:&:screen -> width:num [
 
 def screen-height screen:&:screen -> height:num [
   local-scope
-  load-ingredients
+  load-inputs
 #?   stash [screen-height]
   {
     break-unless screen
@@ -795,14 +795,14 @@ def screen-height screen:&:screen -> height:num [
 
 def print screen:&:screen, s:text -> screen:&:screen [
   local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
+  load-inputs
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -851,14 +851,14 @@ scenario print-text-wraps-past-right-margin [
 
 def print screen:&:screen, n:num -> screen:&:screen [
   local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
+  load-inputs
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -871,14 +871,14 @@ def print screen:&:screen, n:num -> screen:&:screen [
 
 def print screen:&:screen, n:bool -> screen:&:screen [
   local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
+  load-inputs
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?
@@ -890,14 +890,14 @@ def print screen:&:screen, n:bool -> screen:&:screen [
 
 def print screen:&:screen, n:&:_elem -> screen:&:screen [
   local-scope
-  load-ingredients
-  color:num, color-found?:bool <- next-ingredient
+  load-inputs
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 7/white
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     # default bg-color to black
     break-if bg-color-found?

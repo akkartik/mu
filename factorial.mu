@@ -9,7 +9,7 @@ def main [
 
 def factorial n:num -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   {
     # if n=0 return 1
     zero?:bool <- equal n, 0

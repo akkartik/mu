@@ -3,7 +3,7 @@
 def producer sink:&:sink:char -> sink:&:sink:char [
   # produce characters 1 to 5 on a channel
   local-scope
-  load-ingredients
+  load-inputs
   # n = 0
   n:char <- copy 0
   {
@@ -22,7 +22,7 @@ def producer sink:&:sink:char -> sink:&:sink:char [
 def consumer source:&:source:char -> source:&:source:char [
   # consume and print integers from a channel
   local-scope
-  load-ingredients
+  load-inputs
   {
     # read an integer from the channel
     n:char, eof?:bool, source <- read source

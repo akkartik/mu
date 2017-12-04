@@ -30,7 +30,7 @@ def main [
 
 def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   {
     done? <- equal l, 0
     break-if done?

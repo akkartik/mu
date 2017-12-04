@@ -1,6 +1,6 @@
 def random generator:&:stream:num -> result:num, fail?:bool, generator:&:stream:num [
   local-scope
-  load-ingredients
+  load-inputs
   {
     break-if generator
     # generator is 0? use real random-number generator
@@ -13,20 +13,20 @@ def random generator:&:stream:num -> result:num, fail?:bool, generator:&:stream:
 # helper for tests
 def assume-random-numbers -> result:&:stream:num [
   local-scope
-  load-ingredients
+  load-inputs
   # compute result-len, space to allocate in result
   result-len:num <- copy 0
   {
-    _, arg-received?:bool <- next-ingredient
+    _, arg-received?:bool <- next-input
     break-unless arg-received?
     result-len <- add result-len, 1
     loop
   }
-  rewind-ingredients
+  rewind-inputs
   result-data:&:@:num <- new number:type, result-len
   idx:num <- copy 0
   {
-    curr:num, arg-received?:bool <- next-ingredient
+    curr:num, arg-received?:bool <- next-input
     break-unless arg-received?
     *result-data <- put-index *result-data, idx, curr
     idx <- add idx, 1
@@ -57,7 +57,7 @@ scenario random-numbers-in-scenario [
 # generate a random integer in the semi-open interval [start, end)
 def random-in-range generator:&:stream:num, start:num, end:num -> result:num, fail?:bool, generator:&:stream:num [
   local-scope
-  load-ingredients
+  load-inputs
   result, fail?, generator <- random generator
   return-if fail?
   delta:num <- subtract end, start

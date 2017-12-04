@@ -6,7 +6,7 @@ def main [
   open-console  # take control of screen, keyboard and mouse
   clear-screen 0/screen  # non-scrolling app
 
-  # The chessboard function takes keyboard and screen objects as 'ingredients'.
+  # The chessboard function takes keyboard and screen objects as inputs.
   #
   # In Mu it is good form (though not required) to explicitly state what
   # hardware a function needs.
@@ -68,7 +68,7 @@ type board = &:@:&:@:char  # a 2-D array of arrays of characters
 
 def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:console [
   local-scope
-  load-ingredients
+  load-inputs
   board:board <- initial-position
   # hook up stdin
   stdin-in:&:source:char, stdin-out:&:sink:char <- new-channel 10/capacity
@@ -106,7 +106,7 @@ def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:
 
 def new-board initial-position:&:@:char -> board:board [
   local-scope
-  load-ingredients
+  load-inputs
   # assert(length(initial-position) == 64)
   len:num <- length *initial-position
   correct-length?:bool <- equal len, 64
@@ -126,7 +126,7 @@ def new-board initial-position:&:@:char -> board:board [
 
 def new-file position:&:@:char, index:num -> result:&:@:char [
   local-scope
-  load-ingredients
+  load-inputs
   index <- multiply index, 8
   result <- new character:type, 8
   row:num <- copy 0
@@ -143,7 +143,7 @@ def new-file position:&:@:char, index:num -> result:&:@:char [
 
 def print-board screen:&:screen, board:board -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   row:num <- copy 7  # start printing from the top of the board
   space:char <- copy 32/space
   # print each row
@@ -237,7 +237,7 @@ container move [
 # prints only error messages to screen
 def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool, error?:bool, stdin:&:source:char, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   from-file:num, quit?:bool, error?:bool <- read-file stdin, screen
   return-if quit?, 0/dummy
   return-if error?, 0/dummy
@@ -265,7 +265,7 @@ def read-move stdin:&:source:char, screen:&:screen -> result:&:move, quit?:bool,
 # valid values for file: 0-7
 def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error:bool, stdin:&:source:char, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
   q-pressed?:bool <- equal c, 81/Q
@@ -303,7 +303,7 @@ def read-file stdin:&:source:char, screen:&:screen -> file:num, quit:bool, error
 # valid values for rank: 0-7
 def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, error?:bool, stdin:&:source:char, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   c:char, eof?:bool, stdin <- read stdin
   return-if eof?, 0/dummy, 1/quit, 0/error
   q-pressed?:bool <- equal c, 81/Q
@@ -341,7 +341,7 @@ def read-rank stdin:&:source:char, screen:&:screen -> rank:num, quit?:bool, erro
 # return true on error
 def expect-from-channel stdin:&:source:char, expected:char, screen:&:screen -> result:bool, stdin:&:source:char, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   c:char, eof?:bool, stdin <- read stdin
   return-if eof? 1/true
   {
@@ -358,7 +358,7 @@ scenario read-move-blocking [
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
   read-move-routine:num/routine <- start-running read-move, source, screen:&:screen
   run [
-    # 'read-move' is waiting for input
+    # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
     waiting?:bool <- not-equal read-move-state, 2/discontinued
@@ -367,7 +367,7 @@ F read-move-blocking: routine failed to pause after coming up (before any keys w
     # press 'a'
     sink <- write sink, 97/a
     restart read-move-routine
-    # 'read-move' still waiting for input
+    # 'read-move' still waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- not-equal read-move-state, 2/discontinued
@@ -376,7 +376,7 @@ F read-move-blocking: routine failed to pause after rank 'a']
     # press '2'
     sink <- write sink, 50/'2'
     restart read-move-routine
-    # 'read-move' still waiting for input
+    # 'read-move' still waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- not-equal read-move-state, 2/discontinued
@@ -385,7 +385,7 @@ F read-move-blocking: routine failed to pause after file 'a2']
     # press '-'
     sink <- write sink, 45/'-'
     restart read-move-routine
-    # 'read-move' still waiting for input
+    # 'read-move' still waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- not-equal read-move-state, 2/discontinued
@@ -394,7 +394,7 @@ F read-move-blocking: routine failed to pause after hyphen 'a2-']
     # press 'a'
     sink <- write sink, 97/a
     restart read-move-routine
-    # 'read-move' still waiting for input
+    # 'read-move' still waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- not-equal read-move-state, 2/discontinued
@@ -403,7 +403,7 @@ F read-move-blocking: routine failed to pause after rank 'a2-a']
     # press '4'
     sink <- write sink, 52/'4'
     restart read-move-routine
-    # 'read-move' still waiting for input
+    # 'read-move' still waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state <- routine-state read-move-routine
     waiting? <- not-equal read-move-state, 2/discontinued
@@ -431,7 +431,7 @@ scenario read-move-quit [
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
   read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    # 'read-move' is waiting for input
+    # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
     waiting?:bool <- not-equal read-move-state, 2/discontinued
@@ -459,7 +459,7 @@ scenario read-move-illegal-file [
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
   read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    # 'read-move' is waiting for input
+    # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
     waiting?:bool <- not-equal read-move-state, 2/discontinued
@@ -481,7 +481,7 @@ scenario read-move-illegal-rank [
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
   read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    # 'read-move' is waiting for input
+    # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
     waiting?:bool <- not-equal read-move-state, 2/discontinued
@@ -504,7 +504,7 @@ scenario read-move-empty [
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
   read-move-routine:num <- start-running read-move, source, screen:&:screen
   run [
-    # 'read-move' is waiting for input
+    # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
     read-move-state:num <- routine-state read-move-routine
     waiting?:bool <- not-equal read-move-state, 2/discontinued
@@ -523,7 +523,7 @@ F read-move-empty: routine failed to pause after coming up (before any keys were
 
 def make-move board:board, m:&:move -> board:board [
   local-scope
-  load-ingredients
+  load-inputs
   from-file:num <- get *m, from-file:offset
   from-rank:num <- get *m, from-rank:offset
   to-file:num <- get *m, to-file:offset

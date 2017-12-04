@@ -164,7 +164,7 @@ container sandbox [
 # replaced in a later layer
 def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   data:text <- get *sandbox, data:offset
   response:text, _, fake-screen:&:screen, trace:text <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response
@@ -201,7 +201,7 @@ after <global-touch> [
 
 def find-click-in-sandbox-code env:&:environment, click-row:num -> sandbox:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   # assert click-row >= sandbox.starting-row-on-screen
   sandbox <- get *env, sandbox:offset
   start:num <- get *sandbox, starting-row-on-screen:offset

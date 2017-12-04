@@ -4,7 +4,7 @@
 # screen dimensions, then stop
 def main text:text [
   local-scope
-  load-ingredients
+  load-inputs
   open-console
   clear-screen 0/screen  # non-scrolling app
   e:&:editor <- new-editor text, 0/left, 5/right
@@ -50,7 +50,7 @@ container editor [
 #   right is exclusive
 def new-editor s:text, left:num, right:num -> result:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   # no clipping of bounds
   right <- subtract right, 1
   result <- new editor:type
@@ -71,7 +71,7 @@ def new-editor s:text, left:num, right:num -> result:&:editor [
 
 def insert-text editor:&:editor, text:text -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   curr:&:duplex-list:char <- get *editor, data:offset
   insert curr, text
 ]
@@ -106,7 +106,7 @@ scenario editor-initializes-without-data [
 # outside text.
 def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor, 1/top, 0/left
   left:num <- get *editor, left:offset
   screen-height:num <- screen-height screen
@@ -206,7 +206,7 @@ def render screen:&:screen, editor:&:editor -> last-row:num, last-column:num, sc
 
 def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   # if it's the real screen, use the optimized primitive
   {
     break-if screen
@@ -221,7 +221,7 @@ def clear-screen-from screen:&:screen, row:num, column:num, left:num, right:num 
 
 def clear-rest-of-screen screen:&:screen, row:num, left:num, right:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   row <- add row, 1
   # if it's the real screen, use the optimized primitive
   {
@@ -395,7 +395,7 @@ after <character-c-received> [
 # so far the previous color is all the information we need; that may change
 def get-color color:num, c:char -> color:num [
   local-scope
-  load-ingredients
+  load-inputs
   color-is-white?:bool <- equal color, 7/white
   # if color is white and next character is '#', switch color to blue
   {

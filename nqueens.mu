@@ -10,7 +10,7 @@ container square [
 
 def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
   local-scope
-  load-ingredients
+  load-inputs
   # if 'queens' is already long enough, print it and return
   added-so-far:num <- length queens
   {
@@ -51,7 +51,7 @@ def nqueens n:num, queens:&:list:square -> result:num, queens:&:list:square [
 # only in files and diagonals
 def conflict? curr:square, queens:&:list:square -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   result <- conflicting-file? curr, queens
   return-if result
   result <- conflicting-diagonal? curr, queens
@@ -59,7 +59,7 @@ def conflict? curr:square, queens:&:list:square -> result:bool [
 
 def conflicting-file? curr:square, queens:&:list:square -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   curr-file:num <- get curr, file:offset
   {
     break-unless queens
@@ -75,7 +75,7 @@ def conflicting-file? curr:square, queens:&:list:square -> result:bool [
 
 def conflicting-diagonal? curr:square, queens:&:list:square -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   curr-rank:num <- get curr, rank:offset
   curr-file:num <- get curr, file:offset
   {

@@ -20,7 +20,7 @@ container environment [
 
 def new-programming-environment resources:&:resources, screen:&:screen, test-sandbox-editor-contents:text -> result:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   width:num <- screen-width screen
   result <- new environment:type
   # recipe editor on the left
@@ -38,7 +38,7 @@ def new-programming-environment resources:&:resources, screen:&:screen, test-san
 
 def event-loop screen:&:screen, console:&:console, env:&:environment, resources:&:resources -> screen:&:screen, console:&:console, env:&:environment, resources:&:resources [
   local-scope
-  load-ingredients
+  load-inputs
   recipes:&:editor <- get *env, recipes:offset
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-in-focus?:bool <- get *env, sandbox-in-focus?:offset
@@ -130,7 +130,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
 
 def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   clear-screen screen  # update screen dimensions
   width:num <- screen-width screen
   divider:num, _ <- divide-with-remainder width, 2
@@ -157,7 +157,7 @@ def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:scr
 # off-screen, it resets cursor-row and cursor-column.
 def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor, 1/top, 0/left
   left:num <- get *editor, left:offset
   screen-height:num <- screen-height screen
@@ -401,7 +401,7 @@ type render-recipe = (recipe (address screen) (address editor) -> number number 
 
 def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 10, [app], [render all]
   # top menu
   trace 11, [app], [render top menu]
@@ -430,7 +430,7 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
 
 def render-recipes screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 11, [app], [render recipes]
   old-top-idx:num <- save-top-idx screen
   recipes:&:editor <- get *env, recipes:offset
@@ -452,7 +452,7 @@ def render-recipes screen:&:screen, env:&:environment, render-editor:render-reci
 # replaced in a later layer
 def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 11, [app], [render sandboxes]
   old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -471,7 +471,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
 
 def update-cursor screen:&:screen, recipes:&:editor, current-sandbox:&:editor, sandbox-in-focus?:bool, env:&:environment -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   <update-cursor-special-cases>
   {
     break-if sandbox-in-focus?
@@ -505,13 +505,13 @@ after <global-type> [
 
 def draw-vertical screen:&:screen, col:num, y:num, bottom:num -> screen:&:screen [
   local-scope
-  load-ingredients
-  style:char, style-found?:bool <- next-ingredient
+  load-inputs
+  style:char, style-found?:bool <- next-input
   {
     break-if style-found?
     style <- copy 9474/vertical
   }
-  color:num, color-found?:bool <- next-ingredient
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?

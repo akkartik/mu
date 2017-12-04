@@ -28,7 +28,7 @@ def main [
 
 def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   return-continuation-until-mark
   done? <- equal l, 0
   return-if done?, 0

@@ -108,7 +108,7 @@ after <handle-special-character> [
 #   backspaced-cell - value deleted (or 0 if nothing was deleted) so we can save it for undo, etc.
 def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, backspaced-cell:&:duplex-list:char, editor:&:editor, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   data:&:duplex-list:char <- get *editor, data:offset
   # if at start of text (before-cursor at § sentinel), return
@@ -154,7 +154,7 @@ def delete-before-cursor editor:&:editor, screen:&:screen -> go-render?:bool, ba
 
 def move-cursor-coordinates-left editor:&:editor -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
@@ -215,7 +215,7 @@ def move-cursor-coordinates-left editor:&:editor -> editor:&:editor [
 # the length of the previous line before the 'curr' pointer.
 def previous-line-length curr:&:duplex-list:char, start:&:duplex-list:char -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   result:num <- copy 0
   return-unless curr
   at-start?:bool <- equal curr, start
@@ -369,7 +369,7 @@ after <handle-special-key> [
 
 def delete-at-cursor editor:&:editor, screen:&:screen -> go-render?:bool, deleted-cell:&:duplex-list:char, editor:&:editor, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   data:&:duplex-list:char <- get *editor, data:offset
   deleted-cell:&:duplex-list:char <- next before-cursor
@@ -449,7 +449,7 @@ after <handle-special-key> [
 
 def move-cursor-coordinates-right editor:&:editor, screen-height:num -> go-render?:bool, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor before-cursor:offset
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
@@ -994,7 +994,7 @@ after <handle-special-key> [
 
 def move-to-previous-line editor:&:editor -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -1340,7 +1340,7 @@ after <handle-special-key> [
 
 def move-to-next-line editor:&:editor, screen-height:num -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -1486,7 +1486,7 @@ after <handle-special-key> [
 # precondition: cursor-column should be in a consistent state
 def move-to-start-of-screen-line editor:&:editor -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   # update cursor column
   left:num <- get *editor, left:offset
   col:num <- get *editor, cursor-column:offset
@@ -1709,7 +1709,7 @@ after <handle-special-key> [
 
 def move-to-end-of-line editor:&:editor -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   cursor-column:num <- get *editor, cursor-column:offset
   right:num <- get *editor, right:offset
@@ -1892,7 +1892,7 @@ after <handle-special-character> [
 
 def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   curr-column:num <- get *editor, cursor-column:offset
   # accumulate the current line as text and render it
   buf:&:buffer:char <- new-buffer 30  # accumulator for the text we need to render
@@ -1927,7 +1927,7 @@ def minimal-render-for-ctrl-u screen:&:screen, editor:&:editor, deleted-cells:&:
 
 def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   # compute range to delete
   init:&:duplex-list:char <- get *editor, data:offset
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -1964,7 +1964,7 @@ def delete-to-start-of-line editor:&:editor -> result:&:duplex-list:char, editor
 
 def render-code screen:&:screen, s:text, left:num, right:num, row:num -> row:num, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless s
   color:num <- copy 7/white
   column:num <- copy left
@@ -2285,7 +2285,7 @@ after <handle-special-character> [
 
 def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:duplex-list:char -> go-render?:bool, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   # if we deleted nothing, there's nothing to render
   return-unless deleted-cells, 0/dont-render
   # if the line used to wrap before, give up and render the whole screen
@@ -2303,7 +2303,7 @@ def minimal-render-for-ctrl-k screen:&:screen, editor:&:editor, deleted-cells:&:
 
 def delete-to-end-of-line editor:&:editor -> result:&:duplex-list:char, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   # compute range to delete
   start:&:duplex-list:char <- get *editor, before-cursor:offset
   end:&:duplex-list:char <- next start
@@ -2491,7 +2491,7 @@ scenario editor-deletes-to-end-of-wrapped-line-with-ctrl-k [
 # beware: never return null pointer.
 def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:duplex-list:char [
   local-scope
-  load-ingredients
+  load-inputs
   count:num <- copy 0
   curr:&:duplex-list:char <- copy original
   # skip the initial newline if it exists
@@ -2523,7 +2523,7 @@ def before-start-of-next-line original:&:duplex-list:char, max:num -> curr:&:dup
 # beware: never return null pointer
 def before-previous-screen-line in:&:duplex-list:char, editor:&:editor -> out:&:duplex-list:char [
   local-scope
-  load-ingredients
+  load-inputs
   curr:&:duplex-list:char <- copy in
   c:char <- get *curr, value:offset
   # compute max, number of characters to skip
@@ -2600,7 +2600,7 @@ after <handle-special-character> [
 # the caller to go-render? the entire screen.
 def render-line-from-start screen:&:screen, editor:&:editor, right-margin:num -> go-render?:bool, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   before-line-start:&:duplex-list:char <- before-start-of-screen-line editor
   line-start:&:duplex-list:char <- next before-line-start
   color:num <- copy 7/white
@@ -2630,7 +2630,7 @@ def render-line-from-start screen:&:screen, editor:&:editor, right-margin:num ->
 
 def before-start-of-screen-line editor:&:editor -> result:&:duplex-list:char [
   local-scope
-  load-ingredients
+  load-inputs
   cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   {
     next:&:duplex-list:char <- next cursor

@@ -82,7 +82,7 @@ after <global-touch> [
 # some preconditions for attempting to delete a sandbox
 def should-attempt-delete? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
   return-unless click-sandbox-area?, 0/false
@@ -97,7 +97,7 @@ def should-attempt-delete? click-row:num, click-column:num, env:&:environment ->
 
 def try-delete-sandbox click-row:num, env:&:environment -> clicked-on-delete-button?:bool, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   # identify the sandbox to delete, if the click was actually on the 'delete' button
   sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
@@ -107,7 +107,7 @@ def try-delete-sandbox click-row:num, env:&:environment -> clicked-on-delete-but
 
 def delete-sandbox env:&:environment, sandbox:&:sandbox -> env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   curr-sandbox:&:sandbox <- get *env, sandbox:offset
   first-sandbox?:bool <- equal curr-sandbox, sandbox
   {

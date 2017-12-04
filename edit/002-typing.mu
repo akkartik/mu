@@ -4,7 +4,7 @@
 # hit ctrl-c to exit
 def! main text:text [
   local-scope
-  load-ingredients
+  load-inputs
   open-console
   clear-screen 0/screen  # non-scrolling app
   editor:&:editor <- new-editor text, 5/left, 45/right
@@ -15,7 +15,7 @@ def! main text:text [
 
 def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> screen:&:screen, console:&:console, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   {
     # looping over each (keyboard or touch) event as it occurs
     +next-event
@@ -49,7 +49,7 @@ def editor-event-loop screen:&:screen, console:&:console, editor:&:editor -> scr
 # process click, return if it was on current editor
 def move-cursor editor:&:editor, screen:&:screen, t:touch-event -> in-focus?:bool, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor, 0/false
   click-row:num <- get t, row:offset
   return-unless click-row, 0/false  # ignore clicks on 'menu'
@@ -74,7 +74,7 @@ def move-cursor editor:&:editor, screen:&:screen, t:touch-event -> in-focus?:boo
 # past the last line it positions at end of last line.
 def snap-cursor editor:&:editor, screen:&:screen, target-row:num, target-column:num -> editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
@@ -165,7 +165,7 @@ def snap-cursor editor:&:editor, screen:&:screen, target-row:num, target-column:
 # Set 'go-render?' to true to indicate the caller must perform a non-minimal update.
 def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render?:bool, screen:&:screen, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor, 0/don't-render
   screen-width:num <- screen-width screen
   screen-height:num <- screen-height screen
@@ -202,7 +202,7 @@ def handle-keyboard-event screen:&:screen, editor:&:editor, e:event -> go-render
 
 def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool, editor:&:editor, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
   insert c, before-cursor
   before-cursor <- next before-cursor
@@ -264,7 +264,7 @@ def insert-at-cursor editor:&:editor, c:char, screen:&:screen -> go-render?:bool
 # helper for tests
 def editor-render screen:&:screen, editor:&:editor -> screen:&:screen, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   old-top-idx:num <- save-top-idx screen
   left:num <- get *editor, left:offset
   right:num <- get *editor, right:offset
@@ -867,7 +867,7 @@ after <handle-special-character> [
 
 def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:editor, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   cursor-row:num <- get *editor, cursor-row:offset
   cursor-column:num <- get *editor, cursor-column:offset
   before-cursor:&:duplex-list:char <- get *editor, before-cursor:offset
@@ -913,7 +913,7 @@ def insert-new-line-and-indent editor:&:editor, screen:&:screen -> editor:&:edit
 
 def at-start-of-wrapped-line? editor:&:editor -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   left:num <- get *editor, left:offset
   cursor-column:num <- get *editor, cursor-column:offset
   cursor-at-left?:bool <- equal cursor-column, left
@@ -933,7 +933,7 @@ def at-start-of-wrapped-line? editor:&:editor -> result:bool [
 # the number of spaces at the start of the line containing 'curr'.
 def line-indent curr:&:duplex-list:char, start:&:duplex-list:char -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   result:num <- copy 0
   return-unless curr
   at-start?:bool <- equal curr, start
@@ -1115,22 +1115,22 @@ after <handle-special-key> [
 
 def draw-horizontal screen:&:screen, row:num, x:num, right:num -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   height:num <- screen-height screen
   past-bottom?:bool <- greater-or-equal row, height
   return-if past-bottom?
-  style:char, style-found?:bool <- next-ingredient
+  style:char, style-found?:bool <- next-input
   {
     break-if style-found?
     style <- copy 9472/horizontal
   }
-  color:num, color-found?:bool <- next-ingredient
+  color:num, color-found?:bool <- next-input
   {
     # default color to white
     break-if color-found?
     color <- copy 245/grey
   }
-  bg-color:num, bg-color-found?:bool <- next-ingredient
+  bg-color:num, bg-color-found?:bool <- next-input
   {
     break-if bg-color-found?
     bg-color <- copy 0/black

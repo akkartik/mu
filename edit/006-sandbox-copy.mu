@@ -139,7 +139,7 @@ after <global-touch> [
 # some preconditions for attempting to copy a sandbox
 def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
   return-unless click-sandbox-area?, 0/false
@@ -158,7 +158,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
 
 def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?:bool, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   # identify the sandbox to copy, if the click was actually on the 'copy' button
   sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
@@ -174,7 +174,7 @@ def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?
 
 def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   curr-sandbox:&:sandbox <- get *env, sandbox:offset
   {
     break-unless curr-sandbox
@@ -189,7 +189,7 @@ def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
 
 def click-on-sandbox-area? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   sandbox-left-margin:num <- get *current-sandbox, left:offset
   on-sandbox-side?:bool <- greater-or-equal click-column, sandbox-left-margin
@@ -202,7 +202,7 @@ def click-on-sandbox-area? click-row:num, click-column:num, env:&:environment ->
 
 def empty-editor? editor:&:editor -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   head:&:duplex-list:char <- get *editor, data:offset
   first:&:duplex-list:char <- next head
   result <- not first
@@ -210,7 +210,7 @@ def empty-editor? editor:&:editor -> result:bool [
 
 def within-range? x:num, low:num, high:num -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   not-too-far-left?:bool <- greater-or-equal x, low
   not-too-far-right?:bool <- lesser-or-equal x, high
   result <- and not-too-far-left? not-too-far-right?
@@ -359,7 +359,7 @@ after <global-touch> [
 # some preconditions for attempting to copy a sandbox into the recipe side
 def should-copy-to-recipe? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, click-column, env
   return-unless click-sandbox-area?, 0/false
@@ -374,7 +374,7 @@ def should-copy-to-recipe? click-row:num, click-column:num, env:&:environment ->
 
 def prepend-sandbox-into-recipe-side click-row:num, env:&:environment -> clicked-on-copy-to-recipe-button?:bool, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
   recipe-editor:&:editor <- get *env, recipes:offset

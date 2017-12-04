@@ -7,7 +7,7 @@ container environment [
 # copy code from recipe editor, persist to disk, load, save any errors
 def! update-recipes env:&:environment, resources:&:resources, screen:&:screen -> errors-found?:bool, env:&:environment, resources:&:resources, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   recipes:&:editor <- get *env, recipes:offset
   in:text <- editor-contents recipes
   resources <- dump resources, [lesson/recipes.mu], in
@@ -41,7 +41,7 @@ before <end-render-recipe-components> [
 
 def render-recipe-errors env:&:environment, screen:&:screen -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   recipe-errors:text <- get *env, recipe-errors:offset
   return-unless recipe-errors
   recipes:&:editor <- get *env, recipes:offset
@@ -96,7 +96,7 @@ container sandbox [
 
 def! update-sandbox sandbox:&:sandbox, env:&:environment, idx:num -> sandbox:&:sandbox, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   data:text <- get *sandbox, data:offset
   response:text, errors:text, fake-screen:&:screen, trace:text, completed?:bool <- run-sandboxed data
   *sandbox <- put *sandbox, response:offset, response

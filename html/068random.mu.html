@@ -61,7 +61,7 @@ if ('onhashchange' in window) {
 <pre id='vimCodeElement'>
 <span id="L1" class="LineNr"> 1 </span><span class="muRecipe">def</span> <a href='068random.mu.html#L1'>random</a> generator:&amp;:<a href='066stream.mu.html#L2'>stream</a>:num<span class="muRecipe"> -&gt; </span>result:num, fail?:bool, generator:&amp;:<a href='066stream.mu.html#L2'>stream</a>:num [
 <span id="L2" class="LineNr"> 2 </span>  <span class="Constant">local-scope</span>
-<span id="L3" class="LineNr"> 3 </span>  <span class="Constant">load-ingredients</span>
+<span id="L3" class="LineNr"> 3 </span>  <span class="Constant">load-inputs</span>
 <span id="L4" class="LineNr"> 4 </span>  <span class="Delimiter">{</span>
 <span id="L5" class="LineNr"> 5 </span>  <span class="Conceal">¦</span> <span class="muControl">break-if</span> generator
 <span id="L6" class="LineNr"> 6 </span>  <span class="Conceal">¦</span> <span class="Comment"># generator is 0? use real random-number generator</span>
@@ -74,20 +74,20 @@ if ('onhashchange' in window) {
 <span id="L13" class="LineNr">13 </span><span class="Comment"># helper for tests</span>
 <span id="L14" class="LineNr">14 </span><span class="muRecipe">def</span> <a href='068random.mu.html#L14'>assume-random-numbers</a><span class="muRecipe"> -&gt; </span>result:&amp;:<a href='066stream.mu.html#L2'>stream</a>:num [
 <span id="L15" class="LineNr">15 </span>  <span class="Constant">local-scope</span>
-<span id="L16" class="LineNr">16 </span>  <span class="Constant">load-ingredients</span>
+<span id="L16" class="LineNr">16 </span>  <span class="Constant">load-inputs</span>
 <span id="L17" class="LineNr">17 </span>  <span class="Comment"># compute result-len, space to allocate in result</span>
 <span id="L18" class="LineNr">18 </span>  result-len:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L19" class="LineNr">19 </span>  <span class="Delimiter">{</span>
-<span id="L20" class="LineNr">20 </span>  <span class="Conceal">¦</span> _, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L20" class="LineNr">20 </span>  <span class="Conceal">¦</span> _, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
 <span id="L21" class="LineNr">21 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> arg-received?
 <span id="L22" class="LineNr">22 </span>  <span class="Conceal">¦</span> result-len <span class="Special">&lt;-</span> add result-len,<span class="Constant"> 1</span>
 <span id="L23" class="LineNr">23 </span>  <span class="Conceal">¦</span> <span class="muControl">loop</span>
 <span id="L24" class="LineNr">24 </span>  <span class="Delimiter">}</span>
-<span id="L25" class="LineNr">25 </span>  <span class="Constant">rewind-ingredients</span>
+<span id="L25" class="LineNr">25 </span>  <span class="Constant">rewind-inputs</span>
 <span id="L26" class="LineNr">26 </span>  result-data:&amp;:@:num <span class="Special">&lt;-</span> new <span class="Constant">number:type</span>, result-len
 <span id="L27" class="LineNr">27 </span>  idx:num <span class="Special">&lt;-</span> copy<span class="Constant"> 0</span>
 <span id="L28" class="LineNr">28 </span>  <span class="Delimiter">{</span>
-<span id="L29" class="LineNr">29 </span>  <span class="Conceal">¦</span> curr:num, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-ingredient</span>
+<span id="L29" class="LineNr">29 </span>  <span class="Conceal">¦</span> curr:num, arg-received?:bool <span class="Special">&lt;-</span> <span class="Constant">next-input</span>
 <span id="L30" class="LineNr">30 </span>  <span class="Conceal">¦</span> <span class="muControl">break-unless</span> arg-received?
 <span id="L31" class="LineNr">31 </span>  <span class="Conceal">¦</span> *result-data <span class="Special">&lt;-</span> put-index *result-data, idx, curr
 <span id="L32" class="LineNr">32 </span>  <span class="Conceal">¦</span> idx <span class="Special">&lt;-</span> add idx,<span class="Constant"> 1</span>
@@ -118,7 +118,7 @@ if ('onhashchange' in window) {
 <span id="L57" class="LineNr">57 </span><span class="Comment"># generate a random integer in the semi-open interval [start, end)</span>
 <span id="L58" class="LineNr">58 </span><span class="muRecipe">def</span> <a href='068random.mu.html#L58'>random-in-range</a> generator:&amp;:<a href='066stream.mu.html#L2'>stream</a>:num, start:num, end:num<span class="muRecipe"> -&gt; </span>result:num, fail?:bool, generator:&amp;:<a href='066stream.mu.html#L2'>stream</a>:num [
 <span id="L59" class="LineNr">59 </span>  <span class="Constant">local-scope</span>
-<span id="L60" class="LineNr">60 </span>  <span class="Constant">load-ingredients</span>
+<span id="L60" class="LineNr">60 </span>  <span class="Constant">load-inputs</span>
 <span id="L61" class="LineNr">61 </span>  result, fail?, generator <span class="Special">&lt;-</span> <a href='068random.mu.html#L1'>random</a> generator
 <span id="L62" class="LineNr">62 </span>  <span class="muControl">return-if</span> fail?
 <span id="L63" class="LineNr">63 </span>  delta:num <span class="Special">&lt;-</span> subtract end, start

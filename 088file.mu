@@ -20,7 +20,7 @@ container resource [
 
 def start-reading resources:&:resources, filename:text -> contents:&:source:char, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   error? <- copy 0/false
   {
     break-unless resources
@@ -37,7 +37,7 @@ def start-reading resources:&:resources, filename:text -> contents:&:source:char
 
 def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   source:&:source:char, error?:bool <- start-reading resources, filename
   return-if error?, 0/contents
   buf:&:buffer:char <- new-buffer 30/capacity
@@ -52,7 +52,7 @@ def slurp resources:&:resources, filename:text -> contents:text, error?:bool [
 
 def start-reading-from-fake-resource resources:&:resources, resource:text -> contents:&:source:char, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   error? <- copy 0/no-error
   i:num <- copy 0
   data:&:@:resource <- get *resources, data:offset
@@ -75,7 +75,7 @@ def start-reading-from-fake-resource resources:&:resources, resource:text -> con
 
 def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
     c:char, eof?:bool <- $read-from-file file
     break-if eof?
@@ -88,7 +88,7 @@ def receive-from-file file:num, sink:&:sink:char -> sink:&:sink:char [
 
 def receive-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
   local-scope
-  load-ingredients
+  load-inputs
   i:num <- copy 0
   len:num <- length *contents
   {
@@ -104,7 +104,7 @@ def receive-from-text contents:text, sink:&:sink:char -> sink:&:sink:char [
 
 def start-writing resources:&:resources, filename:text -> sink:&:sink:char, routine-id:num, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   error? <- copy 0/false
   source:&:source:char, sink:&:sink:char <- new-channel 30
   {
@@ -126,7 +126,7 @@ def start-writing resources:&:resources, filename:text -> sink:&:sink:char, rout
 
 def dump resources:&:resources, filename:text, contents:text -> resources:&:resources, error?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # todo: really create an empty file
   return-unless contents, resources, 0/no-error
   sink-file:&:sink:char, write-routine:num, error?:bool <- start-writing resources, filename
@@ -149,7 +149,7 @@ def dump resources:&:resources, filename:text, contents:text -> resources:&:reso
 
 def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
     c:char, done?:bool, source <- read source
     break-if done?
@@ -161,7 +161,7 @@ def transmit-to-file file:num, source:&:source:char -> source:&:source:char [
 
 def transmit-to-fake-resource resources:&:resources, filename:text, source:&:source:char -> resources:&:resources, source:&:source:char [
   local-scope
-  load-ingredients
+  load-inputs
   lock:location <- get-location *resources, lock:offset
   wait-for-reset-then-set lock
   # compute new file contents

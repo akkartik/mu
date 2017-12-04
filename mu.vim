@@ -53,14 +53,14 @@ syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
 syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
 syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
 highlight link muLiteral Constant
-syntax keyword muKeyword default-space new-default-space local-scope next-ingredient ingredient rewind-ingredients load-ingredients | highlight link muKeyword Constant
+syntax keyword muKeyword default-space new-default-space local-scope next-ingredient next-input ingredient input rewind-ingredients rewind-inputs load-ingredients load-inputs | highlight link muKeyword Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muAssign "<-"
 syntax match muAssign "\<raw\>"
 highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
-syntax keyword muControl reply reply-if reply-unless return return-if return-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
+syntax keyword muControl reply reply-if reply-unless return return-if return-unless output output-if output-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
 " common keywords
 syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
 syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34

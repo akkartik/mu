@@ -8,6 +8,6 @@ def main [
 
 def foo x:&:num -> x:&:num [
   local-scope
-  load-ingredients
+  load-inputs
   *x <- copy 34
 ]

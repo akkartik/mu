@@ -55,7 +55,7 @@ container table-row:_key:_value [
 
 def new-table capacity:num -> result:&:table:_key:_value [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new {(table _key _value): type}
   data:&:@:table-row:_key:_value <- new {(table-row _key _value): type}, capacity
   *result <- merge 0/length, capacity, data
@@ -65,7 +65,7 @@ def new-table capacity:num -> result:&:table:_key:_value [
 # then we could handle conflicts simply by resizing the table
 def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table:_key:_value [
   local-scope
-  load-ingredients
+  load-inputs
   hash:num <- hash key
   hash <- abs hash
   capacity:num <- get *table, capacity:offset
@@ -82,7 +82,7 @@ def put-index table:&:table:_key:_value, key:_key, value:_value -> table:&:table
 
 def index table:&:table:_key:_value, key:_key -> result:_value, found?:bool [
   local-scope
-  load-ingredients
+  load-inputs
   hash:num <- hash key
   hash <- abs hash
   capacity:num <- get *table, capacity:offset
@@ -102,7 +102,7 @@ def index table:&:table:_key:_value, key:_key -> result:_value, found?:bool [
 
 def abs n:num -> result:num [
   local-scope
-  load-ingredients
+  load-inputs
   positive?:bool <- greater-or-equal n, 0
   return-if positive?, n
   result <- multiply n, -1

@@ -5,7 +5,7 @@
 # potential enhancements:
 #   symbol table
 #   poor man's macros
-#     substitute one instruction with multiple, parameterized by ingredients and products
+#     substitute one instruction with multiple, parameterized by inputs and products
 
 scenario convert-lambda [
   run [
@@ -21,7 +21,7 @@ result <- add a t1]
 
 def lambda-to-mu in:text -> out:text [
   local-scope
-  load-ingredients
+  load-inputs
   out <- copy 0
   cells:&:cell <- parse in
   out <- to-mu cells
@@ -41,28 +41,28 @@ container pair [
 
 def new-atom name:text -> result:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new cell:type
   *result <- merge 0/tag:atom, name
 ]
 
 def new-pair a:&:cell, b:&:cell -> result:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   result <- new cell:type
   *result <- merge 1/tag:pair, a/first, b/rest
 ]
 
 def is-atom? x:&:cell -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless x, 0/false
   _, result <- maybe-convert *x, atom:variant
 ]
 
 def is-pair? x:&:cell -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless x, 0/false
   _, result <- maybe-convert *x, pair:variant
 ]
@@ -95,7 +95,7 @@ scenario pair-is-not-atom [
 
 def atom-match? x:&:cell, pat:text -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   s:text, is-atom?:bool <- maybe-convert *x, atom:variant
   return-unless is-atom?, 0/false
   result <- equal pat, s
@@ -112,7 +112,7 @@ scenario atom-match [
 
 def first x:&:cell -> result:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
   return-unless pair?, 0/nil
   result <- get pair, first:offset
@@ -120,7 +120,7 @@ def first x:&:cell -> result:&:cell [
 
 def rest x:&:cell -> result:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   pair:pair, pair?:bool <- maybe-convert *x, pair:variant
   return-unless pair?, 0/nil
   result <- get pair, rest:offset
@@ -128,7 +128,7 @@ def rest x:&:cell -> result:&:cell [
 
 def set-first base:&:cell, new-first:&:cell -> base:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   pair:pair, is-pair?:bool <- maybe-convert *base, pair:variant
   return-unless is-pair?
   pair <- put pair, first:offset, new-first
@@ -137,7 +137,7 @@ def set-first base:&:cell, new-first:&:cell -> base:&:cell [
 
 def set-rest base:&:cell, new-rest:&:cell -> base:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   pair:pair, is-pair?:bool <- maybe-convert *base, pair:variant
   return-unless is-pair?
   pair <- put pair, rest:offset, new-rest
@@ -175,7 +175,7 @@ scenario cell-operations-on-pair [
 
 def parse in:text -> out:&:cell [
   local-scope
-  load-ingredients
+  load-inputs
   s:&:stream:char <- new-stream in
   out, s <- parse s
   trace 2, [app/parse], out
@@ -183,7 +183,7 @@ def parse in:text -> out:&:cell [
 
 def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
   local-scope
-  load-ingredients
+  load-inputs
   # skip whitespace
   in <- skip-whitespace in
   c:char, eof?:bool <- peek in
@@ -273,7 +273,7 @@ def parse in:&:stream:char -> out:&:cell, in:&:stream:char [
 
 def skip-whitespace in:&:stream:char -> in:&:stream:char [
   local-scope
-  load-ingredients
+  load-inputs
   {
     done?:bool <- end-of-stream? in
     return-if done?, 0/null
@@ -287,7 +287,7 @@ def skip-whitespace in:&:stream:char -> in:&:stream:char [
 
 def to-text x:&:cell -> out:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 30
   buf <- to-buffer x, buf
   out <- buffer-to-array buf
@@ -295,7 +295,7 @@ def to-text x:&:cell -> out:text [
 
 def to-buffer x:&:cell, buf:&:buffer:char -> buf:&:buffer:char [
   local-scope
-  load-ingredients
+  load-inputs
   # base case: empty cell
   {
     break-if x
@@ -574,7 +574,7 @@ scenario parse-dotted-list-of-more-than-two-atoms [
 
 def to-mu in:&:cell -> out:text [
   local-scope
-  load-ingredients
+  load-inputs
   buf:&:buffer:char <- new-buffer 30
   buf <- to-mu in, buf
   out <- buffer-to-array buf
@@ -582,7 +582,7 @@ def to-mu in:&:cell -> out:text [
 
 def to-mu in:&:cell, buf:&:buffer:char -> buf:&:buffer:char, result-name:text [
   local-scope
-  load-ingredients
+  load-inputs
   # null cell? no change.
   # pair with all atoms? gensym a new variable
   # pair containing other pairs? recurse

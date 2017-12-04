@@ -40,6 +40,7 @@ for (int i = 0;  i < SIZE(ingredients);  ++i) {
 NEXT_INGREDIENT,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "next-ingredient", NEXT_INGREDIENT);
+put(Recipe_ordinal, "next-input", NEXT_INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case NEXT_INGREDIENT: {
   if (!inst.ingredients.empty()) {
@@ -112,6 +113,7 @@ def f [
 REWIND_INGREDIENTS,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "rewind-ingredients", REWIND_INGREDIENTS);
+put(Recipe_ordinal, "rewind-inputs", REWIND_INGREDIENTS);
 :(before "End Primitive Recipe Checks")
 case REWIND_INGREDIENTS: {
   break;
@@ -137,6 +139,7 @@ def f [
 INGREDIENT,
 :(before "End Primitive Recipe Numbers")
 put(Recipe_ordinal, "ingredient", INGREDIENT);
+put(Recipe_ordinal, "input", INGREDIENT);
 :(before "End Primitive Recipe Checks")
 case INGREDIENT: {
   if (SIZE(inst.ingredients) != 1) {

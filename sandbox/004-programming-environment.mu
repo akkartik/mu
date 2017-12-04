@@ -15,7 +15,7 @@ container environment [
 
 def new-programming-environment resources:&:resources, screen:&:screen, test-sandbox-editor-contents:text -> result:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   width:num <- screen-width screen
   result <- new environment:type
   # sandbox editor
@@ -26,7 +26,7 @@ def new-programming-environment resources:&:resources, screen:&:screen, test-san
 
 def event-loop screen:&:screen, console:&:console, env:&:environment, resources:&:resources -> screen:&:screen, console:&:console, env:&:environment, resources:&:resources [
   local-scope
-  load-ingredients
+  load-inputs
   current-sandbox:&:editor <- get *env, current-sandbox:offset
   # if we fall behind we'll stop updating the screen, but then we have to
   # render the entire screen when we catch up.
@@ -97,7 +97,7 @@ def event-loop screen:&:screen, console:&:console, env:&:environment, resources:
 
 def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   clear-screen screen  # update screen dimensions
   width:num <- screen-width screen
   # update sandbox editor
@@ -114,7 +114,7 @@ def resize screen:&:screen, env:&:environment -> env:&:environment, screen:&:scr
 # off-screen, it resets cursor-row and cursor-column.
 def render-without-moving-cursor screen:&:screen, editor:&:editor -> last-row:num, last-column:num, screen:&:screen, editor:&:editor [
   local-scope
-  load-ingredients
+  load-inputs
   return-unless editor, 1/top, 0/left
   left:num <- get *editor, left:offset
   screen-height:num <- screen-height screen
@@ -195,7 +195,7 @@ type render-recipe = (recipe (address screen) (address editor) -> number number 
 
 def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 10, [app], [render all]
   # top menu
   trace 11, [app], [render top menu]
@@ -217,7 +217,7 @@ def render-all screen:&:screen, env:&:environment, render-editor:render-recipe -
 # replaced in a later layer
 def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render-recipe -> screen:&:screen, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   trace 11, [app], [render sandboxes]
   old-top-idx:num <- save-top-idx screen
   current-sandbox:&:editor <- get *env, current-sandbox:offset
@@ -236,7 +236,7 @@ def render-sandbox-side screen:&:screen, env:&:environment, render-editor:render
 
 def update-cursor screen:&:screen, current-sandbox:&:editor, env:&:environment -> screen:&:screen [
   local-scope
-  load-ingredients
+  load-inputs
   <update-cursor-special-cases>
   cursor-row:num <- get *current-sandbox, cursor-row:offset
   cursor-column:num <- get *current-sandbox, cursor-column:offset

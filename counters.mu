@@ -3,12 +3,12 @@
 
 def new-counter n:num -> default-space:space [
   default-space <- new location:type, 30
-  load-ingredients  # initialize n
+  load-inputs  # initialize n
 ]
 
 def increment-counter outer:space/names:new-counter, x:num -> n:num/space:1 [
   local-scope
-  load-ingredients
+  load-inputs
   0:space/names:new-counter <- copy outer  # setup outer space; it *must* come from 'new-counter'
   n/space:1 <- add n/space:1, x
 ]

@@ -151,7 +151,7 @@ after <global-touch> [
 # some preconditions for attempting to copy a sandbox
 def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   # are we below the sandbox editor?
   click-sandbox-area?:bool <- click-on-sandbox-area? click-row, env
   return-unless click-sandbox-area?, 0/false
@@ -170,7 +170,7 @@ def should-attempt-copy? click-row:num, click-column:num, env:&:environment -> r
 
 def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?:bool, env:&:environment [
   local-scope
-  load-ingredients
+  load-inputs
   # identify the sandbox to copy, if the click was actually on the 'copy' button
   sandbox:&:sandbox <- find-sandbox env, click-row
   return-unless sandbox, 0/false
@@ -184,7 +184,7 @@ def try-copy-sandbox click-row:num, env:&:environment -> clicked-on-copy-button?
 
 def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
   local-scope
-  load-ingredients
+  load-inputs
   curr-sandbox:&:sandbox <- get *env, sandbox:offset
   {
     break-unless curr-sandbox
@@ -199,7 +199,7 @@ def find-sandbox env:&:environment, click-row:num -> result:&:sandbox [
 
 def click-on-sandbox-area? click-row:num, env:&:environment -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   first-sandbox:&:sandbox <- get *env, sandbox:offset
   return-unless first-sandbox, 0/false
   first-sandbox-begins:num <- get *first-sandbox, starting-row-on-screen:offset
@@ -208,7 +208,7 @@ def click-on-sandbox-area? click-row:num, env:&:environment -> result:bool [
 
 def empty-editor? editor:&:editor -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   head:&:duplex-list:char <- get *editor, data:offset
   first:&:duplex-list:char <- next head
   result <- not first
@@ -216,7 +216,7 @@ def empty-editor? editor:&:editor -> result:bool [
 
 def within-range? x:num, low:num, high:num -> result:bool [
   local-scope
-  load-ingredients
+  load-inputs
   not-too-far-left?:bool <- greater-or-equal x, low
   not-too-far-right?:bool <- lesser-or-equal x, high
   result <- and not-too-far-left? not-too-far-right?

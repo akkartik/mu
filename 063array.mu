@@ -18,20 +18,20 @@ def new-array -> result:&:@:_elem [
   capacity:num <- copy 0
   {
     # while read curr-value
-    curr-value:_elem, exists?:bool <- next-ingredient
+    curr-value:_elem, exists?:bool <- next-input
     break-unless exists?
     capacity <- add capacity, 1
     loop
   }
   result <- new _elem:type, capacity
-  rewind-ingredients
+  rewind-inputs
   i:num <- copy 0
   {
     # while read curr-value
     done?:bool <- greater-or-equal i, capacity
     break-if done?
-    curr-value:_elem, exists?:bool <- next-ingredient
-    assert exists?, [error in rewinding ingredients to new-array]
+    curr-value:_elem, exists?:bool <- next-input
+    assert exists?, [error in rewinding inputs to new-array]
     *result <- put-index *result, i, curr-value
     i <- add i, 1
     loop
@@ -43,13 +43,13 @@ def new-array -> result:&:@:_elem [
 # (contributed by Caleb Couch)
 def fill array:&:@:num -> array:&:@:num [
   local-scope
-  load-ingredients
+  load-inputs
   loopn:num <- copy 0
   length:num <- length *array
   {
     length?:bool <- equal loopn, length
     break-if length?
-    object:num, arg-received?:bool <- next-ingredient
+    object:num, arg-received?:bool <- next-input
     break-unless arg-received?
     *array <- put-index *array, loopn, object
     loopn <- add loopn, 1
@@ -88,7 +88,7 @@ scenario fill-overwrites-existing-values [
   ]
 ]
 
-scenario fill-exits-gracefully-when-given-no-ingredients [
+scenario fill-exits-gracefully-when-given-no-inputs [
   local-scope
   array:&:@:num <- new number:type, 3
   run [
@@ -107,7 +107,7 @@ scenario fill-exits-gracefully-when-given-no-ingredients [
 # (contributed by Caleb Couch)
 def swap array:&:@:num, index1:num, index2:num -> array:&:@:num [
   local-scope
-  load-ingredients
+  load-inputs
   object1:num <- index *array, index1
   object2:num <- index *array, index2
   *array <- put-index *array, index1, object2
@@ -133,7 +133,7 @@ scenario swap-works [
 # (contributed by Caleb Couch)
 def reverse array:&:@:_elem -> array:&:@:_elem [
   local-scope
-  load-ingredients
+  load-inputs
   start:num <- copy 0
   length:num <- length *array
   end:num <- subtract length, 1

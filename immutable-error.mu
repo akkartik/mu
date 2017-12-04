@@ -8,6 +8,6 @@ def main [
 
 def foo x:&:num [
   local-scope
-  load-ingredients
+  load-inputs
   *x <- copy 34  # will cause an error because x is immutable in this function
 ]
