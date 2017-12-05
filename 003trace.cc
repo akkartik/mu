@@ -215,7 +215,7 @@ lease_tracer::lease_tracer() { Trace_stream = new trace_stream; }
 lease_tracer::~lease_tracer() {
   if (!Trace_stream) return;  // in case tests close Trace_stream
   if (Save_trace) {
-    ofstream fout("last_trace");
+    ofstream fout("last_run");
     fout << Trace_stream->readable_contents("");
     fout.close();
   }

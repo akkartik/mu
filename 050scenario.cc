@@ -230,7 +230,7 @@ void run_mu_scenario(const scenario& s) {
     Passed = false;
   if (not_already_inside_test && Trace_stream) {
     if (Save_trace) {
-      ofstream fout("last_trace");
+      ofstream fout("last_run");
       fout << Trace_stream->readable_contents("");
       fout.close();
     }

@@ -76,8 +76,8 @@ void decrement_refcount(int old_address, const type_tree* payload_type, int payl
   if (old_refcount < 0) {
     cerr << "Negative refcount!!! " << old_address << ' ' << old_refcount << '\n';
     if (Trace_stream) {
-      cerr << "Saving trace to last_trace.\n";
-      ofstream fout("last_trace");
+      cerr << "Saving trace to last_run.\n";
+      ofstream fout("last_run");
       fout << Trace_stream->readable_contents("");
       fout.close();
     }
