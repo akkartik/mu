@@ -179,11 +179,7 @@ case _SAVE_TRACE: {
 }
 :(before "End Primitive Recipe Implementations")
 case _SAVE_TRACE: {
-  if (Save_trace) {
-    ofstream fout("last_run");
-    fout << Trace_stream->readable_contents("");
-    fout.close();
-  }
+  if (Save_trace) Trace_stream->dump();
   break;
 }
 

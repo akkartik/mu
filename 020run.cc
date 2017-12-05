@@ -233,13 +233,11 @@ else if (is_equal(*arg, "--trace")) {
 
 :(code)
 void cleanup_main() {
-  if (Save_trace && Trace_stream) {
-    cerr << "writing trace to 'last_run'\n";
-    ofstream fout("last_run");
-    fout << Trace_stream->readable_contents("");
-    fout.close();
-  }
-  if (Trace_stream) delete Trace_stream, Trace_stream = NULL;
+  if (!Trace_stream) return;
+  if (Save_trace);
+    Trace_stream->dump();
+  delete Trace_stream;
+  Trace_stream = NULL;
 }
 :(before "End One-time Setup")
 atexit(cleanup_main);

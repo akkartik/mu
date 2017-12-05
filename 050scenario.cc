@@ -229,11 +229,7 @@ void run_mu_scenario(const scenario& s) {
   if (!Hide_errors && trace_contains_errors() && !Scenario_testing_scenario)
     Passed = false;
   if (not_already_inside_test && Trace_stream) {
-    if (Save_trace) {
-      ofstream fout("last_run");
-      fout << Trace_stream->readable_contents("");
-      fout.close();
-    }
+    if (Save_trace) Trace_stream->dump();
     delete Trace_stream;
     Trace_stream = NULL;
   }
