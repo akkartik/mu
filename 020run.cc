@@ -234,7 +234,7 @@ else if (is_equal(*arg, "--trace")) {
 :(code)
 void cleanup_main() {
   if (!Trace_stream) return;
-  if (Save_trace);
+  if (Save_trace)
     Trace_stream->dump();
   delete Trace_stream;
   Trace_stream = NULL;
