@@ -280,14 +280,12 @@ string insert_new_variant(recipe_ordinal exemplar, const instruction& inst, cons
   // record variant before performing transforms, just in case the recipe is recursive
   get(Recipe_variants, inst.name).push_back(new_recipe_ordinal);
   // perform all transforms on the new specialization
-  if (!new_recipe.steps.empty()) {
-    trace(9992, "transform") << "transforming new specialization: " << new_recipe.name << end();
-    for (int t = 0;  t < SIZE(Transform);  ++t) {
-      // one exception: skip tangle, which has already occurred above
-      if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
-        continue;
-      (*Transform.at(t))(new_recipe_ordinal);
-    }
+  trace(9992, "transform") << "transforming new specialization: " << new_recipe.name << end();
+  for (int t = 0;  t < SIZE(Transform);  ++t) {
+    // one exception: skip tangle, which has already occurred above
+    if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
+      continue;
+    (*Transform.at(t))(new_recipe_ordinal);
   }
   new_recipe.transformed_until = SIZE(Transform)-1;
   return new_recipe.name;
