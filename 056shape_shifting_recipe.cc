@@ -51,25 +51,12 @@ candidates = strictly_matching_shape_shifting_variants(inst, variants);
 if (!candidates.empty()) {
   recipe_ordinal exemplar = best_shape_shifting_variant(inst, candidates);
   trace(9992, "transform") << "found variant to specialize: " << exemplar << ' ' << get(Recipe, exemplar).name << end();
-  recipe_ordinal new_recipe_ordinal = new_variant(exemplar, inst, caller_recipe);
-  if (new_recipe_ordinal == 0) goto skip_shape_shifting_variants;
-  get(Recipe_variants, inst.name).push_back(new_recipe_ordinal);  // side-effect
-  recipe& variant = get(Recipe, new_recipe_ordinal);
-  // perform all transforms on the new specialization
-  if (!variant.steps.empty()) {
-    trace(9992, "transform") << "transforming new specialization: " << variant.name << end();
-    for (int t = 0;  t < SIZE(Transform);  ++t) {
-      // one exception: skip tangle, which would have already occurred inside new_variant above
-      if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
-        continue;
-      (*Transform.at(t))(new_recipe_ordinal);
-    }
+  string new_recipe_name = insert_new_variant(exemplar, inst, caller_recipe);
+  if (new_recipe_name != "") {
+    trace(9992, "transform") << "new specialization: " << new_recipe_name << end();
+    return new_recipe_name;
   }
-  variant.transformed_until = SIZE(Transform)-1;
-  trace(9992, "transform") << "new specialization: " << variant.name << end();
-  return variant.name;
 }
-skip_shape_shifting_variants:;
 
 //: before running Mu programs, make sure no unspecialized shape-shifting
 //: recipes can be called
@@ -254,7 +241,8 @@ int number_of_type_ingredients(const type_tree* type) {
        + number_of_type_ingredients(type->right);
 }
 
-recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
+// returns name of new variant
+string insert_new_variant(recipe_ordinal exemplar, const instruction& inst, const recipe& caller_recipe) {
   string new_name = next_unused_recipe_name(inst.name);
   assert(!contains_key(Recipe_ordinal, new_name));
   recipe_ordinal new_recipe_ordinal = put(Recipe_ordinal, new_name, Next_recipe_ordinal++);
@@ -285,11 +273,24 @@ recipe_ordinal new_variant(recipe_ordinal exemplar, const instruction& inst, con
     if (!error) replace_type_ingredients(new_recipe, mappings);
     for (map<string, const type_tree*>::iterator p = mappings.begin();  p != mappings.end();  ++p)
       delete p->second;
-    if (error) return 0;
+    if (error) return "";
   }
   ensure_all_concrete_types(new_recipe, get(Recipe, exemplar));
   put(Recipe, new_recipe_ordinal, new_recipe);
-  return new_recipe_ordinal;
+  // record variant before performing transforms, just in case the recipe is recursive
+  get(Recipe_variants, inst.name).push_back(new_recipe_ordinal);
+  // perform all transforms on the new specialization
+  if (!new_recipe.steps.empty()) {
+    trace(9992, "transform") << "transforming new specialization: " << new_recipe.name << end();
+    for (int t = 0;  t < SIZE(Transform);  ++t) {
+      // one exception: skip tangle, which has already occurred above
+      if (Transform.at(t) == /*disambiguate overloading*/static_cast<transform_fn>(insert_fragments))
+        continue;
+      (*Transform.at(t))(new_recipe_ordinal);
+    }
+  }
+  new_recipe.transformed_until = SIZE(Transform)-1;
+  return new_recipe.name;
 }
 
 void compute_type_names(recipe& variant) {
