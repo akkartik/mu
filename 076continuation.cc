@@ -260,6 +260,25 @@ def g [
 # ..even though we never called the continuation
 -app: continuation called
 
+//: Allow shape-shifting recipes to return continuations.
+
+:(scenario call_shape_shifting_recipe_with_continuation_mark)
+def main [
+  1:num <- call-with-continuation-mark f, 34
+]
+def f x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 1
+
+:(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
+if (inst.name == "call-with-continuation-mark" && first_ingredient_is_recipe_literal(inst)) {
+  resolve_indirect_ambiguous_call(r, index, inst, caller_recipe);
+  return;
+}
+
 //: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
 
 :(scenario continuations_preserve_local_scopes)

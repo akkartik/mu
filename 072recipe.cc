@@ -205,7 +205,17 @@ def f x:point -> y:point [
 +error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
-if (inst.name == "call" && !inst.ingredients.empty() && inst.ingredients.at(0).type && inst.ingredients.at(0).type->atom && inst.ingredients.at(0).type->name == "recipe-literal") {
+if (inst.name == "call" && first_ingredient_is_recipe_literal(inst)) {
+  resolve_indirect_ambiguous_call(r, index, inst, caller_recipe);
+  return;
+}
+:(code)
+bool first_ingredient_is_recipe_literal(const instruction& inst) {
+  if (inst.ingredients.empty()) return false;
+  const reagent& ingredient = inst.ingredients.at(0);
+  return ingredient.type && ingredient.type->atom && ingredient.type->name == "recipe-literal";
+}
+void resolve_indirect_ambiguous_call(const recipe_ordinal r, int index, instruction& inst, const recipe& caller_recipe) {
   instruction inst2;
   inst2.name = inst.ingredients.at(0).name;
   for (int i = /*skip recipe*/1;  i < SIZE(inst.ingredients);  ++i)
@@ -215,7 +225,6 @@ if (inst.name == "call" && !inst.ingredients.empty() && inst.ingredients.at(0).t
   resolve_ambiguous_call(r, index, inst2, caller_recipe);
   inst.ingredients.at(0).name = inst2.name;
   inst.ingredients.at(0).set_value(get(Recipe_ordinal, inst2.name));
-  return;
 }
 
 :(after "Transform.push_back(check_instruction)")
