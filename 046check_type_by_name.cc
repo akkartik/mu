@@ -36,6 +36,7 @@ void check_or_set_types_by_name(const recipe_ordinal r) {
 }
 
 void deduce_missing_type(set<reagent>& known, reagent& x, const recipe& caller) {
+  // Deduce Missing Type(x, caller)
   if (x.type) return;
   if (is_jump_target(x.name)) {
     x.type = new type_tree("label");

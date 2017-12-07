@@ -314,6 +314,7 @@ void save_or_deduce_type_name(reagent& x, map<string, type_tree*>& type, const r
     trace(9994, "transform") << "    deducing type to " << names_to_string(x.type) << end();
     return;
   }
+  // Type Check in Type-ingredient-aware check_or_set_types_by_name
   // This is different from check_or_set_types_by_name.
   // We've found it useful in the past for tracking down bugs in
   // specialization.

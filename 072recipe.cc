@@ -21,31 +21,21 @@ put(Type_ordinal, "recipe-literal", 0);
 type_ordinal recipe = put(Type_ordinal, "recipe", Next_type_ordinal++);
 get_or_insert(Type, recipe).name = "recipe";
 
-:(after "Begin transform_names Ingredient Special-cases(ingredient, inst, caller)")
-if (is_recipe_literal(ingredient, caller)) {
-  initialize_recipe_literal(ingredient);
-  continue;
-}
-:(after "Begin transform_names Product Special-cases(product, inst, caller)")
-if (is_recipe_literal(product, caller)) {
-  initialize_recipe_literal(product);
-  continue;
-}
+:(after "Deduce Missing Type(x, caller)")
+if (!x.type)
+  try_initialize_recipe_literal(x, caller);
+:(before "Type Check in Type-ingredient-aware check_or_set_types_by_name")
+if (!x.type)
+  try_initialize_recipe_literal(x, variant);
 :(code)
-bool is_recipe_literal(const reagent& x, const recipe& caller) {
-  if (x.type) return false;
-  if (!contains_key(Recipe_ordinal, x.name)) return false;
-  if (contains_reagent_with_type(caller, x.name)) {
-    raise << maybe(caller.name) << "you can't use '" << x.name << "' as a recipe literal when it's also a variable\n" << end();
-    return false;
-  }
-  return true;
-}
-void initialize_recipe_literal(reagent& x) {
+void try_initialize_recipe_literal(reagent& x, const recipe& caller) {
+  if (x.type) return;
+  if (!contains_key(Recipe_ordinal, x.name)) return;
+  if (contains_reagent_with_non_recipe_literal_type(caller, x.name)) return;
   x.type = new type_tree("recipe-literal");
   x.set_value(get(Recipe_ordinal, x.name));
 }
-bool contains_reagent_with_type(const recipe& caller, const string& name) {
+bool contains_reagent_with_non_recipe_literal_type(const recipe& caller, const string& name) {
   for (int i = 0;  i < SIZE(caller.steps);  ++i) {
     const instruction& inst = caller.steps.at(i);
     for (int i = 0;  i < SIZE(inst.ingredients);  ++i)
@@ -58,8 +48,7 @@ bool contains_reagent_with_type(const recipe& caller, const string& name) {
 bool is_matching_non_recipe_literal(const reagent& x, const string& name) {
   if (x.name != name) return false;
   if (!x.type) return false;
-  if (!x.type->atom) return false;
-  return x.type->value != get(Type_ordinal, "recipe-literal");
+  return !x.type->atom || x.type->name != "recipe-literal";
 }
 
 //: It's confusing to use variable names that are also recipe names. Always
@@ -71,7 +60,6 @@ def main [
   a:bool <- equal break 0
   break:bool <- copy 0
 ]
-+error: main: you can't use 'break' as a recipe literal when it's also a variable
 +error: main: missing type for 'break' in 'a:bool <- equal break, 0'
 
 :(before "End Primitive Recipe Declarations")
@@ -130,11 +118,57 @@ def f x:num -> y:num [
 ]
 +mem: storing 34 in location 2
 
+:(scenario call_literal_recipe_repeatedly)
+def main [
+  1:num <- call f, 34
+  1:num <- call f, 35
+]
+def f x:num -> y:num [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 1
++mem: storing 35 in location 1
+
 :(scenario call_shape_shifting_recipe)
 def main [
   1:num <- call f, 34
 ]
 def f x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 1
+
+:(scenario call_shape_shifting_recipe_inside_shape_shifting_recipe)
+def main [
+  1:num <- f 34
+]
+def f x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- call g x
+]
+def g x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- copy x
+]
++mem: storing 34 in location 1
+
+:(scenario call_shape_shifting_recipe_repeatedly_inside_shape_shifting_recipe)
+def main [
+  1:num <- f 34
+]
+def f x:_elem -> y:_elem [
+  local-scope
+  load-ingredients
+  y <- call g x
+  y <- call g x
+]
+def g x:_elem -> y:_elem [
   local-scope
   load-ingredients
   y <- copy x
