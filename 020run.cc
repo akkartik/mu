@@ -208,13 +208,14 @@ save_snapshots();
 if (!Run_tests && contains_key(Recipe_ordinal, "main") && contains_key(Recipe, get(Recipe_ordinal, "main"))) {
   // Running Main
   reset();
-  if (Start_tracing) {
+  if (Start_tracing && Trace_stream == NULL) {
     Trace_stream = new trace_stream;
     Save_trace = true;
   }
   trace(2, "run") << "=== Starting to run" << end();
   assert(Num_calls_to_transform_all == 1);
   run_main(argc, argv);
+  if (Start_tracing && Trace_stream) Trace_stream->dump();
 }
 :(code)
 void run_main(int argc, char* argv[]) {
@@ -380,7 +381,10 @@ void run(const string& form) {
   vector<recipe_ordinal> tmp = load(form);
   transform_all();
   if (tmp.empty()) return;
-  if (trace_contains_errors()) return;
+  if (trace_contains_errors()) {
+    if (Start_tracing && Trace_stream) Trace_stream->dump();
+    return;
+  }
   // if a test defines main, it probably wants to start there regardless of
   // definition order
   if (contains_key(Recipe, get(Recipe_ordinal, "main")))
