@@ -335,6 +335,21 @@ if (is_mu_continuation(canonized_x)) {
   return;
 }
 
+:(scenario continuations_can_be_copied)
+def main [
+  local-scope
+  k:continuation <- call-with-continuation-mark f
+  k2:continuation <- copy k
+  # reclaiming k and k2 shouldn't delete f's local scope twice
+]
+def f [
+  local-scope
+  load-ingredients
+  return-continuation-until-mark
+  return 0
+]
+$error: 0
+
 :(code)
 bool is_mu_continuation(reagent/*copy*/ x) {
   canonize_type(x);
@@ -350,18 +365,3 @@ void dump(const int continuation_id) {
   delimited_continuation& curr = get(Delimited_continuation, continuation_id);
   dump(curr.frames);
 }
-
-:(scenario continuations_can_be_copied)
-def main [
-  local-scope
-  k:continuation <- call-with-continuation-mark f
-  k2:continuation <- copy k
-  # reclaiming k and k2 shouldn't delete f's local scope twice
-]
-def f [
-  local-scope
-  load-ingredients
-  return-continuation-until-mark
-  return 0
-]
-$error: 0
