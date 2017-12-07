@@ -199,7 +199,10 @@ transform_all();
 //? cerr << to_original_string(get(Recipe, get(Recipe_ordinal, "event-loop"))) << '\n';
 //? DUMP("");
 //? exit(0);
-if (trace_contains_errors()) return 1;
+if (trace_contains_errors()) {
+  if (Start_tracing && Trace_stream) Trace_stream->dump();
+  return 1;
+}
 save_snapshots();
 
 //: Step 3: if we aren't running tests, locate a recipe called 'main' and
