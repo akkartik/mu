@@ -341,6 +341,16 @@ bool is_mu_continuation(reagent/*copy*/ x) {
   return x.type && x.type->atom && x.type->value == get(Type_ordinal, "continuation");
 }
 
+// helper for debugging
+void dump(const int continuation_id) {
+  if (!contains_key(Delimited_continuation, continuation_id)) {
+    raise << "missing delimited continuation: " << continuation_id << '\n' << end();
+    return;
+  }
+  delimited_continuation& curr = get(Delimited_continuation, continuation_id);
+  dump(curr.frames);
+}
+
 :(scenario continuations_can_be_copied)
 def main [
   local-scope

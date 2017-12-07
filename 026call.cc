@@ -216,7 +216,11 @@ case _DUMP_CALL_STACK: {
 }
 :(before "End Primitive Recipe Implementations")
 case _DUMP_CALL_STACK: {
-  for (call_stack::const_reverse_iterator p = Current_routine->calls.rbegin(); p != Current_routine->calls.rend(); ++p)
-    cerr << get(Recipe, p->running_recipe).name << ":" << p->running_step_index << " -- " << to_string(to_instruction(*p)) << '\n';
+  dump(Current_routine->calls);
   break;
+}
+:(code)
+void dump(const call_stack& calls) {
+  for (call_stack::const_reverse_iterator p = calls.rbegin(); p != calls.rend(); ++p)
+    cerr << get(Recipe, p->running_recipe).name << ":" << p->running_step_index << " -- " << to_string(to_instruction(*p)) << '\n';
 }
