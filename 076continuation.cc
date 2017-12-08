@@ -163,8 +163,9 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
 }
 :(before "End Primitive Recipe Implementations")
 case RETURN_CONTINUATION_UNTIL_MARK: {
-  // first clear any existing ingredients, to isolate the creation of the
-  // continuation from its calls
+  // I don't know how to think about next-ingredient in combination with
+  // continuations, so seems cleaner to just kill it. Functions have to read
+  // their inputs before ever returning a continuation.
   Current_routine->calls.front().ingredient_atoms.clear();
   Current_routine->calls.front().next_ingredient_to_process = 0;
   // copy the current call stack until the most recent marked call
