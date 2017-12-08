@@ -279,6 +279,17 @@ if (inst.name == "call-with-continuation-mark" && first_ingredient_is_recipe_lit
   return;
 }
 
+:(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)
+def main [
+  1:continuation <- call-with-continuation-mark f, 34
+]
+def f x:_elem [
+  local-scope
+  load-ingredients
+  return-continuation-until-mark
+]
+$error: 0
+
 //: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
 
 :(scenario continuations_preserve_local_scopes)

@@ -92,7 +92,7 @@ bool all_concrete_header_reagents_strictly_match(const instruction& inst, const 
       return false;
     }
   }
-  for (int i = 0;  i < min(SIZE(inst.products), SIZE(variant.ingredients));  ++i) {
+  for (int i = 0;  i < min(SIZE(inst.products), SIZE(variant.products));  ++i) {
     if (is_dummy(inst.products.at(i))) continue;
     if (!concrete_type_names_strictly_match(variant.products.at(i), inst.products.at(i))) {
       trace(9993, "transform") << "concrete-type match failed: product " << i << end();
