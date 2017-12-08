@@ -1,4 +1,4 @@
-# Another example of continuations: the 'same fringe' problem:
+# Another example of continuations: the 'same fringe' problem
 #   http://wiki.c2.com/?SameFringeProblem
 #
 # Expected output:
