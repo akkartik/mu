@@ -103,187 +103,193 @@ if ('onhashchange' in window) {
 <span id="L37" class="LineNr"> 37 </span>  <a href='010vm.cc.html#L14'>recipe_ordinal</a> running_recipe<span class="Delimiter">;</span>
 <span id="L38" class="LineNr"> 38 </span>  <span class="Normal">int</span> running_step_index<span class="Delimiter">;</span>
 <span id="L39" class="LineNr"> 39 </span>  <span class="Comment">// End call Fields</span>
-<span id="L40" class="LineNr"> 40 </span>  call<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L41" class="LineNr"> 41 </span>  <span class="Conceal">¦</span> running_recipe = r<span class="Delimiter">;</span>
-<span id="L42" class="LineNr"> 42 </span>  <span class="Conceal">¦</span> running_step_index = <span class="Constant">0</span><span class="Delimiter">;</span>
-<span id="L43" class="LineNr"> 43 </span>  <span class="Conceal">¦</span> <span class="Comment">// End call Constructor</span>
-<span id="L44" class="LineNr"> 44 </span>  <span class="Delimiter">}</span>
-<span id="L45" class="LineNr"> 45 </span>  ~call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L46" class="LineNr"> 46 </span>  <span class="Conceal">¦</span> <span class="Comment">// End call Destructor</span>
-<span id="L47" class="LineNr"> 47 </span>  <span class="Delimiter">}</span>
-<span id="L48" class="LineNr"> 48 </span><span class="Delimiter">};</span>
-<span id="L49" class="LineNr"> 49 </span><span class="Normal">typedef</span> list&lt;call&gt; call_stack<span class="Delimiter">;</span>
-<span id="L50" class="LineNr"> 50 </span>
-<span id="L51" class="LineNr"> 51 </span><span class="Delimiter">:(replace{} &quot;struct routine&quot;)</span>
-<span id="L52" class="LineNr"> 52 </span><span class="Normal">struct</span> routine <span class="Delimiter">{</span>
-<span id="L53" class="LineNr"> 53 </span>  call_stack calls<span class="Delimiter">;</span>
-<span id="L54" class="LineNr"> 54 </span>  <span class="Comment">// End routine Fields</span>
-<span id="L55" class="LineNr"> 55 </span>  routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">);</span>
-<span id="L56" class="LineNr"> 56 </span>  <span class="Normal">bool</span> completed<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
-<span id="L57" class="LineNr"> 57 </span>  <span class="Normal">const</span> vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
-<span id="L58" class="LineNr"> 58 </span><span class="Delimiter">};</span>
-<span id="L59" class="LineNr"> 59 </span><span class="Delimiter">:(code)</span>
-<span id="L60" class="LineNr"> 60 </span>routine::routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L61" class="LineNr"> 61 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L62" class="LineNr"> 62 </span>  <span class="Conceal">¦</span> ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L63" class="LineNr"> 63 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new routine; incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L64" class="LineNr"> 64 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
-<span id="L65" class="LineNr"> 65 </span>  <span class="Delimiter">}</span>
-<span id="L66" class="LineNr"> 66 </span>  calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
-<span id="L67" class="LineNr"> 67 </span>  <span class="Comment">// End routine Constructor</span>
-<span id="L68" class="LineNr"> 68 </span><span class="Delimiter">}</span>
-<span id="L69" class="LineNr"> 69 </span>
-<span id="L70" class="LineNr"> 70 </span><span class="SalientComment">//:: now update routine's helpers</span>
+<span id="L40" class="LineNr"> 40 </span>  call<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span> <a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">(</span>r<span class="Delimiter">,</span> <span class="Constant">0</span><span class="Delimiter">);</span> <span class="Delimiter">}</span>
+<span id="L41" class="LineNr"> 41 </span>  call<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">,</span> <span class="Normal">int</span> index<span class="Delimiter">)</span> <span class="Delimiter">{</span> <a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">(</span>r<span class="Delimiter">,</span> index<span class="Delimiter">);</span> <span class="Delimiter">}</span>
+<span id="L42" class="LineNr"> 42 </span>  <span class="Normal">void</span> <a href='050scenario.cc.html#L60'>clear</a><span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">,</span> <span class="Normal">int</span> index<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L43" class="LineNr"> 43 </span>  <span class="Conceal">¦</span> running_recipe = r<span class="Delimiter">;</span>
+<span id="L44" class="LineNr"> 44 </span>  <span class="Conceal">¦</span> running_step_index = index<span class="Delimiter">;</span>
+<span id="L45" class="LineNr"> 45 </span>  <span class="Conceal">¦</span> <span class="Comment">// End call Constructor</span>
+<span id="L46" class="LineNr"> 46 </span>  <span class="Delimiter">}</span>
+<span id="L47" class="LineNr"> 47 </span>  ~call<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L48" class="LineNr"> 48 </span>  <span class="Conceal">¦</span> <span class="Comment">// End call Destructor</span>
+<span id="L49" class="LineNr"> 49 </span>  <span class="Delimiter">}</span>
+<span id="L50" class="LineNr"> 50 </span><span class="Delimiter">};</span>
+<span id="L51" class="LineNr"> 51 </span><span class="Normal">typedef</span> list&lt;call&gt; call_stack<span class="Delimiter">;</span>
+<span id="L52" class="LineNr"> 52 </span>
+<span id="L53" class="LineNr"> 53 </span><span class="Delimiter">:(replace{} &quot;struct routine&quot;)</span>
+<span id="L54" class="LineNr"> 54 </span><span class="Normal">struct</span> routine <span class="Delimiter">{</span>
+<span id="L55" class="LineNr"> 55 </span>  call_stack calls<span class="Delimiter">;</span>
+<span id="L56" class="LineNr"> 56 </span>  <span class="Comment">// End routine Fields</span>
+<span id="L57" class="LineNr"> 57 </span>  routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">);</span>
+<span id="L58" class="LineNr"> 58 </span>  <span class="Normal">bool</span> completed<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
+<span id="L59" class="LineNr"> 59 </span>  <span class="Normal">const</span> vector&lt;instruction&gt;&amp; steps<span class="Delimiter">()</span> <span class="Normal">const</span><span class="Delimiter">;</span>
+<span id="L60" class="LineNr"> 60 </span><span class="Delimiter">};</span>
+<span id="L61" class="LineNr"> 61 </span><span class="Delimiter">:(code)</span>
+<span id="L62" class="LineNr"> 62 </span>routine::routine<span class="Delimiter">(</span><a href='010vm.cc.html#L14'>recipe_ordinal</a> r<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L63" class="LineNr"> 63 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L64" class="LineNr"> 64 </span>  <span class="Conceal">¦</span> ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+<span id="L65" class="LineNr"> 65 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;new routine; incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L66" class="LineNr"> 66 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+<span id="L67" class="LineNr"> 67 </span>  <span class="Delimiter">}</span>
+<span id="L68" class="LineNr"> 68 </span>  calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span>r<span class="Delimiter">));</span>
+<span id="L69" class="LineNr"> 69 </span>  <span class="Comment">// End routine Constructor</span>
+<span id="L70" class="LineNr"> 70 </span><span class="Delimiter">}</span>
 <span id="L71" class="LineNr"> 71 </span>
-<span id="L72" class="LineNr"> 72 </span><span class="Comment">//: macro versions for a slight speedup</span>
+<span id="L72" class="LineNr"> 72 </span><span class="SalientComment">//:: now update routine's helpers</span>
 <span id="L73" class="LineNr"> 73 </span>
-<span id="L74" class="LineNr"> 74 </span><span class="Delimiter">:(delete{} &quot;int&amp; current_step_index()&quot;)</span>
-<span id="L75" class="LineNr"> 75 </span><span class="Delimiter">:(delete{} &quot;recipe_ordinal currently_running_recipe()&quot;)</span>
-<span id="L76" class="LineNr"> 76 </span><span class="Delimiter">:(delete{} &quot;const string&amp; current_recipe_name()&quot;)</span>
-<span id="L77" class="LineNr"> 77 </span><span class="Delimiter">:(delete{} &quot;const recipe&amp; current_recipe()&quot;)</span>
-<span id="L78" class="LineNr"> 78 </span><span class="Delimiter">:(delete{} &quot;const instruction&amp; current_instruction()&quot;)</span>
-<span id="L79" class="LineNr"> 79 </span>
-<span id="L80" class="LineNr"> 80 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L81" class="LineNr"> 81 </span><span class="PreProc">#define current_call() Current_routine</span><span class="Delimiter">-&gt;</span><span class="PreProc">calls</span><span class="Delimiter">.</span><span class="PreProc">front()</span>
-<span id="L82" class="LineNr"> 82 </span><span class="PreProc">#define current_step_index() current_call()</span><span class="Delimiter">.</span><span class="PreProc">running_step_index</span>
-<span id="L83" class="LineNr"> 83 </span><span class="PreProc">#define currently_running_recipe() current_call()</span><span class="Delimiter">.</span><span class="PreProc">running_recipe</span>
-<span id="L84" class="LineNr"> 84 </span><span class="PreProc">#define current_recipe() get(Recipe</span><span class="Delimiter">,</span><span class="PreProc"> currently_running_recipe())</span>
-<span id="L85" class="LineNr"> 85 </span><span class="PreProc">#define current_recipe_name() current_recipe()</span><span class="Delimiter">.</span><span class="PreProc">name</span>
-<span id="L86" class="LineNr"> 86 </span><span class="PreProc">#define to_instruction(call) get(Recipe</span><span class="Delimiter">,</span><span class="PreProc"> (call)</span><span class="Delimiter">.</span><span class="PreProc">running_recipe)</span><span class="Delimiter">.</span><span class="PreProc">steps</span><span class="Delimiter">.</span><span class="PreProc">at((call)</span><span class="Delimiter">.</span><span class="PreProc">running_step_index)</span>
-<span id="L87" class="LineNr"> 87 </span><span class="PreProc">#define current_instruction() to_instruction(current_call())</span>
-<span id="L88" class="LineNr"> 88 </span>
-<span id="L89" class="LineNr"> 89 </span><span class="Comment">//: function versions for debugging</span>
+<span id="L74" class="LineNr"> 74 </span><span class="Comment">//: macro versions for a slight speedup</span>
+<span id="L75" class="LineNr"> 75 </span>
+<span id="L76" class="LineNr"> 76 </span><span class="Delimiter">:(delete{} &quot;int&amp; current_step_index()&quot;)</span>
+<span id="L77" class="LineNr"> 77 </span><span class="Delimiter">:(delete{} &quot;recipe_ordinal currently_running_recipe()&quot;)</span>
+<span id="L78" class="LineNr"> 78 </span><span class="Delimiter">:(delete{} &quot;const string&amp; current_recipe_name()&quot;)</span>
+<span id="L79" class="LineNr"> 79 </span><span class="Delimiter">:(delete{} &quot;const recipe&amp; current_recipe()&quot;)</span>
+<span id="L80" class="LineNr"> 80 </span><span class="Delimiter">:(delete{} &quot;const instruction&amp; current_instruction()&quot;)</span>
+<span id="L81" class="LineNr"> 81 </span>
+<span id="L82" class="LineNr"> 82 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L83" class="LineNr"> 83 </span><span class="PreProc">#define current_call() Current_routine</span><span class="Delimiter">-&gt;</span><span class="PreProc">calls</span><span class="Delimiter">.</span><span class="PreProc">front()</span>
+<span id="L84" class="LineNr"> 84 </span><span class="PreProc">#define current_step_index() current_call()</span><span class="Delimiter">.</span><span class="PreProc">running_step_index</span>
+<span id="L85" class="LineNr"> 85 </span><span class="PreProc">#define currently_running_recipe() current_call()</span><span class="Delimiter">.</span><span class="PreProc">running_recipe</span>
+<span id="L86" class="LineNr"> 86 </span><span class="PreProc">#define current_recipe() get(Recipe</span><span class="Delimiter">,</span><span class="PreProc"> currently_running_recipe())</span>
+<span id="L87" class="LineNr"> 87 </span><span class="PreProc">#define current_recipe_name() current_recipe()</span><span class="Delimiter">.</span><span class="PreProc">name</span>
+<span id="L88" class="LineNr"> 88 </span><span class="PreProc">#define to_instruction(call) get(Recipe</span><span class="Delimiter">,</span><span class="PreProc"> (call)</span><span class="Delimiter">.</span><span class="PreProc">running_recipe)</span><span class="Delimiter">.</span><span class="PreProc">steps</span><span class="Delimiter">.</span><span class="PreProc">at((call)</span><span class="Delimiter">.</span><span class="PreProc">running_step_index)</span>
+<span id="L89" class="LineNr"> 89 </span><span class="PreProc">#define current_instruction() to_instruction(current_call())</span>
 <span id="L90" class="LineNr"> 90 </span>
-<span id="L91" class="LineNr"> 91 </span><span class="Delimiter">:(code)</span>
-<span id="L92" class="LineNr"> 92 </span><span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
-<span id="L93" class="LineNr"> 93 </span><span class="CommentedCode">//? bool Foo2 = false;</span>
-<span id="L94" class="LineNr"> 94 </span><span class="CommentedCode">//? :(code)</span>
-<span id="L95" class="LineNr"> 95 </span><span class="CommentedCode">//? call&amp; current_call() {</span>
-<span id="L96" class="LineNr"> 96 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L97" class="LineNr"> 97 </span><span class="CommentedCode">//?   return Current_routine-&gt;calls.front();</span>
-<span id="L98" class="LineNr"> 98 </span><span class="CommentedCode">//? }</span>
-<span id="L99" class="LineNr"> 99 </span><span class="CommentedCode">//? :(replace{} &quot;int&amp; current_step_index()&quot;)</span>
-<span id="L100" class="LineNr">100 </span><span class="CommentedCode">//? int&amp; current_step_index() {</span>
-<span id="L101" class="LineNr">101 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
-<span id="L102" class="LineNr">102 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L103" class="LineNr">103 </span><span class="CommentedCode">//?   return current_call().running_step_index;</span>
-<span id="L104" class="LineNr">104 </span><span class="CommentedCode">//? }</span>
-<span id="L105" class="LineNr">105 </span><span class="CommentedCode">//? :(replace{} &quot;recipe_ordinal currently_running_recipe()&quot;)</span>
-<span id="L106" class="LineNr">106 </span><span class="CommentedCode">//? recipe_ordinal currently_running_recipe() {</span>
-<span id="L107" class="LineNr">107 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
-<span id="L108" class="LineNr">108 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L109" class="LineNr">109 </span><span class="CommentedCode">//?   return current_call().running_recipe;</span>
-<span id="L110" class="LineNr">110 </span><span class="CommentedCode">//? }</span>
-<span id="L111" class="LineNr">111 </span><span class="CommentedCode">//? :(replace{} &quot;const string&amp; current_recipe_name()&quot;)</span>
-<span id="L112" class="LineNr">112 </span><span class="CommentedCode">//? const string&amp; current_recipe_name() {</span>
-<span id="L113" class="LineNr">113 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
-<span id="L114" class="LineNr">114 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L115" class="LineNr">115 </span><span class="CommentedCode">//?   return get(Recipe, current_call().running_recipe).name;</span>
-<span id="L116" class="LineNr">116 </span><span class="CommentedCode">//? }</span>
-<span id="L117" class="LineNr">117 </span><span class="CommentedCode">//? :(replace{} &quot;const recipe&amp; current_recipe()&quot;)</span>
-<span id="L118" class="LineNr">118 </span><span class="CommentedCode">//? const recipe&amp; current_recipe() {</span>
-<span id="L119" class="LineNr">119 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
-<span id="L120" class="LineNr">120 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L121" class="LineNr">121 </span><span class="CommentedCode">//?   return get(Recipe, current_call().running_recipe);</span>
-<span id="L122" class="LineNr">122 </span><span class="CommentedCode">//? }</span>
-<span id="L123" class="LineNr">123 </span><span class="CommentedCode">//? :(replace{} &quot;const instruction&amp; current_instruction()&quot;)</span>
-<span id="L124" class="LineNr">124 </span><span class="CommentedCode">//? const instruction&amp; current_instruction() {</span>
-<span id="L125" class="LineNr">125 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
-<span id="L126" class="LineNr">126 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
-<span id="L127" class="LineNr">127 </span><span class="CommentedCode">//?   return to_instruction(current_call());</span>
-<span id="L128" class="LineNr">128 </span><span class="CommentedCode">//? }</span>
-<span id="L129" class="LineNr">129 </span><span class="CommentedCode">//? :(code)</span>
-<span id="L130" class="LineNr">130 </span><span class="CommentedCode">//? const instruction&amp; to_instruction(const call&amp; call) {</span>
-<span id="L131" class="LineNr">131 </span><span class="CommentedCode">//?   return get(Recipe, call.running_recipe).steps.at(call.running_step_index);</span>
-<span id="L132" class="LineNr">132 </span><span class="CommentedCode">//? }</span>
-<span id="L133" class="LineNr">133 </span>
-<span id="L134" class="LineNr">134 </span><span class="Delimiter">:(after &quot;Defined Recipe Checks&quot;)</span>
-<span id="L135" class="LineNr">135 </span><span class="Comment">// not a primitive; check that it's present in the book of recipes</span>
-<span id="L136" class="LineNr">136 </span><span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L137" class="LineNr">137 </span>  <a href='003trace.cc.html#L168'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;undefined operation in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L138" class="LineNr">138 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L139" class="LineNr">139 </span><span class="Delimiter">}</span>
-<span id="L140" class="LineNr">140 </span><span class="Delimiter">:(replace{} &quot;default:&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
-<span id="L141" class="LineNr">141 </span><span class="Normal">default</span>: <span class="Delimiter">{</span>
-<span id="L142" class="LineNr">142 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> <a href='026call.cc.html#L87'>current_instruction</a><span class="Delimiter">().</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// error already raised in Checks above</span>
-<span id="L143" class="LineNr">143 </span>  <span class="Conceal">¦</span> <span class="Comment">// not a primitive; look up the book of recipes</span>
-<span id="L144" class="LineNr">144 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L145" class="LineNr">145 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L146" class="LineNr">146 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L147" class="LineNr">147 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
-<span id="L148" class="LineNr">148 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
-<span id="L149" class="LineNr">149 </span>  <span class="Conceal">¦</span> <span class="Normal">const</span> call&amp; caller_frame = <a href='026call.cc.html#L81'>current_call</a><span class="Delimiter">();</span>
-<span id="L150" class="LineNr">150 </span>  <span class="Conceal">¦</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span><a href='026call.cc.html#L86'>to_instruction</a><span class="Delimiter">(</span>caller_frame<span class="Delimiter">).</span>operation<span class="Delimiter">));</span>
-<span id="L151" class="LineNr">151 </span>  <span class="Conceal">¦</span> finish_call_housekeeping<span class="Delimiter">(</span><a href='026call.cc.html#L86'>to_instruction</a><span class="Delimiter">(</span>caller_frame<span class="Delimiter">),</span> ingredients<span class="Delimiter">);</span>
-<span id="L152" class="LineNr">152 </span>  <span class="Conceal">¦</span> <span class="Comment">// not done with caller</span>
-<span id="L153" class="LineNr">153 </span>  <span class="Conceal">¦</span> write_products = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> fall_through_to_next_instruction = <span class="Constant">false</span><span class="Delimiter">;</span>
-<span id="L155" class="LineNr">155 </span>  <span class="Conceal">¦</span> <span class="Comment">// End Non-primitive Call(caller_frame)</span>
-<span id="L156" class="LineNr">156 </span>  <span class="Delimiter">}</span>
-<span id="L157" class="LineNr">157 </span><span class="Delimiter">}</span>
-<span id="L158" class="LineNr">158 </span><span class="Delimiter">:(code)</span>
-<span id="L159" class="LineNr">159 </span><span class="Normal">void</span> finish_call_housekeeping<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; call_instruction<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L160" class="LineNr">160 </span>  <span class="Comment">// End Call Housekeeping</span>
-<span id="L161" class="LineNr">161 </span><span class="Delimiter">}</span>
-<span id="L162" class="LineNr">162 </span>
-<span id="L163" class="LineNr">163 </span><span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
-<span id="L164" class="LineNr">164 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L165" class="LineNr">165 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L166" class="LineNr">166 </span>  foo
-<span id="L167" class="LineNr">167 </span>]
-<span id="L168" class="LineNr">168 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'foo'</span>
-<span id="L169" class="LineNr">169 </span>
-<span id="L170" class="LineNr">170 </span><span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
-<span id="L171" class="LineNr">171 </span><span class="Special">% Hide_errors = true;</span>
-<span id="L172" class="LineNr">172 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
-<span id="L173" class="LineNr">173 </span>  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>foo
-<span id="L174" class="LineNr">174 </span>]
-<span id="L175" class="LineNr">175 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'x:num &lt;- foo'</span>
-<span id="L176" class="LineNr">176 </span>
-<span id="L177" class="LineNr">177 </span><span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
+<span id="L91" class="LineNr"> 91 </span><span class="Comment">//: function versions for debugging</span>
+<span id="L92" class="LineNr"> 92 </span>
+<span id="L93" class="LineNr"> 93 </span><span class="Delimiter">:(code)</span>
+<span id="L94" class="LineNr"> 94 </span><span class="CommentedCode">//? :(before &quot;End Globals&quot;)</span>
+<span id="L95" class="LineNr"> 95 </span><span class="CommentedCode">//? bool Foo2 = false;</span>
+<span id="L96" class="LineNr"> 96 </span><span class="CommentedCode">//? :(code)</span>
+<span id="L97" class="LineNr"> 97 </span><span class="CommentedCode">//? call&amp; current_call() {</span>
+<span id="L98" class="LineNr"> 98 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L99" class="LineNr"> 99 </span><span class="CommentedCode">//?   return Current_routine-&gt;calls.front();</span>
+<span id="L100" class="LineNr">100 </span><span class="CommentedCode">//? }</span>
+<span id="L101" class="LineNr">101 </span><span class="CommentedCode">//? :(replace{} &quot;int&amp; current_step_index()&quot;)</span>
+<span id="L102" class="LineNr">102 </span><span class="CommentedCode">//? int&amp; current_step_index() {</span>
+<span id="L103" class="LineNr">103 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
+<span id="L104" class="LineNr">104 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L105" class="LineNr">105 </span><span class="CommentedCode">//?   return current_call().running_step_index;</span>
+<span id="L106" class="LineNr">106 </span><span class="CommentedCode">//? }</span>
+<span id="L107" class="LineNr">107 </span><span class="CommentedCode">//? :(replace{} &quot;recipe_ordinal currently_running_recipe()&quot;)</span>
+<span id="L108" class="LineNr">108 </span><span class="CommentedCode">//? recipe_ordinal currently_running_recipe() {</span>
+<span id="L109" class="LineNr">109 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
+<span id="L110" class="LineNr">110 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L111" class="LineNr">111 </span><span class="CommentedCode">//?   return current_call().running_recipe;</span>
+<span id="L112" class="LineNr">112 </span><span class="CommentedCode">//? }</span>
+<span id="L113" class="LineNr">113 </span><span class="CommentedCode">//? :(replace{} &quot;const string&amp; current_recipe_name()&quot;)</span>
+<span id="L114" class="LineNr">114 </span><span class="CommentedCode">//? const string&amp; current_recipe_name() {</span>
+<span id="L115" class="LineNr">115 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
+<span id="L116" class="LineNr">116 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L117" class="LineNr">117 </span><span class="CommentedCode">//?   return get(Recipe, current_call().running_recipe).name;</span>
+<span id="L118" class="LineNr">118 </span><span class="CommentedCode">//? }</span>
+<span id="L119" class="LineNr">119 </span><span class="CommentedCode">//? :(replace{} &quot;const recipe&amp; current_recipe()&quot;)</span>
+<span id="L120" class="LineNr">120 </span><span class="CommentedCode">//? const recipe&amp; current_recipe() {</span>
+<span id="L121" class="LineNr">121 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
+<span id="L122" class="LineNr">122 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L123" class="LineNr">123 </span><span class="CommentedCode">//?   return get(Recipe, current_call().running_recipe);</span>
+<span id="L124" class="LineNr">124 </span><span class="CommentedCode">//? }</span>
+<span id="L125" class="LineNr">125 </span><span class="CommentedCode">//? :(replace{} &quot;const instruction&amp; current_instruction()&quot;)</span>
+<span id="L126" class="LineNr">126 </span><span class="CommentedCode">//? const instruction&amp; current_instruction() {</span>
+<span id="L127" class="LineNr">127 </span><span class="CommentedCode">//?   assert(!Current_routine-&gt;calls.empty());</span>
+<span id="L128" class="LineNr">128 </span><span class="CommentedCode">//?   if (Foo2) cerr &lt;&lt; __FUNCTION__ &lt;&lt; '\n';</span>
+<span id="L129" class="LineNr">129 </span><span class="CommentedCode">//?   return to_instruction(current_call());</span>
+<span id="L130" class="LineNr">130 </span><span class="CommentedCode">//? }</span>
+<span id="L131" class="LineNr">131 </span><span class="CommentedCode">//? :(code)</span>
+<span id="L132" class="LineNr">132 </span><span class="CommentedCode">//? const instruction&amp; to_instruction(const call&amp; call) {</span>
+<span id="L133" class="LineNr">133 </span><span class="CommentedCode">//?   return get(Recipe, call.running_recipe).steps.at(call.running_step_index);</span>
+<span id="L134" class="LineNr">134 </span><span class="CommentedCode">//? }</span>
+<span id="L135" class="LineNr">135 </span>
+<span id="L136" class="LineNr">136 </span><span class="Delimiter">:(after &quot;Defined Recipe Checks&quot;)</span>
+<span id="L137" class="LineNr">137 </span><span class="Comment">// not a primitive; check that it's present in the book of recipes</span>
+<span id="L138" class="LineNr">138 </span><span class="Normal">if</span> <span class="Delimiter">(</span>!contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> inst<span class="Delimiter">.</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L139" class="LineNr">139 </span>  <a href='003trace.cc.html#L174'>raise</a> &lt;&lt; <a href='013update_operation.cc.html#L25'>maybe</a><span class="Delimiter">(</span>get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> r<span class="Delimiter">).</span>name<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;undefined operation in '&quot;</span> &lt;&lt; to_original_string<span class="Delimiter">(</span>inst<span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;'</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span> &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L140" class="LineNr">140 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L141" class="LineNr">141 </span><span class="Delimiter">}</span>
+<span id="L142" class="LineNr">142 </span><span class="Delimiter">:(replace{} &quot;default:&quot; following &quot;End Primitive Recipe Implementations&quot;)</span>
+<span id="L143" class="LineNr">143 </span><span class="Normal">default</span>: <span class="Delimiter">{</span>
+<span id="L144" class="LineNr">144 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> <a href='026call.cc.html#L89'>current_instruction</a><span class="Delimiter">().</span>operation<span class="Delimiter">))</span> <span class="Delimiter">{</span>  <span class="Comment">// error already raised in Checks above</span>
+<span id="L145" class="LineNr">145 </span>  <span class="Conceal">¦</span> <span class="Comment">// not a primitive; look up the book of recipes</span>
+<span id="L146" class="LineNr">146 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L147" class="LineNr">147 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> ++Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+<span id="L148" class="LineNr">148 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;incrementing callstack depth to &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L149" class="LineNr">149 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt; <span class="Constant">9000</span><span class="Delimiter">);</span>  <span class="Comment">// 9998-101 plus cushion</span>
+<span id="L150" class="LineNr">150 </span>  <span class="Conceal">¦</span> <span class="Delimiter">}</span>
+<span id="L151" class="LineNr">151 </span>  <span class="Conceal">¦</span> <span class="Normal">const</span> call&amp; caller_frame = <a href='026call.cc.html#L83'>current_call</a><span class="Delimiter">();</span>
+<span id="L152" class="LineNr">152 </span>  <span class="Conceal">¦</span> Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>push_front<span class="Delimiter">(</span>call<span class="Delimiter">(</span><a href='026call.cc.html#L88'>to_instruction</a><span class="Delimiter">(</span>caller_frame<span class="Delimiter">).</span>operation<span class="Delimiter">));</span>
+<span id="L153" class="LineNr">153 </span>  <span class="Conceal">¦</span> finish_call_housekeeping<span class="Delimiter">(</span><a href='026call.cc.html#L88'>to_instruction</a><span class="Delimiter">(</span>caller_frame<span class="Delimiter">),</span> ingredients<span class="Delimiter">);</span>
+<span id="L154" class="LineNr">154 </span>  <span class="Conceal">¦</span> <span class="Comment">// not done with caller</span>
+<span id="L155" class="LineNr">155 </span>  <span class="Conceal">¦</span> write_products = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span id="L156" class="LineNr">156 </span>  <span class="Conceal">¦</span> fall_through_to_next_instruction = <span class="Constant">false</span><span class="Delimiter">;</span>
+<span id="L157" class="LineNr">157 </span>  <span class="Conceal">¦</span> <span class="Comment">// End Non-primitive Call(caller_frame)</span>
+<span id="L158" class="LineNr">158 </span>  <span class="Delimiter">}</span>
+<span id="L159" class="LineNr">159 </span><span class="Delimiter">}</span>
+<span id="L160" class="LineNr">160 </span><span class="Delimiter">:(code)</span>
+<span id="L161" class="LineNr">161 </span><span class="Normal">void</span> finish_call_housekeeping<span class="Delimiter">(</span><span class="Normal">const</span> instruction&amp; call_instruction<span class="Delimiter">,</span> <span class="Normal">const</span> vector&lt;vector&lt;<span class="Normal">double</span>&gt; &gt;&amp; ingredients<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L162" class="LineNr">162 </span>  <span class="Comment">// End Call Housekeeping</span>
+<span id="L163" class="LineNr">163 </span><span class="Delimiter">}</span>
+<span id="L164" class="LineNr">164 </span>
+<span id="L165" class="LineNr">165 </span><span class="Delimiter">:(scenario calling_undefined_recipe_fails)</span>
+<span id="L166" class="LineNr">166 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L167" class="LineNr">167 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L168" class="LineNr">168 </span>  foo
+<span id="L169" class="LineNr">169 </span>]
+<span id="L170" class="LineNr">170 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'foo'</span>
+<span id="L171" class="LineNr">171 </span>
+<span id="L172" class="LineNr">172 </span><span class="Delimiter">:(scenario calling_undefined_recipe_handles_missing_result)</span>
+<span id="L173" class="LineNr">173 </span><span class="Special">% Hide_errors = true;</span>
+<span id="L174" class="LineNr">174 </span><span class="muRecipe">def</span> <a href='000organization.cc.html#L113'>main</a> [
+<span id="L175" class="LineNr">175 </span>  <span class="Normal">x</span>:num<span class="Special"> &lt;- </span>foo
+<span id="L176" class="LineNr">176 </span>]
+<span id="L177" class="LineNr">177 </span><span class="traceContains">+error: <a href='000organization.cc.html#L113'>main</a>: undefined operation in 'x:num &lt;- foo'</span>
 <span id="L178" class="LineNr">178 </span>
-<span id="L179" class="LineNr">179 </span><span class="Delimiter">:(replace{} &quot;bool routine::completed() const&quot;)</span>
-<span id="L180" class="LineNr">180 </span><span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
-<span id="L181" class="LineNr">181 </span>  <span class="Identifier">return</span> calls<span class="Delimiter">.</span>empty<span class="Delimiter">();</span>
-<span id="L182" class="LineNr">182 </span><span class="Delimiter">}</span>
-<span id="L183" class="LineNr">183 </span>
-<span id="L184" class="LineNr">184 </span><span class="Delimiter">:(replace{} &quot;const vector&lt;instruction&gt;&amp; routine::steps() const&quot;)</span>
-<span id="L185" class="LineNr">185 </span><span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
-<span id="L186" class="LineNr">186 </span>  assert<span class="Delimiter">(</span>!calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
-<span id="L187" class="LineNr">187 </span>  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
-<span id="L188" class="LineNr">188 </span><span class="Delimiter">}</span>
-<span id="L189" class="LineNr">189 </span>
-<span id="L190" class="LineNr">190 </span><span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
-<span id="L191" class="LineNr">191 </span><span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
-<span id="L192" class="LineNr">192 </span><span class="Comment">// it, and the one below that, and so on</span>
-<span id="L193" class="LineNr">193 </span><span class="Normal">while</span> <span class="Delimiter">(</span><a href='026call.cc.html#L82'>current_step_index</a><span class="Delimiter">()</span> &gt;= <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
-<span id="L194" class="LineNr">194 </span>  <span class="Comment">// Falling Through End Of Recipe</span>
-<span id="L195" class="LineNr">195 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L196" class="LineNr">196 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L161'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;fall-through: exiting &quot;</span> &lt;&lt; <a href='026call.cc.html#L85'>current_recipe_name</a><span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; decrementing callstack depth from &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L197'>end</a><span class="Delimiter">();</span>
-<span id="L197" class="LineNr">197 </span>  <span class="Conceal">¦</span> --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
-<span id="L198" class="LineNr">198 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
-<span id="L199" class="LineNr">199 </span>  <span class="Delimiter">}</span>
-<span id="L200" class="LineNr">200 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
-<span id="L201" class="LineNr">201 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">goto</span> stop_running_current_routine<span class="Delimiter">;</span>
-<span id="L202" class="LineNr">202 </span>  <span class="Comment">// Complete Call Fallthrough</span>
-<span id="L203" class="LineNr">203 </span>  <span class="Comment">// todo: fail if no products returned</span>
-<span id="L204" class="LineNr">204 </span>  ++current_step_index<span class="Delimiter">();</span>
-<span id="L205" class="LineNr">205 </span><span class="Delimiter">}</span>
-<span id="L206" class="LineNr">206 </span>
-<span id="L207" class="LineNr">207 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
-<span id="L208" class="LineNr">208 </span>_DUMP_CALL_STACK<span class="Delimiter">,</span>
-<span id="L209" class="LineNr">209 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
-<span id="L210" class="LineNr">210 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump-call-stack&quot;</span><span class="Delimiter">,</span> _DUMP_CALL_STACK<span class="Delimiter">);</span>
-<span id="L211" class="LineNr">211 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
-<span id="L212" class="LineNr">212 </span><span class="Normal">case</span> _DUMP_CALL_STACK: <span class="Delimiter">{</span>
-<span id="L213" class="LineNr">213 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L214" class="LineNr">214 </span><span class="Delimiter">}</span>
-<span id="L215" class="LineNr">215 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
-<span id="L216" class="LineNr">216 </span><span class="Normal">case</span> _DUMP_CALL_STACK: <span class="Delimiter">{</span>
-<span id="L217" class="LineNr">217 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_reverse_iterator p = Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>rbegin<span class="Delimiter">();</span> p != Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>rend<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
-<span id="L218" class="LineNr">218 </span>  <span class="Conceal">¦</span> cerr &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>running_step_index &lt;&lt; <span class="Constant">&quot; -- &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span><a href='026call.cc.html#L86'>to_instruction</a><span class="Delimiter">(</span>*p<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
-<span id="L219" class="LineNr">219 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L220" class="LineNr">220 </span><span class="Delimiter">}</span>
+<span id="L179" class="LineNr">179 </span><span class="SalientComment">//:: finally, we need to fix the termination conditions for the run loop</span>
+<span id="L180" class="LineNr">180 </span>
+<span id="L181" class="LineNr">181 </span><span class="Delimiter">:(replace{} &quot;bool routine::completed() const&quot;)</span>
+<span id="L182" class="LineNr">182 </span><span class="Normal">bool</span> routine::completed<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span id="L183" class="LineNr">183 </span>  <span class="Identifier">return</span> calls<span class="Delimiter">.</span>empty<span class="Delimiter">();</span>
+<span id="L184" class="LineNr">184 </span><span class="Delimiter">}</span>
+<span id="L185" class="LineNr">185 </span>
+<span id="L186" class="LineNr">186 </span><span class="Delimiter">:(replace{} &quot;const vector&lt;instruction&gt;&amp; routine::steps() const&quot;)</span>
+<span id="L187" class="LineNr">187 </span><span class="Normal">const</span> vector&lt;instruction&gt;&amp; routine::steps<span class="Delimiter">()</span> <span class="Normal">const</span> <span class="Delimiter">{</span>
+<span id="L188" class="LineNr">188 </span>  assert<span class="Delimiter">(</span>!calls<span class="Delimiter">.</span>empty<span class="Delimiter">());</span>
+<span id="L189" class="LineNr">189 </span>  <span class="Identifier">return</span> get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> calls<span class="Delimiter">.</span>front<span class="Delimiter">().</span>running_recipe<span class="Delimiter">).</span>steps<span class="Delimiter">;</span>
+<span id="L190" class="LineNr">190 </span><span class="Delimiter">}</span>
+<span id="L191" class="LineNr">191 </span>
+<span id="L192" class="LineNr">192 </span><span class="Delimiter">:(after &quot;Running One Instruction&quot;)</span>
+<span id="L193" class="LineNr">193 </span><span class="Comment">// when we reach the end of one call, we may reach the end of the one below</span>
+<span id="L194" class="LineNr">194 </span><span class="Comment">// it, and the one below that, and so on</span>
+<span id="L195" class="LineNr">195 </span><span class="Normal">while</span> <span class="Delimiter">(</span><a href='026call.cc.html#L84'>current_step_index</a><span class="Delimiter">()</span> &gt;= <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>steps<span class="Delimiter">()))</span> <span class="Delimiter">{</span>
+<span id="L196" class="LineNr">196 </span>  <span class="Comment">// Falling Through End Of Recipe</span>
+<span id="L197" class="LineNr">197 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Trace_stream<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L198" class="LineNr">198 </span>  <span class="Conceal">¦</span> <a href='003trace.cc.html#L167'>trace</a><span class="Delimiter">(</span><span class="Constant">&quot;trace&quot;</span><span class="Delimiter">)</span> &lt;&lt; <span class="Constant">&quot;fall-through: exiting &quot;</span> &lt;&lt; <a href='026call.cc.html#L87'>current_recipe_name</a><span class="Delimiter">()</span> &lt;&lt; <span class="Constant">&quot;; decrementing callstack depth from &quot;</span> &lt;&lt; Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &lt;&lt; <a href='003trace.cc.html#L203'>end</a><span class="Delimiter">();</span>
+<span id="L199" class="LineNr">199 </span>  <span class="Conceal">¦</span> --Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth<span class="Delimiter">;</span>
+<span id="L200" class="LineNr">200 </span>  <span class="Conceal">¦</span> assert<span class="Delimiter">(</span>Trace_stream<span class="Delimiter">-&gt;</span>callstack_depth &gt;= <span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L201" class="LineNr">201 </span>  <span class="Delimiter">}</span>
+<span id="L202" class="LineNr">202 </span>  Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>pop_front<span class="Delimiter">();</span>
+<span id="L203" class="LineNr">203 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">goto</span> stop_running_current_routine<span class="Delimiter">;</span>
+<span id="L204" class="LineNr">204 </span>  <span class="Comment">// Complete Call Fallthrough</span>
+<span id="L205" class="LineNr">205 </span>  <span class="Comment">// todo: fail if no products returned</span>
+<span id="L206" class="LineNr">206 </span>  ++current_step_index<span class="Delimiter">();</span>
+<span id="L207" class="LineNr">207 </span><span class="Delimiter">}</span>
+<span id="L208" class="LineNr">208 </span>
+<span id="L209" class="LineNr">209 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Declarations&quot;)</span>
+<span id="L210" class="LineNr">210 </span>_DUMP_CALL_STACK<span class="Delimiter">,</span>
+<span id="L211" class="LineNr">211 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Numbers&quot;)</span>
+<span id="L212" class="LineNr">212 </span><a href='001help.cc.html#L221'>put</a><span class="Delimiter">(</span>Recipe_ordinal<span class="Delimiter">,</span> <span class="Constant">&quot;$dump-call-stack&quot;</span><span class="Delimiter">,</span> _DUMP_CALL_STACK<span class="Delimiter">);</span>
+<span id="L213" class="LineNr">213 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Checks&quot;)</span>
+<span id="L214" class="LineNr">214 </span><span class="Normal">case</span> _DUMP_CALL_STACK: <span class="Delimiter">{</span>
+<span id="L215" class="LineNr">215 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L216" class="LineNr">216 </span><span class="Delimiter">}</span>
+<span id="L217" class="LineNr">217 </span><span class="Delimiter">:(before &quot;End Primitive Recipe Implementations&quot;)</span>
+<span id="L218" class="LineNr">218 </span><span class="Normal">case</span> _DUMP_CALL_STACK: <span class="Delimiter">{</span>
+<span id="L219" class="LineNr">219 </span>  <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span>Current_routine<span class="Delimiter">-&gt;</span>calls<span class="Delimiter">);</span>
+<span id="L220" class="LineNr">220 </span>  <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L221" class="LineNr">221 </span><span class="Delimiter">}</span>
+<span id="L222" class="LineNr">222 </span><span class="Delimiter">:(code)</span>
+<span id="L223" class="LineNr">223 </span><span class="Normal">void</span> <a href='003trace.cc.html#L120'>dump</a><span class="Delimiter">(</span><span class="Normal">const</span> call_stack&amp; calls<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L224" class="LineNr">224 </span>  <span class="Normal">for</span> <span class="Delimiter">(</span>call_stack::const_reverse_iterator p = calls<span class="Delimiter">.</span>rbegin<span class="Delimiter">();</span> p != calls<span class="Delimiter">.</span>rend<span class="Delimiter">();</span> ++p<span class="Delimiter">)</span>
+<span id="L225" class="LineNr">225 </span>  <span class="Conceal">¦</span> cerr &lt;&lt; get<span class="Delimiter">(</span>Recipe<span class="Delimiter">,</span> p<span class="Delimiter">-&gt;</span>running_recipe<span class="Delimiter">).</span>name &lt;&lt; <span class="Constant">&quot;:&quot;</span> &lt;&lt; p<span class="Delimiter">-&gt;</span>running_step_index &lt;&lt; <span class="Constant">&quot; -- &quot;</span> &lt;&lt; <a href='028call_return.cc.html#L163'>to_string</a><span class="Delimiter">(</span><a href='026call.cc.html#L88'>to_instruction</a><span class="Delimiter">(</span>*p<span class="Delimiter">))</span> &lt;&lt; <span class="cSpecial">'\n'</span><span class="Delimiter">;</span>
+<span id="L226" class="LineNr">226 </span><span class="Delimiter">}</span>
 </pre>
 </body>
 </html>
