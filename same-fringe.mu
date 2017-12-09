@@ -1,5 +1,5 @@
-# Another example of continuations: the 'same fringe' problem
-#   http://wiki.c2.com/?SameFringeProblem
+# The 'same fringe' problem: http://wiki.c2.com/?SameFringeProblem
+# Example program demonstrating coroutines using Mu's delimited continuations.
 #
 # Expected output:
 #   1
