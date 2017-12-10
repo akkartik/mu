@@ -30,8 +30,8 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
   load-inputs
   return-continuation-until-mark
-  done? <- equal l, 0
-  return-if done?, 0
+  done? <- equal l, 0/nil
+  return-if done?, 0/false
   n <- first l
   l <- rest l
 ]

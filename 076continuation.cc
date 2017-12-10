@@ -276,8 +276,20 @@ def f x:_elem -> y:_elem [
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
 if (inst.name == "call-with-continuation-mark" && first_ingredient_is_recipe_literal(inst)) {
-  resolve_indirect_ambiguous_call(r, index, inst, caller_recipe);
+  resolve_indirect_continuation_call(r, index, inst, caller_recipe);
   return;
+}
+:(code)
+void resolve_indirect_continuation_call(const recipe_ordinal r, int index, instruction& inst, const recipe& caller_recipe) {
+  instruction inst2;
+  inst2.name = inst.ingredients.at(0).name;
+  for (int i = /*skip recipe*/1;  i < SIZE(inst.ingredients);  ++i)
+    inst2.ingredients.push_back(inst.ingredients.at(i));
+  for (int i = /*skip continuation*/1;  i < SIZE(inst.products);  ++i)
+    inst2.products.push_back(inst.products.at(i));
+  resolve_ambiguous_call(r, index, inst2, caller_recipe);
+  inst.ingredients.at(0).name = inst2.name;
+  inst.ingredients.at(0).set_value(get(Recipe_ordinal, inst2.name));
 }
 
 :(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)
@@ -289,6 +301,21 @@ def f x:_elem [
   load-ingredients
   return-continuation-until-mark
 ]
+$error: 0
+
+:(scenario continuation1)
+def main [
+  local-scope
+  k:continuation <- call-with-continuation-mark create-yielder
+  10:num/raw <- call k
+]
+def create-yielder -> n:num [
+  local-scope
+  load-inputs
+  return-continuation-until-mark
+  return 1
+]
++mem: storing 1 in location 10
 $error: 0
 
 //: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
