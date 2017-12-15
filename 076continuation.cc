@@ -64,7 +64,7 @@ if (r.type->atom && r.type->name == "continuation") {
 
 :(scenario delimited_continuation)
 recipe main [
-  1:continuation <- call-with-continuation-mark f, 77  # 77 is an argument to f
+  1:continuation <- call-with-continuation-mark 233/mark, f, 77  # 77 is an argument to f
   2:number <- copy 5
   {
     2:number <- call 1:continuation, 2:number  # jump to 'return-continuation-until-mark' below
@@ -80,7 +80,7 @@ recipe f [
 ]
 recipe g [
   21:number <- next-ingredient
-  22:number <- return-continuation-until-mark
+  22:number <- return-continuation-until-mark 233/mark
   23:number <- add 22:number, 1
   return 23:number
 ]
@@ -108,9 +108,9 @@ recipe g [
 -mem: storing 9 in location 2
 
 :(before "End call Fields")
-bool is_base_of_continuation;
+int is_base_of_continuation;
 :(before "End call Constructor")
-is_base_of_continuation = false;
+is_base_of_continuation = 0;
 
 :(before "End Primitive Recipe Declarations")
 CALL_WITH_CONTINUATION_MARK,
@@ -130,8 +130,9 @@ case CALL_WITH_CONTINUATION_MARK: {
     assert(Trace_stream->callstack_depth < 9000);  // 9998-101 plus cushion
   }
   const instruction& caller_instruction = current_instruction();
-  Current_routine->calls.front().is_base_of_continuation = true;
-  Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(0).name]));
+  Current_routine->calls.front().is_base_of_continuation = current_instruction().ingredients.at(0).value;
+  Current_routine->calls.push_front(call(Recipe_ordinal[current_instruction().ingredients.at(1).name]));
+  ingredients.erase(ingredients.begin());  // drop the mark
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(caller_instruction, ingredients);
   continue;
@@ -169,8 +170,8 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   Current_routine->calls.front().ingredient_atoms.clear();
   Current_routine->calls.front().next_ingredient_to_process = 0;
   // copy the current call stack until the most recent marked call
-  call_stack::iterator find_base_of_continuation(call_stack& c);  // manual prototype containing '::'
-  call_stack::iterator base = find_base_of_continuation(Current_routine->calls);
+  call_stack::iterator find_base_of_continuation(call_stack&, int);  // manual prototype containing '::'
+  call_stack::iterator base = find_base_of_continuation(Current_routine->calls, /*mark identifier*/current_instruction().ingredients.at(0).value);
   if (base == Current_routine->calls.end()) {
     raise << maybe(current_recipe_name()) << "couldn't find a 'call-with-continuation-mark' to return to\n" << end();
     raise << maybe(current_recipe_name()) << "call stack:\n" << end();
@@ -191,15 +192,15 @@ case RETURN_CONTINUATION_UNTIL_MARK: {
   products.resize(1);
   products.at(0).push_back(Next_delimited_continuation_id);
   // return any other ingredients passed in
-  copy(ingredients.begin(), ingredients.end(), inserter(products, products.end()));
+  copy(/*skip mark identifier*/++ingredients.begin(), ingredients.end(), inserter(products, products.end()));
   ++Next_delimited_continuation_id;
   break;  // continue to process rest of marked call
 }
 
 :(code)
-call_stack::iterator find_base_of_continuation(call_stack& c) {
+call_stack::iterator find_base_of_continuation(call_stack& c, int mark) {
   for (call_stack::iterator p = c.begin(); p != c.end(); ++p)
-    if (p->is_base_of_continuation) return p;
+    if (p->is_base_of_continuation == mark) return p;
   return c.end();
 }
 
@@ -230,7 +231,7 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
 :(scenario continuations_can_return_values)
 def main [
   local-scope
-  k:continuation, 1:num/raw <- call-with-continuation-mark f
+  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f
 ]
 def f [
   local-scope
@@ -238,18 +239,18 @@ def f [
 ]
 def g [
   local-scope
-  return-continuation-until-mark 34
+  return-continuation-until-mark 233/mark, 34
   stash [continuation called]
 ]
 # entering main
 +mem: new alloc: 1000
-+run: {k: "continuation"}, {1: "number", "raw": ()} <- call-with-continuation-mark {f: "recipe-literal"}
++run: {k: "continuation"}, {1: "number", "raw": ()} <- call-with-continuation-mark {233: "literal", "mark": ()}, {f: "recipe-literal"}
 # entering f
 +mem: new alloc: 1004
 # entering g
 +mem: new alloc: 1007
 # return control to main
-+run: return-continuation-until-mark {34: "literal"}
++run: return-continuation-until-mark {233: "literal", "mark": ()}, {34: "literal"}
 # no allocs abandoned yet
 +mem: storing 34 in location 1
 # end of main
@@ -261,11 +262,30 @@ def g [
 # ..even though we never called the continuation
 -app: continuation called
 
+:(scenario continuations_continue_to_matching_mark)
+def main [
+  local-scope
+  k:continuation, 1:num/raw <- call-with-continuation-mark 233/mark, f
+  add 1, 1
+]
+def f [
+  local-scope
+  k2:continuation <- call-with-continuation-mark 234/mark, g
+  add 2, 2
+]
+def g [
+  local-scope
+  return-continuation-until-mark 233/mark, 34
+  stash [continuation called]
+]
++run: add {1: "literal"}, {1: "literal"}
+-run: add {2: "literal"}, {2: "literal"}
+
 //: Allow shape-shifting recipes to return continuations.
 
 :(scenario call_shape_shifting_recipe_with_continuation_mark)
 def main [
-  1:num <- call-with-continuation-mark f, 34
+  1:num <- call-with-continuation-mark 233/mark, f, 34
 ]
 def f x:_elem -> y:_elem [
   local-scope
@@ -275,44 +295,46 @@ def f x:_elem -> y:_elem [
 +mem: storing 34 in location 1
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
-if (inst.name == "call-with-continuation-mark" && first_ingredient_is_recipe_literal(inst)) {
+if (inst.name == "call-with-continuation-mark") {
+  if (SIZE(inst.ingredients) > 1 && is_recipe_literal(inst.ingredients.at(/*skip mark*/1))) {
   resolve_indirect_continuation_call(r, index, inst, caller_recipe);
   return;
+  }
 }
 :(code)
 void resolve_indirect_continuation_call(const recipe_ordinal r, int index, instruction& inst, const recipe& caller_recipe) {
   instruction inst2;
-  inst2.name = inst.ingredients.at(0).name;
-  for (int i = /*skip recipe*/1;  i < SIZE(inst.ingredients);  ++i)
+  inst2.name = inst.ingredients.at(/*skip mark*/1).name;
+  for (int i = /*skip mark and recipe*/2;  i < SIZE(inst.ingredients);  ++i)
     inst2.ingredients.push_back(inst.ingredients.at(i));
   for (int i = /*skip continuation*/1;  i < SIZE(inst.products);  ++i)
     inst2.products.push_back(inst.products.at(i));
   resolve_ambiguous_call(r, index, inst2, caller_recipe);
-  inst.ingredients.at(0).name = inst2.name;
-  inst.ingredients.at(0).set_value(get(Recipe_ordinal, inst2.name));
+  inst.ingredients.at(/*skip mark*/1).name = inst2.name;
+  inst.ingredients.at(/*skip mark*/1).set_value(get(Recipe_ordinal, inst2.name));
 }
 
 :(scenario call_shape_shifting_recipe_with_continuation_mark_and_no_outputs)
 def main [
-  1:continuation <- call-with-continuation-mark f, 34
+  1:continuation <- call-with-continuation-mark 233/mark, f, 34
 ]
 def f x:_elem [
   local-scope
   load-ingredients
-  return-continuation-until-mark
+  return-continuation-until-mark 233/mark
 ]
 $error: 0
 
 :(scenario continuation1)
 def main [
   local-scope
-  k:continuation <- call-with-continuation-mark create-yielder
+  k:continuation <- call-with-continuation-mark 233/mark, create-yielder
   10:num/raw <- call k
 ]
 def create-yielder -> n:num [
   local-scope
   load-inputs
-  return-continuation-until-mark
+  return-continuation-until-mark 233/mark
   return 1
 ]
 +mem: storing 1 in location 10
@@ -323,7 +345,7 @@ $error: 0
 :(scenario continuations_preserve_local_scopes)
 def main [
   local-scope
-  k:continuation <- call-with-continuation-mark f
+  k:continuation <- call-with-continuation-mark 233/mark, f
   call k
   return 34
 ]
@@ -333,18 +355,18 @@ def f [
 ]
 def g [
   local-scope
-  return-continuation-until-mark
+  return-continuation-until-mark 233/mark
   add 1, 1
 ]
 # entering main
 +mem: new alloc: 1000
-+run: {k: "continuation"} <- call-with-continuation-mark {f: "recipe-literal"}
++run: {k: "continuation"} <- call-with-continuation-mark {233: "literal", "mark": ()}, {f: "recipe-literal"}
 # entering f
 +mem: new alloc: 1004
 # entering g
 +mem: new alloc: 1007
 # return control to main
-+run: return-continuation-until-mark
++run: return-continuation-until-mark {233: "literal", "mark": ()}
 # no allocs abandoned yet
 # finish running main
 +run: call {k: "continuation"}
@@ -396,14 +418,14 @@ if (is_mu_continuation(canonized_x)) {
 :(scenario continuations_can_be_copied)
 def main [
   local-scope
-  k:continuation <- call-with-continuation-mark f
+  k:continuation <- call-with-continuation-mark 233/mark, f
   k2:continuation <- copy k
   # reclaiming k and k2 shouldn't delete f's local scope twice
 ]
 def f [
   local-scope
   load-ingredients
-  return-continuation-until-mark
+  return-continuation-until-mark 233/mark
   return 0
 ]
 $error: 0

@@ -205,15 +205,13 @@ def f x:point -> y:point [
 +error: main: product 0 has the wrong type at '2:num <- call {1: (recipe point -> point)}, 34'
 
 :(before "End resolve_ambiguous_call(r, index, inst, caller_recipe) Special-cases")
-if (inst.name == "call" && first_ingredient_is_recipe_literal(inst)) {
+if (inst.name == "call" && !inst.ingredients.empty() && is_recipe_literal(inst.ingredients.at(0))) {
   resolve_indirect_ambiguous_call(r, index, inst, caller_recipe);
   return;
 }
 :(code)
-bool first_ingredient_is_recipe_literal(const instruction& inst) {
-  if (inst.ingredients.empty()) return false;
-  const reagent& ingredient = inst.ingredients.at(0);
-  return ingredient.type && ingredient.type->atom && ingredient.type->name == "recipe-literal";
+bool is_recipe_literal(const reagent& x) {
+  return x.type && x.type->atom && x.type->name == "recipe-literal";
 }
 void resolve_indirect_ambiguous_call(const recipe_ordinal r, int index, instruction& inst, const recipe& caller_recipe) {
   instruction inst2;

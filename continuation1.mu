@@ -12,7 +12,7 @@
 
 def main [
   local-scope
-  k:continuation <- call-with-continuation-mark create-yielder
+  k:continuation <- call-with-continuation-mark 100/mark, create-yielder
   x:num <- call k  # should return 1
   $print x 10/newline
 ]
@@ -20,6 +20,6 @@ def main [
 def create-yielder -> n:num [
   local-scope
   load-inputs
-  return-continuation-until-mark
+  return-continuation-until-mark 100/mark
   return 1
 ]

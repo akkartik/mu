@@ -30,8 +30,8 @@ def main [
 def same-fringe a:&:tree:_elem, b:&:tree:_elem -> result:bool [
   local-scope
   load-inputs
-  k1:continuation <- call-with-continuation-mark process, a
-  k2:continuation <- call-with-continuation-mark process, b
+  k1:continuation <- call-with-continuation-mark 100/mark, process, a
+  k2:continuation <- call-with-continuation-mark 100/mark, process, b
   {
     k1, x:_elem, a-done?:bool <- call k1
     k2, y:_elem, b-done?:bool <- call k2
@@ -48,10 +48,10 @@ def same-fringe a:&:tree:_elem, b:&:tree:_elem -> result:bool [
 def process t:&:tree:_elem [
   local-scope
   load-inputs
-  return-continuation-until-mark  # initial
+  return-continuation-until-mark 100/mark  # initial
   traverse t
   zero-val:&:_elem <- new _elem:type
-  return-continuation-until-mark *zero-val, 1/done  # final
+  return-continuation-until-mark 100/mark, *zero-val, 1/done  # final
   assert 0/false, [continuation called past done]
 ]
 
@@ -68,7 +68,7 @@ def traverse t:&:tree:_elem [
   return-if r
   # leaf
   v:_elem <- get *t, val:offset
-  return-continuation-until-mark v, 0/not-done
+  return-continuation-until-mark 100/mark, v, 0/not-done
 ]
 
 # details

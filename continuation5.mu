@@ -20,7 +20,7 @@ def main [
   l <- push 3, l
   l <- push 2, l
   l <- push 1, l
-  k:continuation, x:num, done?:bool <- call-with-continuation-mark create-yielder, l
+  k:continuation, x:num, done?:bool <- call-with-continuation-mark 100/mark, create-yielder, l
   a:num <- copy 1
   {
     break-if done?
@@ -41,9 +41,9 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
     n <- first l
     l <- rest l
     n <- add n, a
-    a <- return-continuation-until-mark n, done?  # pause/resume
+    a <- return-continuation-until-mark 100/mark, n, done?  # pause/resume
     loop
   }
-  return-continuation-until-mark -1, done?
+  return-continuation-until-mark 100/mark, -1, done?
   assert 0/false, [called too many times, ran out of continuations to return]
 ]

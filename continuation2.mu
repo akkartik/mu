@@ -17,7 +17,7 @@ def main [
   l <- push 3, l
   l <- push 2, l
   l <- push 1, l
-  k:continuation <- call-with-continuation-mark create-yielder, l
+  k:continuation <- call-with-continuation-mark 100/mark, create-yielder, l
   {
     x:num, done?:bool <- call k
     break-if done?
@@ -29,7 +29,7 @@ def main [
 def create-yielder l:&:list:num -> n:num, done?:bool [
   local-scope
   load-inputs
-  return-continuation-until-mark
+  return-continuation-until-mark 100/mark
   done? <- equal l, 0/nil
   return-if done?, 0/false
   n <- first l

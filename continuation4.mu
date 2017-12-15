@@ -19,7 +19,7 @@ def main [
   l <- push 3, l
   l <- push 2, l
   l <- push 1, l
-  k:continuation, x:num, done?:bool <- call-with-continuation-mark create-yielder, l
+  k:continuation, x:num, done?:bool <- call-with-continuation-mark 100/mark, create-yielder, l
   {
     break-if done?
     $print x 10/newline
@@ -36,12 +36,12 @@ def create-yielder l:&:list:num -> n:num, done?:bool [
     break-if done?
     n <- first l
     l <- rest l
-    return-continuation-until-mark n, done?
+    return-continuation-until-mark 100/mark, n, done?
     loop
   }
   # A function that returns continuations shouldn't get the opportunity to
   # return. Calling functions should stop calling its continuation after this
   # point.
-  return-continuation-until-mark -1, done?
+  return-continuation-until-mark 100/mark, -1, done?
   assert 0/false, [called too many times, ran out of continuations to return]
 ]
