@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Mu - subx/003trace.cc</title>
-<meta name="Generator" content="Vim/7.4">
+<meta name="Generator" content="Vim/8.0">
 <meta name="plugin-version" content="vim7.4_v2">
 <meta name="syntax" content="cpp">
 <meta name="settings" content="number_lines,use_css,pre_wrap,no_foldcolumn,expand_tabs,line_ids,prevent_copy=">
@@ -15,15 +15,15 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.Constant { color: #00a0a0; }
 .Conceal { color: #4e4e4e; }
+.PreProc { color: #800080; }
+.LineNr { color: #444444; }
+.Identifier { color: #c0a020; }
+.Constant { color: #00a0a0; }
+.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
 .Comment { color: #9090ff; }
 .Comment a { color:#0000ee; text-decoration:underline; }
 .Delimiter { color: #800080; }
-.LineNr { color: #444444; }
-.Identifier { color: #c0a020; }
-.Normal { color: #aaaaaa; background-color: #080808; padding-bottom: 1px; }
-.PreProc { color: #800080; }
 .cSpecial { color: #008000; }
 -->
 </style>
@@ -218,7 +218,7 @@ if ('onhashchange' in window) {
 <span id="L157" class="LineNr">157 </span><span class="PreProc">#define CLEAR_TRACE  </span><span class="Normal">delete</span><span class="PreProc"> Trace_stream</span><span class="Delimiter">,</span><span class="PreProc"> Trace_stream = </span><span class="Normal">new</span><span class="PreProc"> trace_stream</span><span class="Delimiter">;</span>
 <span id="L158" class="LineNr">158 </span>
 <span id="L159" class="LineNr">159 </span><span class="Comment">// Top-level helper. IMPORTANT: can't nest</span>
-<span id="L160" class="LineNr">160 </span><span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(__VA_ARGS__)</span>
+<span id="L160" class="LineNr">160 </span><span class="PreProc">#define trace(</span><span class="Delimiter">...</span><span class="PreProc">)  !Trace_stream ? cerr </span><span class="Comment">/*</span><span class="Comment">print nothing</span><span class="Comment">*/</span><span class="PreProc"> : Trace_stream</span><span class="Delimiter">-&gt;</span><span class="PreProc">stream(</span><span class="Constant">__VA_ARGS__</span><span class="PreProc">)</span>
 <span id="L161" class="LineNr">161 </span>
 <span id="L162" class="LineNr">162 </span><span class="Comment">// Just for debugging; 'git log' should never show any calls to 'dbg'.</span>
 <span id="L163" class="LineNr">163 </span><span class="PreProc">#define dbg trace(</span><span class="Constant">0</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">&quot;a&quot;</span><span class="PreProc">)</span>
@@ -275,7 +275,7 @@ if ('onhashchange' in window) {
 <span id="L214" class="LineNr">214 </span><a href='003trace.cc.html#L212'>START_TRACING_UNTIL_END_OF_SCOPE</a>
 <span id="L215" class="LineNr">215 </span>
 <span id="L216" class="LineNr">216 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L217" class="LineNr">217 </span><span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> __VA_ARGS__)</span>
+<span id="L217" class="LineNr">217 </span><span class="PreProc">#define CHECK_TRACE_CONTENTS(</span><span class="Delimiter">...</span><span class="PreProc">)  check_trace_contents(__FUNCTION__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__FILE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__LINE__</span><span class="Delimiter">,</span><span class="PreProc"> </span><span class="Constant">__VA_ARGS__</span><span class="PreProc">)</span>
 <span id="L218" class="LineNr">218 </span>
 <span id="L219" class="LineNr">219 </span><span class="PreProc">#define CHECK_TRACE_CONTAINS_ERRORS()  CHECK(trace_contains_errors())</span>
 <span id="L220" class="LineNr">220 </span><span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN_ERRORS() \</span>
@@ -295,7 +295,7 @@ if ('onhashchange' in window) {
 <span id="L234" class="LineNr">234 </span><span class="PreProc">  </span><span class="Conceal">¦</span><span class="PreProc"> </span><span class="Identifier">return</span><span class="Delimiter">;</span><span class="PreProc">  </span><span class="Comment">/*</span><span class="Comment"> Currently we stop at the very first failure. </span><span class="Comment">*/</span><span class="PreProc"> \</span>
 <span id="L235" class="LineNr">235 </span><span class="PreProc">  </span><span class="Delimiter">}</span>
 <span id="L236" class="LineNr">236 </span>
-<span id="L237" class="LineNr">237 </span><span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN(</span><span class="Delimiter">...</span><span class="PreProc">)  CHECK(trace_doesnt_contain(__VA_ARGS__))</span>
+<span id="L237" class="LineNr">237 </span><span class="PreProc">#define CHECK_TRACE_DOESNT_CONTAIN(</span><span class="Delimiter">...</span><span class="PreProc">)  CHECK(trace_doesnt_contain(</span><span class="Constant">__VA_ARGS__</span><span class="PreProc">))</span>
 <span id="L238" class="LineNr">238 </span>
 <span id="L239" class="LineNr">239 </span><span class="Delimiter">:(code)</span>
 <span id="L240" class="LineNr">240 </span><span class="Normal">bool</span> <a href='003trace.cc.html#L240'>check_trace_contents</a><span class="Delimiter">(</span>string FUNCTION<span class="Delimiter">,</span> string <span class="Normal">FILE</span><span class="Delimiter">,</span> <span class="Normal">int</span> LINE<span class="Delimiter">,</span> string expected<span class="Delimiter">)</span> <span class="Delimiter">{</span>
