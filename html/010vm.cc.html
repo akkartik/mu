@@ -351,7 +351,7 @@ if ('onhashchange' in window) {
 <span id="L287" class="LineNr">287 </span>  type = <a href='018type_abbreviations.cc.html#L58'>new_type_tree</a><span class="Delimiter">(</span>type_names<span class="Delimiter">);</span>
 <span id="L288" class="LineNr">288 </span>  <span class="Normal">delete</span> type_names<span class="Delimiter">;</span>
 <span id="L289" class="LineNr">289 </span>  <span class="Comment">// special cases</span>
-<span id="L290" class="LineNr">290 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L85'>is_integer</a><span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
+<span id="L290" class="LineNr">290 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>name<span class="Delimiter">)</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
 <span id="L291" class="LineNr">291 </span>  <span class="Conceal">¦</span> type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
 <span id="L292" class="LineNr">292 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>name == <span class="Constant">&quot;_&quot;</span> &amp;&amp; type == <span class="Constant">NULL</span><span class="Delimiter">)</span>
 <span id="L293" class="LineNr">293 </span>  <span class="Conceal">¦</span> type = <span class="Normal">new</span> type_tree<span class="Delimiter">(</span><span class="Constant">&quot;literal&quot;</span><span class="Delimiter">);</span>
@@ -408,7 +408,7 @@ if ('onhashchange' in window) {
 <span id="L344" class="LineNr">344 </span>  <span class="Conceal">¦</span> <span class="Normal">int</span> value = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L345" class="LineNr">345 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>contains_key<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">))</span>
 <span id="L346" class="LineNr">346 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> value = get<span class="Delimiter">(</span>Type_ordinal<span class="Delimiter">,</span> type_name<span class="Delimiter">);</span>
-<span id="L347" class="LineNr">347 </span>  <span class="Conceal">¦</span> <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span><a href='002test.cc.html#L85'>is_integer</a><span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>  <span class="Comment">// sometimes types will contain non-type tags, like numbers for the size of an array</span>
+<span id="L347" class="LineNr">347 </span>  <span class="Conceal">¦</span> <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span>type_name<span class="Delimiter">))</span>  <span class="Comment">// sometimes types will contain non-type tags, like numbers for the size of an array</span>
 <span id="L348" class="LineNr">348 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> value = <span class="Constant">0</span><span class="Delimiter">;</span>
 <span id="L349" class="LineNr">349 </span>  <span class="Conceal">¦</span> <span class="Normal">else</span> <span class="Normal">if</span> <span class="Delimiter">(</span>properties<span class="Delimiter">-&gt;</span>value == <span class="Constant">&quot;-&gt;&quot;</span><span class="Delimiter">)</span>  <span class="Comment">// used in recipe types</span>
 <span id="L350" class="LineNr">350 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> value = <span class="Constant">0</span><span class="Delimiter">;</span>
@@ -870,62 +870,87 @@ if ('onhashchange' in window) {
 <span id="L806" class="LineNr">806 </span>  out &lt;&lt; <span class="Constant">')'</span><span class="Delimiter">;</span>
 <span id="L807" class="LineNr">807 </span><span class="Delimiter">}</span>
 <span id="L808" class="LineNr">808 </span>
-<span id="L809" class="LineNr">809 </span><span class="Comment">//: helper to print numbers without excessive precision</span>
-<span id="L810" class="LineNr">810 </span>
-<span id="L811" class="LineNr">811 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
-<span id="L812" class="LineNr">812 </span><span class="Normal">struct</span> no_scientific <span class="Delimiter">{</span>
-<span id="L813" class="LineNr">813 </span>  <span class="Normal">double</span> x<span class="Delimiter">;</span>
-<span id="L814" class="LineNr">814 </span>  <span class="Normal">explicit</span> no_scientific<span class="Delimiter">(</span><span class="Normal">double</span> y<span class="Delimiter">)</span> :x<span class="Delimiter">(</span>y<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
-<span id="L815" class="LineNr">815 </span><span class="Delimiter">};</span>
-<span id="L816" class="LineNr">816 </span>
-<span id="L817" class="LineNr">817 </span><span class="Delimiter">:(code)</span>
-<span id="L818" class="LineNr">818 </span>ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> no_scientific x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L819" class="LineNr">819 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!isfinite<span class="Delimiter">(</span>x<span class="Delimiter">.</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
-<span id="L820" class="LineNr">820 </span>  <span class="Conceal">¦</span> <span class="Comment">// Infinity or NaN</span>
-<span id="L821" class="LineNr">821 </span>  <span class="Conceal">¦</span> os &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
-<span id="L822" class="LineNr">822 </span>  <span class="Conceal">¦</span> <span class="Identifier">return</span> os<span class="Delimiter">;</span>
-<span id="L823" class="LineNr">823 </span>  <span class="Delimiter">}</span>
-<span id="L824" class="LineNr">824 </span>  ostringstream tmp<span class="Delimiter">;</span>
-<span id="L825" class="LineNr">825 </span>  <span class="Comment">// more accurate, but too slow</span>
-<span id="L826" class="LineNr">826 </span><span class="CommentedCode">//?   tmp.precision(308);  // for 64-bit numbers</span>
-<span id="L827" class="LineNr">827 </span>  tmp &lt;&lt; std::fixed &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
-<span id="L828" class="LineNr">828 </span>  os &lt;&lt; trim_floating_point<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
-<span id="L829" class="LineNr">829 </span>  <span class="Identifier">return</span> os<span class="Delimiter">;</span>
-<span id="L830" class="LineNr">830 </span><span class="Delimiter">}</span>
-<span id="L831" class="LineNr">831 </span>
-<span id="L832" class="LineNr">832 </span>string trim_floating_point<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L833" class="LineNr">833 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
-<span id="L834" class="LineNr">834 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">'.'</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">)</span> <span class="Identifier">return</span> in<span class="Delimiter">;</span>
-<span id="L835" class="LineNr">835 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
-<span id="L836" class="LineNr">836 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>length &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
-<span id="L837" class="LineNr">837 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>length-<span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">'0'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
-<span id="L838" class="LineNr">838 </span>  <span class="Conceal">¦</span> --length<span class="Delimiter">;</span>
-<span id="L839" class="LineNr">839 </span>  <span class="Delimiter">}</span>
-<span id="L840" class="LineNr">840 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>length-<span class="Constant">1</span><span class="Delimiter">)</span> == <span class="Constant">'.'</span><span class="Delimiter">)</span> --length<span class="Delimiter">;</span>
-<span id="L841" class="LineNr">841 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>length == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
-<span id="L842" class="LineNr">842 </span>  <span class="Identifier">return</span> in<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> length<span class="Delimiter">);</span>
-<span id="L843" class="LineNr">843 </span><span class="Delimiter">}</span>
-<span id="L844" class="LineNr">844 </span>
-<span id="L845" class="LineNr">845 </span><span class="Normal">void</span> test_trim_floating_point<span class="Delimiter">()</span> <span class="Delimiter">{</span>
-<span id="L846" class="LineNr">846 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
-<span id="L847" class="LineNr">847 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;0&quot;</span><span class="Delimiter">);</span>
-<span id="L848" class="LineNr">848 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.5000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;1.5&quot;</span><span class="Delimiter">);</span>
-<span id="L849" class="LineNr">849 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">);</span>
-<span id="L850" class="LineNr">850 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.000000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
-<span id="L851" class="LineNr">851 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
-<span id="L852" class="LineNr">852 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
-<span id="L853" class="LineNr">853 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
-<span id="L854" class="LineNr">854 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;230&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;230&quot;</span><span class="Delimiter">);</span>
-<span id="L855" class="LineNr">855 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.000000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
-<span id="L856" class="LineNr">856 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
-<span id="L857" class="LineNr">857 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
-<span id="L858" class="LineNr">858 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
-<span id="L859" class="LineNr">859 </span><span class="Delimiter">}</span>
-<span id="L860" class="LineNr">860 </span>
-<span id="L861" class="LineNr">861 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
-<span id="L862" class="LineNr">862 </span><span class="PreProc">#include </span><span class="Constant">&lt;utility&gt;</span>
-<span id="L863" class="LineNr">863 </span><span class="Normal">using</span> std::pair<span class="Delimiter">;</span>
-<span id="L864" class="LineNr">864 </span><span class="PreProc">#include </span><span class="Constant">&lt;math.h&gt;</span>
+<span id="L809" class="LineNr">809 </span><span class="Normal">bool</span> is_integer<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; s<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L810" class="LineNr">810 </span>  <span class="Identifier">return</span> s<span class="Delimiter">.</span>find_first_not_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789-&quot;</span><span class="Delimiter">)</span> == string::npos  <span class="Comment">// no other characters</span>
+<span id="L811" class="LineNr">811 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> &amp;&amp; s<span class="Delimiter">.</span>find_first_of<span class="Delimiter">(</span><span class="Constant">&quot;0123456789&quot;</span><span class="Delimiter">)</span> != string::npos  <span class="Comment">// at least one digit</span>
+<span id="L812" class="LineNr">812 </span>  <span class="Conceal">¦</span> <span class="Conceal">¦</span> &amp;&amp; s<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">'-'</span><span class="Delimiter">,</span> <span class="Constant">1</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">;</span>  <span class="Comment">// '-' only at first position</span>
+<span id="L813" class="LineNr">813 </span><span class="Delimiter">}</span>
+<span id="L814" class="LineNr">814 </span>
+<span id="L815" class="LineNr">815 </span><span class="Normal">int</span> to_integer<span class="Delimiter">(</span>string n<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L816" class="LineNr">816 </span>  <span class="Normal">char</span>* <a href='003trace.cc.html#L203'>end</a> = <span class="Constant">NULL</span><span class="Delimiter">;</span>
+<span id="L817" class="LineNr">817 </span>  <span class="Comment">// safe because string.c_str() is guaranteed to be null-terminated</span>
+<span id="L818" class="LineNr">818 </span>  <span class="Normal">int</span> result = strtoll<span class="Delimiter">(</span>n<span class="Delimiter">.</span>c_str<span class="Delimiter">(),</span> &amp;end<span class="Delimiter">,</span> <span class="Comment">/*</span><span class="Comment">any base</span><span class="Comment">*/</span><span class="Constant">0</span><span class="Delimiter">);</span>
+<span id="L819" class="LineNr">819 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>*end != <span class="cSpecial">'\0'</span><span class="Delimiter">)</span> cerr &lt;&lt; <span class="Constant">&quot;tried to convert &quot;</span> &lt;&lt; n &lt;&lt; <span class="Constant">&quot; to number</span><span class="cSpecial">\n</span><span class="Constant">&quot;</span><span class="Delimiter">;</span>
+<span id="L820" class="LineNr">820 </span>  assert<span class="Delimiter">(</span>*end == <span class="cSpecial">'\0'</span><span class="Delimiter">);</span>
+<span id="L821" class="LineNr">821 </span>  <span class="Identifier">return</span> result<span class="Delimiter">;</span>
+<span id="L822" class="LineNr">822 </span><span class="Delimiter">}</span>
+<span id="L823" class="LineNr">823 </span>
+<span id="L824" class="LineNr">824 </span><span class="Normal">void</span> test_is_integer<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L825" class="LineNr">825 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span><span class="Constant">&quot;1234&quot;</span><span class="Delimiter">));</span>
+<span id="L826" class="LineNr">826 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span><span class="Constant">&quot;-1&quot;</span><span class="Delimiter">));</span>
+<span id="L827" class="LineNr">827 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span><span class="Constant">&quot;234.0&quot;</span><span class="Delimiter">));</span>
+<span id="L828" class="LineNr">828 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>is_integer<span class="Delimiter">(</span><span class="Constant">&quot;-567&quot;</span><span class="Delimiter">));</span>
+<span id="L829" class="LineNr">829 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span><span class="Constant">&quot;89-0&quot;</span><span class="Delimiter">));</span>
+<span id="L830" class="LineNr">830 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span><span class="Constant">&quot;-&quot;</span><span class="Delimiter">));</span>
+<span id="L831" class="LineNr">831 </span>  <a href='002test.cc.html#L24'>CHECK</a><span class="Delimiter">(</span>!is_integer<span class="Delimiter">(</span><span class="Constant">&quot;1e3&quot;</span><span class="Delimiter">));</span>  <span class="Comment">// not supported</span>
+<span id="L832" class="LineNr">832 </span><span class="Delimiter">}</span>
+<span id="L833" class="LineNr">833 </span>
+<span id="L834" class="LineNr">834 </span><span class="Comment">//: helper to print numbers without excessive precision</span>
+<span id="L835" class="LineNr">835 </span>
+<span id="L836" class="LineNr">836 </span><span class="Delimiter">:(before &quot;End Types&quot;)</span>
+<span id="L837" class="LineNr">837 </span><span class="Normal">struct</span> no_scientific <span class="Delimiter">{</span>
+<span id="L838" class="LineNr">838 </span>  <span class="Normal">double</span> x<span class="Delimiter">;</span>
+<span id="L839" class="LineNr">839 </span>  <span class="Normal">explicit</span> no_scientific<span class="Delimiter">(</span><span class="Normal">double</span> y<span class="Delimiter">)</span> :x<span class="Delimiter">(</span>y<span class="Delimiter">)</span> <span class="Delimiter">{}</span>
+<span id="L840" class="LineNr">840 </span><span class="Delimiter">};</span>
+<span id="L841" class="LineNr">841 </span>
+<span id="L842" class="LineNr">842 </span><span class="Delimiter">:(code)</span>
+<span id="L843" class="LineNr">843 </span>ostream&amp; <span class="Normal">operator</span>&lt;&lt;<span class="Delimiter">(</span>ostream&amp; os<span class="Delimiter">,</span> no_scientific x<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L844" class="LineNr">844 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>!isfinite<span class="Delimiter">(</span>x<span class="Delimiter">.</span>x<span class="Delimiter">))</span> <span class="Delimiter">{</span>
+<span id="L845" class="LineNr">845 </span>  <span class="Conceal">¦</span> <span class="Comment">// Infinity or NaN</span>
+<span id="L846" class="LineNr">846 </span>  <span class="Conceal">¦</span> os &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
+<span id="L847" class="LineNr">847 </span>  <span class="Conceal">¦</span> <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+<span id="L848" class="LineNr">848 </span>  <span class="Delimiter">}</span>
+<span id="L849" class="LineNr">849 </span>  ostringstream tmp<span class="Delimiter">;</span>
+<span id="L850" class="LineNr">850 </span>  <span class="Comment">// more accurate, but too slow</span>
+<span id="L851" class="LineNr">851 </span><span class="CommentedCode">//?   tmp.precision(308);  // for 64-bit numbers</span>
+<span id="L852" class="LineNr">852 </span>  tmp &lt;&lt; std::fixed &lt;&lt; x<span class="Delimiter">.</span>x<span class="Delimiter">;</span>
+<span id="L853" class="LineNr">853 </span>  os &lt;&lt; trim_floating_point<span class="Delimiter">(</span>tmp<span class="Delimiter">.</span>str<span class="Delimiter">());</span>
+<span id="L854" class="LineNr">854 </span>  <span class="Identifier">return</span> os<span class="Delimiter">;</span>
+<span id="L855" class="LineNr">855 </span><span class="Delimiter">}</span>
+<span id="L856" class="LineNr">856 </span>
+<span id="L857" class="LineNr">857 </span>string trim_floating_point<span class="Delimiter">(</span><span class="Normal">const</span> string&amp; in<span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L858" class="LineNr">858 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>empty<span class="Delimiter">())</span> <span class="Identifier">return</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">;</span>
+<span id="L859" class="LineNr">859 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>find<span class="Delimiter">(</span><span class="Constant">'.'</span><span class="Delimiter">)</span> == string::npos<span class="Delimiter">)</span> <span class="Identifier">return</span> in<span class="Delimiter">;</span>
+<span id="L860" class="LineNr">860 </span>  <span class="Normal">int</span> length = <a href='001help.cc.html#L141'>SIZE</a><span class="Delimiter">(</span>in<span class="Delimiter">);</span>
+<span id="L861" class="LineNr">861 </span>  <span class="Normal">while</span> <span class="Delimiter">(</span>length &gt; <span class="Constant">1</span><span class="Delimiter">)</span> <span class="Delimiter">{</span>
+<span id="L862" class="LineNr">862 </span>  <span class="Conceal">¦</span> <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>length-<span class="Constant">1</span><span class="Delimiter">)</span> != <span class="Constant">'0'</span><span class="Delimiter">)</span> <span class="Identifier">break</span><span class="Delimiter">;</span>
+<span id="L863" class="LineNr">863 </span>  <span class="Conceal">¦</span> --length<span class="Delimiter">;</span>
+<span id="L864" class="LineNr">864 </span>  <span class="Delimiter">}</span>
+<span id="L865" class="LineNr">865 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>in<span class="Delimiter">.</span>at<span class="Delimiter">(</span>length-<span class="Constant">1</span><span class="Delimiter">)</span> == <span class="Constant">'.'</span><span class="Delimiter">)</span> --length<span class="Delimiter">;</span>
+<span id="L866" class="LineNr">866 </span>  <span class="Normal">if</span> <span class="Delimiter">(</span>length == <span class="Constant">0</span><span class="Delimiter">)</span> <span class="Identifier">return</span> <span class="Constant">&quot;0&quot;</span><span class="Delimiter">;</span>
+<span id="L867" class="LineNr">867 </span>  <span class="Identifier">return</span> in<span class="Delimiter">.</span>substr<span class="Delimiter">(</span><span class="Constant">0</span><span class="Delimiter">,</span> length<span class="Delimiter">);</span>
+<span id="L868" class="LineNr">868 </span><span class="Delimiter">}</span>
+<span id="L869" class="LineNr">869 </span>
+<span id="L870" class="LineNr">870 </span><span class="Normal">void</span> test_trim_floating_point<span class="Delimiter">()</span> <span class="Delimiter">{</span>
+<span id="L871" class="LineNr">871 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;&quot;</span><span class="Delimiter">);</span>
+<span id="L872" class="LineNr">872 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;0&quot;</span><span class="Delimiter">);</span>
+<span id="L873" class="LineNr">873 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.5000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;1.5&quot;</span><span class="Delimiter">);</span>
+<span id="L874" class="LineNr">874 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;1.000001&quot;</span><span class="Delimiter">);</span>
+<span id="L875" class="LineNr">875 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.000000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
+<span id="L876" class="LineNr">876 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
+<span id="L877" class="LineNr">877 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23.&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
+<span id="L878" class="LineNr">878 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;23&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;23&quot;</span><span class="Delimiter">);</span>
+<span id="L879" class="LineNr">879 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;230&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;230&quot;</span><span class="Delimiter">);</span>
+<span id="L880" class="LineNr">880 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.000000&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
+<span id="L881" class="LineNr">881 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.0&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
+<span id="L882" class="LineNr">882 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3.&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
+<span id="L883" class="LineNr">883 </span>  <a href='002test.cc.html#L31'>CHECK_EQ</a><span class="Delimiter">(</span>trim_floating_point<span class="Delimiter">(</span><span class="Constant">&quot;3&quot;</span><span class="Delimiter">),</span> <span class="Constant">&quot;3&quot;</span><span class="Delimiter">);</span>
+<span id="L884" class="LineNr">884 </span><span class="Delimiter">}</span>
+<span id="L885" class="LineNr">885 </span>
+<span id="L886" class="LineNr">886 </span><span class="Delimiter">:(before &quot;End Includes&quot;)</span>
+<span id="L887" class="LineNr">887 </span><span class="PreProc">#include </span><span class="Constant">&lt;utility&gt;</span>
+<span id="L888" class="LineNr">888 </span><span class="Normal">using</span> std::pair<span class="Delimiter">;</span>
+<span id="L889" class="LineNr">889 </span><span class="PreProc">#include </span><span class="Constant">&lt;math.h&gt;</span>
 </pre>
 </body>
 </html>

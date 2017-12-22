@@ -82,30 +82,5 @@ void run_test(size_t i) {
   // End Test Teardown
 }
 
-bool is_integer(const string& s) {
-  return s.find_first_not_of("0123456789-") == string::npos  // no other characters
-      && s.find_first_of("0123456789") != string::npos  // at least one digit
-      && s.find('-', 1) == string::npos;  // '-' only at first position
-}
-
-int to_integer(string n) {
-  char* end = NULL;
-  // safe because string.c_str() is guaranteed to be null-terminated
-  int result = strtoll(n.c_str(), &end, /*any base*/0);
-  if (*end != '\0') cerr << "tried to convert " << n << " to number\n";
-  assert(*end == '\0');
-  return result;
-}
-
-void test_is_integer() {
-  CHECK(is_integer("1234"));
-  CHECK(is_integer("-1"));
-  CHECK(!is_integer("234.0"));
-  CHECK(is_integer("-567"));
-  CHECK(!is_integer("89-0"));
-  CHECK(!is_integer("-"));
-  CHECK(!is_integer("1e3"));  // not supported
-}
-
 :(before "End Includes")
 #include <stdlib.h>
