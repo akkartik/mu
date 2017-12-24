@@ -53,7 +53,7 @@ syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
 syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
 syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
 highlight link muLiteral Constant
-syntax keyword muKeyword default-space new-default-space local-scope next-ingredient next-input ingredient input rewind-ingredients rewind-inputs load-ingredients load-inputs | highlight link muKeyword Constant
+syntax keyword muKeyword default-space local-scope next-ingredient next-input ingredient input rewind-ingredients rewind-inputs load-ingredients load-inputs | highlight link muKeyword Constant
 
 syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
 syntax match muAssign "<-"

@@ -202,7 +202,7 @@ void rewrite_default_space_instruction(instruction& curr) {
   curr.ingredients.push_back(reagent("location:type"));
   curr.ingredients.push_back(reagent("number-of-locals:literal"));
   if (!curr.products.empty())
-    raise << "new-default-space can't take any results\n" << end();
+    raise << "local-scope can't take any results\n" << end();
   curr.products.push_back(reagent("default-space:space"));
 }
 :(after "Begin Preprocess read_memory(x)")
