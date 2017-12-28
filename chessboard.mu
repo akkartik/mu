@@ -161,7 +161,8 @@ def print screen:&:screen, board:board -> screen:&:screen [
       break-if done?
       f:&:@:char <- index *board, col
       c:char <- index *f, row
-      print screen, c
+      bg:num <- square-color row, col
+      print screen, c, 7/white, bg
       print screen, space
       col <- add col, 1
       loop
@@ -175,6 +176,15 @@ def print screen:&:screen, board:board -> screen:&:screen [
   cursor-to-next-line screen
   print screen, [    a b c d e f g h]
   cursor-to-next-line screen
+]
+
+def square-color row:num, col:num -> result:num [
+  local-scope
+  load-inputs
+  result <- copy 0/black
+  x:num <- add row, col
+  _, rem:num <- divide-with-remainder x, 2
+  return-if rem, 238
 ]
 
 def initial-position -> board:board [
