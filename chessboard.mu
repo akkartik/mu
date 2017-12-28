@@ -31,7 +31,7 @@ scenario print-board-and-read-move [
 ]
   ]
   run [
-    screen:&:screen, console:&:console <- chessboard screen:&:screen, console:&:console
+    screen, console <- chessboard screen, console
     # icon for the cursor
     cursor-icon:char <- copy 9251/␣
     screen <- print screen, cursor-icon
@@ -80,7 +80,7 @@ def chessboard screen:&:screen, console:&:console -> screen:&:screen, console:&:
     print screen, [Stupid text-mode chessboard. White pieces in uppercase; black pieces in lowercase. No checking for legal moves.
 ]
     cursor-to-next-line screen
-    print-board screen, board
+    print screen, board
     cursor-to-next-line screen
     print screen, [Type in your move as <from square>-<to square>. For example: 'a2-a4'. Then press <enter>.
 ]
@@ -141,7 +141,7 @@ def new-file position:&:@:char, index:num -> result:&:@:char [
   }
 ]
 
-def print-board screen:&:screen, board:board -> screen:&:screen [
+def print screen:&:screen, board:board -> screen:&:screen [
   local-scope
   load-inputs
   row:num <- copy 7  # start printing from the top of the board
@@ -205,7 +205,7 @@ scenario printing-the-board [
   board:board <- initial-position
   assume-screen 30/width, 12/height
   run [
-    screen:&:screen <- print-board screen:&:screen, board
+    screen <- print screen, board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
@@ -356,7 +356,7 @@ scenario read-move-blocking [
   local-scope
   assume-screen 20/width, 2/height
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-  read-move-routine:num/routine <- start-running read-move, source, screen:&:screen
+  read-move-routine:num/routine <- start-running read-move, source, screen
   run [
     # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
@@ -429,7 +429,7 @@ scenario read-move-quit [
   local-scope
   assume-screen 20/width, 2/height
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-  read-move-routine:num <- start-running read-move, source, screen:&:screen
+  read-move-routine:num <- start-running read-move, source, screen
   run [
     # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
@@ -457,7 +457,7 @@ scenario read-move-illegal-file [
   local-scope
   assume-screen 20/width, 2/height
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-  read-move-routine:num <- start-running read-move, source, screen:&:screen
+  read-move-routine:num <- start-running read-move, source, screen
   run [
     # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
@@ -479,7 +479,7 @@ scenario read-move-illegal-rank [
   local-scope
   assume-screen 20/width, 2/height
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-  read-move-routine:num <- start-running read-move, source, screen:&:screen
+  read-move-routine:num <- start-running read-move, source, screen
   run [
     # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
@@ -502,7 +502,7 @@ scenario read-move-empty [
   local-scope
   assume-screen 20/width, 2/height
   source:&:source:char, sink:&:sink:char <- new-channel 2/capacity
-  read-move-routine:num <- start-running read-move, source, screen:&:screen
+  read-move-routine:num <- start-running read-move, source, screen
   run [
     # 'read-move' is waiting for keypress
     wait-for-routine-to-block read-move-routine
@@ -543,7 +543,7 @@ scenario making-a-move [
   *move <- merge 6/g, 1/'2', 6/g, 3/'4'
   run [
     board <- make-move board, move
-    screen:&:screen <- print-board screen:&:screen, board
+    screen <- print screen, board
   ]
   screen-should-contain [
   #  012345678901234567890123456789
