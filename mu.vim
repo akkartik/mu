@@ -31,6 +31,8 @@ set comments+=n:#
 syntax match CommentedCode "#? .*"
 let b:cmt_head = "#? "
 
+syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
+
 " Mu strings are inside [ ... ] and can span multiple lines
 " don't match '[' at end of line, that's usually code
 syntax match muLiteral %^[^ a-zA-Z0-9(){}\[\]#$_*@&,=-][^ ,]*\|[ ,]\@<=[^ a-zA-Z0-9(){}\[\]#$_*@&,=-][^ ,]*%
@@ -53,15 +55,29 @@ syntax match muLiteral %[^ ]\+:type/[^ ,]*\|[^ ]\+:type\>%
 syntax match muLiteral %[^ ]\+:offset/[^ ,]*\|[^ ]\+:offset\>%
 syntax match muLiteral %[^ ]\+:variant/[^ ,]*\|[^ ]\+:variant\>%
 highlight link muLiteral Constant
-syntax keyword muKeyword default-space local-scope next-ingredient next-input ingredient input rewind-ingredients rewind-inputs load-ingredients load-inputs | highlight link muKeyword Constant
 
-syntax match muDelimiter "[{}]" | highlight link muDelimiter Delimiter
+" sources of action at a distance
 syntax match muAssign "<-"
 syntax match muAssign "\<raw\>"
 highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
-syntax keyword muControl reply reply-if reply-unless return return-if return-unless output output-if output-unless jump jump-if jump-unless loop loop-if loop-unless break break-if break-unless current-continuation continue-from create-delimited-continuation reply-delimited-continuation | highlight muControl ctermfg=3
+
 " common keywords
+syntax keyword muKeyword default-space local-scope
+syntax keyword muKeyword next-input input rewind-inputs load-inputs
+syntax keyword muKeyword next-ingredient ingredient rewind-ingredients load-ingredients
+highlight link muKeyword Constant
+
+syntax keyword muControl return return-if return-unless
+syntax keyword muControl reply reply-if reply-unless
+syntax keyword muControl output output-if output-unless
+syntax keyword muControl jump jump-if jump-unless
+syntax keyword muControl break break-if break-unless
+syntax keyword muControl loop loop-if loop-unless
+syntax keyword muControl start-running
+syntax keyword muControl call-with-continuation-mark return-continuation-until-mark
+highlight muControl ctermfg=3
+
 syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
 syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
 syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
