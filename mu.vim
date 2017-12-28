@@ -63,24 +63,34 @@ highlight link muAssign SpecialChar
 syntax match muGlobal %[^ ]\+:global/\?[^ ,]*% | highlight link muGlobal SpecialChar
 
 " common keywords
+" use regular expressions for common words that may come after '/'
 syntax keyword muKeyword default-space local-scope
-syntax keyword muKeyword next-input input rewind-inputs load-inputs
-syntax keyword muKeyword next-ingredient ingredient rewind-ingredients load-ingredients
+syntax keyword muKeyword next-input rewind-inputs load-inputs
+syntax keyword muKeyword next-ingredient rewind-ingredients load-ingredients
+syntax match muKeyword " input\>\| ingredient\>"
 highlight link muKeyword Constant
 
 syntax keyword muControl return return-if return-unless
 syntax keyword muControl reply reply-if reply-unless
-syntax keyword muControl output output-if output-unless
-syntax keyword muControl jump jump-if jump-unless
-syntax keyword muControl break break-if break-unless
-syntax keyword muControl loop loop-if loop-unless
+syntax keyword muControl output-if output-unless
+syntax match muControl "^return\>\| return\>\|^reply\>\| reply\>\|^output\|^ output\>"
+syntax keyword muControl jump-if jump-unless
+syntax keyword muControl break-if break-unless
+syntax keyword muControl loop-if loop-unless
+syntax match muControl "^jump\>\| jump\>\|^break\>\| break\>\|^loop\>\| loop\>"
 syntax keyword muControl start-running
 syntax keyword muControl call-with-continuation-mark return-continuation-until-mark
 highlight muControl ctermfg=3
 
-syntax match muRecipe "^recipe\>\|^recipe!\>\|^def\>\|^def!\>\|^before\>\|^after\>\| -> " | highlight muRecipe ctermfg=208
+syntax match muRecipe "->"
+syntax match muRecipe "^recipe\>\|^def\>\|^before\>\|^after\>\| -> "
+syntax keyword muRecipe recipe! def!
+highlight muRecipe ctermfg=208
+
 syntax match muScenario "^scenario\>" | highlight muScenario ctermfg=34
-syntax match muPendingScenario "^pending-scenario\>" | highlight link muPendingScenario SpecialChar
-syntax match muData "^type\>\|^container\>\|^exclusive-container\>" | highlight muData ctermfg=226
+syntax keyword muPendingScenario pending-scenario | highlight link muPendingScenario SpecialChar
+syntax match muData "^type\>\|^container\>"
+syntax keyword muData exclusive-container
+highlight muData ctermfg=226
 
 let &cpo = s:save_cpo
