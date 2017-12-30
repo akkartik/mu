@@ -30,10 +30,10 @@ int16_t imm16() {
 
 :(scenario je_rel16_success)
 % ZF = true;
-# op  ModRM   SIB   displacement  immediate
-  0f 84             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 84                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -51,10 +51,10 @@ case 0x84: {  // jump rel16 if ZF
 
 :(scenario je_rel16_fail)
 % ZF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 84             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 84                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
@@ -64,10 +64,10 @@ case 0x84: {  // jump rel16 if ZF
 
 :(scenario jne_rel16_success)
 % ZF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 85             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 85                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -85,10 +85,10 @@ case 0x85: {  // jump rel16 unless ZF
 
 :(scenario jne_rel16_fail)
 % ZF = true;
-# op  ModRM   SIB   displacement  immediate
-  0f 85             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 85                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
@@ -100,10 +100,10 @@ case 0x85: {  // jump rel16 unless ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8f             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8f                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -123,10 +123,10 @@ case 0x8f: {  // jump rel16 if !SF and !ZF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8f             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8f                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
@@ -137,10 +137,10 @@ case 0x8f: {  // jump rel16 if !SF and !ZF
 :(scenario jge_rel16_success)
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8d             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8d                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -159,10 +159,10 @@ case 0x8d: {  // jump rel16 if !SF
 :(scenario jge_rel16_fail)
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8d             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8d                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
@@ -174,10 +174,10 @@ case 0x8d: {  // jump rel16 if !SF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8c             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8c                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -197,10 +197,10 @@ case 0x8c: {  // jump rel16 if SF and !ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8c             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8c                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
@@ -212,10 +212,10 @@ case 0x8c: {  // jump rel16 if SF and !ZF
 % ZF = true;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8e             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8e                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -225,10 +225,10 @@ case 0x8c: {  // jump rel16 if SF and !ZF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8e             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8e                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: jump 5
 +run: inst: 0x0000000a
@@ -248,10 +248,10 @@ case 0x8e: {  // jump rel16 if SF or ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
-  0f 8e             05 00                     # skip 1 instruction
-  05                              00 00 00 01
-  05                              00 00 00 02
+# op      ModRM   SIB   displacement  immediate
+  0f 8e                 05 00                     # skip 1 instruction
+  05                                  00 00 00 01
+  05                                  00 00 00 02
 +run: inst: 0x00000001
 +run: inst: 0x00000005
 +run: inst: 0x0000000a
