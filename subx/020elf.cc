@@ -70,3 +70,4 @@ void die(const char* format, ...) {
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <errno.h>
