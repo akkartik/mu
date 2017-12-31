@@ -399,8 +399,8 @@ c) Try running the tests:
   $ ./mu test
   ```
 
-d) The largest app built so far with Mu is [the editor I use to teach
-programming with](https://github.com/akkartik/mu/tree/master/edit#readme).
+d) Check out [the programming environment](https://github.com/akkartik/mu/tree/master/edit#readme),
+the largest app built so far in Mu.
 
 **Credits**
 
