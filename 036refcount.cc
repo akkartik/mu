@@ -83,7 +83,7 @@ void decrement_refcount(int old_address, const type_tree* payload_type, int payl
 
 int payload_size(reagent/*copy*/ x) {
   x.properties.push_back(pair<string, string_tree*>("lookup", NULL));
-  lookup_memory_core(x, /*check for nulls*/false);
+  lookup_memory_core(x, /*check_for_null*/false);
   return size_of(x) + /*refcount*/1;
 }
 
