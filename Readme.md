@@ -78,36 +78,17 @@ In this quest, Mu is currently experimenting with the following mechanisms:
    enabling more peripheral features. Think of it as a cleaned-up `git log`
    for the project. ([More information.](http://akkartik.name/post/wart-layers))
 
-You can see these mechanisms in action below in the context of a platform for
-teaching programming 1:1. It allows students to spin up a fake screen,
-keyboard, file system and network neighborhood in tests. The Basic-like
-Assembly language of the Mu VM is as powerful as C for low-level pointer
-operations and manual memory management, but much safer, paying some run-time
-checking overhead to validate pointers. It is as powerful as high-level
-languages (providing strong type safety, general lexical scope, generic types,
-higher-order functions and delimited continuations) but should be easier to
-write a compiler for since it gives up some expressiveness by not allowing
-recursive expressions. It is also *more* expressive than conventional
-high-level languages in some ways: Literate Programming turns out to be a
-great fit for a statement-oriented language, and labels make great [join points](https://en.wikipedia.org/wiki/Join_point).
+These mechanisms exist in the context of a low-level statement-oriented
+language (like Basic, or Assembly). The language is as powerful as C for
+low-level pointer operations and manual memory management, but much safer,
+paying some run-time overhead to validate pointers. It also provides a number
+of features usually associated with higher-level languages: strong
+type-safety, lexical scope, generic functions, higher-order functions,
+delimited continuations.
 
-Balancing these strengths, however, Mu is currently interpreted and slow. Too
-slow for graphics or sound, among other things. Rather than try to build a
-compiler for it, our next milestone is to "backport" the lessons of Mu back to
-a real-world unix-like system: OpenBSD, a reasonable compromise between the
-complexity (*ahem* bloat) of GNU and the over-simplification of
-[xv6](https://github.com/mit-pdos/xv6-public). The goal is to continue to have
-a self-contained, self-hosting system without external dependencies as we add
-support for new kinds of tests. The goal is explicitly *not* to blindly
-reimplement our Basic-like language atop OpenBSD, or to port the OpenBSD
-sources to our language. Instead, we will modify the C compiler to provide
-some of the greater safety we prototyped here, and make use of it in the
-OpenBSD sources.
-
-Things are pretty open-ended right now as we learn about OpenBSD, so the
-action will mostly be on the [wiki](https://github.com/akkartik/mu/wiki) for
-some time to come. This project is still very much active, though. Questions,
-bug reports and Pull Requests will be promptly addressed.
+Mu is currently interpreted and too slow for graphics or sound. We're
+actively investigating ways to speed it up. In the meantime, Kartik uses it to
+teach programming 1-on-1 with the motto, "teach testing before syntax."
 
 *Taking Mu for a spin*
 
@@ -119,7 +100,7 @@ versions, compilers or processors.
 
 [![Build Status](https://api.travis-ci.org/akkartik/mu.svg)](https://travis-ci.org/akkartik/mu)
 
-Running Mu will always recompile it if necessary:
+Running Mu will always (re)compile it if necessary:
 
   ```shell
   $ cd mu
@@ -130,8 +111,8 @@ As a simple example, here's a program with some arithmetic:
 
 <img alt='code example' src='html/example1.png'>
 
-As stated before, Mu functions are lists of instructions, one to a line. Each
-instruction operates on some *ingredients* and returns some *products*.
+Mu functions are lists of instructions, one to a line. Each instruction
+operates on some *ingredients* and returns some *products*.
 
   ```
   [products] <- instruction [ingredients]
@@ -417,6 +398,9 @@ c) Try running the tests:
   ```shell
   $ ./mu test
   ```
+
+d) The largest app built so far with Mu is [the editor I use to teach
+programming with](https://github.com/akkartik/mu/tree/master/edit#readme).
 
 **Credits**
 

@@ -16,21 +16,19 @@ You can also run the tests for the environment:
   $ ./mu test edit
   ```
 
-You can also load the files more explicitly by enumerating them all:
+You can also load the files more explicitly by enumerating them all (in order):
 
   ```shell
   $  ./mu edit/*.mu
   ```
 
-This is handy if you want to run simpler versions of the editor so you can
-stage your learning.
+This is handy if you want to play with simpler versions of the editor that are
+easier to understand. Stop loading at any layer to run with a subset of
+features:
 
   ```shell
-  $ ./mu edit/00[12]*.mu  # run a simple editor rather than the full environment
+  $ ./mu edit/001*.mu edit/002*.mu  # run a simple editor rather than the full environment
   ```
-
-To see how the various 'layers' are organized, peek inside the individual
-`.mu` files.
 
 ---
 
