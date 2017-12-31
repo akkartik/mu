@@ -83,8 +83,8 @@ language (like Basic, or Assembly). The language is as powerful as C for
 low-level pointer operations and manual memory management, but much safer,
 paying some run-time overhead to validate pointers. It also provides a number
 of features usually associated with higher-level languages: strong
-type-safety, lexical scope, generic functions, higher-order functions,
-delimited continuations.
+type-safety, function overloading, lexical scope, generic functions,
+higher-order functions, and delimited continuations.
 
 Mu is currently interpreted and too slow for graphics or sound. We're
 actively investigating ways to speed it up. In the meantime, Kartik uses it to
