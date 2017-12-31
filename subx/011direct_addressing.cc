@@ -215,6 +215,27 @@ case 0x89: {  // copy r32 to r/m32
   break;
 }
 
+//:: xchg
+
+:(scenario xchg_r32_with_r32)
+% Reg[3].i = 0xaf;
+# op  ModRM   SIB   displacement  immediate
+  87  d8                                      # exchange EBX (reg 3) with EAX (reg 0)
++run: exchange reg 3 with effective address
++run: effective address is reg 0
++run: storing 0x000000af
+
+:(before "End Single-Byte Opcodes")
+case 0x87: {  // exchange r32 with r/m32
+  uint8_t modrm = next();
+  uint8_t reg2 = (modrm>>3)&0x7;
+  trace(2, "run") << "exchange reg " << NUM(reg2) << " with effective address" << end();
+  int32_t* arg1 = effective_address(modrm);
+  *arg1 = Reg[reg2].i;
+  trace(2, "run") << "storing 0x" << HEXWORD << *arg1 << end();
+  break;
+}
+
 //:: push
 
 :(scenario push_r32)
