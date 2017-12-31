@@ -376,8 +376,8 @@ to browse. To add to the trace, use `stash`. For example:
   stash [first ingredient is], x
   ```
 
-Invaluable for understanding complex control flow without cluttering up the
-screen.
+Invaluable at times for understanding program behavior, but it won't clutter
+up your screen by default.
 
 ---
 
