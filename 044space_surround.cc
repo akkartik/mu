@@ -45,8 +45,7 @@ int space_base(const reagent& x) {
 int space_base(const reagent& x, int space_index, int base) {
   if (space_index == 0)
     return base;
-  int result = space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
-  return result;
+  return space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
 }
 
 int space_index(const reagent& x) {
