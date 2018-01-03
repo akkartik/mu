@@ -130,7 +130,6 @@ void run_main(int argc, char* argv[]) {
     vector<double> arg;
     arg.push_back(new_mu_text(argv[i]));
     assert(get(Memory, arg.back()) == 0);
-    put(Memory, arg.back(), 1);  // update refcount
     current_call().ingredient_atoms.push_back(arg);
   }
   run(main_routine);
@@ -252,74 +251,6 @@ def f2 n:&:num [
 // 'start-running' only uses the ingredients of the callee, not its products
 :(before "End is_indirect_call_with_ingredients Special-cases")
 if (r == START_RUNNING) return true;
-
-//: refcounting management when starting up new routines
-
-:(scenario start_running_immediately_updates_refcounts_of_ingredients)
-% Scheduling_interval = 1;
-def main [
-  local-scope
-  create-new-routine
-  # padding to make sure we run new-routine before returning
-  dummy:num <- copy 0
-  dummy:num <- copy 0
-]
-def create-new-routine [
-  local-scope
-  n:&:num <- new number:type
-  *n <- copy 34
-  start-running new-routine, n
-  # refcount of n decremented
-]
-def new-routine n:&:num [
-  local-scope
-  load-ingredients
-  1:num/raw <- copy *n
-]
-# check that n was successfully passed into new-routine before being reclaimed
-+mem: storing 34 in location 1
-
-//: ensure this works with indirect calls using 'call' as well
-:(scenario start_running_immediately_updates_refcounts_of_ingredients_of_indirect_calls)
-% Scheduling_interval = 1;
-def main [
-  local-scope
-  n:&:num <- new number:type
-  *n <- copy 34
-  call f1, n
-  1:num/raw <- copy *n
-]
-def f1 n:&:num [
-  local-scope
-  load-ingredients
-]
-# check that n was successfully passed into new-routine before being reclaimed
-+mem: storing 34 in location 1
-
-:(scenario next_ingredient_never_leaks_refcounts)
-def create-space n:&:num -> default-space:space [
-  default-space <- new location:type, 2
-  load-ingredients
-]
-def use-space [
-  local-scope
-  0:space/names:create-space <- next-ingredient
-  n:&:num/space:1 <- next-ingredient  # should decrement refcount
-  *n/space:1 <- copy 34
-  n2:num <- add *n/space:1, 1
-  return n2
-]
-def main [
-  local-scope
-  n:&:num <- copy 12000/unsafe  # pretend allocation with a known address
-  *n <- copy 23
-  space:space/names:create-space <- create-space n
-  n2:&:num <- copy 13000/unsafe
-  n3:num <- use-space space, n2
-]
-+run: {n: ("address" "number"), "space": "1"} <- next-ingredient
-+mem: decrementing refcount of 12000: 2 -> 1
-+run: {n: ("address" "number"), "space": "1", "lookup": ()} <- copy {34: "literal"}
 
 //: back to testing 'start-running'
 

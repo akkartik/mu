@@ -213,11 +213,8 @@ if (is_mu_continuation(current_instruction().ingredients.at(0))) {
   if (!contains_key(Delimited_continuation, ingredients.at(0).at(0)))
     raise << maybe(current_recipe_name()) << "no such delimited continuation " << current_instruction().ingredients.at(0).original_string << '\n' << end();
   const call_stack& new_frames = get(Delimited_continuation, ingredients.at(0).at(0)).frames;
-  for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p) {
+  for (call_stack::const_reverse_iterator p = new_frames.rbegin(); p != new_frames.rend(); ++p)
     Current_routine->calls.push_front(*p);
-    // ensure that the presence of a continuation keeps its stack frames from being reclaimed
-    increment_refcount(Current_routine->calls.front().default_space);
-  }
   if (Trace_stream) {
     Trace_stream->callstack_depth += SIZE(new_frames);
     trace("trace") << "calling delimited continuation; growing callstack depth to " << Trace_stream->callstack_depth << end();
@@ -242,25 +239,7 @@ def g [
   return-continuation-until-mark 233/mark, 34
   stash [continuation called]
 ]
-# entering main
-+mem: new alloc: 1000
-+run: {k: "continuation"}, {1: "number", "raw": ()} <- call-with-continuation-mark {233: "literal", "mark": ()}, {f: "recipe-literal"}
-# entering f
-+mem: new alloc: 1004
-# entering g
-+mem: new alloc: 1007
-# return control to main
-+run: return-continuation-until-mark {233: "literal", "mark": ()}, {34: "literal"}
-# no allocs abandoned yet
 +mem: storing 34 in location 1
-# end of main
-# make sure no memory leaks..
-+mem: trying to reclaim local k:continuation
-+mem: automatically abandoning 1007
-+mem: automatically abandoning 1004
-+mem: automatically abandoning 1000
-# ..even though we never called the continuation
--app: continuation called
 
 :(scenario continuations_continue_to_matching_mark)
 def main [
@@ -338,96 +317,6 @@ def create-yielder -> n:num [
   return 1
 ]
 +mem: storing 1 in location 10
-$error: 0
-
-//: Ensure that the presence of a continuation keeps its stack frames from being reclaimed.
-
-:(scenario continuations_preserve_local_scopes)
-def main [
-  local-scope
-  k:continuation <- call-with-continuation-mark 233/mark, f
-  call k
-  return 34
-]
-def f [
-  local-scope
-  g
-]
-def g [
-  local-scope
-  return-continuation-until-mark 233/mark
-  add 1, 1
-]
-# entering main
-+mem: new alloc: 1000
-+run: {k: "continuation"} <- call-with-continuation-mark {233: "literal", "mark": ()}, {f: "recipe-literal"}
-# entering f
-+mem: new alloc: 1004
-# entering g
-+mem: new alloc: 1007
-# return control to main
-+run: return-continuation-until-mark {233: "literal", "mark": ()}
-# no allocs abandoned yet
-# finish running main
-+run: call {k: "continuation"}
-+run: add {1: "literal"}, {1: "literal"}
-+run: return {34: "literal"}
-# now k is reclaimed
-+mem: trying to reclaim local k:continuation
-# at this point all allocs in the continuation are abandoned
-+mem: automatically abandoning 1007
-+mem: automatically abandoning 1004
-# finally the alloc for main is abandoned
-+mem: automatically abandoning 1000
-
-:(before "End Increment Refcounts(canonized_x)")
-if (is_mu_continuation(canonized_x)) {
-  int continuation_id = data.at(0);
-  if (continuation_id == 0) return;
-  if (!contains_key(Delimited_continuation, continuation_id)) {
-    raise << maybe(current_recipe_name()) << "missing delimited continuation: " << canonized_x.name << '\n';
-    return;
-  }
-  delimited_continuation& curr = get(Delimited_continuation, continuation_id);
-  trace("run") << "incrementing refcount of continuation " << continuation_id << ": " << curr.nrefs << " -> " << 1+curr.nrefs << end();
-  ++curr.nrefs;
-  return;
-}
-
-:(before "End Decrement Refcounts(canonized_x)")
-if (is_mu_continuation(canonized_x)) {
-  int continuation_id = get_or_insert(Memory, canonized_x.value);
-  if (continuation_id == 0) return;
-  delimited_continuation& curr = get(Delimited_continuation, continuation_id);
-  assert(curr.nrefs > 0);
-  --curr.nrefs;
-  trace("run") << "decrementing refcount of continuation " << continuation_id << ": " << 1+curr.nrefs << " -> " << curr.nrefs << end();
-  if (curr.nrefs > 0) return;
-  trace("run") << "reclaiming continuation " << continuation_id << end();
-  // temporarily push the stack frames for the continuation to the call stack before reclaiming their spaces
-  // (because reclaim_default_space() relies on the default-space being reclaimed being at the top of the stack)
-  for (call_stack::const_iterator p = curr.frames.begin(); p != curr.frames.end(); ++p) {
-    Current_routine->calls.push_front(*p);
-    reclaim_default_space();
-    Current_routine->calls.pop_front();
-  }
-  Delimited_continuation.erase(continuation_id);
-  return;
-}
-
-:(scenario continuations_can_be_copied)
-def main [
-  local-scope
-  k:continuation <- call-with-continuation-mark 233/mark, f
-  k2:continuation <- copy k
-  # reclaiming k and k2 shouldn't delete f's local scope twice
-]
-def f [
-  local-scope
-  load-ingredients
-  return-continuation-until-mark 233/mark
-  return 0
-]
 $error: 0
 
 :(code)

@@ -41,9 +41,7 @@ int new_mu_text(const string& contents) {
 //?   Total_alloc += string_length+1;
 //?   ++Num_alloc;
   int result = allocate(string_length+/*array length*/1);
-  trace("mem") << "storing string refcount 0 in location " << result << end();
-  put(Memory, result, 0);
-  int curr_address = result+/*skip refcount*/1;
+  int curr_address = result;
   trace("mem") << "storing string length " << string_length << " in location " << curr_address << end();
   put(Memory, curr_address, string_length);
   ++curr_address;  // skip length
@@ -118,13 +116,13 @@ if (!canonize_type(x)) return false;
 
 //: Allocate more to routine when initializing a literal string
 :(scenario new_string_overflow)
-% Initial_memory_per_routine = 3;
+% Initial_memory_per_routine = 2;
 def main [
   1:address:num/raw <- new number:type
-  2:text/raw <- new [a]  # not enough room in initial page, if you take the refcount and array length into account
+  2:text/raw <- new [a]  # not enough room in initial page, if you take the array length into account
 ]
-+new: routine allocated memory from 1000 to 1003
-+new: routine allocated memory from 1003 to 1006
++new: routine allocated memory from 1000 to 1002
++new: routine allocated memory from 1002 to 1004
 
 //: helpers
 :(code)
@@ -142,7 +140,6 @@ int unicode_length(const string& s) {
 
 string read_mu_text(int address) {
   if (address == 0) return "";
-  ++address;  // skip refcount
   int length = get_or_insert(Memory, address);
   if (length == 0) return "";
   return read_mu_characters(address+1, length);

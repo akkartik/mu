@@ -18,104 +18,6 @@
 //: write to the payload of an ingredient rather than its value, simply add
 //: the /lookup property to it. Modern computers provide efficient support for
 //: addresses and lookups, making this a realistic feature.
-//:
-//: To recap: an address is a bookmark to some potentially large payload, and
-//: you can replace any ingredient or product with a lookup to an address of
-//: the appropriate type. But how do we get addresses to begin with? That
-//: requires a little more explanation. Once we introduce the notion of
-//: bookmarks to data, we have to think about the life cycle of a piece of
-//: data and its bookmarks (because remember, bookmarks can be copied around
-//: just like anything else). Otherwise several bad outcomes can result (and
-//: indeed *have* resulted in past languages like C):
-//:
-//:   a) You can run out of memory if you don't have a way to reclaim
-//:   data.
-//:   b) If you allow data to be reclaimed, you have to be careful not to
-//:   leave any stale addresses pointing at it. Otherwise your program might
-//:   try to lookup such an address and find something unexpected. Such
-//:   "memory corruption" problems can be very hard to track down, and they
-//:   can also be exploited to break into your computer over the network, etc.
-//:
-//: To avoid these problems, we introduce the notion of a *reference count* or
-//: refcount. The life cycle of a bit of data accessed through addresses looks
-//: like this.
-//:
-//:    We create space in computer memory for it using the 'new' instruction.
-//:    The 'new' instruction takes a type as an ingredient, allocates
-//:    sufficient space to hold that type, and returns an address (bookmark)
-//:    to the allocated space.
-//:
-//:      x:address:num <- new number:type
-//:
-//:                     +------------+
-//:          x -------> |  number    |
-//:                     +------------+
-//:
-//:    That isn't entirely accurate. Under the hood, 'new' allocates an extra
-//:    number -- the refcount:
-//:
-//:                     +------------+------------+
-//:          x -------> | refcount   |  number    |
-//:                     +------------+------------+
-//:
-//:    This probably seems like a waste of space. In practice it isn't worth
-//:    allocating individual numbers and our payload will tend to be larger,
-//:    so the picture would look more like this (zooming out a bit):
-//:
-//:                         +-------------------------+
-//:                     +---+                         |
-//:          x -------> | r |                         |
-//:                     +---+        DATA             |
-//:                         |                         |
-//:                         |                         |
-//:                         +-------------------------+
-//:
-//:    (Here 'r' denotes the refcount. It occupies a tiny amount of space
-//:    compared to the payload.)
-//:
-//:    Anyways, back to our example where the data is just a single number.
-//:    After the call to 'new', Mu's map of memory looks like this:
-//:
-//:                     +---+------------+
-//:          x -------> | 1 |  number    |
-//:                     +---+------------+
-//:
-//:    The refcount of 1 here indicates that this number has one bookmark
-//:    outstanding. If you then make a copy of x, the refcount increments:
-//:
-//:      y:address:num <- copy x
-//:
-//:          x ---+     +---+------------+
-//:               +---> | 2 |  number    |
-//:          y ---+     +---+------------+
-//:
-//:    Whether you access the payload through x or y, Mu knows how many
-//:    bookmarks are outstanding to it. When you change x or y, the refcount
-//:    transparently decrements:
-//:
-//:      x <- copy 0  # an address is just a number, you can always write 0 to it
-//:
-//:                     +---+------------+
-//:          y -------> | 1 |  number    |
-//:                     +---+------------+
-//:
-//:    The final flourish is what happens when the refcount goes down to 0: Mu
-//:    reclaims the space occupied by both refcount and payload in memory, and
-//:    they're ready to be reused by later calls to 'new'.
-//:
-//:      y <- copy 0
-//:
-//:                     +---+------------+
-//:                     | 0 |  XXXXXXX   |
-//:                     +---+------------+
-//:
-//: Using refcounts fixes both our problems a) and b) above: you can use
-//: memory for many different purposes as many times as you want without
-//: running out of memory, and you don't have to worry about ever leaving a
-//: dangling bookmark when you reclaim memory.
-//:
-//: This layer implements creating addresses using 'new'. The next few layers
-//: will flesh out the rest of the life cycle.
 
 //: todo: give 'new' a custodian ingredient. Following malloc/free is a temporary hack.
 
@@ -138,8 +40,8 @@ def main [
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {5: "literal"}
 +mem: array length is 5
-# don't forget the extra location for array length, and the second extra location for the refcount
-+mem: storing 7 in location 3
+# don't forget the extra location for array length
++mem: storing 6 in location 3
 
 :(scenario dilated_reagent_with_new)
 def main [
@@ -320,8 +222,8 @@ case ALLOCATE: {
   int result = allocate(size);
   if (SIZE(current_instruction().ingredients) > 1) {
     // initialize array length
-    trace("mem") << "storing " << ingredients.at(1).at(0) << " in location " << result+/*skip refcount*/1 << end();
-    put(Memory, result+/*skip refcount*/1, ingredients.at(1).at(0));
+    trace("mem") << "storing " << ingredients.at(1).at(0) << " in location " << result << end();
+    put(Memory, result, ingredients.at(1).at(0));
   }
   products.resize(1);
   products.at(0).push_back(result);
@@ -329,8 +231,6 @@ case ALLOCATE: {
 }
 :(code)
 int allocate(int size) {
-  // include space for refcount
-  ++size;
   trace("mem") << "allocating size " << size << end();
 //?   Total_alloc += size;
 //?   ++Num_alloc;
@@ -394,8 +294,8 @@ def main [
   12:address:num/raw <- new number:type
   13:num/raw <- subtract 12:address:num/raw, 11:address:num/raw
 ]
-# size of number + refcount
-+mem: storing 2 in location 13
+# size of number
++mem: storing 1 in location 13
 
 :(scenario new_array_size)
 def main [
@@ -403,8 +303,8 @@ def main [
   2:address:num/raw <- new number:type
   3:num/raw <- subtract 2:address:num/raw, 1:address:array:num/raw
 ]
-# 5 locations for array contents + array length + refcount
-+mem: storing 7 in location 3
+# 5 locations for array contents + array length
++mem: storing 6 in location 3
 
 :(scenario new_empty_array)
 def main [
@@ -414,18 +314,18 @@ def main [
 ]
 +run: {1: ("address" "array" "number"), "raw": ()} <- new {number: "type"}, {0: "literal"}
 +mem: array length is 0
-# one location for array length, and one for the refcount
-+mem: storing 2 in location 3
+# one location for array length
++mem: storing 1 in location 3
 
 //: If a routine runs out of its initial allocation, it should allocate more.
 :(scenario new_overflow)
-% Initial_memory_per_routine = 3;  // barely enough room for point allocation below
+% Initial_memory_per_routine = 2;  // barely enough room for point allocation below
 def main [
   1:address:num/raw <- new number:type
   2:address:point/raw <- new point:type  # not enough room in initial page
 ]
-+new: routine allocated memory from 1000 to 1003
-+new: routine allocated memory from 1003 to 1006
++new: routine allocated memory from 1000 to 1002
++new: routine allocated memory from 1002 to 1004
 
 :(scenario new_without_ingredient)
 % Hide_errors = true;

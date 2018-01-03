@@ -57,10 +57,6 @@ size_t hash_mu_address(size_t h, reagent& r) {
   if (r.value == 0) return 0;
   trace("mem") << "location " << r.value << " is " << no_scientific(get_or_insert(Memory, r.value)) << end();
   r.set_value(get_or_insert(Memory, r.value));
-  if (r.value != 0) {
-    trace("mem") << "skipping refcount at " << r.value << end();
-    r.set_value(r.value+1);  // skip refcount
-  }
   drop_from_type(r, "address");
   return hash(h, r);
 }
@@ -228,21 +224,6 @@ def main [
   5:bool <- equal 2:num, 4:num
 ]
 # different addresses hash to the same result as long as the values the point to do so
-+mem: storing 1 in location 5
-
-:(scenario hash_ignores_address_refcount)
-def main [
-  1:&:num <- new number:type
-  *1:&:num <- copy 34
-  2:num <- hash 1:&:num
-  return-unless 2:num
-  # increment refcount
-  3:&:num <- copy 1:&:num
-  4:num <- hash 3:&:num
-  return-unless 4:num
-  5:bool <- equal 2:num, 4:num
-]
-# hash doesn't change when refcount changes
 +mem: storing 1 in location 5
 
 :(scenario hash_container_depends_only_on_elements)

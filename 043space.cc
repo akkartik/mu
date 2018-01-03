@@ -17,20 +17,18 @@ put(Type_abbreviations, "space", new_type_tree("address:array:location"));
 # then local 0 is really location 12, local 1 is really location 13, and so on.
 def main [
   # pretend address:array:location; in practice we'll use 'new'
-  10:num <- copy 0  # refcount
-  11:num <- copy 5  # length
+  10:num <- copy 5  # length
   default-space:space <- copy 10/unsafe
   1:num <- copy 23
 ]
-+mem: storing 23 in location 13
++mem: storing 23 in location 12
 
 :(scenario lookup_sidesteps_default_space)
 def main [
-  # pretend pointer from outside (2000 reserved for refcount)
-  2001:num <- copy 34
+  # pretend pointer from outside
+  2000:num <- copy 34
   # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 0  # refcount
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
   default-space:space <- copy 1000/unsafe
   1:&:num <- copy 2000/unsafe  # even local variables always contain raw addresses
@@ -76,7 +74,7 @@ void absolutize(reagent& x) {
 
 //: hook replaced in a later layer
 int space_base(const reagent& x) {
-  return current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
+  return current_call().default_space ? current_call().default_space : 0;
 }
 
 int address(int offset, int base) {
@@ -130,12 +128,11 @@ if (x.name == "default-space") {
 
 :(scenario lookup_sidesteps_default_space_in_get)
 def main [
-  # pretend pointer to container from outside (2000 reserved for refcount)
-  2001:num <- copy 34
-  2002:num <- copy 35
+  # pretend pointer to container from outside
+  2000:num <- copy 34
+  2001:num <- copy 35
   # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 0  # refcount
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
   default-space:space <- copy 1000/unsafe
   1:&:point <- copy 2000/unsafe
@@ -150,13 +147,12 @@ element.properties.push_back(pair<string, string_tree*>("raw", NULL));
 
 :(scenario lookup_sidesteps_default_space_in_index)
 def main [
-  # pretend pointer to array from outside (2000 reserved for refcount)
-  2001:num <- copy 2  # length
-  2002:num <- copy 34
-  2003:num <- copy 35
+  # pretend pointer to array from outside
+  2000:num <- copy 2  # length
+  2001:num <- copy 34
+  2002:num <- copy 35
   # pretend address:array:location; in practice we'll use 'new'
-  1000:num <- copy 0  # refcount
-  1001:num <- copy 5  # length
+  1000:num <- copy 5  # length
   # actual start of this recipe
   default-space:space <- copy 1000/unsafe
   1:&:@:num <- copy 2000/unsafe
@@ -219,215 +215,6 @@ if (x.name == "number-of-locals") {
   return;
 }
 
-//:: try to reclaim the default-space when a recipe returns
-
-:(scenario local_scope_reclaimed_on_return)
-def main [
-  1:num <- foo
-  2:num <- foo
-  3:bool <- equal 1:num, 2:num
-]
-def foo [
-  local-scope
-  result:num <- copy default-space:space
-  return result:num
-]
-# both calls to foo should have received the same default-space
-+mem: storing 1 in location 3
-
-//: todo: do this in a transform, rather than magically in the 'return' instruction
-:(after "Falling Through End Of Recipe")
-reclaim_default_space();
-:(after "Begin Return")
-reclaim_default_space();
-:(code)
-void reclaim_default_space() {
-  if (!Reclaim_memory) return;
-  reagent default_space("default-space:address:array:location");
-  decrement_any_refcounts(default_space);
-}
-:(after "Begin Decrement Refcounts(canonized_x)")
-if (is_mu_space(canonized_x)) {
-  int space_address = (canonized_x.name == "default-space") ? current_call().default_space : get_or_insert(Memory, canonized_x.value);
-  if (space_address == 0) return;
-  // this branch relies on global state
-  string recipe_name;
-  if (has_property(canonized_x, "names")) {
-    assert(property(canonized_x, "names")->atom);
-    recipe_name = property(canonized_x, "names")->value;
-  }
-  else {
-    if (canonized_x.name != "default-space")
-      cerr << current_recipe_name() << ": " << to_string(canonized_x) << '\n';
-    assert(canonized_x.name == "default-space");
-    recipe_name = current_recipe_name();
-  }
-  const recipe_ordinal space_recipe_ordinal = get(Recipe_ordinal, recipe_name);
-  const recipe& space_recipe = get(Recipe, space_recipe_ordinal);
-  if (canonized_x.name == "default-space" && !has_property(canonized_x, "names") && !starts_by_setting_default_space(space_recipe)) return;
-  // Reclaim Space(space_address, space_recipe_ordinal, space_recipe)
-  decrement_refcount(space_address, canonized_x.type->right,
-      /*refcount*/1 + /*array length*/1 + /*number-of-locals*/Name[space_recipe_ordinal][""]);
-  return;
-}
-:(code)
-bool starts_by_setting_default_space(const recipe& r) {
-  return !r.steps.empty()
-      && !r.steps.at(0).products.empty()
-      && r.steps.at(0).products.at(0).name == "default-space";
-}
-
-//:
-
-:(scenario local_scope_reclaims_locals)
-def main [
-  local-scope
-  x:text <- new [abc]
-]
-# x
-+mem: automatically abandoning 1004
-# local-scope
-+mem: automatically abandoning 1000
-
-:(before "Reclaim Space(space_address, space_recipe_ordinal, space_recipe)")
-if (get_or_insert(Memory, space_address) <= 1) {
-  set<string> reclaimed_locals;
-  trace("mem") << "trying to reclaim locals" << end();
-  // update any refcounts for variables in the space -- in the context of the space
-  call_stack calls_stash = save_call_stack(space_address, space_recipe_ordinal);
-  Current_routine->calls.swap(calls_stash);
-  // no early returns until we restore 'calls' below
-  for (int i = /*leave default space for last*/1;  i < SIZE(space_recipe.steps);  ++i) {
-    const instruction& inst = space_recipe.steps.at(i);
-    for (int i = 0;  i < SIZE(inst.products);  ++i) {
-      reagent/*copy*/ product = inst.products.at(i);
-      if (reclaimed_locals.find(product.name) != reclaimed_locals.end()) continue;
-      reclaimed_locals.insert(product.name);
-      // local variables only
-      if (has_property(product, "lookup")) continue;
-      if (has_property(product, "raw")) continue;  // tests often want to check such locations after they run
-      // End Checks For Reclaiming Locals
-      trace("mem") << "trying to reclaim local " << product.original_string << end();
-      canonize(product);
-      decrement_any_refcounts(product);
-    }
-  }
-  Current_routine->calls.swap(calls_stash);  // restore
-}
-:(code)
-call_stack save_call_stack(int space_address, recipe_ordinal space_recipe_ordinal) {
-  call dummy_call(space_recipe_ordinal);
-  dummy_call.default_space = space_address;
-  call_stack result;
-  result.push_front(dummy_call);
-  return result;
-}
-
-:(scenario local_variables_can_outlive_call)
-def main [
-  local-scope
-  x:&:num <- new num:type
-  y:space <- copy default-space:space
-]
--mem: automatically abandoning 1005
-
-//:
-
-:(scenario local_scope_does_not_reclaim_escaping_locals)
-def main [
-  1:text <- foo
-]
-def foo [
-  local-scope
-  x:text <- new [abc]
-  return x:text
-]
-# local-scope
-+mem: automatically abandoning 1000
-# x
--mem: automatically abandoning 1004
-
-:(after "Begin Return")  // before reclaiming default-space
-increment_refcounts_of_return_ingredients(ingredients);
-:(code)
-void increment_refcounts_of_return_ingredients(const vector<vector<double> >& ingredients) {
-  assert(current_instruction().operation == RETURN);
-  if (SIZE(Current_routine->calls) == 1)  // no caller to receive result
-    return;
-  const instruction& caller_instruction = to_instruction(*++Current_routine->calls.begin());
-  for (int i = 0;  i < min(SIZE(current_instruction().ingredients), SIZE(caller_instruction.products));  ++i) {
-    if (!is_dummy(caller_instruction.products.at(i))) {
-      // no need to canonize ingredient because we ignore its value
-      increment_any_refcounts(current_instruction().ingredients.at(i), ingredients.at(i));
-    }
-  }
-}
-
-//:
-
-:(scenario local_scope_frees_up_addresses_inside_containers)
-container foo [
-  x:num
-  y:&:num
-]
-def main [
-  local-scope
-  x:&:num <- new number:type
-  y:foo <- merge 34, x:&:num
-  # x and y are both cleared when main returns
-]
-+mem: automatically abandoning 1006
-
-:(scenario local_scope_returns_addresses_inside_containers)
-container foo [
-  x:num
-  y:&:num
-]
-def f [
-  local-scope
-  x:&:num <- new number:type
-  *x:&:num <- copy 12
-  y:foo <- merge 34, x:&:num
-  # since y is 'escaping' f, it should not be cleared
-  return y:foo
-]
-def main [
-  1:foo <- f
-  3:num <- get 1:foo, x:offset
-  4:&:num <- get 1:foo, y:offset
-  5:num <- copy *4:&:num
-  1:foo <- put 1:foo, y:offset, 0
-  4:&:num <- copy 0
-]
-+mem: storing 34 in location 1
-+mem: storing 1006 in location 2
-+mem: storing 34 in location 3
-# refcount of 1:foo shouldn't include any stray ones from f
-+run: {4: ("address" "number")} <- get {1: "foo"}, {y: "offset"}
-+mem: incrementing refcount of 1006: 1 -> 2
-# 1:foo wasn't abandoned/cleared
-+run: {5: "number"} <- copy {4: ("address" "number"), "lookup": ()}
-+mem: storing 12 in location 5
-+run: {1: "foo"} <- put {1: "foo"}, {y: "offset"}, {0: "literal"}
-+mem: decrementing refcount of 1006: 2 -> 1
-+run: {4: ("address" "number")} <- copy {0: "literal"}
-+mem: decrementing refcount of 1006: 1 -> 0
-+mem: automatically abandoning 1006
-
-:(scenario local_scope_claims_return_values_when_not_saved)
-def f [
-  local-scope
-  x:&:num <- new number:type
-  return x:&:num
-]
-def main [
-  f  # doesn't save result
-]
-# x reclaimed
-+mem: automatically abandoning 1004
-# f's local scope reclaimed
-+mem: automatically abandoning 1000
-
 //:: all recipes must set default-space one way or another
 
 :(before "End Globals")
@@ -446,6 +233,12 @@ void check_default_space(const recipe_ordinal r) {
   if (!starts_by_setting_default_space(caller))
     raise << caller.name << " does not seem to start with 'local-scope' or 'default-space'\n" << end();
 }
+bool starts_by_setting_default_space(const recipe& r) {
+  return !r.steps.empty()
+      && !r.steps.at(0).products.empty()
+      && r.steps.at(0).products.at(0).name == "default-space";
+}
+
 :(after "Load Mu Prelude")
 Hide_missing_default_space_errors = false;
 :(after "Test Runs")

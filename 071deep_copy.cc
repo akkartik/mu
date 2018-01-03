@@ -3,9 +3,6 @@
 //
 // Invariant: After a deep-copy its ingredient and result will point to no
 // common addresses.
-// Implications: Refcounts of all data pointed to by the original ingredient
-// will remain unchanged. Refcounts of all data pointed to by the (newly
-// created) result will be 1, in the absence of cycles.
 //
 // We do handle cycles in the ingredient, however. All cycles are translated
 // to new cycles in the product.
@@ -60,11 +57,6 @@ def main [
 +mem: storing 0 in location 10
 # however, the contents are identical
 +mem: storing 1 in location 11
-# the result of deep-copy gets a refcount of 1
-# (its address 202 = 200 base + 2 for temporary space inside deep-copy)
-+run: {2: ("address" "number")} <- copy {0: "literal"}
-+mem: decrementing refcount of 202: 1 -> 0
-+abandon: saving 202 in free-list of size 2
 
 :(scenario deep_copy_address_to_container)
 % Memory_allocated_until = 200;
@@ -107,8 +99,7 @@ def main [
 def main [
   # avoid all memory allocations except the implicit ones inside deep-copy, so
   # that the result is deterministic
-  100:num <- copy 1  # pretend refcount
-  101:num <- copy 3  # pretend array length
+  100:num <- copy 3  # pretend array length
   1:&:@:num <- copy 100/unsafe  # pretend allocation
   put-index *1:&:@:num, 0, 34
   put-index *1:&:@:num, 1, 35
@@ -234,7 +225,7 @@ vector<double> deep_copy(const reagent& in) {
   vector<double> result = deep_copy(in, addresses_copied, tmp);
   // reclaim Mu memory allocated for tmp
   trace(9991, "run") << "deep-copy: reclaiming temporary" << end();
-  abandon(tmp.value, payload_type(tmp.type), payload_size(tmp));
+  abandon(tmp.value, payload_size(tmp));
   // reclaim host memory allocated for tmp.type when tmp goes out of scope
   return result;
 }
@@ -263,8 +254,6 @@ int deep_copy_address(const reagent& canonized_in, map<int, int>& addresses_copi
   if (contains_key(addresses_copied, in_address)) {
     int out = get(addresses_copied, in_address);
     trace(9991, "run") << "deep-copy: copy already exists: " << out << end();
-    assert(contains_key(Memory, out));  // refcount must already be incremented
-    ++get(Memory, out);
     return out;
   }
   int out = allocate(payload_size(canonized_in));

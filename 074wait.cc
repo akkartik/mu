@@ -263,23 +263,21 @@ def main [
 # 'get-location' can read from container address
 def main [
   1:num <- copy 10
-  # 10 reserved for refcount
-  11:num <- copy 34
-  12:num <- copy 35
+  10:num <- copy 34
+  11:num <- copy 35
   4:location <- get-location 1:&:point/lookup, 0:offset
 ]
-+mem: storing 11 in location 4
++mem: storing 10 in location 4
 
 :(scenario get_location_indirect_2)
 def main [
   1:num <- copy 10
-  # 10 reserved for refcount
-  11:num <- copy 34
-  12:num <- copy 35
+  10:num <- copy 34
+  11:num <- copy 35
   4:&:num <- copy 20/unsafe
   4:&:location/lookup <- get-location 1:&:point/lookup, 0:offset
 ]
-+mem: storing 11 in location 21
++mem: storing 10 in location 20
 
 //: allow waiting on a routine to complete
 

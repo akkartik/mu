@@ -8,11 +8,9 @@
 # location 1 in space 1 refers to the space surrounding the default space, here 20.
 def main [
   # pretend address:array:location; in practice we'll use 'new'
-  10:num <- copy 0  # refcount
-  11:num <- copy 5  # length
+  10:num <- copy 5  # length
   # pretend address:array:location; in practice we'll use 'new"
-  20:num <- copy 0  # refcount
-  21:num <- copy 5  # length
+  20:num <- copy 5  # length
   # actual start of this recipe
   default-space:space <- copy 10/unsafe
   #: later layers will explain the /names: property
@@ -22,15 +20,12 @@ def main [
 ]
 def dummy [  # just for the /names: property above
 ]
-# chain space: 10 + (refcount and length) 2
-+mem: storing 20 in location 12
-# store to default space: 10 + (skip refcount and length) 2 + (index) 1
-+mem: storing 32 in location 13
-# store to chained space: (contents of location 12) 20 + (refcount and length) 2 + (index) 1
-+mem: storing 33 in location 23
-
-:(before "End Checks For Reclaiming Locals")
-if (space_index(inst.products.at(i)) > 0) continue;
+# chain space: 10 + (length) 1
++mem: storing 20 in location 11
+# store to default space: 10 + (skip length) 1 + (index) 1
++mem: storing 32 in location 12
+# store to chained space: (contents of location 12) 20 + (length) 1 + (index) 1
++mem: storing 33 in location 22
 
 //: If you think of a space as a collection of variables with a common
 //: lifetime, surrounding allows managing shorter lifetimes inside a longer
@@ -38,14 +33,14 @@ if (space_index(inst.products.at(i)) > 0) continue;
 
 :(replace{} "int space_base(const reagent& x)")
 int space_base(const reagent& x) {
-  int base = current_call().default_space ? (current_call().default_space+/*skip refcount*/1) : 0;
+  int base = current_call().default_space ? current_call().default_space : 0;
   return space_base(x, space_index(x), base);
 }
 
 int space_base(const reagent& x, int space_index, int base) {
   if (space_index == 0)
     return base;
-  return space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1))+/*skip refcount*/1;
+  return space_base(x, space_index-1, get_or_insert(Memory, base+/*skip length*/1));
 }
 
 int space_index(const reagent& x) {

@@ -97,9 +97,6 @@ case CALL: {
   Current_routine->calls.push_front(call(ingredients.at(0).at(0)));
   ingredients.erase(ingredients.begin());  // drop the callee
   finish_call_housekeeping(call_instruction, ingredients);
-  Num_refcount_updates[caller_frame.running_recipe][caller_frame.running_step_index]
-      += (Total_refcount_updates - initial_num_refcount_updates);
-  initial_num_refcount_updates = Total_refcount_updates;
   // not done with caller
   write_products = false;
   fall_through_to_next_instruction = false;

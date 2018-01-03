@@ -58,11 +58,11 @@ case ASSUME_CONSOLE: {
   slurp_body(in, r);
   int num_events = count_events(r);
   // initialize the events like in new-fake-console
-  int size = /*space for refcount and length*/2 + num_events*size_of_event();
+  int size = /*length*/1 + num_events*size_of_event();
   int event_data_address = allocate(size);
   // store length
-  put(Memory, event_data_address+/*skip refcount*/1, num_events);
-  int curr_address = event_data_address + /*skip refcount and length*/2;
+  put(Memory, event_data_address, num_events);
+  int curr_address = event_data_address + /*skip length*/1;
   for (int i = 0;  i < SIZE(r.steps);  ++i) {
     const instruction& inst = r.steps.at(i);
     if (inst.name == "left-click") {
@@ -118,12 +118,8 @@ case ASSUME_CONSOLE: {
   int console_address = allocate(size_of_console());
   trace("mem") << "storing console in " << console_address << end();
   put(Memory, CONSOLE, console_address);
-  trace("mem") << "storing console data in " << console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1 << end();
-  put(Memory, console_address+/*skip refcount*/1+/*offset of 'data' in container 'events'*/1, event_data_address);
-  // increment refcount for event data
-  put(Memory, event_data_address, 1);
-  // increment refcount for console
-  put(Memory, console_address, 1);
+  trace("mem") << "storing console data in " << console_address+/*offset of 'data' in container 'events'*/1 << end();
+  put(Memory, console_address+/*offset of 'data' in container 'events'*/1, event_data_address);
   break;
 }
 
@@ -309,7 +305,7 @@ int size_of_console() {
   if (result) return result;
   assert(get(Type_ordinal, "console"));
   type_tree* type = new type_tree("console");
-  result = size_of(type)+/*refcount*/1;
+  result = size_of(type);
   delete type;
   return result;
 }
