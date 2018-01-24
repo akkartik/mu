@@ -6,21 +6,26 @@
 % SET_WORD_IN_MEM(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      20                             # add EBX to *EAX
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
 # SIB in binary: 00 (scale 1) 100 (no index) 000 (base EAX)
-# See Table 2-3 of the Intel programming manual.
 +run: add EBX to effective address
 +run: effective address is mem at address 0x60 (EAX)
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases")
-case 4:
-  // exception: SIB addressing
+case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
   uint8_t sib = next();
   uint8_t base = sib&0x7;
   if (base == EBP) {
-    // This gets complicated. In the example below, do the two disp8's accumulate? multiply? cancel out?!
+    // Need to sometimes use a displacement either in addition to or in place
+    // of EBP. This gets complicated, and I don't understand interactions with
+    // displacement mode in Mod/RM. For example:
+    //
     // op (hex)   ModR/M (binary)                     SIB (binary)                                      displacement (hex)
     // 0x01       01 100 /*SIB+disp8*/ 000 /*EAX*/    00 /*scale*/ 100 /*no index*/ 101 /*EBP+disp8*/   0xf0
+    //
+    // Do the two disp8's accumulate (so the instruction has *two* disp8's)?
+    // multiply? cancel out?!
     //
     // Maybe this is the answer:
     //   "When the ModR/M or SIB tables state that a disp value is required..
@@ -43,15 +48,15 @@ case 4:
   }
   break;
 
-:(scenario add_r32_to_mem_at_base_plus_index)
+:(scenario add_r32_to_mem_at_base_r32_index_r32)
 % Reg[3].i = 0x10;  // source
 % Reg[0].i = 0x5e;  // dest base
 % Reg[1].i = 0x2;  // dest index
 % SET_WORD_IN_MEM(0x60, 1);
 # op  ModR/M  SIB   displacement  immediate
   01  1c      08                             # add EBX to *(EAX+ECX)
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 000 (dest EAX)
 # SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
-# See Table 2-3 of the Intel programming manual.
 +run: add EBX to effective address
 +run: effective address is mem at address 0x60 (EAX + ECX*1)
 +run: storing 0x00000011

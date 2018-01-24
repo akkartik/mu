@@ -50,6 +50,7 @@ int32_t* effective_address(uint8_t modrm) {
 % Reg[3].i = 1;
 # op  ModR/M  SIB   displacement  immediate
   29  d8                                      # subtract EBX from EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: subtract EBX from effective address
 +run: effective address is EAX
 +run: storing 0x00000009
@@ -71,6 +72,7 @@ case 0x29: {  // subtract r32 from r/m32
 % Reg[3].i = 0x000000ff;
 # op  ModR/M  SIB   displacement  immediate
   21  d8                                      # and EBX with destination EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: and EBX with effective address
 +run: effective address is EAX
 +run: storing 0x0000000d
@@ -92,6 +94,7 @@ case 0x21: {  // and r32 with r/m32
 % Reg[3].i = 0xa0b0c0d0;
 # op  ModR/M  SIB   displacement  immediate
   09  d8                                      # or EBX with destination EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: or EBX with effective address
 +run: effective address is EAX
 +run: storing 0xaabbccdd
@@ -113,6 +116,7 @@ case 0x09: {  // or r32 with r/m32
 % Reg[3].i = 0xaabbc0d0;
 # op  ModR/M  SIB   displacement  immediate
   31  d8                                      # xor EBX with destination EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: xor EBX with effective address
 +run: effective address is EAX
 +run: storing 0xa0b0ccdd
@@ -133,6 +137,7 @@ case 0x31: {  // xor r32 with r/m32
 % Reg[3].i = 0x0f0f00ff;
 # op  ModR/M  SIB   displacement  immediate
   f7  c3                                      # not EBX
+# ModR/M in binary: 11 (direct mode) 000 (unused) 011 (dest EBX)
 +run: 'not' of effective address
 +run: effective address is EBX
 +run: storing 0xf0f0ff00
@@ -155,8 +160,9 @@ case 0xf7: {  // xor r32 with r/m32
 :(scenario compare_r32_with_r32_greater)
 % Reg[0].i = 0x0a0b0c0d;
 % Reg[3].i = 0x0a0b0c07;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: compare EBX with effective address
 +run: effective address is EAX
 +run: SF=0; ZF=0; OF=0
@@ -180,8 +186,9 @@ case 0x39: {  // set SF if r/m32 < r32
 :(scenario compare_r32_with_r32_lesser)
 % Reg[0].i = 0x0a0b0c07;
 % Reg[3].i = 0x0a0b0c0d;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: compare EBX with effective address
 +run: effective address is EAX
 +run: SF=1; ZF=0; OF=0
@@ -189,8 +196,9 @@ case 0x39: {  // set SF if r/m32 < r32
 :(scenario compare_r32_with_r32_equal)
 % Reg[0].i = 0x0a0b0c0d;
 % Reg[3].i = 0x0a0b0c0d;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   39  d8                                      # compare EBX with EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: compare EBX with effective address
 +run: effective address is EAX
 +run: SF=0; ZF=1; OF=0
@@ -199,8 +207,9 @@ case 0x39: {  // set SF if r/m32 < r32
 
 :(scenario copy_r32_to_r32)
 % Reg[3].i = 0xaf;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   89  d8                                      # copy EBX to EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: copy EBX to effective address
 +run: effective address is EAX
 +run: storing 0x000000af
@@ -221,8 +230,9 @@ case 0x89: {  // copy r32 to r/m32
 :(scenario xchg_r32_with_r32)
 % Reg[3].i = 0xaf;
 % Reg[0].i = 0x2e;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   87  d8                                      # exchange EBX with EAX
+# ModR/M in binary: 11 (direct mode) 011 (src EBX) 000 (dest EAX)
 +run: exchange EBX with effective address
 +run: effective address is EAX
 +run: storing 0x000000af in effective address
@@ -247,7 +257,7 @@ case 0x87: {  // exchange r32 with r/m32
 :(scenario push_r32)
 % Reg[ESP].u = 0x64;
 % Reg[EBX].i = 0x0000000a;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   53                                          # push EBX to stack
 +run: push EBX
 +run: decrementing ESP to 0x00000060
@@ -280,7 +290,7 @@ void push(uint32_t val) {
 :(scenario pop_r32)
 % Reg[ESP].u = 0x60;
 % SET_WORD_IN_MEM(0x60, 0x0000000a);
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   5b                                          # pop stack to EBX
 +run: pop into EBX
 +run: popping value 0x0000000a

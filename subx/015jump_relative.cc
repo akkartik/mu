@@ -3,7 +3,7 @@
 //:: jump
 
 :(scenario jump_rel8)
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   eb                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -24,7 +24,7 @@ case 0xeb: {  // jump rel8
 
 :(scenario je_rel8_success)
 % ZF = true;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   74                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -45,7 +45,7 @@ case 0x74: {  // jump rel8 if ZF
 
 :(scenario je_rel8_fail)
 % ZF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   74                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -58,7 +58,7 @@ case 0x74: {  // jump rel8 if ZF
 
 :(scenario jne_rel8_success)
 % ZF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   75                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -79,7 +79,7 @@ case 0x75: {  // jump rel8 unless ZF
 
 :(scenario jne_rel8_fail)
 % ZF = true;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   75                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -94,7 +94,7 @@ case 0x75: {  // jump rel8 unless ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7f                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -117,7 +117,7 @@ case 0x7f: {  // jump rel8 if !SF and !ZF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7f                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -131,7 +131,7 @@ case 0x7f: {  // jump rel8 if !SF and !ZF
 :(scenario jge_rel8_success)
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7d                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -153,7 +153,7 @@ case 0x7d: {  // jump rel8 if !SF
 :(scenario jge_rel8_fail)
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7d                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -168,7 +168,7 @@ case 0x7d: {  // jump rel8 if !SF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7c                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -191,7 +191,7 @@ case 0x7c: {  // jump rel8 if SF and !ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7c                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -206,7 +206,7 @@ case 0x7c: {  // jump rel8 if SF and !ZF
 % ZF = true;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -219,7 +219,7 @@ case 0x7c: {  // jump rel8 if SF and !ZF
 % ZF = false;
 % SF = true;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02
@@ -242,7 +242,7 @@ case 0x7e: {  // jump rel8 if SF or ZF
 % ZF = false;
 % SF = false;
 % OF = false;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   7e                05                        # skip 1 instruction
   05                              00 00 00 01
   05                              00 00 00 02

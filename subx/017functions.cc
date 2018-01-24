@@ -2,7 +2,7 @@
 
 :(scenario call_imm32)
 % Reg[ESP].u = 0x64;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   e8                              a0 00 00 00  # call function offset at 0x000000a0
   # next EIP is 6
 +run: call imm32 0x000000a0
@@ -25,7 +25,7 @@ case 0xe8: {  // call imm32 relative to next EIP
 :(scenario call_r32)
 % Reg[ESP].u = 0x64;
 % Reg[EBX].u = 0x000000a0;
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   ff  d3                                       # call function offset at EBX
   # next EIP is 3
 +run: call to effective address
@@ -48,7 +48,7 @@ case 2: {  // call function pointer at r/m32
 % Reg[ESP].u = 0x64;
 % Reg[EBX].u = 0x10;
 % SET_WORD_IN_MEM(0x10, 0x000000a0);
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   ff  13                                       # call function offset at *EBX
   # next EIP is 3
 +run: call to effective address
@@ -62,7 +62,7 @@ case 2: {  // call function pointer at r/m32
 :(scenario ret)
 % Reg[ESP].u = 0x60;
 % SET_WORD_IN_MEM(0x60, 0x00000010);
-# op  ModRM   SIB   displacement  immediate
+# op  ModR/M  SIB   displacement  immediate
   c3
 +run: return
 +run: popping value 0x00000010
