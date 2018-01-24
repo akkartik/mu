@@ -224,6 +224,20 @@ int32_t imm32() {
   return result;
 }
 
+string rname(uint8_t r) {
+  switch (r) {
+  case 0: return "EAX";
+  case 1: return "ECX";
+  case 2: return "EDX";
+  case 3: return "EBX";
+  case 4: return "ESP";
+  case 5: return "EBP";
+  case 6: return "ESI";
+  case 7: return "EDI";
+  default: raise << "invalid register " << r << '\n' << end();  return "";
+  }
+}
+
 :(before "End Includes")
 #include <iomanip>
 #define HEXBYTE  std::hex << std::setw(2) << std::setfill('0')
