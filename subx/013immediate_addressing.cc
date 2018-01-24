@@ -300,7 +300,6 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b07 with effective address
 +run: combine imm32 0x0d0c0b0a with effective address
 +run: effective address is EBX
 +run: SF=1; ZF=0; OF=0
@@ -310,7 +309,6 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b07 with effective address
 +run: combine imm32 0x0d0c0b0a with effective address
 +run: effective address is EBX
 +run: SF=0; ZF=1; OF=0
@@ -321,7 +319,6 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b07 with effective address
 +run: combine imm32 0x0d0c0b07 with effective address
 +run: effective address is mem at address 0x60 (EBX)
 +run: SF=0; ZF=0; OF=0
