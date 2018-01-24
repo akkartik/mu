@@ -17,6 +17,18 @@ case 4:
   // exception: SIB addressing
   uint8_t sib = next();
   uint8_t base = sib&0x7;
+  if (base == EBP) {
+    // This gets complicated. In the example below, do the two disp8's accumulate? multiply? cancel out?!
+    // op (hex)   ModR/M (binary)                     SIB (binary)                                      displacement (hex)
+    // 0x01       01 100 /*SIB+disp8*/ 000 /*EAX*/    00 /*scale*/ 100 /*no index*/ 101 /*EBP+disp8*/   0xf0
+    //
+    // Maybe this is the answer:
+    //   "When the ModR/M or SIB tables state that a disp value is required..
+    //   then the displacement bytes are required."
+    //   -- https://wiki.osdev.org/X86-64_Instruction_Encoding#Displacement
+    raise << "base 5 (often but not always EBP) not supported in SIB byte\n" << end();
+    break;
+  }
   uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
@@ -25,7 +37,7 @@ case 4:
   }
   else {
     uint8_t scale = (1 << (sib>>6));
-    uint32_t addr = Reg[base].u + Reg[index].u*scale;
+    uint32_t addr = Reg[base].u + Reg[index].u*scale;  // TODO: should the index register be treated as a signed int?
     trace(2, "run") << "effective address is mem at address 0x" << std::hex << addr << " (" << rname(base) << " + " << rname(index) << "*" << NUM(scale) << ")" << end();
     result = reinterpret_cast<int32_t*>(&Mem.at(addr));
   }
