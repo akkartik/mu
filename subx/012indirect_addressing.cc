@@ -408,3 +408,23 @@ case 0x8f: {  // pop stack into r/m32
   }
   break;
 }
+
+//:: special-case for loading address from disp32 rather than register
+
+:(scenario add_r32_to_mem_at_displacement)
+% Reg[3].i = 0x10;  // source
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  1d            60 00 00 00              # add EBX to *0x60
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 101 (dest in disp32)
++run: add EBX to r/m32
++run: effective address is 0x60 (disp32)
++run: storing 0x00000011
+
+:(before "End Mod 0 Special-cases")
+case 5: {  // exception: mod 0b00 rm 0b101 => incoming disp32
+  uint32_t addr = imm32();
+  result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+  trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
+  break;
+}
