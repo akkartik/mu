@@ -14,6 +14,12 @@
 
 :(before "End Mod 0 Special-cases")
 case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
+  uint32_t addr = effective_address_from_sib(mod);
+  if (addr == 0) break;
+  result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+  break;
+:(code)
+uint32_t effective_address_from_sib(uint8_t mod) {
   uint8_t sib = next();
   uint8_t base = sib&0x7;
   if (base == EBP) {
@@ -34,21 +40,21 @@ case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
     //
     // That's the only option that makes sense for 32-bit displacement (mod 10)
     raise << "base 5 (often but not always EBP) not supported in SIB byte\n" << end();
-    break;
+    return 0;
   }
   uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
     trace(2, "run") << "effective address is mem at address 0x" << std::hex << Reg[base].u << " (" << rname(base) << ")" << end();
-    result = reinterpret_cast<int32_t*>(&Mem.at(Reg[base].u));
+    return Reg[base].u;
   }
   else {
     uint8_t scale = (1 << (sib>>6));
-    uint32_t addr = Reg[base].u + Reg[index].u*scale;  // TODO: should the index register be treated as a signed int?
+    uint32_t addr = Reg[base].u + Reg[index].i*scale;  // treat index register as signed. Maybe base as well? But we'll always ensure it's non-negative.
     trace(2, "run") << "effective address is mem at address 0x" << std::hex << addr << " (" << rname(base) << " + " << rname(index) << "*" << NUM(scale) << ")" << end();
-    result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+    return addr;
   }
-  break;
+}
 
 :(scenario add_r32_to_mem_at_base_r32_index_r32)
 % Reg[3].i = 0x10;  // source
