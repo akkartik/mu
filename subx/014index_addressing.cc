@@ -14,12 +14,9 @@
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases")
-case 4: {  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
-  uint32_t addr = effective_address_from_sib(mod);
-  if (addr == 0) break;
-  result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
+  addr = effective_address_from_sib(mod);
   break;
-}
 :(code)
 uint32_t effective_address_from_sib(uint8_t mod) {
   uint8_t sib = next();

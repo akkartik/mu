@@ -11,15 +11,14 @@
 +run: effective address is 0x60 (EAX)
 +run: storing 0x00000011
 
-:(before "End Mod Special-cases")
+:(before "End Mod Special-cases(addr)")
 case 0:  // indirect addressing
   switch (rm) {
   default:  // address in register
     trace(2, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
-    assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
-    result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
+    addr = Reg[rm].u;
     break;
-  // End Mod 0 Special-cases
+  // End Mod 0 Special-cases(addr)
   }
   break;
 
@@ -422,12 +421,10 @@ case 0x8f: {  // pop stack into r/m32
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases")
-case 5: {  // exception: mod 0b00 rm 0b101 => incoming disp32
-  uint32_t addr = imm32();
-  result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
+  addr = imm32();
   trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
   break;
-}
 
 //:
 
@@ -442,18 +439,16 @@ case 5: {  // exception: mod 0b00 rm 0b101 => incoming disp32
 +run: effective address is 0x60 (EAX+disp8)
 +run: storing 0x00000011
 
-:(before "End Mod Special-cases")
+:(before "End Mod Special-cases(addr)")
 case 1:  // indirect + disp8 addressing
   switch (rm) {
     default: {
       int8_t disp = next();
-      uint32_t addr = Reg[rm].u + disp;
+      addr = Reg[rm].u + disp;
       trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp8)" << end();
-      assert(addr + sizeof(int32_t) <= Mem.size());
-      result = reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
       break;
     }
-    // End Mod 1 Special-cases
+    // End Mod 1 Special-cases(addr)
   }
   break;
 
@@ -481,18 +476,16 @@ case 1:  // indirect + disp8 addressing
 +run: effective address is 0x60 (EAX+disp32)
 +run: storing 0x00000011
 
-:(before "End Mod Special-cases")
+:(before "End Mod Special-cases(addr)")
 case 2:  // indirect + disp32 addressing
   switch (rm) {
     default: {
       int32_t disp = imm32();
-      uint32_t addr = Reg[rm].u + disp;
+      addr = Reg[rm].u + disp;
       trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp32)" << end();
-      assert(addr + sizeof(int32_t) <= Mem.size());
-      result = reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
       break;
     }
-    // End Mod 2 Special-cases
+    // End Mod 2 Special-cases(addr)
   }
   break;
 

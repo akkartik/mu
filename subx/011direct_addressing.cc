@@ -28,19 +28,21 @@ int32_t* effective_address(uint8_t modrm) {
   uint8_t mod = (modrm>>6);
   // ignore middle 3 'reg opcode' bits
   uint8_t rm = modrm & 0x7;
-  int32_t* result = 0;
+  uint32_t addr = 0;
   switch (mod) {
   case 3:
     // mod 3 is just register direct addressing
     trace(2, "run") << "r/m32 is " << rname(rm) << end();
-    result = &Reg[rm].i;
-    break;
-  // End Mod Special-cases
+    return &Reg[rm].i;
+  // End Mod Special-cases(addr)
   default:
     cerr << "unrecognized mod bits: " << NUM(mod) << '\n';
     exit(1);
   }
-  return result;
+  //: other mods are indirect, and they'll set addr appropriately
+  assert(addr > 0);
+  assert(addr + sizeof(int32_t) <= Mem.size());
+  return reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
 }
 
 //:: subtract
