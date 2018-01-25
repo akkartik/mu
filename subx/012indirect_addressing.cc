@@ -12,9 +12,9 @@
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases")
-case 0:
+case 0:  // indirect addressing
   switch (rm) {
-  default:  // mod 0 is usually indirect addressing
+  default:  // address in register
     trace(2, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
     assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
     result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
@@ -428,3 +428,81 @@ case 5: {  // exception: mod 0b00 rm 0b101 => incoming disp32
   trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
   break;
 }
+
+//:
+
+:(scenario add_r32_to_mem_at_r32_plus_disp8)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x5e;  // dest
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  58            02                       # add EBX to *(EAX+2)
+# ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX+disp8)
++run: storing 0x00000011
+
+:(before "End Mod Special-cases")
+case 1:  // indirect + disp8 addressing
+  switch (rm) {
+    default: {
+      int8_t disp = next();
+      uint32_t addr = Reg[rm].u + disp;
+      trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp8)" << end();
+      assert(addr + sizeof(int32_t) <= Mem.size());
+      result = reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
+      break;
+    }
+    // End Mod 1 Special-cases
+  }
+  break;
+
+:(scenario add_r32_to_mem_at_r32_plus_negative_disp8)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x61;  // dest
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  58            ff                       # add EBX to *(EAX-1)
+# ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX+disp8)
++run: storing 0x00000011
+
+//:
+
+:(scenario add_r32_to_mem_at_r32_plus_disp32)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x5e;  // dest
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  98            02 00 00 00              # add EBX to *(EAX+2)
+# ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX+disp32)
++run: storing 0x00000011
+
+:(before "End Mod Special-cases")
+case 2:  // indirect + disp32 addressing
+  switch (rm) {
+    default: {
+      int32_t disp = imm32();
+      uint32_t addr = Reg[rm].u + disp;
+      trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp32)" << end();
+      assert(addr + sizeof(int32_t) <= Mem.size());
+      result = reinterpret_cast<int32_t*>(&Mem.at(addr));  // rely on the host itself being in little-endian order
+      break;
+    }
+    // End Mod 2 Special-cases
+  }
+  break;
+
+:(scenario add_r32_to_mem_at_r32_plus_negative_disp32)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x61;  // dest
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  98            ff ff ff ff              # add EBX to *(EAX-1)
+# ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX+disp32)
++run: storing 0x00000011
