@@ -14,11 +14,12 @@
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases")
-case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
+case 4: {  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
   uint32_t addr = effective_address_from_sib(mod);
   if (addr == 0) break;
   result = reinterpret_cast<int32_t*>(&Mem.at(addr));
   break;
+}
 :(code)
 uint32_t effective_address_from_sib(uint8_t mod) {
   uint8_t sib = next();
@@ -73,3 +74,25 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 +run: effective address is initially 0x60 (disp32)
 +run: effective address is 0x60
 +run: storing 0x00000011
+
+//:
+
+:(scenario add_r32_to_mem_at_displacement)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x5e;  // dest base
+% Reg[1].i = 0x2;  // dest index
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  1d            60 00 00 00              # add EBX to *0x60
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 101 (dest in disp32)
++run: add EBX to r/m32
++run: effective address is 0x60 (disp32)
++run: storing 0x00000011
+
+:(before "End Mod 0 Special-cases")
+case 5: {  // exception: mod 0b00 rm 0b101 => incoming disp32
+  uint32_t addr = imm32();
+  result = reinterpret_cast<int32_t*>(&Mem.at(addr));
+  trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
+  break;
+}
