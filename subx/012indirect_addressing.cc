@@ -420,7 +420,7 @@ case 0x8f: {  // pop stack into r/m32
 +run: effective address is 0x60 (disp32)
 +run: storing 0x00000011
 
-:(before "End Mod 0 Special-cases")
+:(before "End Mod 0 Special-cases(addr)")
 case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
   addr = imm32();
   trace(2, "run") << "effective address is 0x" << std::hex << addr << " (disp32)" << end();
@@ -436,19 +436,22 @@ case 5:  // exception: mod 0b00 rm 0b101 => incoming disp32
   01  58            02                       # add EBX to *(EAX+2)
 # ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
 +run: add EBX to r/m32
-+run: effective address is 0x60 (EAX+disp8)
++run: effective address is initially 0x5e (EAX)
++run: effective address is 0x60 (after adding disp8)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases(addr)")
 case 1:  // indirect + disp8 addressing
   switch (rm) {
-    default: {
-      int8_t disp = next();
-      addr = Reg[rm].u + disp;
-      trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp8)" << end();
-      break;
-    }
-    // End Mod 1 Special-cases(addr)
+  default:
+    addr = Reg[rm].u;
+    trace(2, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    break;
+  // End Mod 1 Special-cases(addr)
+  }
+  if (addr > 0) {
+    addr += static_cast<int8_t>(next());
+    trace(2, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp8)" << end();
   }
   break;
 
@@ -460,7 +463,8 @@ case 1:  // indirect + disp8 addressing
   01  58            ff                       # add EBX to *(EAX-1)
 # ModR/M in binary: 01 (indirect+disp8 mode) 011 (src EBX) 000 (dest EAX)
 +run: add EBX to r/m32
-+run: effective address is 0x60 (EAX+disp8)
++run: effective address is initially 0x61 (EAX)
++run: effective address is 0x60 (after adding disp8)
 +run: storing 0x00000011
 
 //:
@@ -473,19 +477,22 @@ case 1:  // indirect + disp8 addressing
   01  98            02 00 00 00              # add EBX to *(EAX+2)
 # ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
 +run: add EBX to r/m32
-+run: effective address is 0x60 (EAX+disp32)
++run: effective address is initially 0x5e (EAX)
++run: effective address is 0x60 (after adding disp32)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases(addr)")
 case 2:  // indirect + disp32 addressing
   switch (rm) {
-    default: {
-      int32_t disp = imm32();
-      addr = Reg[rm].u + disp;
-      trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(rm) << "+disp32)" << end();
-      break;
-    }
-    // End Mod 2 Special-cases(addr)
+  default:
+    addr = Reg[rm].u;
+    trace(2, "run") << "effective address is initially 0x" << std::hex << addr << " (" << rname(rm) << ")" << end();
+    break;
+  // End Mod 2 Special-cases(addr)
+  }
+  if (addr > 0) {
+    addr += imm32();
+    trace(2, "run") << "effective address is 0x" << std::hex << addr << " (after adding disp32)" << end();
   }
   break;
 
@@ -497,5 +504,6 @@ case 2:  // indirect + disp32 addressing
   01  98            ff ff ff ff              # add EBX to *(EAX-1)
 # ModR/M in binary: 10 (indirect+disp32 mode) 011 (src EBX) 000 (dest EAX)
 +run: add EBX to r/m32
-+run: effective address is 0x60 (EAX+disp32)
++run: effective address is initially 0x61 (EAX)
++run: effective address is 0x60 (after adding disp32)
 +run: storing 0x00000011

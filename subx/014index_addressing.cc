@@ -13,7 +13,7 @@
 +run: effective address is 0x60
 +run: storing 0x00000011
 
-:(before "End Mod 0 Special-cases")
+:(before "End Mod 0 Special-cases(addr)")
 case 4:  // exception: mod 0b00 rm 0b100 => incoming SIB (scale-index-base) byte
   addr = effective_address_from_sib(mod);
   break;
