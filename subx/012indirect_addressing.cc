@@ -7,15 +7,15 @@
 # op  ModR/M  SIB   displacement  immediate
   01  18                                     # add EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: add EBX to effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x00000011
 
 :(before "End Mod Special-cases")
 case 0:
   switch (rm) {
   default:  // mod 0 is usually indirect addressing
-    trace(2, "run") << "effective address is mem at address 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
+    trace(2, "run") << "effective address is 0x" << std::hex << Reg[rm].u << " (" << rname(rm) << ")" << end();
     assert(Reg[rm].u + sizeof(int32_t) <= Mem.size());
     result = reinterpret_cast<int32_t*>(&Mem.at(Reg[rm].u));  // rely on the host itself being in little-endian order
     break;
@@ -32,15 +32,15 @@ case 0:
 # op  ModR/M  SIB   displacement  immediate
   03  18                                      # add *EAX to EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: add effective address to EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: add r/m32 to EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0x00000011
 
 :(before "End Single-Byte Opcodes")
 case 0x03: {  // add r/m32 to r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "add effective address to " << rname(arg1) << end();
+  trace(2, "run") << "add r/m32 to " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(+, Reg[arg1].i, *arg2);
   break;
@@ -55,8 +55,8 @@ case 0x03: {  // add r/m32 to r32
 # op  ModR/M  SIB   displacement  immediate
   29  18                                      # subtract EBX from *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: subtract EBX from effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: subtract EBX from r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x00000009
 
 //:
@@ -68,15 +68,15 @@ case 0x03: {  // add r/m32 to r32
 # op  ModR/M  SIB   displacement  immediate
   2b  18                                      # subtract *EAX from EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: subtract effective address from EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: subtract r/m32 from EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0x00000009
 
 :(before "End Single-Byte Opcodes")
 case 0x2b: {  // subtract r/m32 from r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "subtract effective address from " << rname(arg1) << end();
+  trace(2, "run") << "subtract r/m32 from " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_ARITHMETIC_OP(-, Reg[arg1].i, *arg2);
   break;
@@ -91,8 +91,8 @@ case 0x2b: {  // subtract r/m32 from r32
 # op  ModR/M  SIB   displacement  immediate
   21  18                                      # and EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: and EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: and EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x0000000d
 
 //:
@@ -104,15 +104,15 @@ case 0x2b: {  // subtract r/m32 from r32
 # op  ModR/M  SIB   displacement  immediate
   23  18                                      # and *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: and effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: and r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0x0000000d
 
 :(before "End Single-Byte Opcodes")
 case 0x23: {  // and r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "and effective address with " << rname(arg1) << end();
+  trace(2, "run") << "and r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(&, Reg[arg1].u, *arg2);
   break;
@@ -127,8 +127,8 @@ case 0x23: {  // and r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   09  18                                      # or EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: or EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: or EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0xaabbccdd
 
 //:
@@ -140,15 +140,15 @@ case 0x23: {  // and r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   0b  18                                      # or *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: or effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: or r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0xaabbccdd
 
 :(before "End Single-Byte Opcodes")
 case 0x0b: {  // or r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "or effective address with " << rname(arg1) << end();
+  trace(2, "run") << "or r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -163,8 +163,8 @@ case 0x0b: {  // or r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   31  18                                      # xor EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: xor EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: xor EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x0a0bccdd
 
 //:
@@ -176,15 +176,15 @@ case 0x0b: {  // or r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   33  18                                      # xor *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: xor effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: xor r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0xaabbccdd
 
 :(before "End Single-Byte Opcodes")
 case 0x33: {  // xor r/m32 with r32
   uint8_t modrm = next();
   uint8_t arg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "xor effective address with " << rname(arg1) << end();
+  trace(2, "run") << "xor r/m32 with " << rname(arg1) << end();
   const int32_t* arg2 = effective_address(modrm);
   BINARY_BITWISE_OP(|, Reg[arg1].u, *arg2);
   break;
@@ -199,8 +199,8 @@ case 0x33: {  // xor r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   f7  03                                      # negate *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
-+run: 'not' of effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: 'not' of r/m32
++run: effective address is 0x60 (EBX)
 +run: storing 0xf0f0ff00
 
 //:: compare (cmp)
@@ -212,8 +212,8 @@ case 0x33: {  // xor r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   39  18                                      # compare EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: compare EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: SF=0; ZF=0; OF=0
 
 :(scenario compare_mem_at_r32_with_r32_lesser)
@@ -223,8 +223,8 @@ case 0x33: {  // xor r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   39  18                                      # compare EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: compare EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_mem_at_r32_with_r32_equal)
@@ -234,8 +234,8 @@ case 0x33: {  // xor r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   39  18                                      # compare EBX with *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare EBX with effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: compare EBX with r/m32
++run: effective address is 0x60 (EAX)
 +run: SF=0; ZF=1; OF=0
 
 //:
@@ -247,15 +247,15 @@ case 0x33: {  // xor r/m32 with r32
 # op  ModR/M  SIB   displacement  immediate
   3b  18                                      # compare *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: compare r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: SF=0; ZF=0; OF=0
 
 :(before "End Single-Byte Opcodes")
 case 0x3b: {  // set SF if r32 < r/m32
   uint8_t modrm = next();
   uint8_t reg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "compare effective address with " << rname(reg1) << end();
+  trace(2, "run") << "compare r/m32 with " << rname(reg1) << end();
   int32_t arg1 = Reg[reg1].i;
   int32_t* arg2 = effective_address(modrm);
   int32_t tmp1 = arg1 - *arg2;
@@ -274,8 +274,8 @@ case 0x3b: {  // set SF if r32 < r/m32
 # op  ModR/M  SIB   displacement  immediate
   3b  18                                      # compare *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: compare r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_r32_with_mem_at_r32_equal)
@@ -285,8 +285,8 @@ case 0x3b: {  // set SF if r32 < r/m32
 # op  ModR/M  SIB   displacement  immediate
   3b  18                                      # compare *EAX with EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: compare effective address with EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: compare r/m32 with EBX
++run: effective address is 0x60 (EAX)
 +run: SF=0; ZF=1; OF=0
 
 //:: copy (mov)
@@ -297,8 +297,8 @@ case 0x3b: {  // set SF if r32 < r/m32
 # op  ModR/M  SIB   displacement  immediate
   89  18                                      # copy EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: copy EBX to effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: copy EBX to r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x000000af
 
 //:
@@ -309,15 +309,15 @@ case 0x3b: {  // set SF if r32 < r/m32
 # op  ModR/M  SIB   displacement  immediate
   8b  18                                      # copy *EAX to EBX
 # ModR/M in binary: 00 (indirect mode) 011 (src EAX) 000 (dest EAX)
-+run: copy effective address to EBX
-+run: effective address is mem at address 0x60 (EAX)
++run: copy r/m32 to EBX
++run: effective address is 0x60 (EAX)
 +run: storing 0x000000af
 
 :(before "End Single-Byte Opcodes")
 case 0x8b: {  // copy r32 to r/m32
   uint8_t modrm = next();
   uint8_t reg1 = (modrm>>3)&0x7;
-  trace(2, "run") << "copy effective address to " << rname(reg1) << end();
+  trace(2, "run") << "copy r/m32 to " << rname(reg1) << end();
   int32_t* arg2 = effective_address(modrm);
   Reg[reg1].i = *arg2;
   trace(2, "run") << "storing 0x" << HEXWORD << *arg2 << end();
@@ -335,8 +335,8 @@ case 0x8b: {  // copy r32 to r/m32
   05                              00 00 00 01
   05                              00 00 00 02
 +run: inst: 0x00000001
-+run: jump to effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: jump to r/m32
++run: effective address is 0x60 (EAX)
 +run: jumping to 0x00000008
 +run: inst: 0x00000008
 -run: inst: 0x00000003
@@ -347,7 +347,7 @@ case 0xff: {
   uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
     case 4: {  // jump to r/m32
-      trace(2, "run") << "jump to effective address" << end();
+      trace(2, "run") << "jump to r/m32" << end();
       int32_t* arg2 = effective_address(modrm);
       EIP = *arg2;
       trace(2, "run") << "jumping to 0x" << HEXWORD << EIP << end();
@@ -367,14 +367,14 @@ case 0xff: {
 # op  ModR/M  SIB   displacement  immediate
   ff  30                                      # push *EAX to stack
 # ModR/M in binary: 00 (indirect mode) 110 (push r/m32) 000 (src EAX)
-+run: push effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: push r/m32
++run: effective address is 0x60 (EAX)
 +run: decrementing ESP to 0x00000010
 +run: pushing value 0x000000af
 
 :(before "End Op ff Subops")
 case 6: {  // push r/m32 to stack
-  trace(2, "run") << "push effective address" << end();
+  trace(2, "run") << "push r/m32" << end();
   const int32_t* val = effective_address(modrm);
   push(*val);
   break;
@@ -389,8 +389,8 @@ case 6: {  // push r/m32 to stack
 # op  ModR/M  SIB   displacement  immediate
   8f  00                                      # pop stack into *EAX
 # ModR/M in binary: 00 (indirect mode) 000 (pop r/m32) 000 (dest EAX)
-+run: pop into effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: pop into r/m32
++run: effective address is 0x60 (EAX)
 +run: popping value 0x00000030
 +run: incrementing ESP to 0x00000014
 
@@ -400,7 +400,7 @@ case 0x8f: {  // pop stack into r/m32
   uint8_t subop = (modrm>>3)&0x7;
   switch (subop) {
     case 0: {
-      trace(2, "run") << "pop into effective address" << end();
+      trace(2, "run") << "pop into r/m32" << end();
       int32_t* dest = effective_address(modrm);
       *dest = pop();
       break;

@@ -5,8 +5,8 @@
 # op  ModR/M  SIB   displacement  immediate
   81  c3                          0a 0b 0c 0d  # add 0x0d0c0b0a to EBX
 # ModR/M in binary: 11 (direct mode) 000 (add imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: subop add
 +run: storing 0x0d0c0b0b
 
@@ -14,7 +14,7 @@
 case 0x81: {  // combine imm32 with r/m32
   uint8_t modrm = next();
   int32_t arg2 = imm32();
-  trace(2, "run") << "combine imm32 0x" << HEXWORD << arg2 << " with effective address" << end();
+  trace(2, "run") << "combine imm32 0x" << HEXWORD << arg2 << " with r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   uint8_t subop = (modrm>>3)&0x7;  // middle 3 'reg opcode' bits
   switch (subop) {
@@ -38,8 +38,8 @@ case 0x81: {  // combine imm32 with r/m32
 # op  ModR/M  SIB   displacement  immediate
   81  03                          0a 0b 0c 0d  # add 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (add imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: subop add
 +run: storing 0x0d0c0b0b
 
@@ -68,8 +68,8 @@ case 0x2d: {  // subtract imm32 from EAX
 # op  ModR/M  SIB   displacement  immediate
   81  2b                          01 00 00 00  # subtract 1 from *EBX
 # ModR/M in binary: 00 (indirect mode) 101 (subtract imm32) 011 (dest EBX)
-+run: combine imm32 0x00000001 with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x00000001 with r/m32
++run: effective address is 0x60 (EBX)
 +run: subop subtract
 +run: storing 0x00000009
 
@@ -87,8 +87,8 @@ case 5: {
 # op  ModR/M  SIB   displacement  immediate
   81  eb                          01 00 00 00  # subtract 1 from EBX
 # ModR/M in binary: 11 (direct mode) 101 (subtract imm32) 011 (dest EBX)
-+run: combine imm32 0x00000001 with effective address
-+run: effective address is EBX
++run: combine imm32 0x00000001 with r/m32
++run: r/m32 is EBX
 +run: subop subtract
 +run: storing 0x00000009
 
@@ -117,8 +117,8 @@ case 0x25: {  // and imm32 with EAX
 # op  ModR/M  SIB   displacement  immediate
   81  23                          0a 0b 0c 0d  # and 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 100 (and imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: subop and
 +run: storing 0x0000000a
 
@@ -136,8 +136,8 @@ case 4: {
 # op  ModR/M  SIB   displacement  immediate
   81  e3                          0a 0b 0c 0d  # and 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 100 (and imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: subop and
 +run: storing 0x0000000a
 
@@ -166,8 +166,8 @@ case 0x0d: {  // or imm32 with EAX
 # op  ModR/M  SIB   displacement  immediate
   81  0b                          0a 0b 0c 0d  # or 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 001 (or imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: subop or
 +run: storing 0xddccbbaa
 
@@ -183,8 +183,8 @@ case 1: {
 # op  ModR/M  SIB   displacement  immediate
   81  cb                          0a 0b 0c 0d  # or 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 001 (or imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: subop or
 +run: storing 0xddccbbaa
 
@@ -213,8 +213,8 @@ case 0x35: {  // xor imm32 with EAX
 # op  ModR/M  SIB   displacement  immediate
   81  33                          0a 0b 0c 0d  # xor 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 110 (xor imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: subop xor
 +run: storing 0xddccbbaa
 
@@ -230,8 +230,8 @@ case 6: {
 # op  ModR/M  SIB   displacement  immediate
   81  f3                          0a 0b 0c 0d  # xor 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 110 (xor imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: subop xor
 +run: storing 0xddccbbaa
 
@@ -279,8 +279,8 @@ case 0x3d: {  // subtract imm32 from EAX
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          07 0b 0c 0d  # compare 0x0d0c0b07 with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b07 with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b07 with r/m32
++run: r/m32 is EBX
 +run: SF=0; ZF=0; OF=0
 
 :(before "End Op 81 Subops")
@@ -300,8 +300,8 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_imm32_with_r32_equal)
@@ -309,8 +309,8 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  fb                          0a 0b 0c 0d  # compare 0x0d0c0b0a with EBX
 # ModR/M in binary: 11 (direct mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is EBX
++run: combine imm32 0x0d0c0b0a with r/m32
++run: r/m32 is EBX
 +run: SF=0; ZF=1; OF=0
 
 :(scenario compare_imm32_with_mem_at_r32_greater)
@@ -319,8 +319,8 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          07 0b 0c 0d  # compare 0x0d0c0b07 with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b07 with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b07 with r/m32
++run: effective address is 0x60 (EBX)
 +run: SF=0; ZF=0; OF=0
 
 :(scenario compare_imm32_with_mem_at_r32_lesser)
@@ -329,8 +329,8 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: SF=1; ZF=0; OF=0
 
 :(scenario compare_imm32_with_mem_at_r32_equal)
@@ -340,8 +340,8 @@ case 7: {
 # op  ModR/M  SIB   displacement  immediate
   81  3b                          0a 0b 0c 0d  # compare 0x0d0c0b0a with *EBX
 # ModR/M in binary: 00 (indirect mode) 111 (compare imm32) 011 (dest EBX)
-+run: combine imm32 0x0d0c0b0a with effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: combine imm32 0x0d0c0b0a with r/m32
++run: effective address is 0x60 (EBX)
 +run: SF=0; ZF=1; OF=0
 
 //:: copy (mov)
@@ -374,14 +374,14 @@ case 0xbf: {  // copy imm32 to r32
 # op  ModR/M  SIB   displacement  immediate
   c7  03                          0a 0b 0c 0d  # copy 0x0d0c0b0a to *EBX
 # ModR/M in binary: 00 (indirect mode) 000 (unused) 011 (dest EBX)
-+run: copy imm32 0x0d0c0b0a to effective address
-+run: effective address is mem at address 0x60 (EBX)
++run: copy imm32 0x0d0c0b0a to r/m32
++run: effective address is 0x60 (EBX)
 
 :(before "End Single-Byte Opcodes")
 case 0xc7: {  // copy imm32 to r32
   uint8_t modrm = next();
   int32_t arg2 = imm32();
-  trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to effective address" << end();
+  trace(2, "run") << "copy imm32 0x" << HEXWORD << arg2 << " to r/m32" << end();
   int32_t* arg1 = effective_address(modrm);
   *arg1 = arg2;
   break;

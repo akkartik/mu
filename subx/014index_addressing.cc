@@ -8,8 +8,8 @@
   01  1c      20                             # add EBX to *EAX
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 100 (no index) 000 (base EAX)
-+run: add EBX to effective address
-+run: effective address is mem at address 0x60 (EAX)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX)
 +run: storing 0x00000011
 
 :(before "End Mod 0 Special-cases")
@@ -45,13 +45,13 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   uint8_t index = (sib>>3)&0x7;
   if (index == ESP) {
     // ignore index and scale
-    trace(2, "run") << "effective address is mem at address 0x" << std::hex << Reg[base].u << " (" << rname(base) << ")" << end();
+    trace(2, "run") << "effective address is 0x" << std::hex << Reg[base].u << " (" << rname(base) << ")" << end();
     return Reg[base].u;
   }
   else {
     uint8_t scale = (1 << (sib>>6));
     uint32_t addr = Reg[base].u + Reg[index].i*scale;  // treat index register as signed. Maybe base as well? But we'll always ensure it's non-negative.
-    trace(2, "run") << "effective address is mem at address 0x" << std::hex << addr << " (" << rname(base) << " + " << rname(index) << "*" << NUM(scale) << ")" << end();
+    trace(2, "run") << "effective address is 0x" << std::hex << addr << " (" << rname(base) << " + " << rname(index) << "*" << NUM(scale) << ")" << end();
     return addr;
   }
 }
@@ -65,6 +65,6 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   01  1c      08                             # add EBX to *(EAX+ECX)
 # ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
 # SIB in binary: 00 (scale 1) 001 (index ECX) 000 (base EAX)
-+run: add EBX to effective address
-+run: effective address is mem at address 0x60 (EAX + ECX*1)
++run: add EBX to r/m32
++run: effective address is 0x60 (EAX + ECX*1)
 +run: storing 0x00000011

@@ -28,15 +28,15 @@ case 0xe8: {  // call imm32 relative to next EIP
 # op  ModR/M  SIB   displacement  immediate
   ff  d3                                       # call function offset at EBX
   # next EIP is 3
-+run: call to effective address
-+run: effective address is EBX
++run: call to r/m32
++run: r/m32 is EBX
 +run: decrementing ESP to 0x00000060
 +run: pushing value 0x00000003
 +run: jumping to 0x000000a3
 
 :(before "End Op ff Subops")
 case 2: {  // call function pointer at r/m32
-  trace(2, "run") << "call to effective address" << end();
+  trace(2, "run") << "call to r/m32" << end();
   int32_t* offset = effective_address(modrm);
   push(EIP);
   EIP += *offset;
@@ -51,8 +51,8 @@ case 2: {  // call function pointer at r/m32
 # op  ModR/M  SIB   displacement  immediate
   ff  13                                       # call function offset at *EBX
   # next EIP is 3
-+run: call to effective address
-+run: effective address is mem at address 0x10 (EBX)
++run: call to r/m32
++run: effective address is 0x10 (EBX)
 +run: decrementing ESP to 0x00000060
 +run: pushing value 0x00000003
 +run: jumping to 0x000000a3
