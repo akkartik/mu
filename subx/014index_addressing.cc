@@ -30,7 +30,7 @@ uint32_t effective_address_from_sib(uint8_t mod) {
   }
   else {
     // base == EBP && mod == 0
-    addr = imm32();
+    addr = imm32();  // ignore base
     trace(2, "run") << "effective address is initially 0x" << std::hex << addr << " (disp32)" << end();
   }
   uint8_t index = (sib>>3)&0x7;
@@ -58,4 +58,18 @@ uint32_t effective_address_from_sib(uint8_t mod) {
 +run: add EBX to r/m32
 +run: effective address is initially 0x5e (EAX)
 +run: effective address is 0x60 (after adding ECX*1)
++run: storing 0x00000011
+
+:(scenario add_r32_to_mem_at_displacement_using_sib)
+% Reg[3].i = 0x10;  // source
+% Reg[0].i = 0x5e;  // dest base
+% Reg[1].i = 0x2;  // dest index
+% SET_WORD_IN_MEM(0x60, 1);
+# op  ModR/M  SIB   displacement  immediate
+  01  1c      25    60 00 00 00              # add EBX to *0x60
+# ModR/M in binary: 00 (indirect mode) 011 (src EBX) 100 (dest in SIB)
+# SIB in binary: 00 (scale 1) 100 (no index) 101 (not EBP but disp32)
++run: add EBX to r/m32
++run: effective address is initially 0x60 (disp32)
++run: effective address is 0x60
 +run: storing 0x00000011
