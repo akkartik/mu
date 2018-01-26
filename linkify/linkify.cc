@@ -79,7 +79,7 @@ void encode_some_html_entities(string& s) {
 }
 
 void read_tags(const string& filename, map<string, syminfo>& info) {
-  ifstream in(filename);
+  ifstream in(filename.c_str());
 //?   cerr << "reading " << filename << '\n';
   string dummy;
   while (has_data(in)) {
@@ -108,8 +108,8 @@ void read_tags(const string& filename, map<string, syminfo>& info) {
 
 void replace_tags_in_file(const string& filename, const map<string, syminfo>& info) {
 //?   cerr << info.size() << " symbols\n";
-  ifstream in(filename);
-  ofstream out(filename+".out");
+  ifstream in(filename.c_str());
+  ofstream out((filename+".out").c_str());
   while (has_data(in)) {
     // send lines that don't start with '<span' straight through
     string line;
