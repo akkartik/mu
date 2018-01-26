@@ -15,13 +15,13 @@ body { font-size: 12pt; font-family: monospace; color: #aaaaaa; background-color
 a { color:#eeeeee; text-decoration: none; }
 a:hover { text-decoration: underline; }
 * { font-size: 12pt; font-size: 1em; }
-.LineNr { color: #444444; }
-.Comment { color: #9090ff; }
-.Comment a { color:#0000ee; text-decoration:underline; }
-.Constant { color: #00a0a0; }
-.Special { color: #c00000; }
 .muControl { color: #c0a020; }
 .muRecipe { color: #ff8700; }
+.LineNr { color: #444444; }
+.Constant { color: #00a0a0; }
+.Special { color: #c00000; }
+.Comment { color: #9090ff; }
+.Comment a { color:#0000ee; text-decoration:underline; }
 -->
 </style>
 
@@ -65,21 +65,21 @@ if ('onhashchange' in window) {
 <span id="L7" class="LineNr"> 7 </span><span class="Comment"># After running it, navigate to localhost:8080. Your browser should display</span>
 <span id="L8" class="LineNr"> 8 </span><span class="Comment"># &quot;SUCCESS!&quot; and the server will terminate after one connection.</span>
 <span id="L9" class="LineNr"> 9 </span>
-<span id="L10" class="LineNr">10 </span><span class="muRecipe">def</span> <a href='http-server.mu.html#L10'>main</a> [
+<span id="L10" class="LineNr">10 </span><span class="muRecipe">def</span> main [
 <span id="L11" class="LineNr">11 </span>  <span class="Constant">local-scope</span>
 <span id="L12" class="LineNr">12 </span>  socket:num <span class="Special">&lt;-</span> $open-server-socket <span class="Constant">8080/port</span>
 <span id="L13" class="LineNr">13 </span>  $print <span class="Constant">[Mu socket creation returned ]</span>, socket, <span class="Constant">10/newline</span>
 <span id="L14" class="LineNr">14 </span>  <span class="muControl">return-unless</span> socket
 <span id="L15" class="LineNr">15 </span>  session:num <span class="Special">&lt;-</span> $accept socket
-<span id="L16" class="LineNr">16 </span>  contents:&amp;:<a href='075channel.mu.html#L43'>source</a>:char, <a href='075channel.mu.html#L47'>sink</a>:&amp;:<a href='075channel.mu.html#L47'>sink</a>:char <span class="Special">&lt;-</span> <a href='075channel.mu.html#L51'>new-channel</a><span class="Constant"> 30</span>
-<span id="L17" class="LineNr">17 </span>  <a href='075channel.mu.html#L47'>sink</a> <span class="Special">&lt;-</span> <span class="muControl">start-running</span> <a href='092socket.mu.html#L104'>receive-from-socket</a> session, <a href='075channel.mu.html#L47'>sink</a>
-<span id="L18" class="LineNr">18 </span>  query:text <span class="Special">&lt;-</span> <a href='075channel.mu.html#L507'>drain</a> contents
+<span id="L16" class="LineNr">16 </span>  contents:&amp;:source:char, sink:&amp;:sink:char <span class="Special">&lt;-</span> new-channel<span class="Constant"> 30</span>
+<span id="L17" class="LineNr">17 </span>  sink <span class="Special">&lt;-</span> <span class="muControl">start-running</span> receive-from-socket session, sink
+<span id="L18" class="LineNr">18 </span>  query:text <span class="Special">&lt;-</span> drain contents
 <span id="L19" class="LineNr">19 </span>  $print <span class="Constant">[Done reading from socket.]</span>, <span class="Constant">10/newline</span>
-<span id="L20" class="LineNr">20 </span>  <a href='092socket.mu.html#L132'>write-to-socket</a> session, <span class="Constant">[HTTP/1.0 200 OK</span>
+<span id="L20" class="LineNr">20 </span>  write-to-socket session, <span class="Constant">[HTTP/1.0 200 OK</span>
 <span id="L21" class="LineNr">21 </span><span class="Constant">Content-type: text/plain</span>
 <span id="L22" class="LineNr">22 </span>
-<span id="L23" class="LineNr">23 </span><span class="Constant">SUCCESS!</span>
-<span id="L24" class="LineNr">24 </span><span class="Constant">]</span>
+<span id="L23" class="LineNr">23 </span>SUCCESS!
+<span id="L24" class="LineNr">24 </span>]
 <span id="L25" class="LineNr">25 </span>  $print <span class="Constant">10/newline</span>, <span class="Constant">[Wrote to and closing socket...]</span>, <span class="Constant">10/newline</span>
 <span id="L26" class="LineNr">26 </span>  session <span class="Special">&lt;-</span> $close-socket session
 <span id="L27" class="LineNr">27 </span>  socket <span class="Special">&lt;-</span> $close-socket socket
